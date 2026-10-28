@@ -20,10 +20,7 @@
 const { http } = require('openvibe-contracts');
 const { asyncRouter } = require('./router');
 const { ACCESS_COOKIE } = require('../auth/sso');
-
-function ownOrigin(config) {
-    try { return new URL(config.baseUrl).origin; } catch { return null; }
-}
+const { ownOrigin, bearer, requireSameOrigin } = require('./same-origin');
 
 /** A Network 4xx answer, with its own status and body. A 2xx answer is passed through the same way. */
 function passThrough(res, r) {
@@ -51,23 +48,12 @@ function forward(res, req, up) {
 function createApi(ctx) {
     const { config, catalog, log } = ctx;
     const r = asyncRouter();
-    const origin = ownOrigin(config);
+    // A cookie write needs a same-origin signal; a Bearer write is not cookie-authenticated and is left alone.
+    const requireOrigin = requireSameOrigin(config, { detail: 'A change to a theme must come from openvibe.design itself.' });
 
-    /** Writes (PUT/POST): only this site's own origin may ask for them. */
-    function requireOrigin(req, res, next) {
-        const sent = String(req.get('origin') || '');
-        if (!origin || sent !== origin) {
-            return http.sendProblem(res, 403, 'design.cross_site', {
-                detail: 'A change to a theme must come from openvibe.design itself.',
-                ctx: req.ov,
-            });
-        }
-        return next();
-    }
-
-    /** The person's Network access token, from the httpOnly cookie only. */
+    /** The person's Network access token: the Bearer they sent, else the httpOnly cookie. */
     function requireToken(req, res, next) {
-        const token = req.cookies && req.cookies[ACCESS_COOKIE];
+        const token = bearer(req) || (req.cookies && req.cookies[ACCESS_COOKIE]);
         if (!token) {
             return http.sendProblem(res, 401, 'token.required', {
                 detail: 'Sign in at openvibe.design to use your theme.',

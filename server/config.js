@@ -22,6 +22,7 @@ function load(env = process.env) {
     // token ever talks to it directly.
     const networkPublicUrl = trim(env.OV_NETWORK_URL || 'https://openvibe.network');
     const networkInternalUrl = trim(env.OV_NETWORK_INTERNAL_URL || 'http://127.0.0.1:4000');
+    const aiUrl = trim(env.OV_AI_INTERNAL_URL || 'http://127.0.0.1:4700');
 
     return {
         service: 'design',
@@ -32,6 +33,7 @@ function load(env = process.env) {
         isProduction,
         baseUrl,
         trustProxy: env.TRUST_PROXY != null ? Number(env.TRUST_PROXY) : 2,
+        drill: env.DESIGN_DRILL === '1' || env.DESIGN_DRILL === 'true',
 
         // The theme API proxy (server/http/api.js): every call goes to the Network's /api/themes. `networkUrl`
         // is the internal origin the proxy and the token exchange use; `networkPublicUrl` is the browser's.
@@ -41,6 +43,42 @@ function load(env = process.env) {
         networkIssuer: trim(env.OV_NETWORK_ISSUER || networkPublicUrl),
         themeCacheMs: Math.max(0, int(env.DESIGN_THEME_CACHE_MS, 5 * 60_000)),
         timeoutMs: Math.max(200, int(env.DESIGN_UPSTREAM_TIMEOUT_MS, 8000)),
+
+        // PostgreSQL (ADR-035): DATABASE_URL serves (PgBouncer), DATABASE_DIRECT_URL migrates (owner role). In
+        // development without DATABASE_URL an embedded PGlite database in data/pglite is used.
+        db: { url: env.DATABASE_URL || '', directUrl: env.DATABASE_DIRECT_URL || '', pgliteDir: env.DESIGN_PGLITE_DIR || env.DESIGN_DATABASE_DIR || env.PGLITE_DIR || '' },
+
+        // OpenVibe.AI: the generate operation. Design is a first-party service and asks for a client-credentials
+        // token (audience openvibe.ai, scope ai.run.create; Network grants the ai.* namespace). Generation is
+        // picked up by the job loop, never by the request that creates a round.
+        ai: {
+            url: aiUrl,
+            audience: env.DESIGN_AI_AUDIENCE || 'openvibe.ai',
+            scope: env.DESIGN_AI_SCOPE || 'ai.run.create',
+            waitMs: Math.max(1000, int(env.DESIGN_AI_WAIT_MS, 55_000)),
+            timeoutMs: Math.max(1000, int(env.DESIGN_AI_TIMEOUT_MS, 120_000)),
+            pollMs: Math.max(100, int(env.DESIGN_AI_POLL_MS, 1500)),
+            // Optional explicit slots, `provider:model,provider:model,provider:model`. Without it Design reads the
+            // models the chat/generate route offers and asks the router for three of them.
+            models: String(env.DESIGN_ARENA_MODELS || '').split(',').map((x) => x.trim()).filter(Boolean),
+            maxHtmlBytes: 200 * 1024,
+        },
+
+        // Arena budgets and jobs. Both limits are per UTC day; the drill flag keeps the worker from starting.
+        arena: {
+            perDay: Math.max(1, int(env.DESIGN_ARENA_PER_DAY, 3)),
+            daily: Math.max(1, int(env.DESIGN_ARENA_DAILY, 20)),
+            intervalMs: Math.max(250, int(env.DESIGN_ARENA_JOB_INTERVAL_MS, 1500)),
+            pollMs: Math.max(250, int(env.DESIGN_ARENA_POLL_MS, 20_000)),
+            maxPrompt: Math.max(20, int(env.DESIGN_ARENA_MAX_PROMPT, 4000)),
+        },
+
+        // OpenVibe.Events → this service for ADR-033 account export/deletion. Off when the secret is unset.
+        events: {
+            secrets: String(env.DESIGN_EVENTS_SECRET || '').split(',').map((x) => x.trim()).filter(Boolean),
+            url: trim(env.DESIGN_EVENTS_URL || env.EVENTS_URL || ''),
+            endpoint: env.DESIGN_EVENTS_ENDPOINT || '',
+        },
 
         // OpenVibe.Network: SSO (OAuth2 authorization server with PKCE) and its JWKS.
         oauth: {

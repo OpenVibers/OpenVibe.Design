@@ -24,6 +24,7 @@ const esc = kit.esc;
 const NAV = [
     { label: 'Home', href: '/', icon: 'fa-house' },
     { label: 'Studio', href: '/studio', icon: 'fa-palette' },
+    { label: 'Arena', href: '/arena', icon: 'fa-crown' },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
 ];
 
@@ -42,7 +43,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
         service: 'design',
         apiBase: NETWORK,
         links: NAV.map((l) => ({ ...l, active: l.href === active || (l.href !== '/' && String(active).startsWith(`${l.href}/`)) })),
-        appBar: [{ label: 'Home', href: '/', icon: 'fa-house' }, { label: 'Studio', href: '/studio', icon: 'fa-palette' }],
+        appBar: [{ label: 'Home', href: '/', icon: 'fa-house' }, { label: 'Studio', href: '/studio', icon: 'fa-palette' }, { label: 'Arena', href: '/arena', icon: 'fa-crown' }],
         history: { type: 'page', title: title || NAME },
         silentLogin: `${BASE}/auth/login?silent=1&next={url}`,
         sessionUrl: '/auth/me',

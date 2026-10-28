@@ -15,6 +15,7 @@ const layoutLib = require('../render/layout');
 const kit = require('openvibe-shared/kit');
 const sc = require('openvibe-shared/showcase');
 const rooms = require('openvibe-shared/rooms');
+const { iframeHtml } = require('../arena/sanitize');
 
 const { layout, esc, NAME } = layoutLib;
 const ROOM = rooms.get('design');
@@ -153,6 +154,146 @@ function developers() {
     return layout({ title: 'The Design API', path: '/developers', body: `<div class="ds-wrap">${body}</div>`, active: '/developers' });
 }
 
+const ARENA_CATEGORY = {
+    landing: 'Landing page',
+    dashboard: 'Dashboard',
+    mobile_app: 'Mobile app',
+    game_ui: 'Game UI',
+    logo: 'Logo',
+    slides: 'Slides',
+};
+
+const arenaCost = (v) => `$${Number(v || 0).toFixed(4)}`;
+const arenaMs = (v) => (Number(v || 0) >= 1000 ? `${(Number(v) / 1000).toFixed(1)} s` : `${Math.round(Number(v) || 0)} ms`);
+const arenaPct = (v) => `${(Number(v || 0) * 100).toFixed(1)}%`;
+
+/** One output at one viewport width, inside the sandboxed, CSP-capped iframe. */
+function arenaShot(o, width) {
+    const phone = Number(width) === 390;
+    return `<div class="ar-shot ${phone ? 'ar-shot--phone' : 'ar-shot--desktop'}" data-width="${phone ? 390 : 1280}">
+<div class="ar-shot-frame">${iframeHtml({
+        html: o.html || '',
+        width: phone ? 390 : 1280,
+        height: phone ? 844 : 800,
+        title: `${o.model ? `${o.model} ` : ''}at ${phone ? 390 : 1280} pixels`,
+        id: `ar-frame-${String(o.id || 'x').replace(/[^a-z0-9_-]/gi, '')}-${phone ? 390 : 1280}`,
+        className: phone ? 'ar-frame--phone' : 'ar-frame--desktop',
+    })}</div>
+<p class="ar-shot-label">${phone ? 'Phone · 390 px' : 'Desktop · 1280 px'}</p></div>`;
+}
+
+// Which viewport the pair (or the round's outputs) shows. The radios belong to no form, so a vote never sends them.
+function arenaViewSwitch() {
+    return `<div class="ar-view" role="radiogroup" aria-label="Viewport">
+<input type="radio" id="ar-view-desktop" name="ar_view" value="desktop" form="ar-view-none" checked><label for="ar-view-desktop">Desktop</label>
+<input type="radio" id="ar-view-phone" name="ar_view" value="phone" form="ar-view-none"><label for="ar-view-phone">Phone</label></div>`;
+}
+
+function arenaLeaderboard(category, rows) {
+    const body = rows.length ? rows.map((r, i) => `<tr class="ar-lb-row" data-model="${esc(r.model)}">
+<td class="ar-lb-rank">${i + 1}</td>
+<td class="ar-lb-model">${esc(r.model)}</td>
+<td class="ar-lb-elo">${Number(r.elo).toFixed(0)}</td>
+<td class="ar-lb-games">${r.games}</td>
+<td class="ar-lb-winrate">${arenaPct(r.win_rate)}</td>
+<td class="ar-lb-cost">${r.median_cost_usd == null ? '—' : arenaCost(r.median_cost_usd)}</td>
+<td class="ar-lb-ms">${r.median_ms == null ? '—' : arenaMs(r.median_ms)}</td></tr>`).join('') : '<tr class="ar-lb-empty"><td colspan="7">No votes yet. Be the first to judge this category.</td></tr>';
+    return `<section class="ar-lb" id="ar-lb-${esc(category)}" aria-labelledby="ar-lb-h-${esc(category)}">
+<div class="ar-lb-head"><h2 id="ar-lb-h-${esc(category)}">${esc(ARENA_CATEGORY[category] || category)}</h2><a class="ar-more" href="/arena/vote">Vote on this category</a></div>
+<table class="ar-table"><thead><tr><th scope="col">#</th><th scope="col">Model</th><th scope="col">Elo</th><th scope="col">Games</th><th scope="col">Win rate</th><th scope="col">Median cost</th><th scope="col">Median time</th></tr></thead>
+<tbody>${body}</tbody></table></section>`;
+}
+
+function arenaHome({ categories = [], me = {}, limits = null } = {}) {
+    const signedIn = Boolean(me.signedIn);
+    const boards = categories.map((c) => arenaLeaderboard(c.category, c.leaderboard || [])).join('');
+    const rows = categories.flatMap((c) => c.leaderboard || []);
+    const body = `<div class="ar-page" id="ar-home">
+<header class="ar-hero"><p class="ar-kicker">Design Arena</p><h1>Which model designs it best?</h1>
+<p class="ar-lede">One prompt goes to three models. They each build the same page; you see two at phone and desktop sizes, vote blind, and an Elo leaderboard per category ranks the designers, with the cost and time of every generation.</p>
+<div class="ar-actions"><a class="ovk-btn ovk-btn--primary" href="/arena/new">Start a round</a> <a class="ovk-btn ovk-btn--quiet" href="/arena/vote">Vote blind</a></div>
+<p class="ar-fine" id="ar-limits">${signedIn
+        ? (limits ? `You have ${limits.remaining} of ${limits.per_day} rounds left today. The Arena has ${limits.site_remaining} of ${limits.site_daily} left.` : 'Signed in: you can start a round or vote.')
+        : 'Sign in to start a round or vote. The leaderboard and the dataset are open to everyone.'}</p></header>
+<section class="ar-boards" id="ar-leaderboard" aria-labelledby="ar-boards-h"><div class="ar-lb-head"><h2 id="ar-boards-h">The leaderboard</h2><span class="ar-fine">${rows.length} model${rows.length === 1 ? '' : 's'} ranked · K = 32</span></div>
+${boards || '<p class="ar-empty">No rounds have been judged yet. Start the first one.</p>'}
+<p class="ar-fine">A win rate counts a tie as half a win. <code>both_bad</code> is a game for neither model. The cost and time are the median over the outputs in this category.</p></section>
+<section class="ar-open" id="ar-open"><h2>Everything is open</h2><p class="ar-lede">The prompts, every generated page and every vote are downloadable. No voter is named.</p>
+<p><a class="ovk-btn ovk-btn--quiet" href="/api/v1/arena/dataset.jsonl">Download dataset.jsonl</a></p></section>
+</div>`;
+    return layout({ title: 'The Design Arena', description: 'One prompt, three AI designers, blind votes and an Elo leaderboard per category, with cost and time per generation.', path: '/arena', body: `<div class="ds-wrap">${body}</div>`, active: '/arena', scripts: ['js/arena.js'] });
+}
+
+function arenaNew({ me = {}, limits = null, categories = [], notice = null } = {}) {
+    const signedIn = Boolean(me.signedIn);
+    const options = (categories.length ? categories : Object.keys(ARENA_CATEGORY)).map((c) => `<option value="${esc(c)}">${esc(ARENA_CATEGORY[c] || c)}</option>`).join('');
+    const body = `<div class="ar-page" id="ar-new">
+<header class="ar-page-h"><p class="ar-kicker">Start a round</p><h1>Describe the page</h1>
+<p class="ar-lede">Three models will build it from this prompt. You cannot vote on a round you started, so the vote stays blind.</p></header>
+${notice ? `<p class="ar-notice" id="ar-new-notice" role="alert">${esc(notice)}</p>` : ''}
+${signedIn ? '' : `<p class="ar-notice" id="ar-signin">${kit.button({ href: '/auth/login?next=%2Farena%2Fnew', label: 'Sign in to start a round' })}</p>`}
+<form class="ar-form" id="ar-new-form" method="post" action="/arena/new">
+<label>Category <select id="ar-category" name="category" ${signedIn ? '' : 'disabled'}>${options}</select></label>
+<label>Prompt <textarea id="ar-prompt" name="prompt" rows="8" maxlength="4000" required ${signedIn ? '' : 'disabled'} placeholder="A landing page for a tiny coffee roastery in Seattle: warm, editorial, one product shot and a subscribe form."></textarea></label>
+<div class="ar-actions"><button type="submit" class="ovk-btn ovk-btn--primary" ${signedIn ? '' : 'disabled'}>Start the round</button><a class="ovk-btn ovk-btn--quiet" href="/arena">Back to the Arena</a></div>
+<p class="ar-status" id="ar-new-status" role="status"></p>
+<p class="ar-fine" id="ar-new-limits">${limits ? `${limits.remaining} of ${limits.per_day} rounds left for you today; ${limits.site_remaining} of ${limits.site_daily} for the whole site.` : 'A signed-in person may start a few rounds a day; the whole site has a daily cap too.'}</p>
+</form></div>`;
+    return layout({ title: 'Start an Arena round', description: 'Describe a page once; three AI designers build it and the Arena ranks them.', path: '/arena/new', body: `<div class="ds-wrap">${body}</div>`, active: '/arena', scripts: ['js/arena.js'] });
+}
+
+function arenaVote({ pair = null, me = {}, result = null, notice = null } = {}) {
+    const signedIn = Boolean(me.signedIn);
+    let body;
+    if (!signedIn) {
+        body = `<div class="ar-page" id="ar-vote"><header class="ar-page-h"><p class="ar-kicker">Vote blind</p><h1>Sign in to judge</h1><p class="ar-lede">The two designs are shown without their models. Sign in to record one vote per round; you cannot vote on a round you started.</p></header><p>${kit.button({ href: '/auth/login?next=%2Farena%2Fvote', label: 'Sign in to vote' })}</p></div>`;
+    } else if (result) {
+        const left = result.revealed.left;
+        const right = result.revealed.right;
+        body = `<div class="ar-page" id="ar-vote"><header class="ar-page-h"><p class="ar-kicker">Vote recorded</p><h1>The models are revealed</h1><p class="ar-lede">You chose <b>${esc(result.vote.winner === 'both_bad' ? 'both bad' : result.vote.winner)}</b>. The Elo leaderboard has been updated.</p></header>
+<div class="ar-reveal" id="ar-reveal"><div class="ar-reveal-side" id="ar-reveal-left"><h2>Left</h2><p><b>${esc(left.model)}</b>${left.provider ? ` · ${esc(left.provider)}` : ''}</p><p class="ar-fine">${arenaCost(left.cost_usd)} · ${arenaMs(left.ms)} · ${left.tokens} tokens</p></div>
+<div class="ar-reveal-side" id="ar-reveal-right"><h2>Right</h2><p><b>${esc(right.model)}</b>${right.provider ? ` · ${esc(right.provider)}` : ''}</p><p class="ar-fine">${arenaCost(right.cost_usd)} · ${arenaMs(right.ms)} · ${right.tokens} tokens</p></div></div>
+<p class="ar-actions"><a class="ovk-btn ovk-btn--primary" href="/arena/vote">Vote on another</a> <a class="ovk-btn ovk-btn--quiet" href="/arena/r/${encodeURIComponent(result.vote.round)}">See the round</a></p></div>`;
+    } else if (!pair) {
+        body = `<div class="ar-page" id="ar-vote"><header class="ar-page-h"><p class="ar-kicker">Vote blind</p><h1>Nothing waiting</h1><p class="ar-lede">${esc(notice || 'There is no ready round you have not voted on. Start one, or come back when another is ready.')}</p></header><p class="ar-actions"><a class="ovk-btn ovk-btn--primary" href="/arena/new">Start a round</a> <a class="ovk-btn ovk-btn--quiet" href="/arena">The leaderboard</a></p></div>`;
+    } else {
+        body = `<div class="ar-page" id="ar-vote"><header class="ar-page-h"><p class="ar-kicker">Vote blind · ${esc(ARENA_CATEGORY[pair.round.category] || pair.round.category)}</p><h1>Which design is better?</h1><p class="ar-lede">${esc(pair.round.prompt)}</p><p class="ar-fine">The models are hidden until you vote. Compare at phone and desktop sizes.</p></header>
+<form id="ar-vote-form" class="ar-vote" method="post" action="/arena/vote">
+<input type="hidden" id="ar-vote-round" name="round_id" value="${esc(pair.round.id)}">
+<input type="hidden" id="ar-vote-left-id" name="left_output" value="${esc(pair.left.id)}">
+<input type="hidden" id="ar-vote-right-id" name="right_output" value="${esc(pair.right.id)}">
+${arenaViewSwitch()}
+<div class="ar-vote-pair" id="ar-vote-pair">
+<section class="ar-vote-side" id="ar-vote-left" data-side="left"><h2>Left</h2>${arenaShot(pair.left, 390)}${arenaShot(pair.left, 1280)}</section>
+<section class="ar-vote-side" id="ar-vote-right" data-side="right"><h2>Right</h2>${arenaShot(pair.right, 390)}${arenaShot(pair.right, 1280)}</section></div>
+<div class="ar-vote-actions" id="ar-vote-actions"><button type="submit" class="ovk-btn ovk-btn--primary ar-vote-btn" name="winner" value="left" data-winner="left">Left is better</button>
+<button type="submit" class="ovk-btn ovk-btn--primary ar-vote-btn" name="winner" value="right" data-winner="right">Right is better</button>
+<button type="submit" class="ovk-btn ovk-btn--quiet ar-vote-btn" name="winner" value="tie" data-winner="tie">It is a tie</button>
+<button type="submit" class="ovk-btn ovk-btn--quiet ar-vote-btn" name="winner" value="both_bad" data-winner="both_bad">Both are bad</button></div>
+<p class="ar-status" id="ar-vote-status" role="status"></p></form></div>`;
+    }
+    return layout({ title: 'Vote blind · The Design Arena', description: 'Two generated designs, no model names: vote for the better one.', path: '/arena/vote', body: `<div class="ds-wrap">${body}</div>`, active: '/arena', scripts: ['js/arena.js'] });
+}
+
+function arenaRound({ round, me = {} } = {}) {
+    const outputs = round.outputs || [];
+    const ok = outputs.filter((o) => !o.error);
+    const totalCost = ok.reduce((a, o) => a + Number(o.cost_usd || 0), 0);
+    const totalMs = ok.reduce((a, o) => a + Number(o.ms || 0), 0);
+    const cards = outputs.map((o, i) => `<li class="ar-output" id="ar-output-${esc(o.id)}" data-model="${esc(o.model)}">
+<div class="ar-output-h"><h2>${esc(o.model)}</h2><p class="ar-fine">${esc(o.provider || 'unknown provider')} · ${arenaCost(o.cost_usd)} · ${arenaMs(o.ms)} · ${o.tokens} tokens</p></div>
+${o.error ? `<p class="ar-output-error" role="status">This model did not finish: ${esc(o.error)}</p>` : `<div class="ar-output-shots">${arenaShot(o, 390)}${arenaShot(o, 1280)}</div>`}</li>`).join('');
+    const body = `<div class="ar-page" id="ar-round" data-round="${esc(round.id)}">
+<header class="ar-page-h"><p class="ar-kicker">${esc(ARENA_CATEGORY[round.category] || round.category)} · Arena round</p><h1>${esc(String(round.prompt).slice(0, 240))}</h1>
+<p class="ar-meta" id="ar-round-meta">Status: <b>${esc(round.status)}</b> · ${outputs.length} model${outputs.length === 1 ? '' : 's'} · ${arenaCost(totalCost)} · ${arenaMs(totalMs)} in generation · ${round.votes || 0} vote${Number(round.votes) === 1 ? '' : 's'}</p>
+<p class="ar-actions"><a class="ovk-btn ovk-btn--primary" href="/arena/vote">Vote blind</a> <a class="ovk-btn ovk-btn--quiet" href="/arena">The leaderboard</a> <a class="ovk-btn ovk-btn--quiet" href="/api/v1/arena/rounds/${encodeURIComponent(round.id)}">This round as JSON</a></p></header>
+${round.status === 'queued' || round.status === 'generating' ? '<p class="ar-notice" id="ar-round-wait">The models are working. This page refreshes itself.</p>' : ''}
+${round.pool_fallback ? '<p class="ar-notice" id="ar-round-pool">Fewer than three distinct offers were available for this round, so the rest came from the routing pool.</p>' : ''}
+${outputs.some((o) => !o.error) ? arenaViewSwitch() : ''}
+<ul class="ar-outputs" id="ar-outputs">${cards || '<li class="ar-empty">No output yet.</li>'}</ul></div>`;
+    return layout({ title: `${ARENA_CATEGORY[round.category] || round.category}: an Arena round`, description: `Three AI designs for: ${round.prompt.slice(0, 140)}`, path: `/arena/r/${encodeURIComponent(round.id)}`, body: `<div class="ds-wrap">${body}</div>`, active: '/arena', scripts: ['js/arena.js'], robots: 'noindex, follow' });
+}
+
 function notFound() {
     const body = `<header class="ds-page-h"><h1>Nothing here</h1><p class="ds-lede">That page does not exist. <a href="/studio">Open the studio</a> or <a href="/">browse the themes</a>.</p></header>`;
     return layout({ title: 'Not found', robots: 'noindex, follow', body: `<div class="ds-wrap">${body}</div>`, active: '/' });
@@ -160,6 +301,7 @@ function notFound() {
 
 module.exports = {
     home, studio, theme, developers, notFound,
+    arenaHome, arenaNew, arenaVote, arenaRound, ARENA_CATEGORY, arenaShot,
     layout,
     setRelease: layoutLib.setRelease,
     configure: layoutLib.configure,
