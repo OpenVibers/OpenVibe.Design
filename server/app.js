@@ -82,7 +82,8 @@ function createApp(opts = {}) {
                 fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
                 // Theme previews may carry inline data: images and any https image the catalogue references.
                 imgSrc: ["'self'", 'data:', 'https:'],
-                connectSrc: ["'self'", 'https://openvibe.network'],
+                // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
+                connectSrc: ["'self'", 'https://openvibe.network', 'https://cloudflareinsights.com', 'https://openvibe.events'],
                 frameSrc: ["'self'", 'https://openvibe.network'],
                 frameAncestors: ["'none'"],
                 objectSrc: ["'none'"],

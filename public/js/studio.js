@@ -164,6 +164,19 @@
     });
 
     // ── History and restore ──
+    /** "Today 14:13", "Yesterday 09:02", else "Oct 21, 14:13", in the person's own time zone. */
+    function whenOf(v) {
+        const s = String(v || '');
+        const d = new Date(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(s) && !/[zZ+]/.test(s.slice(10)) ? s.replace(' ', 'T') + 'Z' : s);
+        if (isNaN(d.getTime())) return s.slice(0, 16);
+        const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const day = new Date(d); day.setHours(0, 0, 0, 0);
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const ago = Math.round((today - day) / 86400000);
+        if (ago === 0) return `Today ${time}`;
+        if (ago === 1) return `Yesterday ${time}`;
+        return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${time}`;
+    }
     async function loadHistory() {
         const list = $('#ds-history-list');
         if (!list || !signedIn) return;
@@ -178,14 +191,14 @@
             const accent = (x.custom_variables && x.custom_variables['--accent']) || (t && t.variables['--accent']);
             if (hex(accent)) dot.style.background = toHex(hex(accent));
             const b = document.createElement('b'); b.textContent = (x.theme_name || x.theme_id) + (x.custom_variables ? ' (edited)' : '');
-            const when = document.createElement('small'); when.textContent = String(x.created_at || '').slice(0, 16).replace('T', ' ');
+            const when = document.createElement('small'); when.textContent = whenOf(x.created_at);
             const go = document.createElement('button'); go.type = 'button'; go.className = 'ovk-btn ovk-btn--quiet ovk-btn--small'; go.textContent = 'Restore';
             go.addEventListener('click', async () => {
                 go.disabled = true;
                 try {
                     await api(`/api/me/theme/history/${encodeURIComponent(x.id)}/restore`, { method: 'POST', body: '{}' });
-                    say(`Restored ${x.theme_name || x.theme_id}. Every OpenVibe site follows on its next page.`);
                     if (byId.has(x.theme_id)) { pick(x.theme_id, { quiet: true }); if (x.custom_variables) { edited = coreOf(x.custom_variables); paint(); } }
+                    say(`Restored ${x.theme_name || x.theme_id}. Every OpenVibe site follows on its next page.`);
                     loadHistory();
                 } catch (err) { say(`Not restored: ${err.message}`); go.disabled = false; }
             });
