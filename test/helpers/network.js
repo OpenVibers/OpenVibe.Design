@@ -104,6 +104,16 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
                 st.refresh.set(rt, u);
                 return json(200, { access_token: userToken(u), refresh_token: rt, token_type: 'Bearer' });
             }
+            if (form.grant_type === 'client_credentials') {
+                // A first-party service token: audience openvibe.ai, capability ai.run.create, namespace ai.*.
+                const scope = String(form.scope || '');
+                const now = Math.floor(Date.now() / 1000);
+                const access = signJwt({
+                    iss: issuer, sub: 'svc:design', actor_type: 'service', aud: [form.audience || 'openvibe.ai'],
+                    cap: scope.split(/\s+/).filter(Boolean), ns: ['ai.*'], iat: now, exp: now + 300,
+                }, privatePem);
+                return json(200, { access_token: access, token_type: 'Bearer', expires_in: 300, scope });
+            }
             return json(400, { error: 'unsupported_grant_type' });
         }
 

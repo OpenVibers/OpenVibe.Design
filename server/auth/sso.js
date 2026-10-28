@@ -153,10 +153,21 @@ function createSso({ config, keys, fetchImpl = globalThis.fetch, now = () => Dat
         }
     }
 
-    /** req.viewer for every page: the signed-in person, refreshed when their token expired. */
+    /**
+     * req.viewer for every page: a Bearer session token when the caller sends one (an API client, not a
+     * browser form), else the httpOnly cookie, refreshed when its token expired.
+     */
     function middleware() {
         return async (req, res, next) => {
             req.viewer = { kind: 'anonymous' };
+            const header = String(req.get('authorization') || '');
+            const bearerToken = /^Bearer\s+\S/i.test(header) ? header.replace(/^Bearer\s+/i, '').trim() : null;
+            if (bearerToken) {
+                await keys.ensure();
+                const v = await verifySession(bearerToken);
+                if (v.ok) req.viewer = viewerFromClaims(v.claims, bearerToken);
+                return next();
+            }
             const token = req.cookies && req.cookies[ACCESS_COOKIE];
             if (!token) return next();
             await keys.ensure();

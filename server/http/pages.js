@@ -1,19 +1,25 @@
 'use strict';
 
 /**
- * The public pages:
- *   /                 the theme catalogue's front door
- *   /studio           the theme studio (the shell the main session's public/js/studio.js fills)
- *   /t/:slug          one public theme
- *   /developers       the API, for people and agents
+ * The pages:
+ *   /                       the theme catalogue's front door
+ *   /studio                 the theme studio
+ *   /t/:slug                one public theme
+ *   /arena                  the Arena leaderboard and its front door
+ *   /arena/new              start a round (the form also posts here, so it works without JavaScript)
+ *   /arena/vote             the next blind pair, and the reveal after a vote
+ *   /arena/r/:id            one round: every output at 390 px and 1280 px, with cost and time
+ *   /developers             the API
  *
- * Every page is server-rendered and complete without JavaScript. A page for a signed-in person is private and
- * never cached; a public page gets the short 120-second window. `me` comes from the session the SSO middleware
- * already resolved — a guest never causes a Network call to find out they are a guest.
+ * Every page is server-rendered. The Arena's model HTML is only ever inside `<iframe sandbox srcdoc>`; the pages
+ * themselves never contain it. `me` comes from the session the SSO middleware already resolved.
  */
+const express = require('express');
 const views = require('../views');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
+const { ArenaError } = require('../arena/store');
+const { writeAllowed } = require('./same-origin');
 
 function meOf(viewer) {
     if (!viewer || viewer.kind !== 'user') return { signedIn: false, user: null };
@@ -30,15 +36,21 @@ function meOf(viewer) {
     };
 }
 
+const subjectOf = (req) => (req.viewer && req.viewer.kind === 'user' ? req.viewer.subject : null);
+
 function createPageRoutes(ctx) {
-    const { catalog, log } = ctx;
+    const { config, catalog, arena, log } = ctx;
     const r = asyncRouter();
-    // The catalogue never throws in a page: a Network failure degrades to the page without its list.
     const safe = (fn) => Promise.resolve().then(fn).catch((err) => {
         log.warn('[OpenVibe.Design] page catalogue failed:', (err && err.message) || err);
         return null;
     });
     const page = (res, status, html, viewer) => send(res, status, html, { viewer });
+    const categories = arena.CATEGORIES;
+    const aria = async (viewer) => {
+        const subject = viewer && viewer.kind === 'user' ? viewer.subject : null;
+        return subject ? await arena.counts(subject).catch(() => null) : null;
+    };
 
     r.get('/', async (req, res) => {
         const list = await safe(() => catalog.list());
@@ -65,6 +77,83 @@ function createPageRoutes(ctx) {
             return res.status(502).type('text/plain').send('That theme could not be read right now. Try again in a moment.');
         }
         return page(res, 200, views.theme({ theme: up.data.theme }), req.viewer);
+    });
+
+    // ── Arena ───────────────────────────────────────────────
+    r.get('/arena', async (req, res) => {
+        const me = meOf(req.viewer);
+        let boards;
+        try { boards = await arena.leaderboard(null); } catch (err) {
+            log.warn('[OpenVibe.Design] leaderboard failed:', (err && err.message) || err);
+            boards = categories.map((category) => ({ category, leaderboard: [] }));
+        }
+        return page(res, 200, views.arenaHome({ categories: boards, me, limits: await aria(req.viewer) }), req.viewer);
+    });
+
+    r.get('/arena/new', async (req, res) => {
+        return page(res, 200, views.arenaNew({ me: meOf(req.viewer), limits: await aria(req.viewer), categories }), req.viewer);
+    });
+
+    r.post('/arena/new', express.urlencoded({ extended: false, limit: '64kb' }), async (req, res) => {
+        const me = meOf(req.viewer);
+        if (!subjectOf(req)) return res.redirect(303, '/auth/login?next=%2Farena%2Fnew');
+        if (!writeAllowed(req, config)) return res.status(403).type('text/plain').send('A round must be started from openvibe.design itself.');
+        const b = req.body || {};
+        try {
+            const round = await arena.createRound({ category: String(b.category || ''), prompt: b.prompt, subject: subjectOf(req) });
+            return res.redirect(303, `/arena/r/${encodeURIComponent(round.id)}`);
+        } catch (err) {
+            const notice = err instanceof ArenaError ? err.detail : 'The round could not be started. Try again in a moment.';
+            if (!(err instanceof ArenaError)) log.warn('[OpenVibe.Design] starting a round failed:', (err && err.message) || err);
+            return page(res, err instanceof ArenaError ? err.status : 500,
+                views.arenaNew({ me, limits: await aria(req.viewer), categories, notice }), req.viewer);
+        }
+    });
+
+    r.get('/arena/vote', async (req, res) => {
+        const me = meOf(req.viewer);
+        let pair = null;
+        let notice = null;
+        if (subjectOf(req)) {
+            try { pair = await arena.nextPair(subjectOf(req), { random: ctx.random || Math.random }); } catch (err) {
+                log.warn('[OpenVibe.Design] picking a pair failed:', (err && err.message) || err);
+                notice = 'The next pair could not be read. Try again in a moment.';
+            }
+        }
+        return page(res, 200, views.arenaVote({ pair, me, notice }), req.viewer);
+    });
+
+    r.post('/arena/vote', express.urlencoded({ extended: false, limit: '64kb' }), async (req, res) => {
+        const me = meOf(req.viewer);
+        if (!subjectOf(req)) return res.redirect(303, '/auth/login?next=%2Farena%2Fvote');
+        if (!writeAllowed(req, config)) return res.status(403).type('text/plain').send('A vote must come from openvibe.design itself.');
+        const b = req.body || {};
+        try {
+            const out = await arena.vote({
+                roundId: String(b.round_id || ''),
+                subject: subjectOf(req),
+                leftOutput: String(b.left_output || ''),
+                rightOutput: String(b.right_output || ''),
+                winner: String(b.winner || ''),
+            });
+            return page(res, 201, views.arenaVote({ me, result: {
+                vote: { round: out.round.id, winner: out.winner, at: out.at },
+                revealed: { left: out.left, right: out.right },
+            } }), req.viewer);
+        } catch (err) {
+            const notice = err instanceof ArenaError ? err.detail : 'The vote could not be recorded. Try again in a moment.';
+            if (!(err instanceof ArenaError)) log.warn('[OpenVibe.Design] vote failed:', (err && err.message) || err);
+            return page(res, err instanceof ArenaError ? err.status : 500, views.arenaVote({ me, notice }), req.viewer);
+        }
+    });
+
+    r.get('/arena/r/:id', async (req, res) => {
+        let round = null;
+        try { round = await arena.getRound(String(req.params.id || '')); } catch (err) {
+            log.warn('[OpenVibe.Design] round page failed:', (err && err.message) || err);
+        }
+        if (!round) return page(res, 404, views.notFound(), req.viewer);
+        return page(res, 200, views.arenaRound({ round, me: meOf(req.viewer) }), req.viewer);
     });
 
     r.get('/developers', (req, res) => page(res, 200, views.developers(), req.viewer));

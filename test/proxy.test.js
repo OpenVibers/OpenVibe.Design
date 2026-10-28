@@ -81,6 +81,19 @@ const ORIGIN = 'https://openvibe.design';
         assert.strictEqual(missing.status, 403, 'no Origin is not this site');
     });
 
+    await check('a cookie write may say same-origin with Sec-Fetch-Site; a Bearer write needs no Origin', async () => {
+        const site = await t.get('/api/me/theme', {
+            ...signedIn, method: 'PUT', json: { theme_id: 'paper' }, headers: { 'sec-fetch-site': 'same-origin' },
+        });
+        assert.strictEqual(site.status, 200, site.text);
+        const bearer = await t.get('/api/me/theme', {
+            method: 'PUT', json: { theme_id: 'aurora' }, headers: { authorization: `Bearer ${token}` },
+        });
+        assert.strictEqual(bearer.status, 200, bearer.text);
+        const sent = writes('/api/themes/me').pop();
+        assert.strictEqual(sent.authorization, `Bearer ${token}`, 'the Bearer token is forwarded, not the cookie');
+    });
+
     await check('a Network 422 answer passes through with its status and body', async () => {
         const r = await t.get('/api/themes/submit', {
             ...signedIn,

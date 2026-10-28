@@ -1,11 +1,11 @@
 {
   "repository": "OpenVibers/OpenVibe.Design",
   "version": "0.1.0",
-  "stage": "v1",
+  "stage": "v2",
   "code": true,
   "wave": "W20",
-  "plan": "OpenVibe.Design: the Design room's theme studio. Browse OpenVibe's themes, try them on previews, edit one with contrast checks, use it, submit it to the gallery, and roll back to any earlier setting. Theme selection stays in OpenVibe.Network; this service signs the person in and proxies their calls.",
-  "runtime": "node 22, express 4, openvibe-shared/shell; stateless (no database, no Valkey, no Events)",
+  "plan": "OpenVibe.Design: the Design room's theme studio. Browse OpenVibe's themes, try them on previews, edit one with contrast checks, use it, submit it to the gallery, and roll back to any earlier setting. Theme selection stays in OpenVibe.Network; this service signs the person in and proxies their calls. v2 adds the Design Arena: one prompt, three AI models, blind votes and an Elo leaderboard per category, with cost and time per generation and an open dataset.",
+  "runtime": "node 22, express 4, openvibe-shared/shell; PostgreSQL (or embedded PGlite in development), OpenVibe.AI generate jobs, OpenVibe.Events account data in, no Valkey",
   "port": "5090",
   "domain": "openvibe.design",
   "contracts": "openvibe-contracts v0.227.0",
@@ -16,7 +16,7 @@
     "openvibe-sdk v0.70.0",
     "openvibe-shared v4.33.0"
   ],
-  "summary": "The service skeleton for openvibe.design: Network sign-in as OAuth client `design` (PKCE S256, httpOnly design_at/design_rt cookies) and a theme API proxy to OpenVibe.Network's /api/themes. The proxy serves the public catalogue (cached 5 minutes), one theme, the person's active theme and custom variables, saving a theme with source 'studio', its history and a restore by id, and a submission to the gallery. Writes need this site's own Origin; Network 4xx answers pass through and a Network failure is 502. The studio is designed: a gallery, previews on a Live channel, a Chat room and a shop's grid (with colour-vision views), a six-colour editor that derives the full token set, WCAG checks that gate Use, sharing to the gallery, and History with Restore.",
+  "summary": "The service skeleton for openvibe.design: Network sign-in as OAuth client `design` (PKCE S256, httpOnly design_at/design_rt cookies) and a theme API proxy to OpenVibe.Network's /api/themes. The proxy serves the public catalogue (cached 5 minutes), one theme, the person's active theme and custom variables, saving a theme with source 'studio', its history and a restore by id, and a submission to the gallery. Writes need this site's own Origin; Network 4xx answers pass through and a Network failure is 502. The studio is designed: a gallery, previews on a Live channel, a Chat room and a shop's grid (with colour-vision views), a six-colour editor that derives the full token set, WCAG checks that gate Use, sharing to the gallery, and History with Restore. The Arena queues one prompt for three models through OpenVibe.AI (client credentials, ai.run.create), stores sanitized HTML with reported model/provider/cost/time/tokens, renders it only in sandboxed CSP-capped iframes, draws blind pairs, records one vote per person per round, and keeps Elo ratings per category plus median cost and time. The prompts, outputs and votes are an open JSONL dataset; rounds and votes follow ADR-033 export and deletion.",
   "works": [
     "Sign-in with OpenVibe.Network: OAuth 2 authorization code, PKCE S256, state check, server-side exchange, httpOnly design_at/design_rt cookies, sanitizeNext (own origins only, no control characters or backslashes)",
     "The theme API proxy: GET /api/themes (5-minute in-memory cache), GET /api/themes/:idOrSlug, GET/PUT /api/me/theme, GET /api/me/theme/history, POST /api/me/theme/history/:id/restore, POST /api/themes/submit",
@@ -25,7 +25,14 @@
     "Crawl artifacts (robots.txt, sitemap.xml with the public themes, llms.txt), /api/health, /api/ready (degraded when Network does not answer), /release.json, /release-metrics, /shared/*",
     "Helmet with the network's CSP, per-IP 120/min on /api and /auth, content-hashed /css and /js, graceful stop",
     "Deploy files: openvibe-design.service, nginx vhost for openvibe.design on 127.0.0.1:5090",
-    "Tests: sanitizeNext, the login redirect and callback, /auth/me, the proxy (cache, 401, CSRF, pass-through, down), the pages and the crawl artifacts, health and readiness"
+    "Tests: sanitizeNext, the login redirect and callback, /auth/me, the proxy (cache, 401, CSRF, pass-through, down), the pages and the crawl artifacts, health and readiness",
+    "The Design Arena API: POST/GET /api/v1/arena/rounds, GET /vote and POST /vote, GET /leaderboard?category=\u2026, GET /dataset.jsonl",
+    "Arena generation: a job loop off under DESIGN_DRILL, AI generate with a client-credentials token (audience openvibe.ai, scope ai.run.create), three slots from AI's chat route, cost/time/tokens stored, per-person and whole-site daily budgets",
+    "Output safety: scripts, on* handlers and javascript: URLs stripped, 200 KB cap, storage as text, rendering only in <iframe sandbox srcdoc> with a CSP meta that blocks every network fetch",
+    "Blind voting and Elo: two outputs in random order with models hidden, creator cannot vote, one vote per person per round, K=32, tie=0.5, both_bad counts for neither",
+    "Arena pages: /arena (leaderboard and start), /arena/new, /arena/vote, /arena/r/:id with 390 px and 1280 px frames",
+    "ADR-033 account export/deletion for a person's rounds, outputs and votes through /internal/events",
+    "Tests: the migration, the generation job, the sanitizer and iframe markup, daily limits, blind pairs, one vote, creator refusal, Elo win/tie/both_bad, leaderboard numbers, dataset privacy and account export/erase"
   ],
   "notYet": [
     "The pages' design and public/js/studio.js: the main session writes them; today the views are plain placeholders and design.css and studio.js are one-comment files",
@@ -44,7 +51,12 @@
     "server-rendered pages",
     "crawl artifacts",
     "limits and readiness",
-    "deploy files"
+    "deploy files",
+    "Design Arena",
+    "Arena generation jobs",
+    "Blind voting and Elo",
+    "Open Arena dataset",
+    "Account export/deletion"
   ],
   "updated": "2026-10-28"
 }

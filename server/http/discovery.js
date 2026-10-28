@@ -29,6 +29,7 @@ function publicPages(themes = []) {
     const static_ = [
         { path: '/', changefreq: 'weekly', priority: 1.0, title: 'OpenVibe.Design', text: 'Browse OpenVibe\'s themes, try them on a preview, edit one with contrast checks, use it, and roll back to any earlier setting.' },
         { path: '/studio', changefreq: 'weekly', priority: 0.9, title: 'The theme studio', text: 'Try a theme on a preview, edit its variables with contrast checks, use it across the network, submit it to the gallery, and roll back.' },
+        { path: '/arena', changefreq: 'daily', priority: 0.9, title: 'The Design Arena', text: 'One prompt, three AI designers, blind votes and an Elo leaderboard per category, with cost and time per generation.' },
     ];
     const themePages = (Array.isArray(themes) ? themes : []).filter((t) => t && t.slug).map((t) => ({
         path: `/t/${encodeURIComponent(String(t.slug))}`,
@@ -67,11 +68,13 @@ function createDiscoveryRoutes(ctx) {
                 { title: 'Start here', links: [
                     { title: 'OpenVibe.Design', url: abs('/'), note: 'the theme catalogue' },
                     { title: 'The studio', url: abs('/studio'), note: 'try, edit, use, submit and roll back a theme' },
+                    { title: 'The Design Arena', url: abs('/arena'), note: 'one prompt, three AI designers, blind votes and an Elo leaderboard' },
                     { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy' },
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
                 { title: 'Machine-readable', links: [
                     { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
+                    { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
                     { title: 'Sitemap', url: abs('/sitemap.xml') },
                     { title: 'Release metadata (JSON)', url: abs('/release.json') },
                 ] },
