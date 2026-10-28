@@ -28,6 +28,8 @@ async function start() {
     const { config } = ctx;
     const server = app.listen(config.port, config.host, () => {
         console.log(`[OpenVibe.Design] ${config.nodeEnv} on http://${config.host}:${config.port} → ${config.baseUrl} (network ${config.networkUrl})`);
+        // Load the Network's signing key now, not on the first sign-in, so /api/ready reports sign-in as it is.
+        ctx.keys.ensure().catch(() => {});
     });
     server.keepAliveTimeout = 65_000;
     createLifecycle({ server, ctx });
