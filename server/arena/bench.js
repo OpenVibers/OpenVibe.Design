@@ -1,0 +1,193 @@
+'use strict';
+
+/**
+ * OpenVibe.Bench client for the Design Arena. Design uses its service token for task creation, reads and boards,
+ * and forwards each person's Network token for round creation, blind pairs, votes and reveals.
+ *
+ *   service token (audience openvibe.bench, bench.task.create / bench.round.read / bench.board.read)
+ *   person token  (Network user access token, audience openvibe.network)
+ */
+const { serviceAuth } = require('openvibe-contracts');
+const { ArenaError } = require('./legacy-store');
+
+const BENCH_CAPABILITIES = Object.freeze([
+    'bench.task.create',
+    'bench.round.create',
+    'bench.round.read',
+    'bench.judgement.cast',
+    'bench.board.read',
+].join(' '));
+
+class BenchClientError extends Error {
+    constructor(status, code, detail) {
+        super(detail || code);
+        this.name = 'BenchClientError';
+        this.status = status;
+        this.code = code;
+        this.detail = detail || code;
+    }
+}
+
+function mapBenchProblem(status, body) {
+    const code = body && (body.code || body.error) ? String(body.code || body.error) : 'bench.error';
+    const detail = body && (body.detail || body.message) ? String(body.detail || body.message) : 'OpenVibe.Bench returned an error.';
+    switch (code) {
+        case 'bench.limit_person': return new ArenaError(429, 'arena.limit_person', detail);
+        case 'bench.limit_site': return new ArenaError(429, 'arena.limit_site', detail);
+        case 'bench.kind_not_found': return new ArenaError(400, 'arena.invalid_category', detail);
+        case 'bench.prompt_required':
+        case 'bench.prompt_too_long': return new ArenaError(422, 'arena.prompt_required', detail);
+        case 'bench.round_not_found': return new ArenaError(404, 'arena.round_not_found', detail);
+        case 'bench.round_not_ready': return new ArenaError(409, 'arena.round_not_ready', detail);
+        case 'bench.creator_cannot_vote': return new ArenaError(403, 'arena.creator_cannot_vote', detail);
+        case 'bench.already_judged': return new ArenaError(409, 'arena.already_voted', detail);
+        case 'bench.invalid_pair': return new ArenaError(422, 'arena.invalid_pair', detail);
+        case 'bench.invalid_outcome': return new ArenaError(422, 'arena.invalid_winner', detail);
+        default: return new BenchClientError(status, code, detail);
+    }
+}
+
+function kindForCategory(category) {
+    return category === 'logo' ? 'design.component' : 'design.page';
+}
+
+function createBenchClient({ config, fetchImpl = globalThis.fetch, log = console }) {
+    const bench = config.bench;
+    const enabled = Boolean(bench && bench.url);
+    const tokenClient = enabled && config.oauth && config.oauth.clientSecret
+        ? serviceAuth.createTokenClient({
+            tokenUrl: `${config.networkInternalUrl || config.networkUrl}/oauth/token`,
+            clientId: config.oauth.clientId,
+            clientSecret: config.oauth.clientSecret,
+            audience: bench.audience,
+            scope: bench.scope,
+            fetchImpl,
+        })
+        : null;
+
+    async function serviceHeaders() {
+        if (!enabled) throw new BenchClientError(503, 'bench.not_configured', 'OpenVibe.Bench is not configured for the Arena.');
+        if (!tokenClient) throw new BenchClientError(503, 'bench.not_configured', 'Design has no client secret to talk to Bench.');
+        return { Accept: 'application/json', ...(await tokenClient.authHeaders()), 'Content-Type': 'application/json' };
+    }
+
+    function personHeaders(token) {
+        if (!enabled) throw new BenchClientError(503, 'bench.not_configured', 'OpenVibe.Bench is not configured for the Arena.');
+        if (!token) throw new ArenaError(401, 'token.required', 'Sign in to use the Arena.');
+        return { Accept: 'application/json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    }
+
+    async function request(method, path, { body = null, headers = null, token = null } = {}) {
+        const h = headers || (token ? personHeaders(token) : await serviceHeaders());
+        const url = `${bench.url.replace(/\/+$/, '')}${path}`;
+        const opts = { method, headers: h, signal: AbortSignal.timeout(config.timeoutMs || 8000) };
+        if (body != null) opts.body = JSON.stringify(body);
+        let res;
+        try {
+            res = await fetchImpl(url, opts);
+        } catch (err) {
+            throw new BenchClientError(502, 'bench.unreachable', err && err.name === 'TimeoutError' ? 'OpenVibe.Bench did not answer in time.' : 'OpenVibe.Bench could not be reached.');
+        }
+        const json = await res.json().catch(() => null);
+        if (!res.ok) {
+            const err = mapBenchProblem(res.status, json);
+            throw err;
+        }
+        return json || {};
+    }
+
+    async function createTask({ category, prompt }) {
+        const kindId = kindForCategory(category);
+        const out = await request('POST', `/api/v1/kinds/${encodeURIComponent(kindId)}/tasks`, {
+            body: { prompt, public: true, task_class: category },
+        });
+        return out.task;
+    }
+
+    async function createRound({ category, prompt, token, offers = null }) {
+        const task = await createTask({ category, prompt });
+        const body = {};
+        if (offers) body.offers = offers;
+        const out = await request('POST', `/api/v1/tasks/${encodeURIComponent(task.id)}/rounds`, {
+            body,
+            token,
+        });
+        return { task, round: { ...out.round, task_class: task.task_class, prompt: task.prompt } };
+    }
+
+    async function getTask(id) {
+        const out = await request('GET', `/api/v1/tasks/${encodeURIComponent(id)}`);
+        return out.task;
+    }
+
+    async function getRound(id, { token = null } = {}) {
+        const out = await request('GET', `/api/v1/rounds/${encodeURIComponent(id)}`, { token });
+        const round = out.round;
+        if (round && round.task_id && !round.prompt) {
+            try {
+                const task = await getTask(round.task_id);
+                round.task_class = task.task_class;
+                round.prompt = task.prompt;
+            } catch { /* keep blind */ }
+        }
+        return round;
+    }
+
+    async function nextPair(kindId, token) {
+        const out = await request('GET', `/api/v1/judgements/next?kind=${encodeURIComponent(kindId)}`, { token });
+        return out && out.round ? out : null;
+    }
+
+    async function castVote({ roundId, token, pair, winner }) {
+        const out = await request('POST', `/api/v1/rounds/${encodeURIComponent(roundId)}/judgements`, {
+            token,
+            body: { pair, outcome: winner },
+        });
+        return out;
+    }
+
+    async function castImportedVote({ roundId, pair, winner }) {
+        return await request('POST', `/api/v1/rounds/${encodeURIComponent(roundId)}/judgements`, {
+            body: { judge: 'automatic_grader', judge_name: 'design.arena.legacy_vote', pair, outcome: winner },
+        });
+    }
+
+    async function getBoard(kindId, { type = 'elo', token = null } = {}) {
+        const out = await request('GET', `/api/v1/boards/${encodeURIComponent(kindId)}?type=${encodeURIComponent(type)}`, { token });
+        return out.board;
+    }
+
+    function datasetUrl(kindId) {
+        return `${bench.publicUrl.replace(/\/+$/, '')}/api/v1/datasets/${encodeURIComponent(kindId)}.jsonl`;
+    }
+
+    async function addEntry({ roundId, provider, model, route, payload, costUsd, ms, tokens, error, uiCheck, runId }) {
+        return await request('POST', `/api/v1/rounds/${encodeURIComponent(roundId)}/entries`, {
+            body: {
+                provider, model, route, payload,
+                cost_usd: costUsd,
+                ms,
+                tokens,
+                error,
+                ui_check: uiCheck,
+                run_id: runId,
+            },
+        });
+    }
+
+    return {
+        enabled,
+        kindForCategory,
+        createTask,
+        createRound,
+        getRound,
+        nextPair,
+        castVote,
+        castImportedVote,
+        getBoard,
+        datasetUrl,
+        addEntry,
+    };
+}
+
+module.exports = { createBenchClient, BenchClientError, kindForCategory, BENCH_CAPABILITIES };

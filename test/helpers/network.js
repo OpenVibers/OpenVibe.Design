@@ -7,6 +7,7 @@
  */
 const http = require('http');
 const crypto = require('crypto');
+const { ids } = require('openvibe-contracts');
 
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
 function signJwt(claims, privateKey) {
@@ -58,7 +59,7 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
     let nextUserId = 1;
 
     function addUser(username, { role = 'user' } = {}) {
-        const u = { id: nextUserId++, subject: `usr_${crypto.randomBytes(12).toString('hex')}`, username, display_name: username, role };
+        const u = { id: nextUserId++, subject: ids.newId('user'), username, display_name: username, role };
         st.users.set(u.id, u);
         return u;
     }
@@ -105,12 +106,13 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
                 return json(200, { access_token: userToken(u), refresh_token: rt, token_type: 'Bearer' });
             }
             if (form.grant_type === 'client_credentials') {
-                // A first-party service token: audience openvibe.ai, capability ai.run.create, namespace ai.*.
+                // A first-party service token for the requested audience and capabilities.
                 const scope = String(form.scope || '');
                 const now = Math.floor(Date.now() / 1000);
                 const access = signJwt({
                     iss: issuer, sub: 'svc:design', actor_type: 'service', aud: [form.audience || 'openvibe.ai'],
-                    cap: scope.split(/\s+/).filter(Boolean), ns: ['ai.*'], iat: now, exp: now + 300,
+                    cap: scope.split(/\s+/).filter(Boolean), ns: [form.audience === 'openvibe.bench' ? 'bench.*' : 'ai.*'],
+                    iat: now, exp: now + 300, jti: `tok_${crypto.randomBytes(12).toString('hex')}`,
                 }, privatePem);
                 return json(200, { access_token: access, token_type: 'Bearer', expires_in: 300, scope });
             }

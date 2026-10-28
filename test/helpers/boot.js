@@ -2,27 +2,28 @@
 // Many requests per test file: the per-address limits would answer 429 part-way.
 process.env.DESIGN_RATE_LIMIT_PER_MIN = process.env.DESIGN_RATE_LIMIT_PER_MIN || '100000';
 /**
- * Boots OpenVibe.Design on a temp database with a mock Network and AI, captures log lines, and returns a small
- * HTTP client. Every test file gets its own process, database, Network, AI and app.
+ * Boots OpenVibe.Design on a temp database with mock Network and Bench, captures log lines, and returns a small
+ * HTTP client. Every test file gets its own process, database, Network, Bench and app.
  *
  *   const t = await boot();
  *   t.get(path, { as: user, json, headers, method, origin })
  *   t.signIn(user) → cookie header value (design_at = a Network user token, as after /auth/callback)
- *   await t.tick() → drive the Arena job loop once
+ *   await t.tick() → drive the fake Bench generation loop once
  *   t.logs(), t.dbDump()
  */
 const http = require('http');
 const { startNetwork } = require('./network');
-const { startAi } = require('./ai');
+const { startBench } = require('./bench');
 
 async function boot(opts = {}) {
     const network = await startNetwork(opts.network || {});
-    const ai = opts.ai || await startAi(opts.aiOptions || {});
+    const bench = opts.bench || await startBench({ network });
     const env = {
         NODE_ENV: 'test', PORT: '0', BASE_URL: 'https://openvibe.design', TRUST_PROXY: '1',
         OV_NETWORK_URL: network.url, OV_NETWORK_INTERNAL_URL: network.url, OV_NETWORK_ISSUER: network.url,
         OV_OAUTH_CLIENT_ID: 'design', OV_OAUTH_CLIENT_SECRET: 'design-secret', COOKIE_SECURE: 'false',
-        OV_AI_INTERNAL_URL: ai.url,
+        OV_BENCH_INTERNAL_URL: bench.url,
+        OV_BENCH_URL: bench.url,
         DESIGN_RATE_LIMIT_PER_MIN: '100000',
         DESIGN_DRILL: '1',
         DESIGN_AI_POLL_MS: '10',
@@ -46,7 +47,7 @@ async function boot(opts = {}) {
     const config = configLib.load(env);
     const testdb = opts.store ? null : await require('./db').testDb({ store: opts.testStore });
     const store = opts.store || createStore(testdb.db, { now: opts.now });
-    const built = await createApp({ config, store, arenaAi: opts.arenaAi, log, now: opts.now, accountSend: opts.accountSend, random: opts.random });
+    const built = await createApp({ config, store, log, now: opts.now, accountSend: opts.accountSend, random: opts.random });
     await built.ctx.keys.ensure();
     const server = await new Promise((resolve) => { const s = http.createServer(built.app); s.listen(0, '127.0.0.1', () => resolve(s)); });
     const base = `http://127.0.0.1:${server.address().port}`;
@@ -80,8 +81,8 @@ async function boot(opts = {}) {
     }
 
     return {
-        base, network, ai, config, ctx: built.ctx, store: built.ctx.s, get, signIn, dbDump,
-        tick: () => built.ctx.jobs.tick(),
+        base, network, bench, config, ctx: built.ctx, store: built.ctx.s, get, signIn, dbDump,
+        tick: () => bench.tick(),
         logs: () => logLines.join('\n'),
         async close() {
             built.ctx.jobs.stop();
@@ -89,7 +90,7 @@ async function boot(opts = {}) {
             built.ctx.keys.client.stop();
             if (testdb) await testdb.close();
             await network.close();
-            if (!opts.ai) await ai.close();
+            if (!opts.bench) await bench.close();
         },
     };
 }
