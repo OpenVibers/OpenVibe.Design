@@ -1,0 +1,50 @@
+{
+  "repository": "OpenVibers/OpenVibe.Design",
+  "version": "0.1.0",
+  "stage": "v1",
+  "code": true,
+  "wave": "W20",
+  "plan": "OpenVibe.Design: the Design room's theme studio. Browse OpenVibe's themes, try them on previews, edit one with contrast checks, use it, submit it to the gallery, and roll back to any earlier setting. Theme selection stays in OpenVibe.Network; this service signs the person in and proxies their calls.",
+  "runtime": "node 22, express 4, openvibe-shared/shell; stateless (no database, no Valkey, no Events)",
+  "port": "5090",
+  "domain": "openvibe.design",
+  "contracts": "openvibe-contracts v0.227.0",
+  "sdk": "openvibe-sdk v0.70.0",
+  "shared": "openvibe-shared v4.29.2",
+  "packages": [
+    "openvibe-contracts v0.227.0",
+    "openvibe-sdk v0.70.0",
+    "openvibe-shared v4.29.2"
+  ],
+  "summary": "The service skeleton for openvibe.design: Network sign-in as OAuth client `design` (PKCE S256, httpOnly design_at/design_rt cookies) and a theme API proxy to OpenVibe.Network's /api/themes. The proxy serves the public catalogue (cached 5 minutes), one theme, the person's active theme and custom variables, saving a theme with source 'studio', its history and a restore by id, and a submission to the gallery. Writes need this site's own Origin; Network 4xx answers pass through and a Network failure is 502. The studio is designed: a gallery, previews on a Live channel, a Chat room and a shop's grid (with colour-vision views), a six-colour editor that derives the full token set, WCAG checks that gate Use, sharing to the gallery, and History with Restore.",
+  "works": [
+    "Sign-in with OpenVibe.Network: OAuth 2 authorization code, PKCE S256, state check, server-side exchange, httpOnly design_at/design_rt cookies, sanitizeNext (own origins only, no control characters or backslashes)",
+    "The theme API proxy: GET /api/themes (5-minute in-memory cache), GET /api/themes/:idOrSlug, GET/PUT /api/me/theme, GET /api/me/theme/history, POST /api/me/theme/history/:id/restore, POST /api/themes/submit",
+    "Same-origin CSRF on every proxied write (403 design.cross_site), 401 problem when signed out, Network 4xx pass-through, 502 on a Network failure, private, no-store on /api/me/*",
+    "Server-rendered pages: /, /studio (the shell for public/js/studio.js), /t/:slug, /developers and a 404",
+    "Crawl artifacts (robots.txt, sitemap.xml with the public themes, llms.txt), /api/health, /api/ready (degraded when Network does not answer), /release.json, /release-metrics, /shared/*",
+    "Helmet with the network's CSP, per-IP 120/min on /api and /auth, content-hashed /css and /js, graceful stop",
+    "Deploy files: openvibe-design.service, nginx vhost for openvibe.design on 127.0.0.1:5090",
+    "Tests: sanitizeNext, the login redirect and callback, /auth/me, the proxy (cache, 401, CSRF, pass-through, down), the pages and the crawl artifacts, health and readiness"
+  ],
+  "notYet": [
+    "The pages' design and public/js/studio.js: the main session writes them; today the views are plain placeholders and design.css and studio.js are one-comment files",
+    "A Design service manifest and capabilities in OpenVibe.Contracts: this service has no capability of its own and no other service calls it",
+    "Deployment: the deploy files are written, but the service is not deployed yet"
+  ],
+  "capabilitiesRegistered": false,
+  "serviceManifestRegistered": false,
+  "deployed": false,
+  "placeholderInSites": false,
+  "features": [
+    "Network sign-in (PKCE)",
+    "theme API proxy",
+    "theme history and restore",
+    "theme submission",
+    "server-rendered pages",
+    "crawl artifacts",
+    "limits and readiness",
+    "deploy files"
+  ],
+  "updated": "2026-10-28"
+}
