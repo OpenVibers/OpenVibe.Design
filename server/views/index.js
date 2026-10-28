@@ -161,6 +161,8 @@ const ARENA_CATEGORY = {
     game_ui: 'Game UI',
     logo: 'Logo',
     slides: 'Slides',
+    'design.page': 'Design page arena',
+    'design.component': 'Design component arena',
 };
 
 const arenaCost = (v) => `$${Number(v || 0).toFixed(4)}`;
@@ -189,24 +191,41 @@ function arenaViewSwitch() {
 <input type="radio" id="ar-view-phone" name="ar_view" value="phone" form="ar-view-none"><label for="ar-view-phone">Phone</label></div>`;
 }
 
-function arenaLeaderboard(category, rows) {
-    const body = rows.length ? rows.map((r, i) => `<tr class="ar-lb-row" data-model="${esc(r.model)}">
+function arenaLeaderboard(category, rows, { type = 'elo' } = {}) {
+    if (type === 'cost') {
+        const body = rows.length ? rows.map((r, i) => `<tr class="ar-lb-row" data-model="${esc(r.model)}">
 <td class="ar-lb-rank">${i + 1}</td>
 <td class="ar-lb-model">${esc(r.model)}</td>
-<td class="ar-lb-elo">${Number(r.elo).toFixed(0)}</td>
+<td class="ar-lb-entries">${r.entries}</td>
+<td class="ar-lb-usable">${r.usable}</td>
+<td class="ar-lb-total-cost">${arenaCost(r.total_cost_usd)}</td>
+<td class="ar-lb-solved">${r.solved}</td>
+<td class="ar-lb-cost-per-solved">${r.cost_per_solved == null ? '—' : arenaCost(r.cost_per_solved)}</td>
+<td class="ar-lb-cost">${r.median_cost_usd == null ? '—' : arenaCost(r.median_cost_usd)}</td>
+<td class="ar-lb-ms">${r.median_ms == null ? '—' : arenaMs(r.median_ms)}</td></tr>`).join('') : '<tr class="ar-lb-empty"><td colspan="9">No entries yet. Start a round to generate some.</td></tr>';
+        return `<section class="ar-lb ar-lb--cost" id="ar-lb-cost-${esc(category)}" aria-labelledby="ar-lb-cost-h-${esc(category)}">
+<div class="ar-lb-head"><h2 id="ar-lb-cost-h-${esc(category)}">${esc(ARENA_CATEGORY[category] || category)} · Cost</h2></div>
+<table class="ar-table"><thead><tr><th scope="col">#</th><th scope="col">Model</th><th scope="col">Entries</th><th scope="col">Usable</th><th scope="col">Total cost</th><th scope="col">Solved</th><th scope="col">Cost per solved</th><th scope="col">Median cost</th><th scope="col">Median time</th></tr></thead>
+<tbody>${body}</tbody></table></section>`;
+    }
+    const body = rows.length ? rows.map((r, i) => `<tr class="ar-lb-row" data-model="${esc(r.model)}">
+<td class="ar-lb-rank">${i + 1}</td>
+<td class="ar-lb-model">${esc(r.model)}${r.provisional ? ' <span class="ar-provisional" title="Fewer than 10 games">provisional</span>' : ''}</td>
+<td class="ar-lb-elo">${Number(r.elo).toFixed(0)}${r.ci_lower != null && r.ci_upper != null ? ` <span class="ar-ci">(${Number(r.ci_lower).toFixed(0)}–${Number(r.ci_upper).toFixed(0)})</span>` : ''}</td>
 <td class="ar-lb-games">${r.games}</td>
 <td class="ar-lb-winrate">${arenaPct(r.win_rate)}</td>
 <td class="ar-lb-cost">${r.median_cost_usd == null ? '—' : arenaCost(r.median_cost_usd)}</td>
 <td class="ar-lb-ms">${r.median_ms == null ? '—' : arenaMs(r.median_ms)}</td></tr>`).join('') : '<tr class="ar-lb-empty"><td colspan="7">No votes yet. Be the first to judge this category.</td></tr>';
     return `<section class="ar-lb" id="ar-lb-${esc(category)}" aria-labelledby="ar-lb-h-${esc(category)}">
-<div class="ar-lb-head"><h2 id="ar-lb-h-${esc(category)}">${esc(ARENA_CATEGORY[category] || category)}</h2><a class="ar-more" href="/arena/vote">Vote on this category</a></div>
+<div class="ar-lb-head"><h2 id="ar-lb-h-${esc(category)}">${esc(ARENA_CATEGORY[category] || category)}</h2><a class="ar-more" href="/arena/vote${category === 'logo' ? '?category=logo' : ''}">Vote on this category</a></div>
 <table class="ar-table"><thead><tr><th scope="col">#</th><th scope="col">Model</th><th scope="col">Elo</th><th scope="col">Games</th><th scope="col">Win rate</th><th scope="col">Median cost</th><th scope="col">Median time</th></tr></thead>
 <tbody>${body}</tbody></table></section>`;
 }
 
-function arenaHome({ categories = [], me = {}, limits = null } = {}) {
+function arenaHome({ categories = [], costCategories = [], me = {}, limits = null } = {}) {
     const signedIn = Boolean(me.signedIn);
     const boards = categories.map((c) => arenaLeaderboard(c.category, c.leaderboard || [])).join('');
+    const costBoards = costCategories.map((c) => arenaLeaderboard(c.category, c.leaderboard || [], { type: 'cost' })).join('');
     const rows = categories.flatMap((c) => c.leaderboard || []);
     const body = `<div class="ar-page" id="ar-home">
 <header class="ar-hero"><p class="ar-kicker">Design Arena</p><h1>Which model designs it best?</h1>
@@ -217,7 +236,9 @@ function arenaHome({ categories = [], me = {}, limits = null } = {}) {
         : 'Sign in to start a round or vote. The leaderboard and the dataset are open to everyone.'}</p></header>
 <section class="ar-boards" id="ar-leaderboard" aria-labelledby="ar-boards-h"><div class="ar-lb-head"><h2 id="ar-boards-h">The leaderboard</h2><span class="ar-fine">${rows.length} model${rows.length === 1 ? '' : 's'} ranked · K = 32</span></div>
 ${boards || '<p class="ar-empty">No rounds have been judged yet. Start the first one.</p>'}
-<p class="ar-fine">A win rate counts a tie as half a win. <code>both_bad</code> is a game for neither model. The cost and time are the median over the outputs in this category.</p></section>
+<p class="ar-fine">A win rate counts a tie as half a win. <code>both_bad</code> is a game for neither model. The cost and time are the median over the outputs. Ranges are 95% confidence intervals; <span class="ar-provisional">provisional</span> means fewer than 10 games.</p></section>
+<section class="ar-boards ar-boards--cost" id="ar-cost" aria-labelledby="ar-cost-h"><div class="ar-lb-head"><h2 id="ar-cost-h">Cost view</h2><span class="ar-fine">Per model across all entries</span></div>
+${costBoards || '<p class="ar-empty">No entries yet.</p>'}</section>
 <section class="ar-open" id="ar-open"><h2>Everything is open</h2><p class="ar-lede">The prompts, every generated page and every vote are downloadable. No voter is named.</p>
 <p><a class="ovk-btn ovk-btn--quiet" href="/api/v1/arena/dataset.jsonl">Download dataset.jsonl</a></p></section>
 </div>`;

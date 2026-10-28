@@ -17,7 +17,7 @@ Network's theme API.
 
 - **Identity:** service id `design`, name OpenVibe.Design, port 5090, host 127.0.0.1. It stores no accounts and
   no tokens: the person's Network session lives in httpOnly cookies and their theme lives in OpenVibe.Network. The
-  Arena's rounds, outputs, votes and Elo ratings live in this service's PostgreSQL database (PGlite in development).
+  Arena rounds, entries, judgements and ratings live in OpenVibe.Bench. The legacy `arena_*` tables remain for historical account events and migration.
 - **Sign-in:** an OAuth 2 client of OpenVibe.Network (`design`), authorization code with PKCE S256, a state check
   and a server-side code exchange.
 - **The theme API proxy:** every theme read and write goes to OpenVibe.Network's `/api/themes`, with the person's
@@ -38,13 +38,10 @@ Network's theme API.
 
 ## The Design Arena
 
-- **A round:** a signed-in person writes one prompt in one of six categories (landing, dashboard, mobile app, game
-  UI, logo, slides). It is queued; the job loop reads the offers on OpenVibe.AI's `generate` routing and pins three
-  distinct ones (`route: { provider, model }`), and each output stores the HTML (sanitized), the provider and model AI
-  reports, its cost, its measured time and its tokens. When AI offers fewer than three, the remaining slots go to its
-  pool and the round says so (`pool_fallback: true`).
-- **Budgets:** `DESIGN_ARENA_PER_DAY` (default 3) rounds per person per UTC day and `DESIGN_ARENA_DAILY` (default 20)
-  for the whole site. A refusal says which budget was reached and when to come back.
+- **A round:** a signed-in person writes one prompt in one of six categories. Design creates a public Bench task of
+  kind `design.page`, or `design.component` for logo, then creates a round. Bench queues and generates three entries
+  through OpenVibe.AI, including their HTML, provider, model, cost, time and tokens.
+- **Budgets:** Bench enforces its per-person and site daily round limits.
 - **Safety:** the model's page is text until it is rendered, and then only inside `<iframe sandbox srcdoc>` with no
   `allow-scripts` and no `allow-same-origin`. A CSP meta in the srcdoc blocks every network fetch
   (`default-src 'none'; style-src 'unsafe-inline'; img-src data:`). Scripts, `on*` handlers and `javascript:` URLs
@@ -52,13 +49,15 @@ Network's theme API.
 - **Voting:** `/arena/vote` serves two successful outputs in random order with the model names hidden. One vote per
   person per round; the round's creator cannot vote. A vote reveals both models and updates the category's Elo
   ratings (K = 32, a tie is 0.5, `both_bad` is a game for neither).
-- **Leaderboard:** per category: model, Elo, games, wins, losses, ties, win rate, median cost and median time.
-- **Open dataset:** `GET /api/v1/arena/dataset.jsonl` is one JSON object per round with its prompt, every output
-  (metadata and HTML) and every vote without a voter id.
-- **AI access:** Design is a first-party service and calls AI with a client-credentials token from Network:
-  audience `openvibe.ai`, scope `ai.run.create` (and the `ai.generate` namespace in the grant). It pins one of that
-  routing's listed offers per slot; AI refuses anything it does not offer in words, and a pin never bypasses its
-  quotas or budgets. Generation is off under `DESIGN_DRILL=1`; the job loop starts with the process otherwise.
+- **Leaderboard:** Bench Elo boards for both kinds, including confidence intervals and provisional status, and
+  Bench Cost boards with entries, usable entries, total cost and cost per solved entry.
+- **Open dataset:** `GET /api/v1/arena/dataset.jsonl` redirects to Bench's `design.page` JSONL dataset.
+- **Bench access:** Design uses a client-credentials token (audience `openvibe.bench`) to create tasks and read
+  boards. It sends the creator's Network token to create each round so Bench records ownership and enforces the
+  personal budget and creator vote rule. Blind pairs and votes also use the person's token.
+- **Legacy import:** `scripts/arena-to-bench.js` previews a migration by default. `--apply` copies old rounds and
+  outputs and records votes as anonymous `automatic_grader` judgements. Bench's Elo board does not count these
+  historical judgements. The importer needs `bench.entry.create` and is subject to Bench's round limits.
 
 ## Pages
 
@@ -96,11 +95,11 @@ a Bearer write is not cookie-authenticated and is unaffected.
 | `POST /api/me/theme/history/:id/restore` | cookie + same-origin | Network's restore; `id` must be a positive integer, else 400 |
 | `POST /api/themes/submit` | cookie + same-origin | Network `POST /api/themes` with `{ name, slug, description, mode, variables, tags }` |
 | `POST /api/v1/arena/rounds` | cookie + same-origin | queue a round `{ category, prompt }` (subject to the two daily budgets) |
-| `GET /api/v1/arena/rounds/:id` | none | one round with its outputs, cost and time |
-| `GET /api/v1/arena/vote` | cookie | the next blind pair for this person (models hidden) |
+| `GET /api/v1/arena/rounds/:id` | none | one round; entries are blind until Bench reveals them to this viewer |
+| `GET /api/v1/arena/vote[?category=logo]` | cookie | the next blind pair for this person (models hidden) |
 | `POST /api/v1/arena/vote` | cookie + same-origin | `{ round_id, left_output, right_output, winner }`; reveals both models and updates Elo |
-| `GET /api/v1/arena/leaderboard?category=…` | none | Elo, games, win rate, median cost and median time |
-| `GET /api/v1/arena/dataset.jsonl` | none | prompts, outputs (HTML included) and votes without voters |
+| `GET /api/v1/arena/leaderboard?category=…&type=elo\|cost` | none | Bench Elo or Cost board for the category's kind |
+| `GET /api/v1/arena/dataset.jsonl` | none | 302 to Bench's `design.page` JSONL dataset |
 
 - A Network **4xx** answer passes through with its status and body; a Network failure (no answer, timeout, 5xx)
   is a `502 network.unavailable` problem.
@@ -145,9 +144,8 @@ npm run dev            # http://localhost:5090
 OV_ALLOW_SUITE=1 npm test
 ```
 
-`npm test` runs every `test/*.test.js` in its own process with an in-process OpenVibe.Network stand-in
-(`test/helpers/network.js`): a real RS256 key pair, the JWKS, the OAuth token endpoint, the theme catalogue and
-the person's theme routes. Nothing calls the real internet. `OV_ALLOW_SUITE=1` is the suite opt-in the shared
+`npm test` runs every `test/*.test.js` in its own process with in-process OpenVibe.Network and OpenVibe.Bench
+stand-ins (`test/helpers/network.js`, `test/helpers/bench.js`). Nothing calls the real internet. `OV_ALLOW_SUITE=1` is the suite opt-in the shared
 test runner expects.
 
 ## Deploy (for the lead)

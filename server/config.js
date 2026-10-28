@@ -64,6 +64,15 @@ function load(env = process.env) {
             maxHtmlBytes: 200 * 1024,
         },
 
+        // OpenVibe.Bench: Design creates tasks with its service token. A round uses its creator's Network token
+        // so Bench can enforce personal budgets and prevent voting on one's own round.
+        bench: {
+            url: trim(env.OV_BENCH_INTERNAL_URL || 'http://127.0.0.1:5230'),
+            publicUrl: trim(env.OV_BENCH_URL || 'https://bench.openvibe.services'),
+            audience: env.DESIGN_BENCH_AUDIENCE || 'openvibe.bench',
+            scope: env.DESIGN_BENCH_SCOPE || 'bench.task.create bench.round.create bench.round.read bench.judgement.cast bench.board.read',
+        },
+
         // Arena budgets and jobs. Both limits are per UTC day; the drill flag keeps the worker from starting.
         arena: {
             perDay: Math.max(1, int(env.DESIGN_ARENA_PER_DAY, 3)),

@@ -37,6 +37,7 @@ function meOf(viewer) {
 }
 
 const subjectOf = (req) => (req.viewer && req.viewer.kind === 'user' ? req.viewer.subject : null);
+const tokenOf = (req) => (req.viewer && req.viewer.kind === 'user' ? req.viewer.token : null);
 
 function createPageRoutes(ctx) {
     const { config, catalog, arena, log } = ctx;
@@ -83,11 +84,16 @@ function createPageRoutes(ctx) {
     r.get('/arena', async (req, res) => {
         const me = meOf(req.viewer);
         let boards;
-        try { boards = await arena.leaderboard(null); } catch (err) {
+        let costBoards;
+        try {
+            boards = await arena.leaderboard(null);
+            costBoards = await arena.costLeaderboard(null);
+        } catch (err) {
             log.warn('[OpenVibe.Design] leaderboard failed:', (err && err.message) || err);
             boards = categories.map((category) => ({ category, leaderboard: [] }));
+            costBoards = [];
         }
-        return page(res, 200, views.arenaHome({ categories: boards, me, limits: await aria(req.viewer) }), req.viewer);
+        return page(res, 200, views.arenaHome({ categories: boards, costCategories: costBoards, me, limits: await aria(req.viewer) }), req.viewer);
     });
 
     r.get('/arena/new', async (req, res) => {
@@ -100,7 +106,7 @@ function createPageRoutes(ctx) {
         if (!writeAllowed(req, config)) return res.status(403).type('text/plain').send('A round must be started from openvibe.design itself.');
         const b = req.body || {};
         try {
-            const round = await arena.createRound({ category: String(b.category || ''), prompt: b.prompt, subject: subjectOf(req) });
+            const round = await arena.createRound({ category: String(b.category || ''), prompt: b.prompt, subject: subjectOf(req), token: tokenOf(req) });
             return res.redirect(303, `/arena/r/${encodeURIComponent(round.id)}`);
         } catch (err) {
             const notice = err instanceof ArenaError ? err.detail : 'The round could not be started. Try again in a moment.';
@@ -115,7 +121,7 @@ function createPageRoutes(ctx) {
         let pair = null;
         let notice = null;
         if (subjectOf(req)) {
-            try { pair = await arena.nextPair(subjectOf(req), { random: ctx.random || Math.random }); } catch (err) {
+            try { pair = await arena.nextPair(subjectOf(req), { token: tokenOf(req), category: req.query.category === 'logo' ? 'logo' : 'landing', random: ctx.random || Math.random }); } catch (err) {
                 log.warn('[OpenVibe.Design] picking a pair failed:', (err && err.message) || err);
                 notice = 'The next pair could not be read. Try again in a moment.';
             }
@@ -135,6 +141,7 @@ function createPageRoutes(ctx) {
                 leftOutput: String(b.left_output || ''),
                 rightOutput: String(b.right_output || ''),
                 winner: String(b.winner || ''),
+                token: tokenOf(req),
             });
             return page(res, 201, views.arenaVote({ me, result: {
                 vote: { round: out.round.id, winner: out.winner, at: out.at },
@@ -149,7 +156,7 @@ function createPageRoutes(ctx) {
 
     r.get('/arena/r/:id', async (req, res) => {
         let round = null;
-        try { round = await arena.getRound(String(req.params.id || '')); } catch (err) {
+        try { round = await arena.getRound(String(req.params.id || ''), { token: tokenOf(req) }); } catch (err) {
             log.warn('[OpenVibe.Design] round page failed:', (err && err.message) || err);
         }
         if (!round) return page(res, 404, views.notFound(), req.viewer);

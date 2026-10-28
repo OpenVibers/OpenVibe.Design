@@ -27,19 +27,15 @@ const bodyOf = (ev) => JSON.stringify({ event: ev, seq: 1 });
     const ana = t.network.addUser('ana');
     const bo = t.network.addUser('bo');
     try {
-        // A starts a round (then it is given A's fixed account subject), and B votes on it.
-        const aRound = (await t.get('/api/v1/arena/rounds', { as: ana, json: { category: 'landing', prompt: 'A round to export' }, origin: ORIGIN })).json().round;
-        await t.tick();
-        await t.ctx.s.db.exec('UPDATE arena_rounds SET created_by = $1 WHERE id = $2', [A, aRound.id]);
-        const aOutputs = (await t.ctx.arena.getRound(aRound.id)).outputs;
-        const pair = await t.ctx.arena.nextPair(bo.subject);
-        const vote = await t.get('/api/v1/arena/vote', { as: bo, json: { round_id: pair.round.id, left_output: pair.left.id, right_output: pair.right.id, winner: 'left' }, origin: ORIGIN });
-        assert.strictEqual(vote.status, 201, vote.text);
-
-        // B starts a round and A's vote is stored on it directly (A is a fixture account, not a Network token here).
-        const bRound = (await t.get('/api/v1/arena/rounds', { as: bo, json: { category: 'dashboard', prompt: 'B round stays' }, origin: ORIGIN })).json().round;
-        await t.tick();
-        const bOutputs = (await t.ctx.arena.getRound(bRound.id)).outputs;
+        // Legacy Arena tables stay read-only in the active flow. Seed historical data to exercise ADR-033.
+        const aRound = { id: 'arr_legacy_a' };
+        const bRound = { id: 'arr_legacy_b' };
+        const db = t.ctx.s.db;
+        await db.exec("INSERT INTO arena_rounds (id, category, prompt, created_by, status) VALUES ($1, 'landing', 'A round to export', $2, 'ready'), ($3, 'dashboard', 'B round stays', $4, 'ready')", [aRound.id, A, bRound.id, B]);
+        await db.exec("INSERT INTO arena_outputs (id, \"round\", model, provider, html) VALUES ('aro_legacy_a1', $1, 'model-a', 'ai', '<h1>A</h1>'), ('aro_legacy_a2', $1, 'model-b', 'ai', '<h1>B</h1>'), ('aro_legacy_b1', $2, 'model-a', 'ai', '<h1>C</h1>'), ('aro_legacy_b2', $2, 'model-b', 'ai', '<h1>D</h1>')", [aRound.id, bRound.id]);
+        const aOutputs = await db.many('SELECT * FROM arena_outputs WHERE "round" = $1 ORDER BY id', [aRound.id]);
+        const bOutputs = await db.many('SELECT * FROM arena_outputs WHERE "round" = $1 ORDER BY id', [bRound.id]);
+        await db.exec("INSERT INTO arena_votes (\"round\", voter_subject, left_output, right_output, winner) VALUES ($1, $2, $3, $4, 'left')", [aRound.id, bo.subject, aOutputs[0].id, aOutputs[1].id]);
         await t.ctx.s.db.exec(`INSERT INTO arena_votes ("round", voter_subject, left_output, right_output, winner) VALUES ($1, $2, $3, $4, 'tie')`,
             [bRound.id, A, bOutputs[0].id, bOutputs[1].id]);
 
