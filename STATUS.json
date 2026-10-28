@@ -10,11 +10,11 @@
   "domain": "openvibe.design",
   "contracts": "openvibe-contracts v0.227.0",
   "sdk": "openvibe-sdk v0.70.0",
-  "shared": "openvibe-shared v4.31.0",
+  "shared": "openvibe-shared v4.33.0",
   "packages": [
     "openvibe-contracts v0.227.0",
     "openvibe-sdk v0.70.0",
-    "openvibe-shared v4.31.0"
+    "openvibe-shared v4.33.0"
   ],
   "summary": "The service skeleton for openvibe.design: Network sign-in as OAuth client `design` (PKCE S256, httpOnly design_at/design_rt cookies) and a theme API proxy to OpenVibe.Network's /api/themes. The proxy serves the public catalogue (cached 5 minutes), one theme, the person's active theme and custom variables, saving a theme with source 'studio', its history and a restore by id, and a submission to the gallery. Writes need this site's own Origin; Network 4xx answers pass through and a Network failure is 502. The studio is designed: a gallery, previews on a Live channel, a Chat room and a shop's grid (with colour-vision views), a six-colour editor that derives the full token set, WCAG checks that gate Use, sharing to the gallery, and History with Restore.",
   "works": [
