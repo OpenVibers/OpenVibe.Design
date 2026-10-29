@@ -476,3 +476,9 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .lk-site-form label { display: grid; gap: 4px; font-size: .86rem; font-weight: 700; color: var(--ovk-muted); }
 .lk-site-form select { min-height: 44px; max-width: 70vw; padding: 0 10px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-input); color: var(--ovk-text); font: inherit; }
 .lk-site-form .ovk-btn { min-height: 44px; }
+
+/* /look Comfort (2026-10-29): the sample reads like any page, so each switch shows what it changes. */
+.lk-sample { margin: 14px 0 0; padding: 14px 16px; border: 1px solid var(--border, #1f2d47); border-radius: 12px; background: var(--bg-secondary, #101828); }
+.lk-sample p { margin: 0; }
+.lk-sample-muted { color: var(--text-muted, #7386a3); }
+.lk-sample-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px !important; }
