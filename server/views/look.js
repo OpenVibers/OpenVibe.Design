@@ -10,6 +10,9 @@
 const kit = require('openvibe-shared/kit');
 const { layout, esc } = require('../render/layout');
 
+// The sites a person can give a look of their own (service ids, as openvibe-shared/shell writes them on <html>).
+const SITES = [['live', 'OpenVibe.Live'], ['chat', 'OpenVibe.Chat'], ['games', 'OpenVibe.Games'], ['community', 'OpenVibe.Community'], ['media', 'OpenVibe.Media'], ['tools', 'OpenVibe.Tools'], ['bot', 'OpenVibe.Bot'], ['actor', 'OpenVibe.Actor'], ['quest', 'OpenVibe.Quest'], ['rent', 'OpenVibe.Rent'], ['deals', 'OpenVibe.Deals'], ['network', 'OpenVibe.Network'], ['design', 'OpenVibe.Design']];
+
 function lookPage({ themes = [], me = {} } = {}) {
     const list = (themes || []).filter((t) => t && t.id).map((t) => ({ id: t.id, name: t.name, mode: t.mode, dots: ['--bg-primary', '--bg-card', '--accent', '--text-primary'].map((k) => String((t.variables || {})[k] || '')).filter((v) => /^#[0-9a-f]{3,8}$/i.test(v)) }));
     const signedIn = !!me.signedIn;
@@ -25,14 +28,23 @@ function lookPage({ themes = [], me = {} } = {}) {
             + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'Full'], ['reduced', 'Reduced']], value: 'auto' })
             + kit.switchRow({ name: 'seasonal', label: 'The season\'s themes', hint: 'Halloween and winter stand in for the default theme while they last', on: true }),
     });
+    const themeOpts = list.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
+    const sites = signedIn ? kit.section({
+        id: 'lk-sites',
+        title: 'A different look on one site',
+        note: 'Wear another theme on one site only: Games in Neon Tokyo, Live in Daylight. Everywhere else keeps your theme.',
+        body: `<ul class="lk-sites" id="lk-site-list" aria-live="polite"></ul>
+<form class="lk-site-form" id="lk-site-form"><label><span>Site</span><select name="service">${SITES.map(([id, name]) => `<option value="${esc(id)}">${esc(name)}</option>`).join('')}</select></label>
+<label><span>Theme</span><select name="theme_id">${themeOpts}</select></label>${kit.button({ type: 'submit', label: 'Add', small: true })}</form>`,
+    }) : '';
     const body = `<header class="ds-page-h"><p class="ds-kicker">Your look</p><h1>Your look, everywhere</h1>
 <p class="ds-lede">One theme and one set of comfort settings for every OpenVibe site: Live, Chat, Games, the shops and the rest.</p></header>
 <noscript>${kit.notice({ kind: 'info', text: 'These settings need JavaScript in this browser. Your theme still follows your account.' })}</noscript>
-<div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}
+<div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}${sites}
 <p class="lk-status" id="lk-status" role="status"></p>
 ${signedIn ? `<p class="ds-fine">Every change keeps the look it replaced: <a href="/studio#ds-history">your history</a> brings any of the last fifty back.</p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
 <script type="application/json" id="lk-themes">${JSON.stringify(list).replace(/</g, '\\u003c')}</script>`;
     return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'] });
 }
 
-module.exports = { lookPage, esc };
+module.exports = { lookPage, esc, SITES };

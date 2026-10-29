@@ -133,6 +133,25 @@ const { boot, check, done } = require('./helpers/boot');
         assert.match(bad.json().errors.join(' '), /card\.props\.href: expected url/);
     });
 
+    await check('/look: a different look on one site, through the proxy, as the person', async () => {
+        const kim = t.network.addUser('kim-sites');
+        const page = await t.get('/look', { as: kim });
+        assert.match(page.text, /A different look on one site/);
+        assert.match(page.text, /<select name="service"><option value="live">OpenVibe\.Live<\/option>/);
+        assert.doesNotMatch((await t.get('/look')).text, /A different look on one site/, 'signed out: no section');
+        const origin = 'https://openvibe.design';
+        const put = await t.get('/api/me/theme/overrides/games', { as: kim, method: 'PUT', json: { theme_id: 'vibe' }, origin });
+        assert.strictEqual(put.status, 200, put.text);
+        const list = (await t.get('/api/me/theme/overrides', { as: kim })).json();
+        assert.deepStrictEqual(list.overrides, [{ service: 'games', theme_id: 'vibe' }]);
+        assert.strictEqual((await t.get('/api/me/theme/overrides/games', { as: kim, method: 'PUT', json: { theme_id: 'vibe' }, origin: 'https://evil.example' })).status, 403, 'writes come from openvibe.design');
+        assert.strictEqual((await t.get('/api/me/theme/overrides/Games!', { as: kim, method: 'PUT', json: { theme_id: 'vibe' }, origin })).status, 400, 'a bad site id');
+        assert.strictEqual((await t.get('/api/me/theme/overrides')).status, 401, 'signed out');
+        const del = await t.get('/api/me/theme/overrides/games', { as: kim, method: 'DELETE', origin });
+        assert.strictEqual(del.status, 200);
+        assert.deepStrictEqual((await t.get('/api/me/theme/overrides', { as: kim })).json().overrides, []);
+    });
+
     await t.close();
     done();
 })();

@@ -12,6 +12,8 @@
  *   GET  /api/me/theme/history                    Network GET /api/themes/me/history
  *   POST /api/me/theme/history/:id/restore        Network's restore (id a positive integer)
  *   POST /api/themes/submit                       Network POST /api/themes
+ *   GET  /api/me/theme/overrides                  Network GET /api/themes/me/overrides (a theme for one site)
+ *   PUT|DELETE /api/me/theme/overrides/:service   Network's PUT|DELETE /api/themes/me/overrides/:service
  *   GET  /api/v1/tokens                           the export targets and the token names (OpenVibe Tokens)
  *   GET  /api/v1/components                       the components' contract (openvibe-shared/components)
  *   POST /api/v1/components/validate              { doc } → { ok, errors }: a kit document checked against it
@@ -180,6 +182,21 @@ function createApi(ctx) {
             log.warn('[OpenVibe.Design] saving the theme failed:', (err && err.message) || err);
             return failure(res, req, err);
         }
+    });
+
+    // A theme for one site (Network#419): list, set, remove. The service is a short lowercase id.
+    const SITE = /^[a-z][a-z0-9-]{1,31}$/;
+    r.get('/me/theme/overrides', requireToken, async (req, res) => {
+        try { return forward(res, req, await catalog.request('/me/overrides', { token: req.themeToken })); } catch (err) { return failure(res, req, err); }
+    });
+    r.put('/me/theme/overrides/:service', requireOrigin, requireToken, async (req, res) => {
+        if (!SITE.test(req.params.service)) return http.sendProblem(res, 400, 'theme.site', { detail: 'Not a site OpenVibe knows.', ctx: req.ov });
+        const b = req.body && typeof req.body === 'object' ? req.body : {};
+        try { return forward(res, req, await catalog.request(`/me/overrides/${req.params.service}`, { method: 'PUT', token: req.themeToken, body: { theme_id: b.theme_id } })); } catch (err) { return failure(res, req, err); }
+    });
+    r.delete('/me/theme/overrides/:service', requireOrigin, requireToken, async (req, res) => {
+        if (!SITE.test(req.params.service)) return http.sendProblem(res, 400, 'theme.site', { detail: 'Not a site OpenVibe knows.', ctx: req.ov });
+        try { return forward(res, req, await catalog.request(`/me/overrides/${req.params.service}`, { method: 'DELETE', token: req.themeToken })); } catch (err) { return failure(res, req, err); }
     });
 
     r.get('/me/theme/history', requireToken, async (req, res) => {
