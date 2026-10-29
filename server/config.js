@@ -70,7 +70,12 @@ function load(env = process.env) {
             url: trim(env.OV_BENCH_INTERNAL_URL || 'http://127.0.0.1:5230'),
             publicUrl: trim(env.OV_BENCH_URL || 'https://bench.openvibe.services'),
             audience: env.DESIGN_BENCH_AUDIENCE || 'openvibe.bench',
-            scope: env.DESIGN_BENCH_SCOPE || 'bench.task.create bench.round.create bench.round.read bench.judgement.cast bench.board.read',
+            scope: env.DESIGN_BENCH_SCOPE || 'bench.task.create bench.round.create bench.round.read bench.judgement.cast bench.entry.create bench.board.read',
+        },
+
+        // Design Studio part B: a small per-design AI edit budget (click edits and undo do not spend AI).
+        studio: {
+            chatEditsPerDesign: Math.max(1, int(env.DESIGN_CHAT_EDITS_PER_DESIGN, 5)),
         },
 
         // Arena budgets and jobs. Both limits are per UTC day; the drill flag keeps the worker from starting.
