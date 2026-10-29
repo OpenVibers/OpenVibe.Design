@@ -101,6 +101,35 @@ const { boot, check, done } = require('./helpers/boot');
         assert.match((await t.get('/')).text, /href="\/look"/, 'the nav and the home lead to it');
     });
 
+    await check('/components: each component with its parts, tokens, behaviour and code for web, Android and iOS', async () => {
+        const r = await t.get('/components?c=card');
+        assert.strictEqual(r.status, 200);
+        assert.match(r.text, /One design system, drawn natively everywhere/);
+        for (const name of ['Button', 'Card', 'Rail', 'Row', 'List', 'Section', 'Fold', 'Tabs', 'Numbers', 'Notice', 'Empty state']) assert.match(r.text, new RegExp(`<span>${name}</span>`), name);
+        assert.match(r.text, /<article class="ovk-card is-live ovk-card--stream"/, 'the real card, drawn by the kit');
+        assert.match(r.text, /<code>color\.text\.primary<\/code>/, 'its parts name their tokens');
+        assert.match(r.text, /&quot;type&quot;: &quot;card&quot;/, 'the Web tab shows the kit document');
+        const android = await t.get('/components?c=card&p=android');
+        assert.match(android.text, /fun OvCard\(/);
+        assert.match(android.text, /enum class OvKind/);
+        const ios = await t.get('/components?c=rail&p=ios');
+        assert.match(ios.text, /struct OvRail&lt;Content: View&gt;: View/);
+        assert.match(ios.text, /typealias OvTokens = VibeDarkTokens/);
+        assert.match((await t.get('/components?c=nope')).text, /<h2 id="cp-h">Button<\/h2>/, 'an unknown one shows the first');
+    });
+
+    await check('the components API: the contract as JSON, and kit documents checked against it', async () => {
+        const spec = (await t.get('/api/v1/components')).json();
+        assert.strictEqual(spec.components.length, 11);
+        assert.ok(spec.components.find((c) => c.id === 'card').native.swiftui.includes('struct OvCard'));
+        const good = await t.get('/api/v1/components/validate', { json: { doc: { type: 'rail', props: { title: 'Live' }, children: [{ type: 'card', props: { href: '/c/1', title: 'x' } }] } } });
+        assert.strictEqual(good.status, 200);
+        assert.deepStrictEqual(good.json(), { ok: true, errors: [] });
+        const bad = await t.get('/api/v1/components/validate', { json: { doc: { type: 'card', props: { href: 'javascript:alert(1)', title: 'x' } } } });
+        assert.strictEqual(bad.status, 422);
+        assert.match(bad.json().errors.join(' '), /card\.props\.href: expected url/);
+    });
+
     await t.close();
     done();
 })();

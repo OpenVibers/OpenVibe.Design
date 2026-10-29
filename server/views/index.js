@@ -111,7 +111,7 @@ function home({ themes } = {}) {
             lede: 'Every theme is a set of W3C design tokens. The same values reach the web as CSS variables, Android as a Compose colour scheme and iOS as SwiftUI colours, so a native app wears your theme without being a web page in a frame.',
             samples: [
                 { label: 'Android', code: 'MaterialTheme(\n    colorScheme = if (isSystemInDarkTheme()) VibeDarkColorScheme\n                  else VibeLightColorScheme,\n) { App() }' },
-                { label: 'iOS', code: 'Text("Live now")\n    .foregroundStyle(VibeDarkTokens.colorTextPrimary)\n    .padding(VibeDarkTokens.spaceLg)\n    .background(VibeDarkTokens.colorBgRaised,\n                in: .rect(cornerRadius: VibeDarkTokens.radiusMd))' },
+                { label: 'iOS', code: 'Text("Live now")\n    .foregroundStyle(VibeDarkTokens.colorTextPrimary)\n    .padding(OvScale.spaceLg)\n    .background(VibeDarkTokens.colorBgRaised,\n                in: .rect(cornerRadius: OvScale.radiusMd))' },
                 { label: 'Web', code: 'curl "https://openvibe.design/api/v1/tokens/vibe?format=css" > vibe.css\n\n.card { background: var(--ov-color-bg-raised);\n        border-radius: var(--ov-radius-md); }' },
             ],
             links: [{ label: 'Every platform', href: '/tokens' }, { label: 'The API', href: '/developers' }],
@@ -187,6 +187,8 @@ function developers() {
         ['GET /api/v1/designs/:id/versions', 'Every saved version with its model/provider provenance; POST /undo and /redo move the pointer.'],
         ['GET /api/v1/tokens/:theme?format=', 'A theme as code (OpenVibe Tokens): css, tailwind, compose (Android), swiftui (iOS), flutter, figma or json (W3C DTCG). Its other half comes along unless both=0; download=1 names a file.'],
         ['GET /api/v1/tokens', 'The export targets.'],
+        ['GET /api/v1/components', 'The components\' contract: anatomy and tokens, props, states, a11y, layout, and Compose and SwiftUI reference views.'],
+        ['POST /api/v1/components/validate', 'Check a kit document ({ doc }): known components and props, typed values, children, size, links. Answers { ok, errors }.'],
         ['GET /api/themes', 'Every public OpenVibe theme with its colours (Network\'s catalog).'],
         ['GET /api/themes/:id', 'One theme.'],
         ['GET /api/me/theme', 'Your active theme (signed in).'],
