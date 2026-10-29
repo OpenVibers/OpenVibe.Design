@@ -18,6 +18,7 @@ const express = require('express');
 const views = require('../views');
 const tokensView = require('../views/tokens');
 const lookView = require('../views/look');
+const componentsView = require('../views/components');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const { asyncRouter } = require('./router');
@@ -171,6 +172,9 @@ function createPageRoutes(ctx) {
         const list = await safe(() => catalog.list());
         return page(res, 200, lookView.lookPage({ themes: list ? list.themes : [], me: meOf(req.viewer) }), req.viewer);
     });
+
+    // ── Components: the design system's components for web, Android and iOS (views/components.js) ──
+    r.get('/components', (req, res) => page(res, 200, componentsView.componentsPage({ id: String(req.query.c || ''), platform: String(req.query.p || 'web') }), req.viewer));
 
     // ── Tokens: any public theme as code (views/tokens.js) ──
     r.get('/tokens', async (req, res) => {

@@ -13,6 +13,8 @@
  *   POST /api/me/theme/history/:id/restore        Network's restore (id a positive integer)
  *   POST /api/themes/submit                       Network POST /api/themes
  *   GET  /api/v1/tokens                           the export targets and the token names (OpenVibe Tokens)
+ *   GET  /api/v1/components                       the components' contract (openvibe-shared/components)
+ *   POST /api/v1/components/validate              { doc } → { ok, errors }: a kit document checked against it
  *   GET  /api/v1/tokens/:idOrSlug?format=&both=&download=   a theme as code: css, tailwind, compose, swiftui, flutter,
  *                                                 figma or json (DTCG); both=0 leaves out its other half; download=1
  *                                                 names a file
@@ -26,6 +28,7 @@ const { asyncRouter } = require('./router');
 const { ACCESS_COOKIE } = require('../auth/sso');
 const { ownOrigin, bearer, requireSameOrigin } = require('./same-origin');
 const themeTokens = require('../tokens');
+const components = require('openvibe-shared/components');
 
 /** A Network 4xx answer, with its own status and body. A 2xx answer is passed through the same way. */
 function passThrough(res, r) {
@@ -102,6 +105,18 @@ function createApi(ctx) {
         res.type(`${target.type}; charset=utf-8`);
         if (req.query.download === '1') res.set('Content-Disposition', `attachment; filename="${themeTokens.fileName(found.docs[0], target.id)}"`);
         return res.send(body);
+    });
+
+    // ── Components: the contract as JSON, and a kit document checked against it (public; nothing is stored) ──
+    r.get('/v1/components', (req, res) => {
+        res.set('Cache-Control', 'public, max-age=3600');
+        return res.json({ version: components.VERSION, limits: components.LIMITS, preamble: components.PREAMBLE, components: components.SPECS, docs: 'https://openvibe.design/components' });
+    });
+    r.post('/v1/components/validate', (req, res) => {
+        const doc = req.body && req.body.doc;
+        const out = components.validate(doc);
+        res.set('Cache-Control', 'no-store');
+        return res.status(out.ok ? 200 : 422).json(out);
     });
 
     // A submission is a write: same-origin, signed in, and the same body Network expects.
