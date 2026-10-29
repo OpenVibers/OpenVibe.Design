@@ -132,6 +132,20 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
             if (!bearer(req)) return json(401, { error: 'Authentication required' });
             return json(200, { success: true, theme_id: body.theme_id, custom_variables: body.custom_variables || null, source: body.source });
         }
+        // Per-site overrides (Network#419), kept in memory per test run.
+        st.overrides = st.overrides || new Map();
+        if (url.pathname === '/api/themes/me/overrides' && req.method === 'GET') {
+            if (!bearer(req)) return json(401, { error: 'Authentication required' });
+            return json(200, { overrides: [...st.overrides.entries()].map(([service, theme_id]) => ({ service, theme_id })) });
+        }
+        const ov = /^\/api\/themes\/me\/overrides\/([a-z][a-z0-9-]{1,31})$/.exec(url.pathname);
+        if (ov && (req.method === 'PUT' || req.method === 'DELETE')) {
+            if (!bearer(req)) return json(401, { error: 'Authentication required' });
+            if (req.method === 'DELETE') return st.overrides.delete(ov[1]) ? json(200, { success: true, service: ov[1], deleted: true }) : json(404, { error: 'No override' });
+            if (!st.themes.some((t) => t.id === body.theme_id)) return json(404, { error: 'Theme not found' });
+            st.overrides.set(ov[1], body.theme_id);
+            return json(200, { success: true, service: ov[1], theme_id: body.theme_id, override: true });
+        }
         if (url.pathname === '/api/themes/me/history' && req.method === 'GET') {
             if (!bearer(req)) return json(401, { error: 'Authentication required' });
             return json(200, { history: [{ id: 2, theme_id: 'aurora', created_at: '2026-10-28T00:00:00.000Z' }, { id: 1, theme_id: 'vibe', created_at: '2026-10-27T00:00:00.000Z' }] });

@@ -50,6 +50,41 @@
         showSettings();
         say(root.getAttribute('data-signed-in') === '1' ? 'Saved. Every OpenVibe site follows.' : 'Saved on this device.');
     });
+    // ── A different look on one site (signed in): list, add, remove, through /api/me/theme/overrides ──
+    const siteList = $('#lk-site-list');
+    const siteName = (id) => { const o = root.querySelector(`#lk-site-form select[name="service"] option[value="${id}"]`); return o ? o.textContent : id; };
+    const api = (path, opts = {}) => fetch(path, { credentials: 'same-origin', ...opts, headers: { 'content-type': 'application/json', ...(opts.headers || {}) } }).then((r) => (r.ok ? r.json().catch(() => ({})) : Promise.reject(r)));
+    function drawSites(items) {
+        if (!siteList) return;
+        siteList.replaceChildren();
+        if (!items.length) { const li = document.createElement('li'); li.className = 'lk-none'; li.textContent = 'None yet: every site wears your theme.'; siteList.appendChild(li); return; }
+        for (const o of items) {
+            const li = document.createElement('li');
+            const t = byId.get(o.theme_id);
+            const txt = document.createElement('span');
+            const b = document.createElement('b'); b.textContent = siteName(o.service);
+            txt.append(b, ` wears ${(t && t.name) || o.theme_name || o.theme_id}`);
+            const rm = document.createElement('button');
+            rm.type = 'button'; rm.className = 'ovk-btn ovk-btn--quiet ovk-btn--small'; rm.textContent = 'Remove';
+            rm.addEventListener('click', () => api(`/api/me/theme/overrides/${encodeURIComponent(o.service)}`, { method: 'DELETE' }).then(loadSites).then(() => say(`${siteName(o.service)} wears your theme again.`)).catch(() => say('That did not work. Try again.')));
+            li.append(txt, rm);
+            siteList.appendChild(li);
+        }
+    }
+    const loadSites = () => api('/api/me/theme/overrides').then((d) => drawSites((d && d.overrides) || [])).catch(() => drawSites([]));
+    const siteForm = $('#lk-site-form');
+    if (siteForm && siteList) {
+        loadSites();
+        siteForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const service = siteForm.elements.service.value;
+            const themeId = siteForm.elements.theme_id.value;
+            api(`/api/me/theme/overrides/${encodeURIComponent(service)}`, { method: 'PUT', body: JSON.stringify({ theme_id: themeId }) })
+                .then(loadSites).then(() => say(`${siteName(service)} wears ${(byId.get(themeId) || {}).name || themeId} from its next page.`))
+                .catch(() => say('That did not work. Try again.'));
+        });
+    }
+
     // The account's answer, another tab or the device can change the look while the page is open.
     window.addEventListener('storage', () => { showTheme(); showSettings(); });
     new MutationObserver(showTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

@@ -467,3 +467,12 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .ds-code-pick select { min-height: 44px; padding: 0 12px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-input); color: var(--ovk-text); font: inherit; }
 #ds-code-sheet .ovk-snip pre { max-height: 52vh; white-space: pre; overflow: auto; }
 .ds-code-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 10px 0 0; }
+
+/* /look: a different look on one site */
+.lk-sites { list-style: none; margin: 0; padding: 0 14px; }
+.lk-sites li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; border-bottom: 1px solid var(--ovk-line); }
+.lk-sites .lk-none { color: var(--ovk-muted); justify-content: flex-start; }
+.lk-site-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; padding: 12px 14px 14px; }
+.lk-site-form label { display: grid; gap: 4px; font-size: .86rem; font-weight: 700; color: var(--ovk-muted); }
+.lk-site-form select { min-height: 44px; max-width: 70vw; padding: 0 10px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-input); color: var(--ovk-text); font: inherit; }
+.lk-site-form .ovk-btn { min-height: 44px; }
