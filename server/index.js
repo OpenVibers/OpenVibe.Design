@@ -37,6 +37,7 @@ async function start() {
         ctx.keys.ensure().catch(() => {});
         // Generate queued Arena rounds. DESIGN_DRILL=1 keeps the loop off (a test or a drill drives tick()).
         ctx.jobs.start();
+        ctx.designs.resume().catch((err) => console.warn('[OpenVibe.Design] resume designs:', err.message));
     });
     server.keepAliveTimeout = 65_000;
     createLifecycle({ server, ctx });

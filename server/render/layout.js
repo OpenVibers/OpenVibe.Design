@@ -23,6 +23,7 @@ const esc = kit.esc;
 
 const NAV = [
     { label: 'Home', href: '/', icon: 'fa-house' },
+    { label: 'Create', href: '/create', icon: 'fa-palette' },
     { label: 'Studio', href: '/studio', icon: 'fa-palette' },
     { label: 'Arena', href: '/arena', icon: 'fa-crown' },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
