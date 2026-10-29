@@ -119,7 +119,7 @@ function home({ themes } = {}) {
         explore: { title: 'More on Design', items: [
             { title: 'Tokens', text: 'Any theme as CSS, Compose, SwiftUI, Flutter or Figma', href: '/tokens', icon: 'ov:code' },
             { title: 'Create', text: 'Three AI drafts on your theme', href: '/create', icon: 'ov:ai' },
-            { title: 'Your settings', text: 'Text size, motion and display on Network', href: 'https://openvibe.network/my', icon: 'ov:account' },
+            { title: 'Your look', text: 'Light or dark, text size, motion and seasons, for every site', href: '/look', icon: 'ov:account' },
         ] },
         html: strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/studio">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : '',
         faq: { items: [

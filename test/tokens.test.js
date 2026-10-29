@@ -89,6 +89,18 @@ const { boot, check, done } = require('./helpers/boot');
         assert.match((await t.get('/studio')).text, /<div id="ds-try" hidden>[\s\S]*data-try="https:\/\/openvibe\.live\/"/, 'the studio points them at the picked theme');
     });
 
+    await check('/look: the theme worn and the comfort settings, wired to the theme loader', async () => {
+        const r = await t.get('/look');
+        assert.strictEqual(r.status, 200);
+        assert.match(r.text, /Your look, everywhere/);
+        for (const name of ['scheme', 'text', 'motion']) assert.match(r.text, new RegExp(`role="radiogroup"[^>]*>(<label><input type="radio" name="${name}"[^<]*<span>[^<]+</span></label>)+`), name);
+        assert.match(r.text, /name="seasonal"/);
+        assert.match(r.text, /\/js\/look\.js\?v=[0-9a-f]{10}/);
+        assert.match(r.text, /<script type="application\/json" id="lk-themes">\[\{"id":"vibe"/);
+        assert.match(r.text, /Sign in so it follows you/);
+        assert.match((await t.get('/')).text, /href="\/look"/, 'the nav and the home lead to it');
+    });
+
     await t.close();
     done();
 })();

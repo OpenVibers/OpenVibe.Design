@@ -1,0 +1,38 @@
+'use strict';
+/**
+ * /look: your look on every OpenVibe site, in one place. The theme you wear (and the way to change it), Light / Dark /
+ * Auto, text size, motion and the season's themes. The settings belong to theme-loader.js (openvibe-shared), which
+ * applies them at once on this device and saves them to the account when the person is signed in, so every OpenVibe
+ * site follows. public/js/look.js only wires these controls to it. Without JavaScript the page says so.
+ *
+ *   lookPage({ themes, me })
+ */
+const kit = require('openvibe-shared/kit');
+const { layout, esc } = require('../render/layout');
+
+function lookPage({ themes = [], me = {} } = {}) {
+    const list = (themes || []).filter((t) => t && t.id).map((t) => ({ id: t.id, name: t.name, mode: t.mode, dots: ['--bg-primary', '--bg-card', '--accent', '--text-primary'].map((k) => String((t.variables || {})[k] || '')).filter((v) => /^#[0-9a-f]{3,8}$/i.test(v)) }));
+    const signedIn = !!me.signedIn;
+    const current = `<section class="ovk-section lk-current" aria-labelledby="lk-cur-h"><h2 id="lk-cur-h">Your theme</h2>
+<div class="lk-theme"><span class="tk-dots" id="lk-dots" aria-hidden="true"></span><span><b id="lk-name">The OpenVibe default</b><small id="lk-mode"></small></span></div>
+<p class="lk-acts">${kit.button({ href: '/studio', label: 'Change it in the studio', attrs: { id: 'lk-studio' } })} ${kit.button({ href: '/tokens', label: 'As code', kind: 'quiet', attrs: { id: 'lk-code' } })}</p></section>`;
+    const settings = kit.section({
+        id: 'lk-settings',
+        title: 'How every site looks to you',
+        note: signedIn ? 'Each change applies at once and is saved to your account, so every OpenVibe site follows.' : 'Each change applies at once on this device. Sign in and it follows you to every OpenVibe site.',
+        body: kit.seg({ name: 'scheme', label: 'Light or dark', options: [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Match my device']], value: 'auto' })
+            + kit.seg({ name: 'text', label: 'Text size', options: [['100', 'Standard'], ['112', 'Larger'], ['125', 'Largest']], value: '100' })
+            + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'Full'], ['reduced', 'Reduced']], value: 'auto' })
+            + kit.switchRow({ name: 'seasonal', label: 'The season\'s themes', hint: 'Halloween and winter stand in for the default theme while they last', on: true }),
+    });
+    const body = `<header class="ds-page-h"><p class="ds-kicker">Your look</p><h1>Your look, everywhere</h1>
+<p class="ds-lede">One theme and one set of comfort settings for every OpenVibe site: Live, Chat, Games, the shops and the rest.</p></header>
+<noscript>${kit.notice({ kind: 'info', text: 'These settings need JavaScript in this browser. Your theme still follows your account.' })}</noscript>
+<div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}
+<p class="lk-status" id="lk-status" role="status"></p>
+${signedIn ? `<p class="ds-fine">Every change keeps the look it replaced: <a href="/studio#ds-history">your history</a> brings any of the last fifty back.</p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
+<script type="application/json" id="lk-themes">${JSON.stringify(list).replace(/</g, '\\u003c')}</script>`;
+    return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'] });
+}
+
+module.exports = { lookPage, esc };
