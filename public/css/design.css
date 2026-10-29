@@ -296,3 +296,58 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
     .dv-toolbar form, .dv-toolbar label { gap: 4px; font-size: .72rem; }
 }
 @media (prefers-reduced-motion: reduce) { .dv-frame { transition: none; } .dv-skeleton { animation: none; } }
+
+/* Part B: the working frame, the chat composer, versions and the click-edit panel. One toolbar stays the only
+   floating control bar; the composer and the version list are in the page flow, and the element panel opens only
+   after a click inside the working frame. */
+.dv-chat { max-width: 1320px; margin: 0 auto 16px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); }
+.dv-chat > label { display: block; margin-bottom: 6px; font-size: .78rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); }
+.dv-chat-row { display: flex; align-items: center; gap: 8px; }
+.dv-chat-row input { flex: 1; min-width: 0; min-height: 42px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-input, var(--bg-primary)); color: var(--text-primary); font: inherit; font-size: .92rem; }
+.dv-chat-row button, .dv-element button[type=submit] { min-height: 42px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--accent); color: var(--on-accent); font: inherit; font-weight: 800; cursor: pointer; }
+.dv-chat-row button:disabled, .dv-element button[type=submit]:disabled { opacity: .55; cursor: not-allowed; }
+.dv-chat-status, .dv-element .dv-status { min-height: 1.3em; margin: 8px 0 0; font-size: .84rem; color: var(--text-muted); }
+.dv-chat-status.is-error, .dv-element .dv-status.is-error { color: var(--danger-text, #f87171); }
+.dv-chat .dv-fine { margin: 2px 0 0; font-size: .76rem; }
+.dv-card[data-picked="true"] .dv-frame { box-shadow: 0 0 0 2px var(--room-strong), 0 16px 38px #0003; }
+.dv-card-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 4px 10px; }
+.dv-card-actions form { margin: 0; }
+.dv-card-actions .dv-fine { font-size: .74rem; }
+.dv-pick { min-height: 34px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-card); color: var(--text-primary); font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; transition: border-color .15s, background .15s; }
+.dv-pick:hover, .dv-pick:focus-visible { border-color: var(--room-strong); background: color-mix(in srgb, var(--room-strong) 12%, var(--bg-card)); outline: none; }
+.dv-picked { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 800; color: var(--room-strong); }
+.dv-picked::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--room-strong); }
+.dv-versions { max-width: 1320px; margin: 0 auto 92px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); }
+.dv-versions summary { display: flex; align-items: center; gap: 8px; min-height: 34px; cursor: pointer; font-weight: 800; font-size: .92rem; }
+.dv-versions summary span { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--bg-secondary); color: var(--text-muted); font-size: .74rem; font-variant-numeric: tabular-nums; }
+.dv-vcontrols { display: flex; gap: 8px; margin: 8px 0; }
+.dv-vcontrols form { margin: 0; }
+.dv-vcontrols button { min-height: 34px; padding: 4px 14px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-secondary); color: var(--text-primary); font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.dv-vcontrols button:disabled { opacity: .5; cursor: not-allowed; }
+.dv-vlist { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 2px; max-height: 300px; overflow: auto; }
+.dv-vlist li { display: flex; gap: 10px; padding: 8px 8px; border-top: 1px solid var(--border); font-size: .84rem; border-radius: 8px; }
+.dv-vlist li.is-current { background: color-mix(in srgb, var(--room-strong) 12%, transparent); }
+.dv-vseq { min-width: 30px; font-weight: 800; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.dv-vbody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dv-vbody small { color: var(--text-muted); font-size: .76rem; }
+.dv-vbody q, .dv-vbody .dv-fine { color: var(--text-secondary); font-size: .8rem; overflow-wrap: anywhere; }
+.dv-vnow { display: inline-block; padding: 1px 7px; border-radius: 99px; background: var(--bg-secondary); color: var(--room-strong); font-size: .68rem; font-weight: 800; vertical-align: 1px; }
+.dv-element { position: fixed; z-index: 30; right: 24px; bottom: 92px; width: min(340px, calc(100vw - 24px)); max-height: min(68vh, 620px); overflow: auto; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-card); box-shadow: 0 18px 50px #0005; }
+.dv-element[hidden] { display: none; }
+.dv-element-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.dv-element-head b { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--room-strong); }
+.dv-element-head button { min-height: 30px; padding: 2px 10px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); font: inherit; font-size: .78rem; cursor: pointer; }
+.dv-element form { display: grid; gap: 8px; }
+.dv-element label { font-size: .76rem; font-weight: 800; color: var(--text-muted); }
+.dv-element textarea, .dv-element select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-input, var(--bg-primary)); color: var(--text-primary); font: inherit; font-size: .86rem; resize: vertical; }
+.dv-element .dv-fine { margin: 0; font-size: .76rem; }
+.dv-element button[type=submit] { width: 100%; }
+@media (max-width: 700px) {
+    .dv-chat { margin-bottom: 12px; padding: 10px 12px; }
+    .dv-chat-row { flex-wrap: wrap; }
+    .dv-chat-row button { width: 100%; }
+    .dv-card-actions { min-height: 34px; }
+    .dv-versions { margin-bottom: 104px; }
+    .dv-element { left: 12px; right: 12px; bottom: calc(var(--ovnav-appbar-h, 56px) + 76px); width: auto; max-height: 56vh; }
+}
+@media (prefers-reduced-motion: reduce) { .dv-pick { transition: none; } }

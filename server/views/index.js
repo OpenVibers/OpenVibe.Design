@@ -143,8 +143,12 @@ ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
 function developers() {
     const rows = [
         ['POST /api/v1/designs', 'Create three model variants with {prompt, kind, themeId?}; guests receive a secret edit link.'],
-        ['GET /api/v1/designs/:id', 'Poll generation status and read each frame; guests send X-Design-Key.'],
+        ['GET /api/v1/designs/:id', 'Poll generation status, read each frame, the pick and the version list; guests send X-Design-Key.'],
         ['POST /api/v1/designs/:id/theme', 'Change the token theme with {themeId}.'],
+        ['POST /api/v1/designs/:id/pick', 'Choose the working frame with {variantIndex}; the pick is recorded as one Arena vote.'],
+        ['POST /api/v1/designs/:id/edit', 'Chat edit the working frame with {instruction}; one paid AI run and a small per-design budget.'],
+        ['POST /api/v1/designs/:id/click', 'Apply {path, text?, color?, spacing?, align?} to one element; validated paths and theme tokens only.'],
+        ['GET /api/v1/designs/:id/versions', 'Every saved version with its model/provider provenance; POST /undo and /redo move the pointer.'],
         ['GET /api/themes', 'Every public OpenVibe theme with its colours (Network\'s catalog).'],
         ['GET /api/themes/:id', 'One theme.'],
         ['GET /api/me/theme', 'Your active theme (signed in).'],
