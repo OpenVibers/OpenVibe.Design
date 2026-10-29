@@ -8,13 +8,13 @@
   "runtime": "node 22, express 4, openvibe-shared/shell; PostgreSQL (or embedded PGlite in development), OpenVibe.AI generate jobs, OpenVibe.Events account data in, no Valkey",
   "port": "5090",
   "domain": "openvibe.design",
-  "contracts": "openvibe-contracts v0.227.0",
+  "contracts": "openvibe-contracts v0.236.0",
   "sdk": "openvibe-sdk v0.70.0",
-  "shared": "openvibe-shared v4.33.0",
+  "shared": "openvibe-shared v4.36.2",
   "packages": [
-    "openvibe-contracts v0.227.0",
+    "openvibe-contracts v0.236.0",
     "openvibe-sdk v0.70.0",
-    "openvibe-shared v4.33.0"
+    "openvibe-shared v4.36.2"
   ],
   "summary": "The service skeleton for openvibe.design: Network sign-in as OAuth client `design` (PKCE S256, httpOnly design_at/design_rt cookies) and a theme API proxy to OpenVibe.Network's /api/themes. The proxy serves the public catalogue (cached 5 minutes), one theme, the person's active theme and custom variables, saving a theme with source 'studio', its history and a restore by id, and a submission to the gallery. Writes need this site's own Origin; Network 4xx answers pass through and a Network failure is 502. The studio is designed: a gallery, previews on a Live channel, a Chat room and a shop's grid (with colour-vision views), a six-colour editor that derives the full token set, WCAG checks that gate Use, sharing to the gallery, and History with Restore. The Arena queues one prompt for three models through OpenVibe.AI (client credentials, ai.run.create), stores sanitized HTML with reported model/provider/cost/time/tokens, renders it only in sandboxed CSP-capped iframes, draws blind pairs, records one vote per person per round, and keeps Elo ratings per category plus median cost and time. The prompts, outputs and votes are an open JSONL dataset; rounds and votes follow ADR-033 export and deletion.",
   "works": [
@@ -26,7 +26,7 @@
     "Helmet with the network's CSP, per-IP 120/min on /api and /auth, content-hashed /css and /js, graceful stop",
     "Deploy files: openvibe-design.service, nginx vhost for openvibe.design on 127.0.0.1:5090",
     "Tests: sanitizeNext, the login redirect and callback, /auth/me, the proxy (cache, 401, CSRF, pass-through, down), the pages and the crawl artifacts, health and readiness",
-    "The Design Arena API: POST/GET /api/v1/arena/rounds, GET /vote and POST /vote, GET /leaderboard?category=\u2026, GET /dataset.jsonl",
+    "The Design Arena API: POST/GET /api/v1/arena/rounds, GET /vote and POST /vote, GET /leaderboard?category=…, GET /dataset.jsonl",
     "Arena generation: a job loop off under DESIGN_DRILL, AI generate with a client-credentials token (audience openvibe.ai, scope ai.run.create), three slots from AI's chat route, cost/time/tokens stored, per-person and whole-site daily budgets",
     "Output safety: scripts, on* handlers and javascript: URLs stripped, 200 KB cap, storage as text, rendering only in <iframe sandbox srcdoc> with a CSP meta that blocks every network fetch",
     "Blind voting and Elo: two outputs in random order with models hidden, creator cannot vote, one vote per person per round, K=32, tie=0.5, both_bad counts for neither",
@@ -35,7 +35,7 @@
     "Tests: the migration, the generation job, the sanitizer and iframe markup, daily limits, blind pairs, one vote, creator refusal, Elo win/tie/both_bad, leaderboard numbers, dataset privacy and account export/erase",
     "Design Studio pick: one idempotent working frame per design, persisted with its Arena vote (Bench task/round, room-submitted entries, one signed-in person's judgement; a guest pick is saved without a vote)",
     "Design Studio chat edit: POST /api/v1/designs/:id/edit, the picked variant's model via OpenVibe.AI, the previous HTML in context, theme-token re-wrapping, sanitization and the render-time frame CSP; a small per-design paid-AI budget",
-    "Design Studio click edit: a render-time iframe overlay reports a validated body > \u2026:nth-of-type path; the floating panel edits text, a theme-token colour, padding and alignment; paths, tags and CSS values are allowlisted server-side and every accepted change is a version",
+    "Design Studio click edit: a render-time iframe overlay reports a validated body > …:nth-of-type path; the floating panel edits text, a theme-token colour, padding and alignment; paths, tags and CSS values are allowlisted server-side and every accepted change is a version",
     "Design Studio versions: migrations/0003_design_working_versions.sql keeps design_picks and an append-only design_versions table with model/provider provenance; undo/redo move a pointer and an edit after undo appends instead of deleting",
     "Tests: pick/vote idempotence, owner and guest-key authorization, chat edit with a fake AI and budget, click-edit safety, CSP after editing, version history/undo/redo and the no-JS page forms"
   ],
