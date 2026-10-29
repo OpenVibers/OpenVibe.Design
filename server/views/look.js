@@ -1,7 +1,8 @@
 'use strict';
 /**
  * /look: your look on every OpenVibe site, in one place. The theme you wear (and the way to change it), Light / Dark /
- * Auto, text size, motion and the season's themes. The settings belong to theme-loader.js (openvibe-shared), which
+ * Auto, text size, motion, the season's themes and the comfort settings (more contrast, a readable font, colour-blind-safe
+ * colours, true black). The settings belong to theme-loader.js (openvibe-shared), which
  * applies them at once on this device and saves them to the account when the person is signed in, so every OpenVibe
  * site follows. public/js/look.js only wires these controls to it. Without JavaScript the page says so.
  *
@@ -28,6 +29,18 @@ function lookPage({ themes = [], me = {} } = {}) {
             + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'Full'], ['reduced', 'Reduced']], value: 'auto' })
             + kit.switchRow({ name: 'seasonal', label: 'The season\'s themes', hint: 'Halloween and winter stand in for the default theme while they last', on: true }),
     });
+    // Comfort (openvibe-shared 4.45.0): how any theme reads for this person. The sample under the switches is ordinary page
+    // markup, so it changes as each switch does: quieter text, a link in running text, the three status colours.
+    const comfort = kit.section({
+        id: 'lk-comfort',
+        title: 'Comfort',
+        note: 'On top of any theme, on every OpenVibe site.',
+        body: kit.switchRow({ name: 'contrast', label: 'More contrast', hint: 'Quieter text and borders stand out more; links in text are underlined', on: false })
+            + kit.switchRow({ name: 'font', label: 'Readable font', hint: 'A typeface made for legibility, with more space between letters, words and lines', on: false })
+            + kit.switchRow({ name: 'colors', label: 'Colour-blind-safe colours', hint: 'Success, warning and danger in blue, yellow and orange, never red against green', on: false })
+            + kit.switchRow({ name: 'oled', label: 'True black', hint: 'Black backgrounds on dark themes, for OLED screens', on: false })
+            + `<div class="lk-sample" aria-label="A sample of how text and status colours read"><p>Body text, <span class="lk-sample-muted">quieter text</span> and <a href="/look#lk-comfort">a link in a sentence</a>.</p><p class="lk-sample-badges">${kit.badge('Working', 'ok')} ${kit.badge('Ends soon', 'warn')} ${kit.badge('Expired', 'bad')}</p></div>`,
+    });
     const themeOpts = list.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
     const sites = signedIn ? kit.section({
         id: 'lk-sites',
@@ -40,11 +53,11 @@ function lookPage({ themes = [], me = {} } = {}) {
     const body = `<header class="ds-page-h"><p class="ds-kicker">Your look</p><h1>Your look, everywhere</h1>
 <p class="ds-lede">One theme and one set of comfort settings for every OpenVibe site: Live, Chat, Games, the shops and the rest.</p></header>
 <noscript>${kit.notice({ kind: 'info', text: 'These settings need JavaScript in this browser. Your theme still follows your account.' })}</noscript>
-<div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}${sites}
+<div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}${comfort}${sites}
 <p class="lk-status" id="lk-status" role="status"></p>
 ${signedIn ? `<p class="ds-fine">Every change keeps the look it replaced: <a href="/studio#ds-history">your history</a> brings any of the last fifty back.</p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
 <script type="application/json" id="lk-themes">${JSON.stringify(list).replace(/</g, '\\u003c')}</script>`;
-    return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'] });
+    return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion, seasonal themes and comfort settings (contrast, a readable font, colour-blind-safe colours, true black) for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'] });
 }
 
 module.exports = { lookPage, esc, SITES };
