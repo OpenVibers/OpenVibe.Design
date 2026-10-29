@@ -29,6 +29,7 @@ function publicPages(themes = []) {
     const static_ = [
         { path: '/', changefreq: 'weekly', priority: 1.0, title: 'OpenVibe.Design', text: 'Browse OpenVibe\'s themes, try them on a preview, edit one with contrast checks, use it, and roll back to any earlier setting.' },
         { path: '/studio', changefreq: 'weekly', priority: 0.9, title: 'The theme studio', text: 'Try a theme on a preview, edit its variables with contrast checks, use it across the network, submit it to the gallery, and roll back.' },
+        { path: '/look', changefreq: 'monthly', priority: 0.6, title: 'Your look', text: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.' },
         { path: '/tokens', changefreq: 'weekly', priority: 0.8, title: 'Your theme, as code', text: 'Any OpenVibe theme as design tokens: CSS variables, Tailwind, Jetpack Compose, SwiftUI, Flutter, Figma variables and W3C DTCG JSON, light and dark together.' },
         { path: '/arena', changefreq: 'daily', priority: 0.9, title: 'The Design Arena', text: 'One prompt, three AI designers, blind votes and an Elo leaderboard per category, with cost and time per generation.' },
     ];

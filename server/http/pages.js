@@ -17,6 +17,7 @@
 const express = require('express');
 const views = require('../views');
 const tokensView = require('../views/tokens');
+const lookView = require('../views/look');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const { asyncRouter } = require('./router');
@@ -163,6 +164,12 @@ function createPageRoutes(ctx) {
             return res.status(502).type('text/plain').send('That theme could not be read right now. Try again in a moment.');
         }
         return page(res, 200, views.theme({ theme: up.data.theme }), req.viewer);
+    });
+
+    // ── Your look: the theme worn and the comfort settings, for every site (views/look.js) ──
+    r.get('/look', async (req, res) => {
+        const list = await safe(() => catalog.list());
+        return page(res, 200, lookView.lookPage({ themes: list ? list.themes : [], me: meOf(req.viewer) }), req.viewer);
     });
 
     // ── Tokens: any public theme as code (views/tokens.js) ──

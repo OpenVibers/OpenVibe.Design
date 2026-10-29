@@ -418,3 +418,19 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .ds-editor .ds-try { margin-top: 12px; }
 .ds-editor .ds-try a { min-height: 40px; padding: 0 12px; font-size: .86rem; }
 @media (pointer: coarse) { .ds-editor .ds-try a { min-height: 44px; } }
+
+/* ── /look: your look on every site (views/look.js) ── */
+.lk .ovk-section { margin-top: 14px; }
+.lk-theme { display: flex; align-items: center; gap: 12px; padding: 6px 14px 4px; }
+.lk-theme b { display: block; font-size: 1.05rem; }
+.lk-theme small { color: var(--ovk-muted); }
+.lk-theme .tk-dot { width: 22px; height: 22px; }
+.lk-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 10px 14px 14px; }
+.lk-status { min-height: 1.4em; margin: 10px 0 0; color: var(--ovk-ok); font-weight: 700; }
+/* The settings' segmented choices stay on one line on a phone: the label above, the choices below. */
+@media (max-width: 599px) {
+    .lk .ovk-set-row:has(.ovk-seg) { flex-direction: column; align-items: stretch; gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+    .lk .ovk-seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+}
+.lk .ovk-seg label span { display: flex; align-items: center; justify-content: center; min-height: 40px; }
+@media (pointer: coarse) { .lk .ovk-seg label span { min-height: 44px; } }
