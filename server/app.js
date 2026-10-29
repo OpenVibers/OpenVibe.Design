@@ -167,6 +167,21 @@ async function createApp(opts = {}) {
     // ── Crawl artifacts ─────────────────────────────────────
     app.use(createDiscoveryRoutes(ctx));
 
+    // The agent layer (openvibe-shared/agent-layer): /.well-known/agent.json and the Markdown twins of the
+    // public catalogue/studio/theme/developers/Arena pages (server/agent-pages.js). The pages keep their own
+    // routes — a person's drafts, edit key and Arena vote are theirs — so only the manifest and twin requests
+    // reach this mount; the pages advertise the twin themselves (render/layout.js).
+    const agentLayer = express();
+    require('openvibe-shared/agent-layer').mount(agentLayer, {
+        descriptor: require('./agent-descriptor'),
+        render: require('./agent-pages').createAgentPages(ctx).renderPublicPage,
+    });
+    app.use((req, res, next) => {
+        const twin = req.path.endsWith('.md') || (req.query && req.query.format === 'markdown') || String(req.headers.accept || '').includes('text/markdown');
+        if (req.path !== '/.well-known/agent.json' && !twin) return next();
+        return agentLayer(req, res, next);
+    });
+
     // ── Pages ───────────────────────────────────────────────
     app.use(createPageRoutes(ctx));
 
