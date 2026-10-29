@@ -33,6 +33,15 @@ function varsStyle(v) {
     return Object.entries(v || {}).filter(([k, x]) => /^--[a-z][a-z0-9-]{1,40}$/.test(k) && /^(#[0-9a-f]{3,8}|rgba?\([0-9., ]+\)|[0-9., ]+)$/i.test(String(x))).map(([k, x]) => `${k}:${x}`).join(';');
 }
 
+// The sites a theme can be tried on for real (openvibe-shared 4.41.0's ?ov-try=: painted on that site for the tab, nothing
+// saved until Use it there).
+const TRY_SITES = [['Live', 'https://openvibe.live/'], ['Chat', 'https://openvibe.chat/'], ['Games', 'https://openvibe.games/'], ['Community', 'https://openvibe.community/'], ['Network', 'https://openvibe.network/']];
+/** "Try it on" links for a catalog theme (id: its slug); data-try lets the studio point them at the picked theme. */
+function tryOn(id) {
+    const q = id ? `?ov-try=${encodeURIComponent(id)}` : '';
+    return `<p class="ds-try"><span>Try it on the real sites, nothing saved:</span>${TRY_SITES.map(([name, url]) => `<a href="${esc(url + q)}" data-try="${esc(url)}" rel="noopener">${esc(name)}</a>`).join('')}</p>`;
+}
+
 /** A theme as a swatch button (the studio) or link (the home and gallery without JavaScript). */
 function swatch(t, { tag = 'a' } = {}) {
     const v = t.variables || {};
@@ -146,6 +155,7 @@ ${signedIn ? `<p class="ds-sign ds-fine">Signed in as <b>${esc((me.user && (me.u
 <div class="ds-actions"><button type="button" class="ovk-btn ovk-btn--primary" id="ds-use" disabled>${signedIn ? 'Use this theme' : 'Sign in to use it'}</button>
 <button type="button" class="ovk-btn ovk-btn--quiet" id="ds-reset" disabled>Undo my edits</button>
 <a class="ovk-btn ovk-btn--quiet" id="ds-code" href="/tokens" title="This theme for the web, Android, iOS, Flutter and Figma">As code</a></div>
+<div id="ds-try" hidden>${tryOn('')}</div>
 <p class="ds-status" id="ds-status" role="status"></p>
 <details class="ds-submit"><summary>Share it in the gallery</summary><form id="ds-submit-form"><label>Name <input type="text" id="ds-name" maxlength="60" minlength="2" required placeholder="Cozy autumn"></label>
 <label>One line about it <input type="text" id="ds-desc" maxlength="300" placeholder="Warm browns and a pumpkin accent"></label>
@@ -160,7 +170,7 @@ function theme({ theme: t } = {}) {
     const v = (t && t.variables) || {};
     const rows = CORE.map(([k, l]) => (HEX.test(String(v[k] || '')) ? `<div><dt>${esc(l)}</dt><dd><i style="background:${esc(v[k])}"></i><code>${esc(v[k])}</code></dd></div>` : '')).join('');
     const body = `<header class="ds-page-h"><p class="ds-kicker">${t.mode === 'light' ? 'Light theme' : 'Dark theme'}</p><h1>${esc(t.name)}</h1>${t.description ? `<p class="ds-lede">${esc(t.description)}</p>` : ''}
-<p class="ds-act">${kit.button({ href: `/studio?theme=${encodeURIComponent(t.id)}`, label: 'Open in the studio' })} ${kit.button({ href: `/tokens?theme=${encodeURIComponent(t.slug || t.id)}`, label: 'As code', kind: 'quiet' })}</p></header>
+<p class="ds-act">${kit.button({ href: `/studio?theme=${encodeURIComponent(t.id)}`, label: 'Open in the studio' })} ${kit.button({ href: `/tokens?theme=${encodeURIComponent(t.slug || t.id)}`, label: 'As code', kind: 'quiet' })}</p>${tryOn(t.slug || t.id)}</header>
 ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
 <section aria-labelledby="ds-pv-h"><h2 id="ds-pv-h">How it looks</h2><div class="ds-previews ds-previews--static" style="${esc(varsStyle(v))}">${previews()}</div></section>`;
     return layout({ title: `${t.name}: an OpenVibe theme`, description: t.description || `${t.name}, a ${t.mode === 'light' ? 'light' : 'dark'} OpenVibe theme: its colours and how Live, Chat and a shop look in it.`, path: `/t/${encodeURIComponent(t.slug || t.id)}`, body: `<div class="ds-wrap">${body}</div>`, active: '/studio' });

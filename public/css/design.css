@@ -409,3 +409,12 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 }
 .ds .sc-room-devlinks a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 .ds .sc-room-devlinks a:hover { text-decoration: underline; }
+
+/* "Try it on the real sites" (openvibe-shared 4.41.0 ?ov-try=): a row of site pills. */
+.ds-try { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0 0; color: var(--ovk-muted); font-size: .9rem; }
+.ds-try span { flex-basis: 100%; }
+.ds-try a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--ovk-line); background: var(--ovk-panel); color: var(--ovk-text); font-weight: 700; text-decoration: none; }
+.ds-try a:hover, .ds-try a:focus-visible { border-color: var(--room-accent, var(--ovk-accent)); color: var(--room-strong, var(--ovk-accent)); }
+.ds-editor .ds-try { margin-top: 12px; }
+.ds-editor .ds-try a { min-height: 40px; padding: 0 12px; font-size: .86rem; }
+@media (pointer: coarse) { .ds-editor .ds-try a { min-height: 44px; } }

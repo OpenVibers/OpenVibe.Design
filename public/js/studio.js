@@ -108,6 +108,9 @@
         paint();
         const code = $('#ds-code');
         if (code) code.href = `/tokens?theme=${encodeURIComponent(id)}`;
+        // Try it on the real sites: the picked catalog theme (edits are tried here, in the previews).
+        const tryBox = $('#ds-try');
+        if (tryBox) { tryBox.hidden = false; $$('#ds-try a[data-try]').forEach((a) => { a.href = `${a.getAttribute('data-try')}?ov-try=${encodeURIComponent(id)}`; }); }
         if (!quiet) { try { history.replaceState(null, '', `/studio?theme=${encodeURIComponent(id)}`); } catch (e) { /* */ } }
         say('');
     }

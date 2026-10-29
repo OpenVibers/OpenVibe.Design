@@ -78,10 +78,15 @@ const { boot, check, done } = require('./helpers/boot');
         assert.match(page.text, /object EvilImportOsTokens/);
     });
 
-    await check('the studio and a theme page link to the theme as code', async () => {
+    await check('the studio and a theme page link to the theme as code and to trying it on the real sites', async () => {
         assert.match((await t.get('/studio')).text, /id="ds-code" href="\/tokens"/);
         assert.match((await t.get('/t/vibe')).text, /href="\/tokens\?theme=vibe"/);
         assert.match((await t.get('/developers')).text, /GET \/api\/v1\/tokens\/:theme\?format=/);
+        // Try it on the real sites (openvibe-shared 4.41.0 ?ov-try=): the theme page links each site with the theme's name.
+        const page = (await t.get('/t/vibe')).text;
+        assert.match(page, /href="https:\/\/openvibe\.live\/\?ov-try=vibe"/);
+        assert.match(page, /href="https:\/\/openvibe\.chat\/\?ov-try=vibe"/);
+        assert.match((await t.get('/studio')).text, /<div id="ds-try" hidden>[\s\S]*data-try="https:\/\/openvibe\.live\/"/, 'the studio points them at the picked theme');
     });
 
     await t.close();
