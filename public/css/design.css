@@ -461,3 +461,9 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .cp-facts dd { margin: 0; overflow-wrap: anywhere; }
 .cp-facts code { font-size: .84rem; }
 @media (min-width: 900px) { .cp-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+/* The studio's "As code" sheet (your edits, compiled in the page). */
+.ds-code-pick { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-weight: 700; }
+.ds-code-pick select { min-height: 44px; padding: 0 12px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-input); color: var(--ovk-text); font: inherit; }
+#ds-code-sheet .ovk-snip pre { max-height: 52vh; white-space: pre; overflow: auto; }
+.ds-code-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 10px 0 0; }

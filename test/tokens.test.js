@@ -86,6 +86,9 @@ const { boot, check, done } = require('./helpers/boot');
         const page = (await t.get('/t/vibe')).text;
         assert.match(page, /href="https:\/\/openvibe\.live\/\?ov-try=vibe"/);
         assert.match(page, /href="https:\/\/openvibe\.chat\/\?ov-try=vibe"/);
+        const studioPage = (await t.get('/studio')).text;
+        assert.match(studioPage, /id="ds-code" href="\/tokens" data-tokens-src="\/shared\/tokens\.js\?v=[0-9a-f]+"/, 'the studio can compile edits in the page');
+        assert.match(studioPage, /<dialog class="ovk-sheet" id="ds-code-sheet"[\s\S]*<option value="compose">Android \(Jetpack Compose\)<\/option>/);
         assert.match((await t.get('/studio')).text, /<div id="ds-try" hidden>[\s\S]*data-try="https:\/\/openvibe\.live\/"/, 'the studio points them at the picked theme');
     });
 
