@@ -12,6 +12,10 @@
  *   GET  /api/me/theme/history                    Network GET /api/themes/me/history
  *   POST /api/me/theme/history/:id/restore        Network's restore (id a positive integer)
  *   POST /api/themes/submit                       Network POST /api/themes
+ *   GET  /api/v1/tokens                           the export targets and the token names (OpenVibe Tokens)
+ *   GET  /api/v1/tokens/:idOrSlug?format=&both=&download=   a theme as code: css, tailwind, compose, swiftui, flutter,
+ *                                                 figma or json (DTCG); both=0 leaves out its other half; download=1
+ *                                                 names a file
  *
  * Writes need the request's Origin to be this site's own origin (CSRF), otherwise 403 design.cross_site. A Network
  * 4xx answer is passed through with its status and body; a Network failure is 502. Everything under /api/me is
@@ -21,6 +25,7 @@ const { http } = require('openvibe-contracts');
 const { asyncRouter } = require('./router');
 const { ACCESS_COOKIE } = require('../auth/sso');
 const { ownOrigin, bearer, requireSameOrigin } = require('./same-origin');
+const themeTokens = require('../tokens');
 
 /** A Network 4xx answer, with its own status and body. A 2xx answer is passed through the same way. */
 function passThrough(res, r) {
@@ -77,6 +82,26 @@ function createApi(ctx) {
             log.warn('[OpenVibe.Design] theme catalogue failed:', (err && err.message) || err);
             return failure(res, req, err);
         }
+    });
+
+    // ── OpenVibe Tokens: any public theme as code for every platform (public, cacheable) ──
+    r.get('/v1/tokens', (req, res) => {
+        res.set('Cache-Control', 'public, max-age=3600');
+        return res.json({ targets: themeTokens.TARGETS.map(({ id, label, ext, lang }) => ({ id, label, ext, lang })), docs: 'https://openvibe.design/tokens' });
+    });
+    r.get('/v1/tokens/:idOrSlug', async (req, res) => {
+        const format = String(req.query.format || 'json');
+        const target = themeTokens.TARGETS.find((t) => t.id === format);
+        if (!target) return http.sendProblem(res, 400, 'tokens.format', { detail: `format is one of ${themeTokens.TARGETS.map((t) => t.id).join(', ')}.`, ctx: req.ov });
+        let list;
+        try { list = await catalog.list(); } catch (err) { return failure(res, req, err); }
+        const found = themeTokens.resolve(list.themes, req.params.idOrSlug, { both: req.query.both !== '0' });
+        if (!found) return http.sendProblem(res, 404, 'theme.not_found', { detail: 'No public theme by that name.', ctx: req.ov });
+        const body = themeTokens.compile(found.docs.length > 1 ? found.docs : found.docs[0], target.id);
+        res.set('Cache-Control', 'public, max-age=600');
+        res.type(`${target.type}; charset=utf-8`);
+        if (req.query.download === '1') res.set('Content-Disposition', `attachment; filename="${themeTokens.fileName(found.docs[0], target.id)}"`);
+        return res.send(body);
     });
 
     // A submission is a write: same-origin, signed in, and the same body Network expects.

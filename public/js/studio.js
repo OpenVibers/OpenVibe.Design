@@ -106,6 +106,8 @@
         base = t; edited = null;
         $$('.ds-swatch[data-theme-id]').forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-id') === id)));
         paint();
+        const code = $('#ds-code');
+        if (code) code.href = `/tokens?theme=${encodeURIComponent(id)}`;
         if (!quiet) { try { history.replaceState(null, '', `/studio?theme=${encodeURIComponent(id)}`); } catch (e) { /* */ } }
         say('');
     }
