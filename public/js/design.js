@@ -32,6 +32,10 @@
     const themeForm = document.getElementById('dv-theme-form');
     canvas.classList.add('dv-enhanced');
     document.getElementById('dv-theme').addEventListener('change', () => themeForm.requestSubmit());
+    frames().forEach(frame => frame.addEventListener('load', () => {
+        const css = cssByTheme[document.getElementById('dv-theme').value];
+        if (css) frame.contentWindow.postMessage({ type: 'design-theme', css }, '*');
+    }));
     themeForm.addEventListener('submit', async event => {
         event.preventDefault();
         const themeId = document.getElementById('dv-theme').value;

@@ -20,8 +20,10 @@ const themeListener = `<script>(function(){addEventListener('message',function(e
 const framePolicy = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">`;
 
 function frame(html, title) {
-    const document = html.replace(/<head\b[^>]*>/i, `$&${framePolicy}`)
-        .replace(/<\/body>/i, `${themeListener}</body>`);
+    const withPolicy = html.replace(/<head\b[^>]*>/i, `$&${framePolicy}`);
+    const document = /<\/body>/i.test(withPolicy)
+        ? withPolicy.replace(/<\/body>/i, `${themeListener}</body>`)
+        : /<\/html>/i.test(withPolicy) ? withPolicy.replace(/<\/html>/i, `${themeListener}</html>`) : withPolicy + themeListener;
     return `<iframe title="${esc(title)}" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="lazy" srcdoc="${attrEscape(document)}"></iframe>`;
 }
 
