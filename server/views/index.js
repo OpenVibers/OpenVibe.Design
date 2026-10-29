@@ -16,6 +16,8 @@ const kit = require('openvibe-shared/kit');
 const sc = require('openvibe-shared/showcase');
 const rooms = require('openvibe-shared/rooms');
 const { iframeHtml } = require('../arena/sanitize');
+const ovServe = require('openvibe-shared/serve');
+const { TARGETS } = require('openvibe-shared/tokens');
 
 const { layout, esc, NAME } = layoutLib;
 const ROOM = rooms.get('design');
@@ -133,6 +135,15 @@ function home({ themes } = {}) {
     return layout({ title: null, description: 'Your look, everywhere: one theme across every OpenVibe site, the same theme as code for the web, Android and iOS, and AI design on it, ranked honestly by the Design Arena.', path: '/', body: `<div class="ds-wrap">${body}</div>`, active: '/' });
 }
 
+/** The studio's "As code" sheet: the edited theme compiled in the page (public/js/studio.js). */
+function codeSheet() {
+    const options = TARGETS.map((t) => `<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+    return kit.sheet({ id: 'ds-code-sheet', title: 'Your edits, as code', body: `<label class="ds-code-pick">Platform <select id="ds-code-target">${options}</select></label>
+<p class="ds-fine" id="ds-code-note">The theme as you have edited it, light or dark as it is, ready for your own app. Nothing is saved.</p>
+${kit.snippet({ code: '', id: 'ds-code-out', label: 'Copy the code' })}
+<p class="ds-code-acts"><button type="button" class="ovk-btn ovk-btn--quiet ovk-btn--small" id="ds-code-dl">Download</button> <a class="ds-fine" href="/tokens" id="ds-code-all">Every theme as code</a></p>` });
+}
+
 function studio({ themes, me = {} } = {}) {
     const all = listOf(themes).filter((t) => t && t.id);
     const signedIn = !!me.signedIn;
@@ -154,7 +165,8 @@ ${signedIn ? `<p class="ds-sign ds-fine">Signed in as <b>${esc((me.user && (me.u
 <h3>Checks</h3><ul class="ds-checks" id="ds-checks" aria-live="polite"><li class="ds-fine">Pick a theme to check it.</li></ul>
 <div class="ds-actions"><button type="button" class="ovk-btn ovk-btn--primary" id="ds-use" disabled>${signedIn ? 'Use this theme' : 'Sign in to use it'}</button>
 <button type="button" class="ovk-btn ovk-btn--quiet" id="ds-reset" disabled>Undo my edits</button>
-<a class="ovk-btn ovk-btn--quiet" id="ds-code" href="/tokens" title="This theme for the web, Android, iOS, Flutter and Figma">As code</a></div>
+<a class="ovk-btn ovk-btn--quiet" id="ds-code" href="/tokens" data-tokens-src="${esc(ovServe.url('tokens.js'))}" title="This theme, with your edits, for the web, Android, iOS, Flutter and Figma">As code</a></div>
+${codeSheet()}
 <div id="ds-try" hidden>${tryOn('')}</div>
 <p class="ds-status" id="ds-status" role="status"></p>
 <details class="ds-submit"><summary>Share it in the gallery</summary><form id="ds-submit-form"><label>Name <input type="text" id="ds-name" maxlength="60" minlength="2" required placeholder="Cozy autumn"></label>

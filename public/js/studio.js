@@ -128,6 +128,43 @@
     $$('.ds-field input[type=color]').forEach((inp) => inp.addEventListener('input', () => setCore(inp.getAttribute('data-var'), inp.value)));
     $$('.ds-field input[data-hex]').forEach((inp) => inp.addEventListener('change', () => setCore(inp.getAttribute('data-hex'), inp.value)));
     $('#ds-reset').addEventListener('click', () => { edited = null; paint(); say('Back to the theme as it was.'); });
+
+    // ── As code, with the edits: compiled here (openvibe-shared tokens.js, loaded on first use); no edits → /tokens ──
+    const codeLink = $('#ds-code');
+    const sheet = $('#ds-code-sheet');
+    let tokensLib = null;
+    const loadTokens = () => (tokensLib ? Promise.resolve(tokensLib) : new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = codeLink.getAttribute('data-tokens-src');
+        s.onload = () => { tokensLib = window.OpenVibeTokens; if (tokensLib) resolve(tokensLib); else reject(new Error('tokens')); };
+        s.onerror = reject;
+        document.head.appendChild(s);
+    }));
+    let codeFile = { name: 'theme.txt', text: '' };
+    function showCode() {
+        const target = $('#ds-code-target').value;
+        const doc = tokensLib.fromTheme({ name: `${base.name} edited`, slug: `${base.id}-edited`, mode: base.mode, description: `${base.name}, as edited in the OpenVibe studio`, variables: current() });
+        codeFile = { name: tokensLib.fileName(doc, target), text: tokensLib.compile(doc, target) || '' };
+        const out = $('#ds-code-out code') || $('#ds-code-out');
+        out.textContent = codeFile.text;
+        $('#ds-code-dl').textContent = `Download ${codeFile.name}`;
+    }
+    if (codeLink && sheet && typeof sheet.showModal === 'function') {
+        codeLink.addEventListener('click', (e) => {
+            if (!edited || !base) return;   // nothing edited: the theme as it is, on /tokens
+            e.preventDefault();
+            loadTokens().then(() => { showCode(); sheet.showModal(); }).catch(() => { location.href = codeLink.href; });
+        });
+        $('#ds-code-target').addEventListener('change', showCode);
+        $('#ds-code-dl').addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([codeFile.text], { type: 'text/plain' }));
+            a.download = codeFile.name;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        });
+    }
     $('#ds-cvd').addEventListener('change', (e) => {
         const v = e.target.value;
         previews.style.filter = v === 'gray' ? 'grayscale(1)' : v ? `url(#ds-cvd-${v})` : '';
