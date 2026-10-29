@@ -35,11 +35,17 @@ function setRelease(id) { if (id) RELEASE = String(id); }
 function configure({ baseUrl } = {}) { if (baseUrl) BASE = String(baseUrl).replace(/\/+$/, ''); }
 const baseUrl = () => BASE;
 const canonical = (p) => `${BASE}${p || '/'}`;
+// The pages with a Markdown twin (server/agent-pages.js). /create, /d/:id and /arena/r/:id are private or
+// noindex, so they never advertise one, and no other page does either.
+const TWIN_PATHS = /^\/(?:studio|developers|arena(?:\/new|\/vote)?|t\/[^/]+)?$/;
 
 /** The page around a body: the shared shell with the room's stylesheets and behaviour. */
 function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], jsonLd = [] } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
+    const agentHead = canonical && TWIN_PATHS.test(pathNow) && !String(robots).includes('noindex')
+        ? require('openvibe-shared/agent-layer').linkHeaderTags(canonical, `${BASE}/llms.txt`).head
+        : '';
     const navbar = {
         service: 'design',
         apiBase: NETWORK,
@@ -66,7 +72,8 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
         navLinks: NAV,
         navbar,
         footer,
-        head: `${appIcon.headTags({ site: 'design' })}
+        head: `${agentHead}
+${appIcon.headTags({ site: 'design' })}
 <link rel="stylesheet" href="${esc(ovServe.url('kit.css'))}">
 <link rel="stylesheet" href="${esc(ovServe.url('room.css'))}">
 <link rel="stylesheet" href="${esc(ovServe.url('showcase.css'))}">
@@ -91,6 +98,11 @@ function send(res, status, html, { viewer, cacheControl } = {}) {
     const personal = viewer && viewer.kind === 'user';
     res.set('Cache-Control', cacheControl || (personal ? 'private, no-store' : 'public, max-age=120'));
     res.set('Vary', 'Cookie');
+    // A public page with a Markdown twin names it in the Link header, exactly as the agent layer's responses do.
+    const path = String((res.req && res.req.path) || '/');
+    if (status < 400 && TWIN_PATHS.test(path)) {
+        res.set('Link', require('openvibe-shared/agent-layer').linkHeaderTags(`${BASE}${path}`, `${BASE}/llms.txt`).header);
+    }
     res.status(status).type('html').send(html);
 }
 
