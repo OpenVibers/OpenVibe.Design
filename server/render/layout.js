@@ -87,9 +87,9 @@ document.addEventListener('DOMContentLoaded', function () { try { if (window.Ope
  * Send a page; a page rendered for a signed-in person is private and never cached. A public page gets the short
  * public window the whole network uses for HTML.
  */
-function send(res, status, html, { viewer } = {}) {
+function send(res, status, html, { viewer, cacheControl } = {}) {
     const personal = viewer && viewer.kind === 'user';
-    res.set('Cache-Control', personal ? 'private, no-store' : 'public, max-age=120');
+    res.set('Cache-Control', cacheControl || (personal ? 'private, no-store' : 'public, max-age=120'));
     res.set('Vary', 'Cookie');
     res.status(status).type('html').send(html);
 }

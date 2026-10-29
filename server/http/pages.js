@@ -47,7 +47,7 @@ function createPageRoutes(ctx) {
         log.warn('[OpenVibe.Design] page catalogue failed:', (err && err.message) || err);
         return null;
     });
-    const page = (res, status, html, viewer) => send(res, status, html, { viewer });
+    const page = (res, status, html, viewer, options = {}) => send(res, status, html, { viewer, ...options });
     const categories = arena.CATEGORIES;
     const aria = async (viewer) => {
         const subject = viewer && viewer.kind === 'user' ? viewer.subject : null;
@@ -55,10 +55,11 @@ function createPageRoutes(ctx) {
     };
 
     r.get('/create', async (req, res) => {
+        res.set('Cache-Control', 'private, no-store');
         let links = [];
         try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }
         const recent = await ctx.designs.recent(subjectOf(req), links);
-        return page(res, 200, designView.create({ recent }), req.viewer);
+        return page(res, 200, designView.create({ recent }), req.viewer, { cacheControl: 'private, no-store' });
     });
     r.post('/create', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
@@ -78,10 +79,13 @@ function createPageRoutes(ctx) {
         }
     });
     r.get('/d/:id', async (req, res) => {
+        res.set('Cache-Control', 'private, no-store');
+        res.set('Referrer-Policy', 'no-referrer');
         try {
             const data = await ctx.designs.read(req.params.id, subjectOf(req), req.query.key);
             const themes = (await catalog.list()).themes;
-            return page(res, 200, designView.canvas({ data, themes, editKey: req.query.key || '' }), req.viewer);
+            return page(res, 200, designView.canvas({ data, themes, editKey: req.query.key || '' }), req.viewer,
+                { cacheControl: 'private, no-store' });
         } catch (err) {
             return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not read the design.');
         }

@@ -8,8 +8,10 @@ const slots = [{ provider: 'alpha', model: 'one' }, { provider: 'beta', model: '
 const waiting = [];
 const ai = {
     slotPlan: async () => ({ slots }),
-    generate: ({ slot }) => new Promise(resolve => waiting.push(() => resolve({ html, provider: slot.provider,
-        model: slot.model, cost_usd: 0.001, ms: 125 }))),
+    generate: ({ slot, prompt }) => prompt.includes('Signed design')
+        ? Promise.resolve({ html, provider: slot.provider, model: slot.model, cost_usd: 0.001, ms: 125 })
+        : new Promise(resolve => waiting.push(() => resolve({ html, provider: slot.provider,
+            model: slot.model, cost_usd: 0.001, ms: 125 }))),
 };
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -17,6 +19,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     const t = await boot({ ai });
     try {
         let id, key, cookie;
+        const user = t.network.addUser('kim');
         await check('unknown design returns 404', async () => {
             const response = await t.get('/api/v1/designs/unknown');
             assert.equal(response.status, 404);
@@ -62,7 +65,11 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
         await check('canvas is server rendered and themes repaint every frame', async () => {
             const page = await t.get(`/d/${id}?key=${key}`);
             assert.equal(page.status, 200);
+            assert.equal(page.headers.get('cache-control'), 'private, no-store');
+            assert.equal(page.headers.get('referrer-policy'), 'no-referrer');
             assert.equal((page.text.match(/sandbox="allow-scripts"/g) || []).length, 3);
+            assert.equal((page.text.match(/default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'/g) || []).length, 3,
+                'each frame blocks external network requests through its CSP');
             assert.match(page.text, /Desktop · 1280/);
             const changed = await t.get(`/api/v1/designs/${id}/theme`, { json: { themeId: 'paper', editKey: key }, origin: 'https://openvibe.design' });
             assert.equal(changed.status, 200, changed.text);
@@ -70,8 +77,23 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
             assert.equal(progress.design.themeId, 'paper');
             assert.ok(progress.variants.every(v => v.html.includes('#fbfaf7')));
             const recent = await t.get('/create', { cookie });
+            assert.equal(recent.headers.get('cache-control'), 'private, no-store');
             assert.match(recent.text, /A coffee roaster landing page/);
             assert.match(recent.text, /Mobile onboarding/);
+        });
+        await check('guest and signed-in studio HTML stay private without changing public pages', async () => {
+            const guest = await t.get('/create');
+            assert.equal(guest.headers.get('cache-control'), 'private, no-store');
+            const signedCreate = await t.get('/create', { as: user });
+            assert.equal(signedCreate.headers.get('cache-control'), 'private, no-store');
+            const created = await t.get('/api/v1/designs', { as: user,
+                json: { prompt: 'Signed design', kind: 'page' }, origin: 'https://openvibe.design' });
+            assert.equal(created.status, 201, created.text);
+            const signedCanvas = await t.get(`/d/${created.json().design.id}`, { as: user });
+            assert.equal(signedCanvas.status, 200);
+            assert.equal(signedCanvas.headers.get('cache-control'), 'private, no-store');
+            assert.equal(signedCanvas.headers.get('referrer-policy'), 'no-referrer');
+            assert.equal((await t.get('/')).headers.get('cache-control'), 'public, max-age=120');
         });
     } finally { waiting.splice(0).forEach(resolve => resolve()); await t.close(); }
     done();
