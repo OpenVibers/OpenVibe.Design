@@ -36,6 +36,12 @@ Network's theme API.
 - **Use, share, roll back:** *Use* is `PUT /api/me/theme` (source `studio`), *Share it in the gallery* submits the
   theme for review, and *History* lists the person's earlier looks with a one-tap *Restore*.
 
+## Design Studio v1
+
+`/create` takes one prompt and shows three model variants on `/d/:id`. The variants use the Arena's OpenVibe.AI route pins and HTML sanitizer. The canvas supports phone, tablet and desktop widths, and changing the token theme repaints all frames. A signed-in design belongs to its Network subject. A guest receives a secret link, kept among the last three drafts in a private cookie. Guests can create two designs per day per IP; signed-in people can create ten. Generation progress is polled, and completed frames appear individually.
+
+The API is under `/api/v1/designs`; `/developers` lists the routes. `migrations/0002_design_studio.sql` stores each design and its JSON variants in one row, using the service's existing PostgreSQL or development PGlite setup. Production needs the existing `DATABASE_URL` and `DATABASE_DIRECT_URL` roles and working OpenVibe.AI service credentials. Editing, picking, checks, export, publishing and MCP are planned for part B.
+
 ## The Design Arena
 
 - **A round:** a signed-in person writes one prompt in one of six categories. Design creates a public Bench task of

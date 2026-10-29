@@ -33,6 +33,8 @@ const { createSso } = require('./auth/sso');
 const { createThemeCatalog } = require('./themes');
 const { createApi } = require('./http/api');
 const { createArenaApi } = require('./http/arena-api');
+const { createDesignApi } = require('./http/design-api');
+const { createDesigns } = require('./designs');
 const { createPageRoutes } = require('./http/pages');
 const { createDiscoveryRoutes } = require('./http/discovery');
 const { createServiceReadiness } = require('./observability');
@@ -64,13 +66,14 @@ async function createApp(opts = {}) {
     const ai = opts.arenaAi || opts.ai || createArenaAi({ config, fetchImpl, log });
     // The Arena generation job now lives on Bench; Design keeps a no-op loop for test compatibility.
     const jobs = opts.jobs || { tick: async () => null, start: () => null, stop: () => null, get running() { return false; } };
+    const designs = opts.designs || createDesigns({ s, ai, catalog, log, now });
     const accountData = accountDataLib.create({ db: s.db, log });
     const accountSend = opts.accountSend || (config.oauth.clientSecret
         ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl })
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, catalog, arena, bench, ai, jobs, accountData, accountSend, log,
+        config, s, store: s, keys, sso, catalog, arena, bench, ai, jobs, designs, accountData, accountSend, log,
         random: opts.random || Math.random,
     };
 
@@ -152,6 +155,7 @@ async function createApp(opts = {}) {
     app.use('/js', express.static(path.join(PUBLIC_DIR, 'js'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
 
     // ── API: the Arena, then the theme proxy ────────────────
+    app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
     app.use('/api/v1/arena', createArenaApi(ctx));
     app.use('/api', createApi(ctx));

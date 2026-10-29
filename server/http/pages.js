@@ -16,6 +16,7 @@
  */
 const express = require('express');
 const views = require('../views');
+const designView = require('../views/design');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
 const { ArenaError } = require('../arena/store');
@@ -46,12 +47,59 @@ function createPageRoutes(ctx) {
         log.warn('[OpenVibe.Design] page catalogue failed:', (err && err.message) || err);
         return null;
     });
-    const page = (res, status, html, viewer) => send(res, status, html, { viewer });
+    const page = (res, status, html, viewer, options = {}) => send(res, status, html, { viewer, ...options });
     const categories = arena.CATEGORIES;
     const aria = async (viewer) => {
         const subject = viewer && viewer.kind === 'user' ? viewer.subject : null;
         return subject ? await arena.counts(subject).catch(() => null) : null;
     };
+
+    r.get('/create', async (req, res) => {
+        res.set('Cache-Control', 'private, no-store');
+        let links = [];
+        try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }
+        const recent = await ctx.designs.recent(subjectOf(req), links);
+        return page(res, 200, designView.create({ recent }), req.viewer, { cacheControl: 'private, no-store' });
+    });
+    r.post('/create', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try {
+            const out = await ctx.designs.create({ prompt: req.body.prompt, kind: req.body.kind || 'page',
+                owner: subjectOf(req), ip: req.ip });
+            if (out.editKey) {
+                let links = [];
+                try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }
+                links = [{ id: out.design.id, key: out.editKey }, ...links.filter(x => x.id !== out.design.id)].slice(0, 3);
+                res.cookie('design_drafts', JSON.stringify(links), { httpOnly: true, sameSite: 'lax',
+                    secure: config.cookies.secure, maxAge: 30 * 86400000, path: '/' });
+            }
+            return res.redirect(303, out.editUrl || `/d/${out.design.id}`);
+        } catch (err) {
+            return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not create the design.');
+        }
+    });
+    r.get('/d/:id', async (req, res) => {
+        res.set('Cache-Control', 'private, no-store');
+        res.set('Referrer-Policy', 'no-referrer');
+        try {
+            const data = await ctx.designs.read(req.params.id, subjectOf(req), req.query.key);
+            const themes = (await catalog.list()).themes;
+            return page(res, 200, designView.canvas({ data, themes, editKey: req.query.key || '' }), req.viewer,
+                { cacheControl: 'private, no-store' });
+        } catch (err) {
+            return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not read the design.');
+        }
+    });
+    r.post('/d/:id/theme', express.urlencoded({ extended: false }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try {
+            const key = req.body.key || '';
+            await ctx.designs.setTheme(req.params.id, req.body.themeId, subjectOf(req), key);
+            return res.redirect(303, `/d/${req.params.id}${key ? `?key=${encodeURIComponent(key)}` : ''}`);
+        } catch (err) {
+            return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not change theme.');
+        }
+    });
 
     r.get('/', async (req, res) => {
         const list = await safe(() => catalog.list());
