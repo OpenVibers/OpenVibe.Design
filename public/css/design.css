@@ -351,3 +351,61 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
     .dv-element { left: 12px; right: 12px; bottom: calc(var(--ovnav-appbar-h, 56px) + 76px); width: auto; max-height: 56vh; }
 }
 @media (prefers-reduced-motion: reduce) { .dv-pick { transition: none; } }
+
+/* ── /tokens: a theme as code (views/tokens.js) ── */
+.tk { max-width: 980px; }
+.tk-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 18px 0 12px; }
+.tk-pick-l { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.tk-pick select { min-height: 44px; max-width: 64vw; padding: 0 12px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-input); color: var(--ovk-text); font: inherit; }
+.tk-both { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ovk-muted); }
+.tk-both input { width: 18px; height: 18px; accent-color: var(--room-accent, var(--ovk-accent)); }
+.tk-pick .ovk-btn { min-height: 44px; }
+.tk-halves { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; padding: 0; }
+.tk-half { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
+.tk-half b { display: block; font-size: .95rem; }
+.tk-half small { color: var(--ovk-muted); font-size: .8rem; }
+.tk-dots { display: inline-flex; }
+.tk-dot { display: inline-block; width: 18px; height: 18px; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ovk-text) 18%, transparent); }
+.tk-dots .tk-dot + .tk-dot { margin-left: -5px; }
+.tk-out { margin-top: 14px; }
+.tk-out-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.tk-out-head h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.tk-how { margin: 8px 0 12px; color: var(--ovk-muted); line-height: 1.55; }
+.tk-how code, .tk .ovk-fold-body code { padding: 1px 5px; border-radius: 6px; background: var(--ovk-panel-2); color: var(--ovk-text); font-size: .86em; overflow-wrap: anywhere; }
+.tk .ovk-snip pre { max-height: min(56vh, 520px); }
+.tk .ovk-fold { margin-top: 12px; }
+.tk-table { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.tk-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px 14px; padding: 8px 0; border-bottom: 1px solid var(--ovk-line); }
+.tk-row > code { font-weight: 700; overflow-wrap: anywhere; }
+.tk-vals { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tk-vals code { margin-right: 8px; color: var(--ovk-muted); font-size: .85rem; }
+.tk-row small { color: var(--ovk-muted); }
+@media (min-width: 760px) { .tk-row { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; } }
+/* Exported code keeps its lines: it scrolls sideways inside its box instead of wrapping. */
+.tk .ovk-snip pre { white-space: pre; overflow-x: auto; }
+/* The home's Create scene: the three steps, numbered. */
+.ds-flow { list-style: none; counter-reset: flow; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ds-flow li { counter-increment: flow; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 2px 12px; padding: 14px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
+.ds-flow li::before { content: counter(flow); grid-row: span 2; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--room-accent, var(--ovk-accent)) 18%, transparent); color: var(--room-strong, var(--ovk-accent)); font-weight: 800; }
+.ds-flow b { font-size: 1rem; }
+.ds-flow span { color: var(--ovk-muted); font-size: .92rem; line-height: 1.45; }
+/* The home's Arena scene: two drafts, names hidden. */
+.ds-vs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.ds-vs-card { margin: 0; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
+.ds-vs-bar { height: 10px; width: 60%; border-radius: 6px; background: var(--ovk-panel-2); }
+.ds-vs-hero { height: 54px; border-radius: 10px; background: linear-gradient(135deg, color-mix(in srgb, var(--room-accent, var(--ovk-accent)) 45%, transparent), var(--ovk-panel-2)); }
+.ds-vs-card + .ds-vs-or + .ds-vs-card .ds-vs-hero { background: linear-gradient(135deg, var(--ovk-panel-2), color-mix(in srgb, var(--room-accent, var(--ovk-accent)) 30%, transparent)); }
+.ds-vs-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ds-vs-row i { height: 26px; border-radius: 8px; background: var(--ovk-panel-2); }
+.ds-vs-card figcaption { font-weight: 800; text-align: center; }
+.ds-vs-or { color: var(--ovk-muted); font-weight: 800; text-transform: uppercase; font-size: .78rem; letter-spacing: .08em; }
+.ds-vs-note { margin: 10px 0 0; text-align: center; }
+/* Phones: the home's themes two to a row (the mode word gives way to the dots), the developer links 44 px tall. */
+@media (max-width: 599px) {
+    .ds-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .ds-strip .ds-swatch { grid-template-columns: auto minmax(0, 1fr); }
+    .ds-strip .ds-swatch-mode { display: none; }
+    .ds-strip .ds-swatch-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.ds .sc-room-devlinks a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+.ds .sc-room-devlinks a:hover { text-decoration: underline; }

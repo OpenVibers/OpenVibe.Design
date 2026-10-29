@@ -15,7 +15,8 @@ const { assetVersion } = require('../server/assets');
     await check('the home page lists the catalogue, escaped, and is publicly cacheable', async () => {
         const r = await t.get('/');
         assert.strictEqual(r.status, 200);
-        assert.match(r.text, /Make it yours/);
+        assert.match(r.text, /Your look, everywhere/);
+        assert.match(r.text, /href="\/tokens"/, 'the nav and the home lead to the tokens');
         assert.match(r.text, /<a class="ds-swatch" href="\/t\/aurora">[\s\S]*?<span class="ds-swatch-name">Aurora<\/span>/);
         assert.match(r.text, /<main id="main"/);
         assert.strictEqual(r.headers.get('cache-control'), 'public, max-age=120');

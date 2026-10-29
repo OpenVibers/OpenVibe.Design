@@ -16,6 +16,8 @@
  */
 const express = require('express');
 const views = require('../views');
+const tokensView = require('../views/tokens');
+const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
@@ -161,6 +163,18 @@ function createPageRoutes(ctx) {
             return res.status(502).type('text/plain').send('That theme could not be read right now. Try again in a moment.');
         }
         return page(res, 200, views.theme({ theme: up.data.theme }), req.viewer);
+    });
+
+    // ── Tokens: any public theme as code (views/tokens.js) ──
+    r.get('/tokens', async (req, res) => {
+        const list = await safe(() => catalog.list());
+        const themes = list ? list.themes : [];
+        const want = String(req.query.theme || 'vibe');
+        const flag = [].concat(req.query.both || []);
+        const both = flag.length ? flag.includes('1') : true;
+        const found = themeTokens.resolve(themes, want, { both }) || (req.query.theme ? null : themeTokens.resolve(themes, (themes[0] || {}).slug, { both }));
+        const format = String(req.query.format || 'css');
+        return page(res, found || !req.query.theme ? 200 : 404, tokensView.tokensPage({ themes, found, format, both }), req.viewer);
     });
 
     // ── Arena ───────────────────────────────────────────────

@@ -26,6 +26,7 @@ const NAV = [
     { label: 'Create', href: '/create', icon: 'fa-palette' },
     { label: 'Studio', href: '/studio', icon: 'fa-palette' },
     { label: 'Arena', href: '/arena', icon: 'fa-crown' },
+    { label: 'Tokens', href: '/tokens', icon: 'fa-code' },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
 ];
 
