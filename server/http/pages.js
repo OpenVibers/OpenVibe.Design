@@ -100,6 +100,41 @@ function createPageRoutes(ctx) {
             return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not change theme.');
         }
     });
+    const backToCanvas = (req, res, key) => res.redirect(303, `/d/${encodeURIComponent(req.params.id)}${key ? `?key=${encodeURIComponent(key)}` : ''}`);
+    r.post('/d/:id/pick', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const key = req.body.key || '';
+        try {
+            await ctx.designs.pick({ id: req.params.id, variantIndex: req.body.variantIndex, variantId: req.body.variantId,
+                owner: subjectOf(req), key, subject: subjectOf(req), token: tokenOf(req) });
+            return backToCanvas(req, res, key);
+        } catch (err) {
+            return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not choose that frame.');
+        }
+    });
+    r.post('/d/:id/edit', express.urlencoded({ extended: false, limit: '16kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const key = req.body.key || '';
+        try {
+            await ctx.designs.chatEdit({ id: req.params.id, instruction: req.body.instruction,
+                owner: subjectOf(req), key, subject: subjectOf(req) });
+            return backToCanvas(req, res, key);
+        } catch (err) {
+            return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not edit that frame.');
+        }
+    });
+    for (const action of ['undo', 'redo']) {
+        r.post(`/d/:id/${action}`, express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
+            if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+            const key = req.body.key || '';
+            try {
+                await ctx.designs[action](req.params.id, subjectOf(req), key);
+                return backToCanvas(req, res, key);
+            } catch (err) {
+                return res.status(err.status || 500).type('text/plain').send(err.detail || `Could not ${action} that edit.`);
+            }
+        });
+    }
 
     r.get('/', async (req, res) => {
         const list = await safe(() => catalog.list());

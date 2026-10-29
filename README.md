@@ -40,7 +40,9 @@ Network's theme API.
 
 `/create` takes one prompt and shows three model variants on `/d/:id`. The variants use the Arena's OpenVibe.AI route pins and HTML sanitizer. The canvas supports phone, tablet and desktop widths, and changing the token theme repaints all frames. A signed-in design belongs to its Network subject. A guest receives a secret link, kept among the last three drafts in a private cookie. Guests can create two designs per day per IP; signed-in people can create ten. Generation progress is polled, and completed frames appear individually.
 
-The API is under `/api/v1/designs`; `/developers` lists the routes. `migrations/0002_design_studio.sql` stores each design and its JSON variants in one row, using the service's existing PostgreSQL or development PGlite setup. Production needs the existing `DATABASE_URL` and `DATABASE_DIRECT_URL` roles and working OpenVibe.AI service credentials. Editing, picking, checks, export, publishing and MCP are planned for part B.
+Pick one frame with **Use this design**: it becomes the working frame, its HTML becomes version 1 and the pick is recorded as one Arena vote through OpenVibe.Bench (a signed-in person votes once; a guest's pick is saved without a vote). Edit it by chat (`POST /api/v1/designs/:id/edit`) or by clicking an element: the iframe reports `body > …:nth-of-type(n)`, and the floating panel changes its text, theme-token colour, padding or alignment. The server validates the path, tag and values, escapes the text, rebuilds only the inline style and saves a new version; the overlay script is injected at render time and is never stored with the model HTML. Versions are append-only in `design_versions`; undo/redo move the pointer (`design_picks.current_seq`), and an edit after undo appends a new version instead of deleting the old ones. Chat edits cost AI money, so each design has a small AI-edit budget (`DESIGN_CHAT_EDITS_PER_DESIGN`, default 5); a failed attempt spends budget but never replaces the last good version.
+
+The API is under `/api/v1/designs`; `/developers` lists the routes. `migrations/0002_design_studio.sql` stores each design and its JSON variants in one row, and `0003_design_working_versions.sql` adds the pick, its Bench vote fields, the AI-edit counter and the version table, using the service's existing PostgreSQL or development PGlite setup. Production needs the existing `DATABASE_URL` and `DATABASE_DIRECT_URL` roles and working OpenVibe.AI and OpenVibe.Bench service credentials (the Bench scope now includes `bench.entry.create` so Design can submit the generated variants to the pick-vote round). Checks, HTML/zip export, preview publishing and MCP remain part C.
 
 ## The Design Arena
 
@@ -100,6 +102,13 @@ a Bearer write is not cookie-authenticated and is unaffected.
 | `GET /api/me/theme/history` | cookie | Network `GET /api/themes/me/history` |
 | `POST /api/me/theme/history/:id/restore` | cookie + same-origin | Network's restore; `id` must be a positive integer, else 400 |
 | `POST /api/themes/submit` | cookie + same-origin | Network `POST /api/themes` with `{ name, slug, description, mode, variables, tags }` |
+| `POST /api/v1/designs` | none/cookie + same-origin | create three variants `{ prompt, kind, themeId? }`; a guest gets a secret edit key |
+| `GET /api/v1/designs/:id` | owner key or cookie | frames, the working frame, the pick and the versions; guest key in `X-Design-Key` or `?key=` |
+| `POST /api/v1/designs/:id/pick` | owner key or cookie + same-origin | `{ variantIndex }`; idempotent, one Arena vote |
+| `POST /api/v1/designs/:id/edit` | owner key or cookie + same-origin | chat edit `{ instruction }`; one AI run from the picked variant's model, small per-design budget |
+| `POST /api/v1/designs/:id/click` | owner key or cookie + same-origin | `{ path, text?, color?, spacing?, align? }`, validated, saves a version |
+| `GET /api/v1/designs/:id/versions` | owner key or cookie | the version list with model/provider provenance |
+| `POST /api/v1/designs/:id/undo`, `/redo` | owner key or cookie + same-origin | move the working-frame pointer; history stays |
 | `POST /api/v1/arena/rounds` | cookie + same-origin | queue a round `{ category, prompt }` (subject to the two daily budgets) |
 | `GET /api/v1/arena/rounds/:id` | none | one round; entries are blind until Bench reveals them to this viewer |
 | `GET /api/v1/arena/vote[?category=logo]` | cookie | the next blind pair for this person (models hidden) |
@@ -140,7 +149,9 @@ The Network signs the access token (RS256); `server/auth/keys.js` fetches and re
 See [.env.example](.env.example). Required in production: `BASE_URL` and `OV_OAUTH_CLIENT_SECRET` (the `design`
 OAuth client on the Network). Optional: `OV_NETWORK_URL` (default `https://openvibe.network`),
 `OV_NETWORK_INTERNAL_URL` (default `http://127.0.0.1:4000`), `OV_NETWORK_ISSUER`, `OV_OAUTH_REDIRECT_URI`,
-`DESIGN_THEME_CACHE_MS`, `DESIGN_UPSTREAM_TIMEOUT_MS`, `DESIGN_RATE_LIMIT_PER_MIN` and `COOKIE_SECURE`.
+`DESIGN_THEME_CACHE_MS`, `DESIGN_UPSTREAM_TIMEOUT_MS`, `DESIGN_RATE_LIMIT_PER_MIN`, `DESIGN_CHAT_EDITS_PER_DESIGN`
+(default 5) and `COOKIE_SECURE`. The Bench scope must include `bench.entry.create` in addition to the Arena
+capabilities, so Design can fill the pick-vote round with the variants it already generated.
 
 ## How to run
 

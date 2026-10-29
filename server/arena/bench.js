@@ -15,6 +15,7 @@ const BENCH_CAPABILITIES = Object.freeze([
     'bench.round.create',
     'bench.round.read',
     'bench.judgement.cast',
+    'bench.entry.create',
     'bench.board.read',
 ].join(' '));
 
@@ -115,6 +116,19 @@ function createBenchClient({ config, fetchImpl = globalThis.fetch, log = console
         return { task, round: { ...out.round, task_class: task.task_class, prompt: task.prompt } };
     }
 
+    /**
+     * A round the room fills with its own entries (Bench's POST /rounds/:id/entries). It is created with the
+     * service token, so the person who later chooses between the room's entries is not the round's creator and
+     * Bench accepts their one vote. The service token needs bench.round.create and bench.entry.create.
+     */
+    async function createRoomRound({ category, prompt, offers = null }) {
+        const task = await createTask({ category, prompt });
+        const body = {};
+        if (offers) body.offers = offers;
+        const out = await request('POST', `/api/v1/tasks/${encodeURIComponent(task.id)}/rounds`, { body });
+        return { task, round: { ...out.round, task_class: task.task_class, prompt: task.prompt } };
+    }
+
     async function getTask(id) {
         const out = await request('GET', `/api/v1/tasks/${encodeURIComponent(id)}`);
         return out.task;
@@ -180,6 +194,7 @@ function createBenchClient({ config, fetchImpl = globalThis.fetch, log = console
         kindForCategory,
         createTask,
         createRound,
+        createRoomRound,
         getRound,
         nextPair,
         castVote,

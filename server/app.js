@@ -66,7 +66,7 @@ async function createApp(opts = {}) {
     const ai = opts.arenaAi || opts.ai || createArenaAi({ config, fetchImpl, log });
     // The Arena generation job now lives on Bench; Design keeps a no-op loop for test compatibility.
     const jobs = opts.jobs || { tick: async () => null, start: () => null, stop: () => null, get running() { return false; } };
-    const designs = opts.designs || createDesigns({ s, ai, catalog, log, now });
+    const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now });
     const accountData = accountDataLib.create({ db: s.db, log });
     const accountSend = opts.accountSend || (config.oauth.clientSecret
         ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl })
