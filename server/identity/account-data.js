@@ -13,6 +13,8 @@ const { createAccountData, TOPICS } = require('openvibe-sdk/account-data');
 const TABLES = [
     { table: 'arena_rounds', subject: 'created_by', file: 'arena_rounds.json', erase: 'delete' },
     { table: 'arena_votes', subject: 'voter_subject', file: 'arena_votes.json', erase: 'delete' },
+    // The designs a signed-in person asked for; a guest's design has no owner and matches nobody. Versions cascade.
+    { table: 'designs', subject: 'owner', file: 'designs.json', order: 'created_at', columns: ['id', 'kind', 'prompt', 'theme_id', 'variants', 'created_at', 'updated_at'] },
 ];
 
 async function extraExport(db, subject) {
