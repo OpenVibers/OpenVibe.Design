@@ -51,6 +51,85 @@
       const nav=node('nav','sample-nav');nav.setAttribute('aria-label','Example page navbar');nav.append(node('strong','','OpenVibe'),node('span','','Patterns'),node('span','','One shared navbar'));widget.append(nav);say('This page itself uses the shared Frame navbar once.');
     } else if (id === 'bottom-tabs') {
       const frame=node('div','bottom-demo');frame.append(node('strong','','Scrollable content'),node('p','','This content reserves space under the fixed phone tabs.'),node('p','','The final row remains visible above the bar.'));const nav=node('nav','bottom-nav');nav.setAttribute('aria-label','Phone tabs');['Home','Runs','Settings'].forEach(x=>nav.append(button(x,()=>say(`${x} tab selected.`))));frame.append(nav);widget.append(frame);
+    } else if (id === 'decor-stays-out') {
+      const frame = node('div', 'decor-demo'), bar = node('div', 'decor-bar'), head = node('strong', 'decor-head', 'Conductor');
+      bar.append(node('span', 'decor-mark', 'ov'), node('span', '', 'Codes'));
+      frame.append(bar, head, node('p', '', 'The page’s own text stays clear.'));
+      widget.append(frame);
+      const fall = (land) => {
+        frame.querySelectorAll('.decor-leaf').forEach((x) => x.remove());
+        const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (still) { say('Reduced motion is on: no fall at all.'); return; }
+        const barBottom = bar.offsetTop + bar.offsetHeight;
+        for (let i = 0; i < 6; i++) {
+          const leaf = node('span', 'decor-leaf'); frame.append(leaf);
+          const x = 26 + i * 22 + Math.round(Math.random() * 10);
+          leaf.style.left = `${x}px`;
+          const y = land ? barBottom - 14 - Math.round(Math.random() * 3) : 60 + Math.round(Math.random() * 70);
+          leaf.animate([{ transform: 'translateY(0) rotate(0)', opacity: 0 }, { opacity: 1, offset: 0.15 }, { transform: `translateY(${y}px) rotate(${180 + i * 40}deg)`, opacity: 1, offset: 0.72 }, { transform: `translateY(${y}px) rotate(${180 + i * 40}deg)`, opacity: 0 }], { duration: 2400 + i * 120, easing: 'cubic-bezier(.3,.1,.5,1)', fill: 'forwards' });
+        }
+        say(land ? 'The leaves land on the bar’s edge and fade there.' : 'The old way: the leaves fall across the heading.');
+      };
+      control('Play the fall', () => fall(true), true);
+      control('The old way', () => fall(false));
+    } else if (id === 'shared-columns') {
+      const list = node('div', 'cols-demo'), rows = [['1st', 'atlas-1', '1014'], ['2nd–12th', 'nimbus-12', '1009'], ['13th', 'a', '986']];
+      rows.forEach(([band, name, score]) => { const r = node('div', 'cols-row'); r.append(node('span', 'cols-band', band), node('span', 'cols-name', name), node('span', 'cols-score', score)); list.append(r); });
+      widget.append(list);
+      const set = (shared) => { list.classList.toggle('per-row', !shared); say(shared ? 'Every row shares one set of columns: names line up.' : 'Each row sizes its own columns: names jump around.'); };
+      control('Shared columns', () => set(true), true);
+      control('Per-row columns', () => set(false));
+      set(true);
+    } else if (id === 'numbers-align') {
+      const table = node('table', 'num-demo'), head = node('tr'), body = node('tbody');
+      ['Model', 'Votes'].forEach((h, i) => { const th = node('th', i ? 'num' : '', h); head.append(th); });
+      const thead = node('thead'); thead.append(head);
+      [['atlas-1', '8'], ['nimbus-2', '128'], ['orbit', '1,024']].forEach(([m, v]) => { const tr = node('tr'); tr.append(node('td', '', m), node('td', 'num', v)); body.append(tr); });
+      table.append(thead, body); widget.append(table);
+      control('Aligned', () => { table.classList.remove('broken'); say('Right-aligned, tabular figures: the digits stack under the header.'); }, true);
+      control('The bug', () => { table.classList.add('broken'); say('A broader td rule wins: the numbers sit left under a right-aligned header.'); });
+    } else if (id === 'tables-scroll-inside') {
+      const box = node('div', 'tscroll-demo'), table = node('table', 'tscroll-table');
+      table.innerHTML = '<thead><tr><th>Provider</th><th>Plan</th><th>€ / month</th><th>Traffic</th></tr></thead><tbody><tr><td>Hetzner</td><td>CX22</td><td>4.51</td><td>20 TB</td></tr><tr><td>Netcup</td><td>VPS 1000 G11</td><td>6.74</td><td>unmetered</td></tr></tbody>';
+      box.append(table); widget.append(box);
+      control('Scroll inside', () => { box.classList.remove('broken'); say('Whole words; the table scrolls inside its box.'); }, true);
+      control('The bug', () => { box.classList.add('broken'); say('Words break mid-letter to fit the screen.'); });
+    } else if (id === 'measure-at-rest') {
+      const card = node('div', 'measure-card', 'Dock'); widget.append(card);
+      const play = (atRest) => {
+        const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const anim = card.animate([{ transform: 'scale(.82)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: still ? 0 : 300, easing: 'cubic-bezier(.2,.9,.25,1.08)' });
+        const read = () => { const b = card.getBoundingClientRect(); say(`${atRest ? 'At rest' : 'Mid-entrance'}: ${Math.round(b.width)} × ${Math.round(b.height)} px${atRest ? '' : ` (the card is ${card.offsetWidth} × ${card.offsetHeight})`}.`); };
+        if (atRest) anim.finished.then(read); else setTimeout(read, still ? 0 : 60);
+      };
+      control('Measure at rest', () => play(true), true);
+      control('Measure mid-entrance', () => play(false));
+    } else if (id === 'drag-or-tap') {
+      const box = node('div', 'drag-demo'), chip = node('button', 'drag-chip', 'Tap or drag me');
+      chip.type = 'button'; box.append(chip); widget.append(box);
+      let s = null, swallow = false, taps = 0;
+      const corners = ['tl', 'tr', 'bl', 'br']; let at = 'br'; chip.dataset.at = at;
+      const move = (e) => { if (!s || e.pointerId !== s.id) return; s.dx = e.clientX - s.x; s.dy = e.clientY - s.y; if (!s.live && Math.abs(s.dx) + Math.abs(s.dy) >= 6) { s.live = true; chip.classList.add('is-moving'); } if (s.live) chip.style.transform = `translate(${s.dx}px, ${s.dy}px)`; };
+      const end = (e) => {
+        if (!s || e.pointerId !== s.id) return;
+        window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end);
+        const live = s.live, r = chip.getBoundingClientRect(), b = box.getBoundingClientRect(); s = null;
+        chip.classList.remove('is-moving'); chip.style.transform = '';
+        if (!live) return;
+        swallow = true; setTimeout(() => { swallow = false; }, 0);
+        at = `${r.top + r.height / 2 < b.top + b.height / 2 ? 't' : 'b'}${r.left + r.width / 2 < b.left + b.width / 2 ? 'l' : 'r'}`;
+        chip.dataset.at = corners.includes(at) ? at : 'br';
+        say('A drag: it snapped to the nearest corner, and the press was not a tap.');
+      };
+      chip.addEventListener('pointerdown', (e) => { if (e.button) return; s = { x: e.clientX, y: e.clientY, dx: 0, dy: 0, id: e.pointerId, live: false }; window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end); });
+      chip.addEventListener('click', (e) => { if (swallow) { swallow = false; e.preventDefault(); e.stopPropagation(); return; } taps++; say(`A tap (${taps}). It moved less than 6 px, so it stayed a tap.`); }, true);
+    } else if (id === 'floating-clears-toasts') {
+      const screen = node('div', 'clear-demo'), stack = node('div', 'clear-toasts'), pill = node('span', 'clear-pill', 'Needs you');
+      screen.append(stack, pill); widget.append(screen);
+      const toast = () => { const t = node('div', 'clear-toast', 'Codes finished a task'); stack.append(t); setTimeout(() => t.remove(), 3200); };
+      const set = (on) => { screen.style.setProperty('--clear', on ? '52px' : '0px'); pill.hidden = false; say(on ? 'The pill says how much room it takes: toasts stack above it.' : 'Nobody says: the toast covers the pill.'); toast(); };
+      control('Clear the pill', () => set(true), true);
+      control('The bug', () => set(false));
     } else if (id === 'mark-system') {
       const row=node('div','mark-demo'),mark=node('span','ov-mark','ov');row.append(mark,node('span','','OpenVibe'));widget.append(row);control('Loading state',()=>{mark.classList.toggle('loading');say(mark.classList.contains('loading')?'Loading state active.':'Loading state stopped.');});control('Change site',()=>{mark.textContent=mark.textContent==='ov'?'lv':'ov';mark.style.borderRadius=mark.textContent==='lv'?'50%':'16px';say('The mark morphs for the active site.');});control('Open five studies',()=>{window.location.href='/patterns/mark/studies';});
     }
