@@ -32,6 +32,11 @@ const { patterns, TOKENS, nativeSpecs, esc } = require('../server/patterns/catal
                 assert.ok(res.text.length > 100, asset);
             }
         });
+        await check('filled pattern pill actions use the Shared on-accent text token', async () => {
+            const res = await t.get('/css/patterns.css');
+            assert.equal(res.status, 200);
+            assert.match(res.text, /\.opill\.primary\{[^}]*color:var\(--on-accent\)/);
+        });
     } finally {
         await t.close();
     }
