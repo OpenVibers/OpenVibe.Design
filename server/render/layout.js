@@ -41,7 +41,7 @@ const baseUrl = () => BASE;
 const canonical = (p) => `${BASE}${p || '/'}`;
 
 /** The page around a body: the shared shell with the room's stylesheets and behaviour. */
-function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [] } = {}) {
+function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [] } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
     const navbar = {
@@ -76,6 +76,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
 <link rel="stylesheet" href="${esc(ovServe.url('showcase.css'))}">
 <link rel="stylesheet" href="${esc(asset('css/design.css'))}">
 ${(styles || []).map((rel) => `<link rel="stylesheet" href="${esc(asset(rel))}">`).join('\n')}
+${(inlineStyles || []).map((css) => `<style>${css}</style>`).join('\n')}
 <script src="${esc(ovServe.url('kit-web.js'))}" defer></script>
 <script src="${esc(ovServe.url('motion.js'))}" defer></script>
 ${(scripts || []).map((rel) => `<script src="${esc(asset(rel))}" defer></script>`).join('\n')}

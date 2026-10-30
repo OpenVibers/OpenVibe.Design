@@ -13,6 +13,8 @@
  */
 const layoutLib = require('../render/layout');
 const kit = require('openvibe-shared/kit');
+// The short home (the owner's rule, 2026-10-30): pick blocks and folds.
+const { pickBlock, pickRules, foldAround } = require('../render/short');
 const sc = require('openvibe-shared/showcase');
 const rooms = require('openvibe-shared/rooms');
 const { iframeHtml } = require('../arena/sanitize');
@@ -89,7 +91,7 @@ function home({ themes } = {}) {
     const make = `<ol class="ds-flow" aria-label="How Create works"><li><b>Describe it</b><span>A page, an app screen or a component, in a sentence.</span></li><li><b>Three models draft it</b><span>At once, on your theme, at phone and desktop sizes.</span></li><li><b>Make it yours</b><span>Pick one, click any part to change it or ask for a change, and keep every version.</span></li></ol>`;
     const draft = (side) => `<figure class="ds-vs-card"><span class="ds-vs-bar"></span><span class="ds-vs-hero"></span><span class="ds-vs-row"><i></i><i></i><i></i></span><figcaption>${side}</figcaption></figure>`;
     const vs = `<div class="ds-vs" role="img" aria-label="Two drafts side by side, their models hidden">${draft('Left')}<span class="ds-vs-or">or</span>${draft('Right')}</div><p class="ds-fine ds-vs-note">The models' names stay hidden until you vote.</p>`;
-    const body = sc.room({
+    const room = sc.room({
         room: 'design',
         hero: {
             title: 'Your look, everywhere',
@@ -132,7 +134,33 @@ function home({ themes } = {}) {
             ['What is coming next?', 'Publishing a design straight to OpenVibe.Website and OpenVibe.Space, brand kits that dress a creator\'s channel, overlays and shop in one go, and the kit\'s components as native Android and iOS views.'],
         ] },
     });
-    return layout({ title: null, description: 'Your look, everywhere: one theme across every OpenVibe site, the same theme as code for the web, Android and iOS, and AI design on it, ranked honestly by the Design Arena.', path: '/', body: `<div class="ds-wrap">${body}</div>`, active: '/' });
+    // The short home (the owner's rule, 2026-10-30): the three scenes are one pick block, a row of chips picks one
+    // of them, and the parts a reader rarely needs are folds.
+    const sceneTitles = ['One theme, every site', 'Make it with AI, on your theme', 'See which AI designs best'];
+    const arts = [...room.matchAll(/<article class="sc-scene[\s\S]*?<\/article>/g)];
+    let body = room;
+    if (arts.length) {
+        const first = arts[0];
+        const last = arts[arts.length - 1];
+        const start = body.lastIndexOf('<section class="sc-room-scenes"', first.index);
+        const end = body.indexOf('</section>', last.index + last[0].length) + '</section>'.length;
+        const pick = pickBlock({
+            key: 'scenes',
+            label: 'What you can do',
+            head: 'What you can do',
+            panes: arts.map((a, i) => ({ id: `ds-scene-${i}`, label: sceneTitles[i] || `Scene ${i + 1}`, html: a[0] })),
+        });
+        body = start > 0 && end > 0 ? body.slice(0, start) + pick + body.slice(end) : body;
+    }
+    // The code samples and the questions are the parts a reader rarely needs on a phone.
+    body = foldAround(body, '>Your theme, in your app</h2>', 'dev', '<h2 id="ds-dev-h">Your theme, in your app</h2>');
+    body = foldAround(body, '>Questions</h2>', 'faq', '<h2 id="ds-faq-h">Questions</h2>');
+    return layout({
+        title: null, description: 'Your look, everywhere: one theme across every OpenVibe site, the same theme as code for the web, Android and iOS, and AI design on it, ranked honestly by the Design Arena.',
+        path: '/', body: `<div class="ds-wrap">${body}</div>`, active: '/',
+        // The rule that shows the picked scene of the pick block: one per scene, written for this page.
+        inlineStyles: [`@supports selector(:has(*)){@media (max-width:640px){${pickRules('scenes', arts.map((_, i) => `ds-scene-${i}`))}}}`],
+    });
 }
 
 /** The studio's "As code" sheet: the edited theme compiled in the page (public/js/studio.js). */
