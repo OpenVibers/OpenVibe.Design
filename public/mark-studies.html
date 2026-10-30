@@ -1,0 +1,493 @@
+<title>OV Mark Studies</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#f6f7fb;--panel:#ffffff;--sunk:#eef0f7;--ink:#141a2e;--dim:#4a5370;--mute:#7c849e;--line:#dde1ec;--a1:#4f7cff;--a2:#8b5cf6;--chip:#ffffff;--chip-on:#141a2e;--chip-on-ink:#ffffff;--stage:#ffffff;--shadow:0 1px 2px rgba(20,26,46,.06),0 8px 24px rgba(20,26,46,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0f1c;--panel:#111729;--sunk:#0d1322;--ink:#eef1fb;--dim:#b4bbd3;--mute:#7f88a6;--line:#222b44;--a1:#5b85ff;--a2:#9a6bff;--chip:#141b30;--chip-on:#eef1fb;--chip-on-ink:#0b0f1c;--stage:#0d1322;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.25);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b0f1c;--panel:#111729;--sunk:#0d1322;--ink:#eef1fb;--dim:#b4bbd3;--mute:#7f88a6;--line:#222b44;--a1:#5b85ff;--a2:#9a6bff;--chip:#141b30;--chip-on:#eef1fb;--chip-on-ink:#0b0f1c;--stage:#0d1322;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.25);color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+header h1{font:900 clamp(30px,5vw,46px)/1.05 Nunito,Inter,sans-serif;letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance}
+header p{color:var(--dim);max-width:64ch;margin:0}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:22px 0 26px;padding:10px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);border-radius:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:var(--shadow)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0;position:relative}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--chip);color:var(--dim);font:600 13px Inter,sans-serif;border-radius:99px;padding:8px 13px;min-height:38px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip i{width:9px;height:9px;border-radius:50%;background:var(--h,linear-gradient(90deg,var(--a1),var(--a2)))}
+.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
+.tools{display:flex;gap:6px;flex:none}
+.btn{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:600 13px Inter,sans-serif;border-radius:10px;padding:8px 12px;min-height:38px;cursor:pointer}
+.btn[aria-pressed="true"]{border-color:var(--a1);color:var(--a1)}
+.study{border:1px solid var(--line);background:var(--panel);border-radius:22px;padding:20px;margin:0 0 22px;box-shadow:var(--shadow);display:grid;gap:16px}
+.shead{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.num{font:900 14px Nunito,sans-serif;color:var(--mute);letter-spacing:.08em}
+.shead h2{font:900 26px/1.1 Nunito,Inter,sans-serif;margin:0;letter-spacing:-.01em}
+.idea{color:var(--dim);margin:0;max-width:70ch}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:16px;aspect-ratio:3/1;max-width:100%;display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden}
+.stage svg{width:100%;height:100%;display:block}
+.stage .hint{position:absolute;right:12px;bottom:9px;font:500 11px Inter,sans-serif;color:var(--mute)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:720px){.row{grid-template-columns:minmax(0,1fr)}}
+.box{background:var(--sunk);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.box h3{margin:0 0 9px;font:700 11px Inter,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+.ladder{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.ladder figure{margin:0;display:grid;justify-items:center;gap:5px}
+.ladder figcaption{font:500 11px Inter,sans-serif;color:var(--mute)}
+.ladder .lock{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;display:flex;align-items:center}
+.naming{font:700 15px Nunito,Inter,sans-serif;color:var(--ink);display:grid;gap:6px}
+.naming code{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:2px 7px;color:var(--dim)}
+.naming span{color:var(--dim);font:400 13.5px/1.5 Inter,sans-serif}
+ul.moves{margin:0;padding-left:18px;color:var(--dim);font-size:13.5px;display:grid;gap:3px}
+footer{color:var(--dim);font-size:14px;border-top:1px solid var(--line);padding-top:18px;margin-top:8px;display:grid;gap:8px}
+footer b{color:var(--ink)}
+.spin{animation:spin 1.1s linear infinite;transform-origin:50px 50px;transform-box:view-box}
+@keyframes spin{to{transform:rotate(360deg)}}
+.run{animation:run 1.15s linear infinite}
+@keyframes run{to{stroke-dashoffset:-151}}
+@media (prefers-reduced-motion:reduce){.spin,.run{animation:none}}
+#scratch{position:absolute;width:0;height:0;overflow:hidden}
+</style>
+
+<svg id="scratch" aria-hidden="true"><text id="measure" font-family="Nunito, Inter, sans-serif" font-weight="800" font-size="30"></text></svg>
+
+<div class="wrap">
+  <header>
+    <h1>OV Mark Studies</h1>
+    <p>Five systems built from the lowercase <b>ov</b> you picked (#38). Every site starts as <b>ov</b>, and each study
+      turns it into that site in its own way: the O becomes the site's icon, the V becomes its name. Pick a site below
+      and all five change at once. Tap a stage to replay its intro.</p>
+  </header>
+
+  <div class="bar" role="toolbar" aria-label="Controls">
+    <div class="chips" id="chips" role="group" aria-label="Site"></div>
+    <div class="tools">
+      <button class="btn" id="replay" type="button">Replay</button>
+      <button class="btn" id="loading" type="button" aria-pressed="false">Loading</button>
+    </div>
+  </div>
+
+  <main id="studies"></main>
+
+  <footer>
+    <div><b>How these would ship.</b> One SVG per study, drawn from the same three things: the O's path, the V's path and
+      the site's label. Each fits in about 2 KB of script inside Shared's navbar (the mark is already a button that opens
+      the site switcher). Every motion respects reduced motion, and the 16 px sizes use heavier strokes (optical sizing)
+      instead of shrinking the big one.</div>
+    <div><b>Next.</b> Tell me the number (or two to combine). I'll build it into the navbar, the favicon set and
+      <code>openvibe-sdk/brand</code>, with the loading state wired to page navigation.</div>
+  </footer>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Each site's icon as one continuous stroke in a 100-unit box centred on (50,50), so any shape can morph into any other.
+const SITES = [
+  { id: 'network', name: 'Network', label: null, hue: null },
+  { id: 'live', name: 'Live', label: 'live', hue: '#ff4d6d', icon: 'M42 30 L71 50 L42 70 Z' },
+  { id: 'chat', name: 'Chat', label: 'chat', hue: '#3d8bff', icon: 'M30 36 Q30 28 38 28 H62 Q70 28 70 36 V54 Q70 62 62 62 H47 L35 72 V62 Q30 62 30 54 Z' },
+  { id: 'codes', name: 'Codes', label: 'codes', hue: '#22c55e', icon: 'M40 32 L26 50 L40 68 L60 32 L74 50 L60 68' },
+  { id: 'bench', name: 'Bench', label: 'bench', hue: '#f59e0b', icon: 'M26 72 V60 H40 V48 H54 V36 H68 V27' },
+  { id: 'games', name: 'Games', label: 'games', hue: '#ec4899', icon: 'M50 24 L57 43 L76 50 L57 57 L50 76 L43 57 L24 50 L43 43 Z' },
+  { id: 'deals', name: 'Deals', label: 'deals', hue: '#10b981', icon: 'M28 34 Q28 28 34 28 H54 L74 50 L54 72 H34 Q28 72 28 66 Z' },
+  { id: 'blog', name: 'Blog', label: 'blog', hue: '#f97316', icon: 'M24 62 C32 40 42 38 48 50 C54 62 64 62 76 36' },
+  { id: 'search', name: 'Search', label: 'search', hue: '#06b6d4', icon: 'M72 72 L57.3 57.3 A16 16 0 1 1 57.3 34.7 A16 16 0 0 1 57.3 57.3' },
+];
+// Full circles as two half-arcs: one arc between two almost equal points is ambiguous (Chrome drew its centre 48 units off).
+const RING = 'M50 26 A24 24 0 0 1 50 74 A24 24 0 0 1 50 26';
+const VEE = 'M86 28 L108 72 L130 28';
+const isClosed = (d) => /z\s*$/i.test(d) || d === RING;
+
+// ── Geometry: sample any path into N points, align closed shapes, interpolate ──
+const scratch = document.getElementById('scratch');
+const cache = new Map();
+function sample(d, n) {
+  const key = n + '|' + d; if (cache.has(key)) return cache.get(key);
+  const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); scratch.appendChild(p);
+  const L = p.getTotalLength(), pts = [];
+  for (let i = 0; i < n; i++) { const q = p.getPointAtLength(L * i / (n - 1)); pts.push([q.x, q.y]); }
+  p.remove(); cache.set(key, pts); return pts;
+}
+function align(from, to, closed) {
+  if (!closed) return to;
+  let best = 0, bestD = Infinity; const n = to.length;
+  for (let o = 0; o < n; o += 2) { let s = 0; for (let i = 0; i < n; i += 3) { const a = from[i], b = to[(i + o) % n]; s += (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2; } if (s < bestD) { bestD = s; best = o; } }
+  return to.map((_, i) => to[(i + best) % n]);
+}
+const lerp = (a, b, t) => a.map((p, i) => [p[0] + (b[i][0] - p[0]) * t, p[1] + (b[i][1] - p[1]) * t]);
+const toD = (ps) => 'M' + ps.map((p) => p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join('L');
+const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const back = (t) => { const c = 1.6; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+function tween(ms, fn, token, e = ease) {
+  return new Promise((res) => {
+    if (reduce) { fn(1); return res(); }
+    const t0 = performance.now();
+    const f = (now) => { if (token && token.dead) return res(); const t = Math.min(1, (now - t0) / ms); fn(e(t)); if (t < 1) requestAnimationFrame(f); else res(); };
+    requestAnimationFrame(f);
+  });
+}
+const wait = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+function measure(text, size = 30) { const m = document.getElementById('measure'); m.setAttribute('font-size', size); m.textContent = text || ''; return m.getComputedTextLength(); }
+const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
+let uid = 0;
+function gradient(svg, a = 'var(--a1)', b = 'var(--a2)') {
+  const id = 'g' + (++uid), defs = svg.querySelector('defs') || el('defs', {}, svg);
+  const g = el('linearGradient', { id, x1: '0', y1: '0', x2: '1', y2: '1' }, defs);
+  el('stop', { offset: '0', 'stop-color': a }, g); el('stop', { offset: '1', 'stop-color': b }, g);
+  return 'url(#' + id + ')';
+}
+function newSvg(vb, w, h) { const s = el('svg', { viewBox: vb, role: 'img' }); if (w) s.setAttribute('width', w); if (h) s.setAttribute('height', h); return s; }
+const strokeAttrs = (paint, w) => ({ fill: 'none', stroke: paint, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+
+// A morphing stroke: remembers what it shows, so a new target always starts from the current shape.
+class Morph {
+  constructor(path, d, n = 140) { this.path = path; this.n = n; this.cur = sample(d, n); this.closed = isClosed(d); path.setAttribute('d', toD(this.cur)); }
+  async to(d, ms, token, e) { const from = this.cur.slice(), target = align(from, sample(d, this.n), isClosed(d) && this.closed); this.closed = isClosed(d); await tween(ms, (t) => { this.cur = lerp(from, target, t); this.path.setAttribute('d', toD(this.cur)); }, token, e); }
+  set(d) { this.cur = sample(d, this.n); this.closed = isClosed(d); this.path.setAttribute('d', toD(this.cur)); }
+}
+const iconAt = (d, s = 1, cx = 50, cy = 50) => s === 1 ? d : null;
+
+// ── 1. Ribbon: one line, never lifted ─────────────────────────────────────────
+const RIBBON_OV = 'M74 50 A24 24 0 0 0 26 50 A24 24 0 0 0 74 50 C79 40 82 31 86 28 L108 72 L130 28';
+const study1 = {
+  num: '01', name: 'Ribbon', idea: 'The whole mark is one unbroken line. "ov" is drawn without lifting the pen; on a site, the same line rewrites itself into the site\'s icon and carries on underneath the name, so the name is always underlined by the brand.',
+  naming: ['<code>ov</code> one stroke  →  <code>[icon] live</code> with the line running under the name', 'The line is the brand; the icon and the name are what it draws today.'],
+  moves: ['Intro: the line draws itself from the top of the O.', 'Site: the line morphs into the icon, then runs under the name as it types in.', 'Loading: a bright segment chases around the O.'],
+  target(s) { if (!s.label) return RIBBON_OV; const w = measure(s.label); return s.icon + ` L94 80 H${112 + w}`; },
+  mount(svg) {
+    this.paint = gradient(svg);
+    this.path = el('path', strokeAttrs(this.paint, 11), svg);
+    this.text = el('text', { x: 110, y: 66, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 800, 'font-size': 30, fill: 'var(--ink)' }, svg);
+    this.m = new Morph(this.path, RIBBON_OV, 220);
+  },
+  async go(s, token) {
+    this.path.classList.remove('run'); this.path.removeAttribute('stroke-dasharray');
+    this.text.textContent = '';
+    await this.m.to(this.target(s), 760, token);
+    if (s.label) for (let i = 1; i <= s.label.length; i++) { if (token.dead) return; this.text.textContent = s.label.slice(0, i); await wait(55); }
+  },
+  async intro(s, token) {
+    this.text.textContent = ''; this.m.set(this.target(s));
+    const L = this.path.getTotalLength(); this.path.setAttribute('stroke-dasharray', L);
+    await tween(1000, (t) => this.path.setAttribute('stroke-dashoffset', L * (1 - t)), token);
+    this.path.removeAttribute('stroke-dasharray'); this.path.removeAttribute('stroke-dashoffset');
+    if (s.label) for (let i = 1; i <= s.label.length; i++) { if (token.dead) return; this.text.textContent = s.label.slice(0, i); await wait(55); }
+  },
+  async loading(on, s, token) {
+    if (!on) { this.path.classList.remove('run'); this.path.removeAttribute('stroke-dasharray'); return this.go(s, token); }
+    this.text.textContent = ''; await this.m.to(RING, 500, token);
+    this.path.setAttribute('stroke-dasharray', '34 117'); this.path.classList.add('run');
+  },
+  still(s, mode, px) {
+    const sw = px <= 16 ? 16 : px <= 24 ? 14 : px <= 32 ? 12 : 11;
+    if (mode === 'icon') {
+      const svg = newSvg(s.label ? '18 18 64 64' : '18 18 122 64', s.label ? px : px * 1.9, px), p = gradient(svg);
+      el('path', { ...strokeAttrs(p, s.label ? sw : sw * .9), d: s.label ? s.icon : RIBBON_OV }, svg); return svg;
+    }
+    const w = s.label ? measure(s.label) : 0, svg = newSvg(`14 14 ${s.label ? 112 + w : 130} 74`, null, px), p = gradient(svg);
+    el('path', { ...strokeAttrs(p, 11), d: this.target(s) }, svg);
+    if (s.label) { const t = el('text', { x: 110, y: 66, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 800, 'font-size': 30, fill: 'var(--ink)' }, svg); t.textContent = s.label; }
+    return svg;
+  },
+};
+
+// ── 2. Breadcrumb: the V turns into "›" ───────────────────────────────────────
+const study2 = {
+  num: '02', name: 'Breadcrumb', idea: 'The V is a chevron waiting to happen. Turned a quarter, it becomes "›", so every site reads as a path: the network, then where you are. "ov" on the network, "[icon] › live" on Live. The O becomes the icon, the V becomes the way in.',
+  naming: ['<code>ov</code>  →  <code>[icon] › live</code>', 'Reads like a breadcrumb: OpenVibe › Live. The switcher can open from the chevron.'],
+  moves: ['Site: the O morphs into the icon while the V turns and shrinks into "›".', 'The name slides out from behind the chevron.', 'Loading: the chevron nudges forward, the O runs.'],
+  vState(s) { return s.label ? { a: -90, k: .46, x: -2 } : { a: 0, k: 1, x: 0 }; },
+  applyV(v) { this.v.setAttribute('transform', `translate(${v.x} 0) translate(108 50) rotate(${v.a}) scale(${v.k}) translate(-108 -50)`); this.vs = v; },
+  mount(svg) {
+    this.paint = gradient(svg);
+    const defs = svg.querySelector('defs'); this.clipId = 'c' + (++uid);
+    const cp = el('clipPath', { id: this.clipId }, defs); this.clip = el('rect', { x: 118, y: 10, width: 0, height: 80 }, cp);
+    this.o = el('path', strokeAttrs(this.paint, 11), svg);
+    this.v = el('path', { ...strokeAttrs(this.paint, 11), d: VEE }, svg);
+    this.text = el('text', { x: 124, y: 61, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 800, 'font-size': 30, fill: 'var(--ink)', 'clip-path': `url(#${this.clipId})` }, svg);
+    this.m = new Morph(this.o, RING); this.applyV({ a: 0, k: 1, x: 0 });
+  },
+  async go(s, token) {
+    this.o.classList.remove('run'); this.o.removeAttribute('stroke-dasharray');
+    const from = { ...this.vs }, to = this.vState(s);
+    if (!s.label) await tween(260, (t) => this.clip.setAttribute('width', (1 - t) * 200), token);
+    const p = this.m.to(s.label ? s.icon : RING, 720, token);
+    await tween(720, (t) => this.applyV({ a: from.a + (to.a - from.a) * t, k: from.k + (to.k - from.k) * t, x: from.x + (to.x - from.x) * t }), token, back);
+    await p;
+    if (s.label) { this.text.textContent = s.label; this.clip.setAttribute('width', 0); await tween(420, (t) => this.clip.setAttribute('width', t * 200), token); }
+  },
+  intro(s, token) { this.m.set(RING); this.applyV({ a: 0, k: 1, x: 0 }); this.clip.setAttribute('width', 0); return wait(250).then(() => this.go(s, token)); },
+  async loading(on, s, token) {
+    if (!on) { this.o.classList.remove('run'); this.o.removeAttribute('stroke-dasharray'); return; }
+    this.o.setAttribute('stroke-dasharray', '34 117'); await this.m.to(RING, 400, token); this.o.classList.add('run');
+    const base = { ...this.vs };
+    while (!token.dead && document.getElementById('loading').getAttribute('aria-pressed') === 'true') {
+      await tween(380, (t) => this.applyV({ ...base, x: base.x + Math.sin(t * Math.PI) * 7 }), token, (t) => t);
+      await wait(160);
+    }
+  },
+  still(s, mode, px) {
+    const sw = px <= 16 ? 16 : px <= 24 ? 14 : px <= 32 ? 12 : 11;
+    if (mode === 'icon') {
+      if (s.label) { const svg = newSvg('18 18 64 64', px, px), p = gradient(svg); el('path', { ...strokeAttrs(p, sw), d: s.icon }, svg); return svg; }
+      const svg = newSvg('18 18 124 64', px * 1.9, px), p = gradient(svg); el('path', { ...strokeAttrs(p, sw * .9), d: RING }, svg); el('path', { ...strokeAttrs(p, sw * .9), d: VEE }, svg); return svg;
+    }
+    const w = s.label ? measure(s.label) : 0, svg = newSvg(`14 14 ${s.label ? 116 + w : 130} 72`, null, px), p = gradient(svg);
+    el('path', { ...strokeAttrs(p, 11), d: s.label ? s.icon : RING }, svg);
+    const v = this.vState(s); el('path', { ...strokeAttrs(p, 11), d: VEE, transform: `translate(${v.x} 0) translate(108 50) rotate(${v.a}) scale(${v.k}) translate(-108 -50)` }, svg);
+    if (s.label) { const t = el('text', { x: 124, y: 61, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 800, 'font-size': 30, fill: 'var(--ink)' }, svg); t.textContent = s.label; }
+    return svg;
+  },
+};
+
+// ── 3. Porthole: the O is a window, the V folds into a name tag ───────────────
+function pill(w) { const x2 = 110 + w + 16; return `M84 50 L95 40 Q98 32 106 32 H${x2 - 18} A18 18 0 0 1 ${x2 - 18} 68 H106 Q98 68 95 60 Z`; }
+const study3 = {
+  num: '03', name: 'Porthole', idea: 'The O never changes: it is a round window, and each site is what you see through it. The icon irises open inside the ring and follows your pointer a little, like something behind glass. The V folds open into a name tag pinned to the window.',
+  naming: ['<code>(ov)</code>  →  <code>(◉) [ live ]</code>', 'The ring is always the network. What is inside it, and the tag beside it, is the site.'],
+  moves: ['Site: an iris opens inside the ring; the V swings open into the tag.', 'Hover: the icon drifts with the pointer (parallax behind glass).', 'Loading: the ring breaks into an aperture and turns.'],
+  mount(svg) {
+    this.paint = gradient(svg);
+    const defs = svg.querySelector('defs'); this.clipId = 'p' + (++uid);
+    const cp = el('clipPath', { id: this.clipId }, defs); this.iris = el('circle', { cx: 50, cy: 50, r: 0 }, cp);
+    this.ring = el('path', { ...strokeAttrs(this.paint, 10), d: RING }, svg);
+    this.g = el('g', { 'clip-path': `url(#${this.clipId})` }, svg);
+    this.inner = el('path', { ...strokeAttrs(this.paint, 13), transform: 'translate(50 50) scale(.5) translate(-50 -50)' }, this.g);
+    this.v = el('path', strokeAttrs(this.paint, 9), svg);
+    this.text = el('text', { x: 110, y: 60, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 800, 'font-size': 26, fill: 'var(--ink)', opacity: 0 }, svg);
+    this.m = new Morph(this.v, VEE, 140);
+    svg.addEventListener('pointermove', (e) => { const r = svg.getBoundingClientRect(); const dx = ((e.clientX - r.left) / r.width - .17) * 10, dy = ((e.clientY - r.top) / r.height - .5) * 8; this.inner.setAttribute('transform', `translate(${50 + dx} ${50 + dy}) scale(.5) translate(-50 -50)`); });
+    svg.addEventListener('pointerleave', () => this.inner.setAttribute('transform', 'translate(50 50) scale(.5) translate(-50 -50)'));
+  },
+  async go(s, token) {
+    this.ring.classList.remove('spin'); this.ring.removeAttribute('stroke-dasharray');
+    const r0 = +this.iris.getAttribute('r');
+    if (!s.label) {
+      this.text.setAttribute('opacity', 0);
+      await Promise.all([tween(380, (t) => this.iris.setAttribute('r', r0 * (1 - t)), token), this.m.to(VEE, 600, token)]); return;
+    }
+    await tween(220, (t) => { this.iris.setAttribute('r', r0 * (1 - t)); this.text.setAttribute('opacity', 1 - t); }, token);
+    this.inner.setAttribute('d', s.icon); this.text.textContent = s.label;
+    const w = measure(s.label, 26);
+    await Promise.all([tween(520, (t) => this.iris.setAttribute('r', t * 18), token, back), this.m.to(pill(w), 640, token)]);
+    await tween(260, (t) => this.text.setAttribute('opacity', t), token);
+  },
+  intro(s, token) { this.iris.setAttribute('r', 0); this.m.set(VEE); this.text.setAttribute('opacity', 0); return wait(250).then(() => this.go(s, token)); },
+  async loading(on, s, token) {
+    if (!on) { this.ring.classList.remove('spin'); this.ring.removeAttribute('stroke-dasharray'); return; }
+    this.ring.setAttribute('stroke-dasharray', '14 11.1'); this.ring.classList.add('spin');
+  },
+  still(s, mode, px) {
+    const sw = px <= 16 ? 14 : px <= 24 ? 12 : px <= 32 ? 11 : 10;
+    if (mode === 'icon') {
+      const svg = newSvg('18 18 64 64', px, px), p = gradient(svg);
+      el('path', { ...strokeAttrs(p, sw), d: RING }, svg);
+      // At icon size the network shows a small v inside the window; a site shows its icon there.
+      if (s.label) el('path', { ...strokeAttrs(p, sw * 1.5), d: s.icon, transform: 'translate(50 50) scale(.5) translate(-50 -50)' }, svg);
+      else el('path', { ...strokeAttrs(p, sw * .95), d: 'M40 42 L50 60 L60 42' }, svg);
+      return svg;
+    }
+    const w = s.label ? measure(s.label, 26) : 0, svg = newSvg(`14 14 ${s.label ? 128 + w : 130} 72`, null, px), p = gradient(svg);
+    el('path', { ...strokeAttrs(p, 10), d: RING }, svg);
+    if (s.label) {
+      el('path', { ...strokeAttrs(p, 13), d: s.icon, transform: 'translate(50 50) scale(.5) translate(-50 -50)' }, svg);
+      el('path', { ...strokeAttrs(p, 9), d: pill(w) }, svg);
+      const t = el('text', { x: 110, y: 60, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 800, 'font-size': 26, fill: 'var(--ink)' }, svg); t.textContent = s.label;
+    } else el('path', { ...strokeAttrs(p, 9), d: VEE }, svg);
+    return svg;
+  },
+};
+
+// ── 4. Liquid: O and V are one drop of ink ────────────────────────────────────
+function blobPill(w) { const x2 = 98 + w + 18; return `M96 34 H${x2 - 16} A16 16 0 0 1 ${x2 - 16} 66 H96 A16 16 0 0 1 96 34 Z`; }
+const VEE_GOO = 'M82 30 L104 70 L126 30';
+function gooFilter(svg, sd = 4.5) {
+  const id = 'f' + (++uid), defs = svg.querySelector('defs') || el('defs', {}, svg);
+  const f = el('filter', { id, x: '-20%', y: '-40%', width: '140%', height: '180%' }, defs);
+  const blur = el('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: sd, result: 'b' }, f);
+  el('feColorMatrix', { in: 'b', mode: 'matrix', values: '1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10' }, f);
+  return { url: `url(#${id})`, blur };
+}
+const study4 = {
+  num: '04', name: 'Liquid', idea: 'O and V are one drop of ink: where they meet, they are fused, so the "ov" is a single soft shape. On a site, the O melts into the icon and the V pours itself into a pill that holds the name. Nothing snaps; everything flows.',
+  naming: ['<code>ov</code> fused  →  <code>[icon](live)</code>', 'One liquid shape for the network; the site is the shape it settles into.'],
+  moves: ['Site: both shapes melt into their new forms through the goo.', 'Idle: a droplet breathes at the join.', 'Loading: a droplet orbits the O and keeps merging back in.'],
+  mount(svg) {
+    this.paint = gradient(svg); const goo = gooFilter(svg); this.goo = goo;
+    this.g = el('g', { filter: goo.url }, svg);
+    this.o = el('path', strokeAttrs(this.paint, 13), this.g);
+    this.v = el('path', { ...strokeAttrs(this.paint, 13), 'fill-opacity': 0 }, this.g);
+    this.v.setAttribute('fill', this.paint);
+    this.drop = el('circle', { cx: 78, cy: 34, r: 6, fill: this.paint }, this.g);
+    this.text = el('text', { x: 100, y: 60, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 900, 'font-size': 26, fill: 'var(--stage)', opacity: 0 }, svg);
+    this.mo = new Morph(this.o, RING); this.mv = new Morph(this.v, VEE_GOO, 140);
+    this.breathe();
+  },
+  breathe() {
+    const f = (now) => { if (!this.orbit) { const t = now / 1000; this.drop.setAttribute('cx', 78 + Math.sin(t * 1.7) * 3); this.drop.setAttribute('cy', 33 + Math.cos(t * 1.3) * 4); this.drop.setAttribute('r', 5 + Math.sin(t * 2.1) * 1.5); } requestAnimationFrame(f); };
+    if (!reduce) requestAnimationFrame(f);
+  },
+  async go(s, token) {
+    this.orbit = false;
+    await tween(200, (t) => this.text.setAttribute('opacity', 1 - t), token);
+    const w = s.label ? measure(s.label, 26) * 1.04 : 0;
+    await Promise.all([this.mo.to(s.label ? s.icon : RING, 820, token), this.mv.to(s.label ? blobPill(w) : VEE_GOO, 820, token),
+      tween(820, (t) => this.v.setAttribute('fill-opacity', s.label ? t : 0), token)]);
+    if (s.label) { this.text.textContent = s.label; await tween(300, (t) => this.text.setAttribute('opacity', t), token); }
+  },
+  intro(s, token) { this.mo.set(RING); this.mv.set(VEE_GOO); this.v.setAttribute('fill-opacity', 0); this.text.setAttribute('opacity', 0);
+    // The intro pours the V out of the O: the blur starts wide (one blob) and tightens into two letters.
+    return tween(900, (t) => this.goo.blur.setAttribute('stdDeviation', 14 - 9.5 * t), token).then(() => this.go(s, token)); },
+  async loading(on, s, token) {
+    if (!on) { this.orbit = false; return; }
+    this.orbit = true; const t0 = performance.now();
+    const f = (now) => { if (!this.orbit) return; const a = (now - t0) / 380; this.drop.setAttribute('cx', 50 + Math.cos(a) * 31); this.drop.setAttribute('cy', 50 + Math.sin(a) * 31); this.drop.setAttribute('r', 6); requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  },
+  still(s, mode, px) {
+    const sw = px <= 16 ? 17 : px <= 24 ? 15 : px <= 32 ? 14 : 13;
+    if (mode === 'icon') {
+      const svg = newSvg(s.label ? '16 16 68 68' : '16 16 122 68', s.label ? px : px * 1.8, px), p = gradient(svg), goo = gooFilter(svg, 3.5), g = el('g', { filter: goo.url }, svg);
+      el('path', { ...strokeAttrs(p, sw), d: s.label ? s.icon : RING }, g); if (!s.label) el('path', { ...strokeAttrs(p, sw), d: VEE_GOO }, g);
+      return svg;
+    }
+    const w = s.label ? measure(s.label, 26) * 1.04 : 0, svg = newSvg(`14 14 ${s.label ? 104 + w + 20 : 128} 72`, null, px), p = gradient(svg), goo = gooFilter(svg), g = el('g', { filter: goo.url }, svg);
+    el('path', { ...strokeAttrs(p, 13), d: s.label ? s.icon : RING }, g);
+    el('path', { ...strokeAttrs(p, 13), d: s.label ? blobPill(w) : VEE_GOO, fill: s.label ? p : 'none' }, g);
+    if (s.label) { const t = el('text', { x: 100, y: 60, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 900, 'font-size': 26, fill: 'var(--panel)' }, svg); t.textContent = s.label; }
+    return svg;
+  },
+};
+
+// ── 5. Seal: a solid disc with the V bitten out, and it speaks ────────────────
+const study5 = {
+  num: '05', name: 'Seal', idea: 'A solid stamp instead of letters: a disc with a V bitten out of the top. That bite is the "v". On a site the bite turns to face the name and opens, and the name comes out of it, as if the mark were saying it. Each site gets its own colour; the network keeps the gradient.',
+  naming: ['<code>●v</code> (bite up)  →  <code>● live</code> (bite facing the name)', 'Best at tiny sizes: a solid disc with a notch reads at 16 px when lines do not.'],
+  moves: ['Site: the bite turns 90°, opens, and the name slides out of it; the disc takes the site\'s colour.', 'Hover: the bite opens a little wider, like a breath.', 'Loading: it chomps.'],
+  mount(svg) {
+    this.paint = gradient(svg); const defs = svg.querySelector('defs');
+    this.maskId = 'm' + (++uid); const mk = el('mask', { id: this.maskId, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 300, height: 100 }, defs);
+    el('rect', { x: 0, y: 0, width: 300, height: 100, fill: '#fff' }, mk); this.wedge = el('polygon', { fill: '#000' }, mk);
+    this.disc = el('circle', { cx: 50, cy: 50, r: 27, fill: this.paint, mask: `url(#${this.maskId})`, style: 'transition:fill .5s' }, svg);
+    this.icon = el('path', { ...strokeAttrs('var(--stage)', 13), transform: 'translate(40 50) scale(.32) translate(-50 -50)', opacity: 0 }, svg);
+    this.text = el('text', { x: 64, y: 61, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 900, 'font-size': 32, fill: 'var(--ink)', opacity: 0 }, svg);
+    this.w = { rot: 0, half: 22 }; this.applyW(this.w);
+    svg.addEventListener('pointerenter', () => { if (!this.busy) this.breath(1); });
+    svg.addEventListener('pointerleave', () => { if (!this.busy) this.breath(-1); });
+  },
+  applyW(w) {
+    const tipX = 50 + Math.sin(w.rot * Math.PI / 180) * -2, tipY = 50 + Math.cos(w.rot * Math.PI / 180) * 4, L = 46;
+    const a1 = (w.rot - w.half) * Math.PI / 180, a2 = (w.rot + w.half) * Math.PI / 180;
+    this.wedge.setAttribute('points', `${tipX},${tipY} ${tipX + Math.sin(a1) * L},${tipY - Math.cos(a1) * L} ${tipX + Math.sin(a2) * L},${tipY - Math.cos(a2) * L}`);
+    this.w = w;
+  },
+  breath(dir) { const from = { ...this.w }; tween(260, (t) => this.applyW({ ...from, half: from.half + dir * 6 * t })); },
+  async go(s, token) {
+    this.busy = true; this.chomp = false;
+    const from = { ...this.w }, to = s.label ? { rot: 90, half: 30 } : { rot: 0, half: 22 };
+    this.disc.setAttribute('fill', s.hue || this.paint);
+    await tween(180, (t) => { this.text.setAttribute('opacity', 1 - t); this.icon.setAttribute('opacity', 1 - t); }, token);
+    await tween(640, (t) => this.applyW({ rot: from.rot + (to.rot - from.rot) * t, half: from.half + (to.half - from.half) * t }), token, back);
+    if (s.label) {
+      this.icon.setAttribute('d', s.icon); this.text.textContent = s.label;
+      await tween(420, (t) => { this.text.setAttribute('x', 58 + 28 * t); this.text.setAttribute('opacity', t); this.icon.setAttribute('opacity', t); }, token);
+    }
+    this.busy = false;
+  },
+  intro(s, token) { this.applyW({ rot: 0, half: 0 }); this.text.setAttribute('opacity', 0); this.icon.setAttribute('opacity', 0);
+    return tween(520, (t) => this.applyW({ rot: 0, half: 22 * t }), token, back).then(() => this.go(s, token)); },
+  async loading(on, s, token) {
+    if (!on) { this.chomp = false; return; }
+    this.chomp = true; const base = { ...this.w }; const t0 = performance.now();
+    const f = (now) => { if (!this.chomp) { this.applyW(base); return; } const k = (Math.sin((now - t0) / 140) + 1) / 2; this.applyW({ ...base, half: 4 + k * 30 }); requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  },
+  still(s, mode, px) {
+    const w = s.label ? { rot: 90, half: 30 } : { rot: 0, half: 22 };
+    const make = (vb, W, H) => {
+      const svg = newSvg(vb, W, H), p = gradient(svg), defs = svg.querySelector('defs'), id = 'm' + (++uid);
+      const mk = el('mask', { id, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 300, height: 100 }, defs);
+      el('rect', { x: 0, y: 0, width: 300, height: 100, fill: '#fff' }, mk);
+      const tipX = 50 + Math.sin(w.rot * Math.PI / 180) * -2, tipY = 50 + Math.cos(w.rot * Math.PI / 180) * 4, L = 46, a1 = (w.rot - w.half) * Math.PI / 180, a2 = (w.rot + w.half) * Math.PI / 180;
+      el('polygon', { fill: '#000', points: `${tipX},${tipY} ${tipX + Math.sin(a1) * L},${tipY - Math.cos(a1) * L} ${tipX + Math.sin(a2) * L},${tipY - Math.cos(a2) * L}` }, mk);
+      el('circle', { cx: 50, cy: 50, r: 27, fill: s.hue || p, mask: `url(#${id})` }, svg);
+      return svg;
+    };
+    if (mode === 'icon') return make('20 20 60 60', px, px);
+    const tw = s.label ? measure(s.label, 32) : 0, svg = make(`18 18 ${s.label ? 74 + tw : 64} 64`, null, px);
+    if (s.label) {
+      el('path', { ...strokeAttrs('var(--panel)', 13), d: s.icon, transform: 'translate(40 50) scale(.32) translate(-50 -50)' }, svg);
+      const t = el('text', { x: 86, y: 61, 'font-family': 'Nunito, Inter, sans-serif', 'font-weight': 900, 'font-size': 32, fill: 'var(--ink)' }, svg); t.textContent = s.label;
+    }
+    return svg;
+  },
+};
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+const STUDIES = [study1, study2, study3, study4, study5];
+let site = SITES[0];
+const tokens = new Map();
+function fresh(st) { const old = tokens.get(st); if (old) old.dead = true; const t = { dead: false }; tokens.set(st, t); return t; }
+const loadingBtn = document.getElementById('loading');
+
+function ladder(st) {
+  const box = st.ladderBox; box.replaceChildren();
+  for (const px of [16, 24, 32, 48]) { const f = document.createElement('figure'); f.append(st.still(site, 'icon', px)); const c = document.createElement('figcaption'); c.textContent = px + ' px'; f.append(c); box.append(f); }
+  for (const h of [28, 40]) { const f = document.createElement('figure'), l = document.createElement('div'); l.className = 'lock'; l.append(st.still(site, 'lockup', h)); f.append(l); const c = document.createElement('figcaption'); c.textContent = h === 28 ? 'navbar' : 'header'; f.append(c); box.append(f); }
+}
+
+function build() {
+  const main = document.getElementById('studies');
+  for (const st of STUDIES) {
+    const sec = document.createElement('section'); sec.className = 'study';
+    const head = document.createElement('div'); head.className = 'shead';
+    const n = document.createElement('span'); n.className = 'num'; n.textContent = st.num;
+    const h = document.createElement('h2'); h.textContent = st.name; head.append(n, h);
+    const idea = document.createElement('p'); idea.className = 'idea'; idea.textContent = st.idea;
+    const stage = document.createElement('div'); stage.className = 'stage'; stage.setAttribute('role', 'button'); stage.tabIndex = 0; stage.setAttribute('aria-label', st.name + ': replay');
+    const svg = newSvg('0 0 300 100'); el('defs', {}, svg); stage.append(svg);
+    const hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = 'tap to replay'; stage.append(hint);
+    const row = document.createElement('div'); row.className = 'row';
+    const b1 = document.createElement('div'); b1.className = 'box'; b1.innerHTML = '<h3>Sizes for this site</h3>';
+    const lad = document.createElement('div'); lad.className = 'ladder'; b1.append(lad); st.ladderBox = lad;
+    const b2 = document.createElement('div'); b2.className = 'box';
+    const nm = document.createElement('div'); nm.className = 'naming'; nm.innerHTML = '<h3>Naming</h3>' + st.naming.map((x, i) => (i < st.naming.length - 1 ? '<div>' + x + '</div>' : '<span>' + x + '</span>')).join('');
+    const mv = document.createElement('div'); mv.innerHTML = '<h3 style="margin-top:12px">Motion</h3>'; const ul = document.createElement('ul'); ul.className = 'moves'; for (const m of st.moves) { const li = document.createElement('li'); li.textContent = m; ul.append(li); } mv.append(ul);
+    b2.append(nm, mv); row.append(b1, b2);
+    sec.append(head, idea, stage, row); main.append(sec);
+    st.mount(svg);
+    const replay = () => { loadingBtn.setAttribute('aria-pressed', 'false'); st.intro(site, fresh(st)); };
+    stage.addEventListener('click', replay); stage.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); replay(); } });
+  }
+}
+
+function chips() {
+  const box = document.getElementById('chips');
+  for (const s of SITES) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', s === site ? 'true' : 'false');
+    const dot = document.createElement('i'); if (s.hue) dot.style.setProperty('--h', s.hue); b.append(dot, document.createTextNode(s.name));
+    b.addEventListener('click', () => {
+      site = s; for (const c of box.children) c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+      loadingBtn.setAttribute('aria-pressed', 'false');
+      for (const st of STUDIES) { st.loading(false, site, fresh(st)); st.go(site, fresh(st)); ladder(st); }
+    });
+    box.append(b);
+  }
+}
+
+document.getElementById('replay').addEventListener('click', () => { loadingBtn.setAttribute('aria-pressed', 'false'); STUDIES.forEach((st, i) => setTimeout(() => st.intro(site, fresh(st)), i * 90)); });
+loadingBtn.addEventListener('click', () => {
+  const on = loadingBtn.getAttribute('aria-pressed') !== 'true'; loadingBtn.setAttribute('aria-pressed', String(on));
+  for (const st of STUDIES) { const tk = fresh(st); if (on) st.loading(true, site, tk); else { st.loading(false, site, tk); st.go(site, tk); } }
+});
+
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => {
+  build(); chips(); STUDIES.forEach((st) => ladder(st));
+  STUDIES.forEach((st, i) => setTimeout(() => st.intro(site, fresh(st)), 200 + i * 120));
+});
+</script>

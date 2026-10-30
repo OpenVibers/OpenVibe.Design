@@ -28,6 +28,7 @@ const NAV = [
     { label: 'Your look', href: '/look', icon: 'fa-circle-half-stroke' },
     { label: 'Arena', href: '/arena', icon: 'fa-crown' },
     { label: 'Tokens', href: '/tokens', icon: 'fa-code' },
+    { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
 ];
@@ -40,7 +41,7 @@ const baseUrl = () => BASE;
 const canonical = (p) => `${BASE}${p || '/'}`;
 
 /** The page around a body: the shared shell with the room's stylesheets and behaviour. */
-function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], jsonLd = [] } = {}) {
+function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [] } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
     const navbar = {
@@ -74,6 +75,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
 <link rel="stylesheet" href="${esc(ovServe.url('room.css'))}">
 <link rel="stylesheet" href="${esc(ovServe.url('showcase.css'))}">
 <link rel="stylesheet" href="${esc(asset('css/design.css'))}">
+${(styles || []).map((rel) => `<link rel="stylesheet" href="${esc(asset(rel))}">`).join('\n')}
 <script src="${esc(ovServe.url('kit-web.js'))}" defer></script>
 <script src="${esc(ovServe.url('motion.js'))}" defer></script>
 ${(scripts || []).map((rel) => `<script src="${esc(asset(rel))}" defer></script>`).join('\n')}

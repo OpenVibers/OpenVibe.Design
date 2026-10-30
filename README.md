@@ -73,6 +73,9 @@ The API is under `/api/v1/designs`; `/developers` lists the routes. `migrations/
 |---|---|
 | `/` | the theme catalogue's front door |
 | `/studio` | the theme studio; includes `/js/studio.js` and `/css/design.css` |
+| `/patterns` | production patterns with live demos and generated SwiftUI and Compose specs |
+| `/patterns/:slug` | one Kit pattern, its rule, dated bug, tokens and native specs |
+| `/patterns/mark/studies` | five OpenVibe mark studies copied from the research artifact |
 | `/t/:slug` | one public theme (Network 404 → the 404 page) |
 | `/arena` | the Arena leaderboard per category and the way to start a round |
 | `/arena/new` | the start-a-round form (works without JavaScript) |
