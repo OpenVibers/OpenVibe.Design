@@ -150,7 +150,8 @@ function home({ themes } = {}) {
             head: 'What you can do',
             panes: arts.map((a, i) => ({ id: `ds-scene-${i}`, label: sceneTitles[i] || `Scene ${i + 1}`, html: a[0] })),
         });
-        body = start > 0 && end > 0 ? body.slice(0, start) + pick + body.slice(end) : body;
+        // The section stays: its scenes are the pick block's panes, and a wide screen shows them as they were.
+        body = start > 0 && end > 0 ? body.slice(0, start) + body.slice(start, body.indexOf('>', start) + 1) + pick + '</section>' + body.slice(end) : body;
     }
     // The code samples and the questions are the parts a reader rarely needs on a phone.
     body = foldAround(body, '>Your theme, in your app</h2>', 'dev', '<h2 id="ds-dev-h">Your theme, in your app</h2>');
