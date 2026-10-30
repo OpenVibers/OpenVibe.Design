@@ -15,12 +15,14 @@
  * themselves never contain it. `me` comes from the session the SSO middleware already resolved.
  */
 const express = require('express');
+const path = require('path');
 const views = require('../views');
 const tokensView = require('../views/tokens');
 const lookView = require('../views/look');
 const componentsView = require('../views/components');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
+const patternsView = require('../views/patterns');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
 const { ArenaError } = require('../arena/store');
@@ -57,6 +59,14 @@ function createPageRoutes(ctx) {
         const subject = viewer && viewer.kind === 'user' ? viewer.subject : null;
         return subject ? await arena.counts(subject).catch(() => null) : null;
     };
+
+    // ── Production patterns: one data-backed page and generated native spec per pattern ──
+    r.get('/patterns', (req, res) => page(res, 200, patternsView.index(), req.viewer));
+    r.get('/patterns/mark/studies', (req, res) => res.sendFile(path.join(__dirname, '../../public/mark-studies.html')));
+    r.get('/patterns/:slug', (req, res) => {
+        const pattern = patternsView.patterns.find((item) => item.slug === req.params.slug);
+        return pattern ? page(res, 200, patternsView.page(pattern), req.viewer) : page(res, 404, views.notFound(), req.viewer);
+    });
 
     r.get('/create', async (req, res) => {
         res.set('Cache-Control', 'private, no-store');
