@@ -482,3 +482,12 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .lk-sample p { margin: 0; }
 .lk-sample-muted { color: var(--text-muted, #7386a3); }
 .lk-sample-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px !important; }
+
+/* Touch targets on phones (fleet audit, 2026-10-29): touch pointers only. */
+@media (pointer: coarse) {
+  .pv-btn { min-height: 45px; }
+  .sc-room-chips a { min-height: 44px; }
+  .ov-room article a, .ds-act a, .ds-more { position: relative; }
+  .ov-room article a::after, .ds-act a::after { content: ''; position: absolute; left: 0; right: 0; top: -2px; bottom: -2px; }
+  .ds-more::after { content: ''; position: absolute; left: 0; right: 0; top: -14px; bottom: -14px; }
+}
