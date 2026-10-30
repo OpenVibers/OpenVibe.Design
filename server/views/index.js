@@ -104,24 +104,24 @@ function home({ themes } = {}) {
             { value: 7, label: 'platforms to export to' },
         ].filter((p) => p.value),
         scenes: [
-            { title: 'One theme, every site', text: 'Try a theme on a Live channel, a Chat room and a shop side by side. Every contrast check must pass, and colour-blind previews show it as everyone sees it. Use it, and the whole network wears it from its next page; any earlier look is one tap back.', html: `<div class="ds-scene-pv">${previews()}</div>`, action: { href: '/studio', label: 'Open the studio' } },
+            { title: 'One theme, every site', text: 'Try a theme on a Live channel, a Chat room and a shop side by side. Every contrast check must pass, and colour-blind previews show it as everyone sees it. Use it, and the whole network wears it from its next page; any earlier look is one tap back. Comfort settings ride on top of any theme: more contrast, a readable font, colour-blind-safe colours, true black.', html: `<div class="ds-scene-pv">${previews()}</div>`, action: { href: '/studio', label: 'Open the studio' } },
             { title: 'Make it with AI, on your theme', text: 'Describe what you need and three AI designers draft it at once. Every draft wears your theme, so it already looks like it belongs.', html: make, action: { href: '/create', label: 'Make something' } },
             { title: 'See which AI designs best', text: 'The Arena sends one prompt to three models, shows two drafts without their names, and ranks the designers by the votes, with what each draft cost and how long it took. Every prompt, page and vote is open data.', html: vs, action: { href: '/arena', label: 'Vote in the Arena' } },
         ],
         dev: {
             title: 'Your theme, in your app',
-            lede: 'Every theme is a set of W3C design tokens. The same values reach the web as CSS variables, Android as a Compose colour scheme and iOS as SwiftUI colours, so a native app wears your theme without being a web page in a frame.',
+            lede: 'Every theme is a set of W3C design tokens. The same values reach the web as CSS variables, Android as a Compose colour scheme and iOS as SwiftUI colours, so a native app wears your theme without being a web page in a frame. The Kotlin and Swift output is compiled on every change, and AI assistants read every theme and component through the Design MCP server.',
             samples: [
                 { label: 'Android', code: 'MaterialTheme(\n    colorScheme = if (isSystemInDarkTheme()) VibeDarkColorScheme\n                  else VibeLightColorScheme,\n) { App() }' },
                 { label: 'iOS', code: 'Text("Live now")\n    .foregroundStyle(VibeDarkTokens.colorTextPrimary)\n    .padding(OvScale.spaceLg)\n    .background(VibeDarkTokens.colorBgRaised,\n                in: .rect(cornerRadius: OvScale.radiusMd))' },
                 { label: 'Web', code: 'curl "https://openvibe.design/api/v1/tokens/vibe?format=css" > vibe.css\n\n.card { background: var(--ov-color-bg-raised);\n        border-radius: var(--ov-radius-md); }' },
             ],
-            links: [{ label: 'Every platform', href: '/tokens' }, { label: 'The API', href: '/developers' }],
+            links: [{ label: 'Every platform', href: '/tokens' }, { label: 'The API', href: '/developers' }, { label: 'MCP for AI assistants', href: '/developers#mcp' }],
         },
         explore: { title: 'More on Design', items: [
             { title: 'Tokens', text: 'Any theme as CSS, Compose, SwiftUI, Flutter or Figma', href: '/tokens', icon: 'ov:code' },
             { title: 'Create', text: 'Three AI drafts on your theme', href: '/create', icon: 'ov:ai' },
-            { title: 'Your look', text: 'Light or dark, text size, motion and seasons, for every site', href: '/look', icon: 'ov:account' },
+            { title: 'Your look', text: 'Light or dark, text size, motion, seasons and comfort settings, for every site', href: '/look', icon: 'ov:account' },
         ] },
         html: strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/studio">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : '',
         faq: { items: [
@@ -201,6 +201,7 @@ function developers() {
         ['GET /api/v1/tokens', 'The export targets.'],
         ['GET /api/v1/components', 'The components\' contract: anatomy and tokens, props, states, a11y, layout, and Compose and SwiftUI reference views.'],
         ['POST /api/v1/components/validate', 'Check a kit document ({ doc }): known components and props, typed values, children, size, links. Answers { ok, errors }.'],
+        ['POST /mcp', 'MCP for AI assistants (Streamable HTTP, protocol 2025-06-18, no auth): openvibe_design_list_themes, openvibe_design_get_theme_tokens, openvibe_design_list_components, openvibe_design_get_component and openvibe_design_validate_kit_document, all read-only.'],
         ['GET /api/themes', 'Every public OpenVibe theme with its colours (Network\'s catalog).'],
         ['GET /api/themes/:id', 'One theme.'],
         ['GET /api/me/theme', 'Your active theme (signed in).'],
@@ -208,7 +209,7 @@ function developers() {
         ['GET /api/me/theme/history', 'Your earlier looks, newest first; POST /api/me/theme/history/:id/restore brings one back.'],
     ];
     const body = `<header class="ds-page-h"><p class="ds-kicker">For developers</p><h1>The Design API</h1><p class="ds-lede">The theme catalog is open JSON. A theme is a set of CSS custom properties every OpenVibe site reads; Network keeps which one each person uses.</p></header>
-<section aria-labelledby="ds-ep-h" id="tokens"><h2 id="ds-ep-h">Endpoints</h2><dl class="ds-eps">${rows.map(([ep, what]) => `<div><dt><code>${esc(ep)}</code></dt><dd>${esc(what)}</dd></div>`).join('')}</dl></section>
+<section aria-labelledby="ds-ep-h" id="tokens"><span id="mcp"></span><h2 id="ds-ep-h">Endpoints</h2><dl class="ds-eps">${rows.map(([ep, what]) => `<div><dt><code>${esc(ep)}</code></dt><dd>${esc(what)}</dd></div>`).join('')}</dl></section>
 <p class="ds-fine">Themes also export and import as <code>openvibe-theme@1</code> files through <a href="https://openvibe.network/api/themes">Network's theme API</a>.</p>`;
     return layout({ title: 'The Design API', path: '/developers', body: `<div class="ds-wrap">${body}</div>`, active: '/developers' });
 }
