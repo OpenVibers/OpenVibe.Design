@@ -32,6 +32,7 @@ const { createKeyStore } = require('./auth/keys');
 const { createSso } = require('./auth/sso');
 const { createThemeCatalog } = require('./themes');
 const { createApi } = require('./http/api');
+const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
@@ -122,6 +123,14 @@ async function createApp(opts = {}) {
         referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     }));
     app.use(cookieParser());
+    app.use(createMcpRoutes(ctx));
+    const agentLayer = express();
+    require('openvibe-shared/agent-layer').mount(agentLayer, { descriptor: {
+        id: 'design', name: 'OpenVibe.Design', purpose: 'Public theme tokens and component specifications.',
+        home: config.baseUrl, api: '/api/v1', docs: '/developers', mcp: { url: '/mcp' },
+        policy: { auth: ['none'] },
+    } });
+    app.use((req, res, next) => req.path === '/.well-known/agent.json' ? agentLayer(req, res, next) : next());
 
     // ── Per-IP budget for the API and sign-in (120 a minute) ─
     const limiter = rateLimit({

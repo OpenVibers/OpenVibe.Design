@@ -77,6 +77,8 @@ function createDiscoveryRoutes(ctx) {
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
                 { title: 'Machine-readable', links: [
+                    { title: 'MCP tools', url: abs('/mcp'), note: 'POST, Streamable HTTP; public themes, tokens and components' },
+                    { title: 'Agent manifest', url: abs('/.well-known/agent.json') },
                     { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
                     { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
                     { title: 'Sitemap', url: abs('/sitemap.xml') },

@@ -87,6 +87,15 @@ JavaScript. A page rendered for a signed-in person is `private, no-store`; a pub
 
 ## API
 
+### MCP
+
+`POST /mcp` is a public, stateless Streamable HTTP MCP endpoint (protocol `2025-06-18`).
+It offers `openvibe_design_list_themes`, `openvibe_design_get_theme_tokens`,
+`openvibe_design_list_components`, `openvibe_design_get_component`, and
+`openvibe_design_validate_kit_document`. The tools read the same Network catalogue,
+token compiler and component contract as the JSON API. Discover it through
+`/.well-known/agent.json` or `/llms.txt`; no sign-in is needed.
+
 The theme surface is proxied to `config.networkUrl` (`OV_NETWORK_INTERNAL_URL`, default `http://127.0.0.1:4000`)
 under `/api/themes`; the Arena's own data is under `/api/v1/arena`. Errors are RFC 9457
 `application/problem+json`. Arena reads are public; writes need the session and a same-origin signal
