@@ -206,5 +206,5 @@ Part of the [OpenVibe network](https://openvibe.network). Built in the open by
 <!-- versions:start -->
 - openvibe-contracts: v0.236.0
 - openvibe-sdk: v0.73.0
-- openvibe-shared: v4.47.2
+- openvibe-shared: v4.48.0
 <!-- versions:end -->
