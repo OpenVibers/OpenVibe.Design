@@ -134,6 +134,21 @@ const curveOf = (v) => { const m = /cubic-bezier\(([^)]+)\)/.exec(String(v)); re
         assert.strictEqual(byId.json().color.bg.base.$value, '#101820');
     });
 
+    await check('a community theme cannot write into the files people paste', async () => {
+        const formats = require('../server/tokens/formats');
+        const doc = {
+            $extensions: { 'network.openvibe': { name: 'Evil */ body{display:none} /* --> <x>', slug: 'evil', mode: 'dark */ a{}' } },
+            color: { bg: { base: { $value: '#101820', $extensions: { 'network.openvibe': { css: '--bg-primary' } } }, bad: { $value: 'red;} body{display:none', $extensions: { 'network.openvibe': { css: '--accent' } } } } },
+        };
+        const out = formats.css(doc);
+        const first = out.split('\n')[0];
+        assert.strictEqual(out.indexOf('*/'), first.length - 2, 'the name stays inside its comment: the first */ is the one that ends the line');
+        assert.ok(!out.includes('red;}'), 'a value cannot close the rule');
+        assert.match(out, /^\/\* Evil \* \/ body\{display:none\} \/\* - -> <x> \(dark\)/, 'the name is kept, harmless');
+        assert.match(out, /--bg-primary: #101820;/, 'a real colour passes');
+        assert.ok(!/--accent:/.test(out), 'anything that is not a colour is left out');
+        assert.ok(!formats.androidXml(doc).includes('--> <x>'), 'nor can it close an XML comment');
+    });
     await check('a built-in theme is immutable, a community one is not, and both are open to any origin', async () => {
         const b = await t.get('/tokens/vibe.css');
         assert.strictEqual(b.headers.get('cache-control'), 'public, max-age=31536000, immutable');
@@ -145,6 +160,15 @@ const curveOf = (v) => { const m = /cubic-bezier\(([^)]+)\)/.exec(String(v)); re
         assert.strictEqual(c.headers.get('access-control-allow-origin'), '*');
     });
 
+    await check('the /tokens page links every file for the theme it shows', async () => {
+        const html = (await t.get('/tokens?theme=aurora')).text;
+        const fs = require('fs'); const path = require('path');
+        assert.match(fs.readFileSync(path.join(__dirname, '..', 'server/views/tokens.js'), 'utf8'), /filesRow\(slug\)/, 'the page draws the row');
+        assert.match(fs.readFileSync(path.join(__dirname, '..', 'server/http/tokens.js'), 'utf8'), /Access-Control-Allow-Origin/, 'files open to any origin');
+        assert.match(fs.readFileSync(path.join(__dirname, '..', 'server/app.js'), 'utf8'), /createTokenFileRoutes/, 'mounted');
+        assert.ok(html.includes('Files your tools can fetch'));
+        ['tokens.json', 'css', 'tailwind.js', 'style-dictionary.json', 'swift', 'kt', 'xml'].forEach((ext) => assert.ok(html.includes(`href="/tokens/aurora.${ext}"`), ext));
+    });
     await check('an unknown theme or an unknown format is a 404', async () => {
         assert.strictEqual((await t.get('/tokens/nope.css')).status, 404);
         assert.strictEqual((await t.get('/tokens/nope.tokens.json')).status, 404);

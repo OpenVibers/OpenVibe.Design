@@ -28,6 +28,9 @@ function argb(value) {
     return { opaque: c.a >= 1, argb: `${hex2(a)}${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}`, rgb: `${hex2(c.r)}${hex2(c.g)}${hex2(c.b)}` };
 }
 
+const CSS_NAME = /^--[a-z0-9-]{1,64}$/;
+const CSS_COLOUR = /^(#[0-9a-f]{3,8}|rgba?\([0-9.,\s%]+\)|hsla?\([0-9.,\s%deg]+\))$/i;
+
 // Text for a comment: one line, no comment terminators, nothing XML would refuse.
 const safe = (s) => String(s == null ? '' : s)
     .replace(/[\r\n\u2028\u2029]+/g, ' ')
@@ -53,14 +56,15 @@ function css(doc) {
     const m = metaOf(doc);
     const lines = [];
     lines.push(`    /* the theme's colours */`);
-    for (const c of colourList(doc)) lines.push(`    ${c.css}: ${c.value};`);
+    // A community theme's values reach a stylesheet people paste: only a custom property's name and a colour pass.
+    for (const c of colourList(doc)) if (CSS_NAME.test(c.css) && CSS_COLOUR.test(String(c.value))) lines.push(`    ${c.css}: ${c.value};`);
     lines.push(`    /* the kit's motion (openvibe-shared/ov-fx) */`);
     for (const d of MOTION.durations) lines.push(`    ${d.css}: ${d.ms}ms;`);
     for (const e of MOTION.easings) lines.push(`    ${e.css}: cubic-bezier(${e.value.join(', ')});`);
     lines.push(`    /* the mark */`);
     for (const b of BRAND) lines.push(`    ${b.css}: ${b.value};`);
     lines.push(`    color-scheme: ${m.mode === 'light' ? 'light' : 'dark'};`);
-    return `/* ${m.name} (${m.mode}) — OpenVibe design tokens, from openvibe.design. Regenerate instead of editing. */\n:root {\n${lines.join('\n')}\n}\n`;
+    return `/* ${safe(m.name)} (${m.mode === 'light' ? 'light' : 'dark'}) — OpenVibe design tokens, from openvibe.design. Regenerate instead of editing. */\n:root {\n${lines.join('\n')}\n}\n`;
 }
 
 /** A Tailwind preset: the colours, the durations and the curves, under theme.extend. */
