@@ -6,6 +6,7 @@
  *
  *   /, /studio, /t/:slug, /arena/*, /developers   the pages (http/pages.js)
  *   /api/v1/arena/*                               the Arena API (http/arena-api.js)
+ *   /tokens/<theme>.<ext>                         a theme as the file every tool can read (http/tokens.js)
  *   /api/themes/*, /api/me/theme*                 the theme API proxy to OpenVibe.Network (http/api.js)
  *   /auth/*                                       Network SSO with PKCE (auth/sso.js)
  *   /internal/events                              ADR-033 account export/deletion (identity/account-data.js)
@@ -37,6 +38,7 @@ const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
 const { createPageRoutes } = require('./http/pages');
+const { createTokenFileRoutes } = require('./http/tokens');
 const { createDiscoveryRoutes } = require('./http/discovery');
 const { createIconRoutes } = require('./http/icons');
 const { createServiceReadiness } = require('./observability');
@@ -177,6 +179,9 @@ async function createApp(opts = {}) {
 
     // ── Crawl artifacts ─────────────────────────────────────
     app.use(createDiscoveryRoutes(ctx));
+
+    // ── The token files: /tokens/<theme>.<ext> (a theme as the file every tool can read) ──
+    app.use('/tokens', createTokenFileRoutes(ctx));
 
     // ── Pages ───────────────────────────────────────────────
     app.use(createPageRoutes(ctx));
