@@ -2,10 +2,11 @@
 /**
  * A glyph as a file (plan L32 I5): a standalone SVG with the person's choices, a PNG drawn from it, every glyph as a
  * ZIP of SVGs, and the font files openvibe-shared builds. The choices are the PNG maker's on /icons/<name>: size,
- * density, colour (or the mark's two), stroke weight, padding, and a ground (none, a circle, a square or a squircle)
- * in its own colour. Every value is clamped; anything unknown falls back to the default, so a URL never fails.
+ * density, colour (or the mark's two), stroke weight, padding, a ground (none, a circle, a square or a squircle)
+ * in its own colour, and a finish (L44: flat; depth, light to deep in its own colour as the mark is drawn; a glow
+ * behind it; or both). Every value is clamped; anything unknown falls back to the default, so a URL never fails.
  *
- *   options(query)  → { size, scale, color, stroke, pad, ground, bg }, and isDefault(opts)
+ *   options(query)  → { size, scale, color, stroke, pad, ground, bg, fx }, and isDefault(opts)
  *   query(opts)     → the query string that rebuilds the same file (only what differs from the default)
  *   svg(name, opts) → standalone SVG text, or null for an unknown glyph
  *   png(name, opts) → a PNG Buffer (resvg), or null
@@ -20,9 +21,16 @@ const glyphs = require('openvibe-shared/glyphs');
 const SHARED = path.dirname(require.resolve('openvibe-shared/glyphs'));
 const MARK = ['#4f7cff', '#8b5cf6'];
 const GROUNDS = ['none', 'circle', 'square', 'squircle'];
-const DEFAULT = Object.freeze({ size: 256, scale: 1, color: '0f172a', stroke: 2, pad: 0, ground: 'none', bg: 'ffffff' });
+const FINISHES = ['flat', 'depth', 'glow', 'depth-glow'];
+const DEFAULT = Object.freeze({ size: 256, scale: 1, color: '0f172a', stroke: 2, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat' });
 const SIZES = [16, 24, 32, 48, 64, 96, 128, 192, 256, 512, 1024];
 
+/** A hex colour (no #) mixed toward `to` by t, as #rrggbb. */
+function mix(c, to, t) {
+    const full = (h) => (h.length === 3 ? h.split('').map((x) => x + x).join('') : h);
+    const a = parseInt(full(c.replace(/^#/, '')), 16), b = parseInt(full(to), 16);
+    return `#${[16, 8, 0].map((sh) => Math.round(((a >> sh) & 255) * (1 - t) + ((b >> sh) & 255) * t).toString(16).padStart(2, '0')).join('')}`;
+}
 const hex = (v, d) => (/^(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v || '').replace(/^#/, '')) ? String(v).replace(/^#/, '').toLowerCase() : d);
 const num = (v, lo, hi, d, step = 1) => {
     const n = Number(v);
@@ -38,6 +46,7 @@ function options(q = {}) {
         pad: num(q.pad, 0, 40, DEFAULT.pad),
         ground: GROUNDS.includes(String(q.ground)) ? String(q.ground) : DEFAULT.ground,
         bg: hex(q.bg, DEFAULT.bg),
+        fx: FINISHES.includes(String(q.fx)) ? String(q.fx) : DEFAULT.fx,
     };
 }
 const isDefault = (o) => Object.keys(DEFAULT).every((k) => o[k] === DEFAULT[k]);
@@ -58,11 +67,21 @@ function svg(name, o = options()) {
     const ground = o.ground === 'circle' ? `<circle cx="${box / 2}" cy="${box / 2}" r="${box / 2}" fill="#${o.bg}"/>`
         : o.ground === 'square' ? `<rect width="${box}" height="${box}" fill="#${o.bg}"/>`
             : o.ground === 'squircle' ? `<rect width="${box}" height="${box}" rx="${+(box * 0.225).toFixed(3)}" fill="#${o.bg}"/>` : '';
-    const stroke = o.color === 'mark' ? 'url(#ovg-mark)' : `#${o.color}`;
-    const defs = o.color === 'mark' ? `<defs><linearGradient id="ovg-mark" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="${MARK[0]}"/><stop offset="1" stop-color="${MARK[1]}"/></linearGradient></defs>` : '';
+    const depth = o.fx === 'depth' || o.fx === 'depth-glow', glow = o.fx === 'glow' || o.fx === 'depth-glow';
+    let stroke = o.color === 'mark' ? 'url(#ovg-mark)' : `#${o.color}`;
+    let extra = o.color === 'mark' ? `<linearGradient id="ovg-mark" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="${depth ? mix(MARK[0], 'ffffff', 0.32) : MARK[0]}"/><stop offset="1" stop-color="${depth ? mix(MARK[1], '000000', 0.14) : MARK[1]}"/></linearGradient>` : '';
+    if (depth && o.color !== 'mark') {
+        // Light to deep in its own colour, the mixes the mark uses (as openvibe-shared mark.tones, a touch less light: a glyph is thinner), across the 24-unit grid.
+        extra += `<linearGradient id="ovg-depth" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="${mix(o.color, 'ffffff', 0.22)}"/><stop offset="1" stop-color="${mix(o.color, '000000', 0.18)}"/></linearGradient>`;
+        stroke = 'url(#ovg-depth)';
+    }
+    // The glow: the same lines, wider and blurred, behind the glyph (resvg draws feGaussianBlur).
+    if (glow) extra += `<filter id="ovg-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${+(0.7 * o.stroke).toFixed(2)}"/></filter>`;
+    const defs = extra ? `<defs>${extra}</defs>` : '';
     const drawn = name === 'busy' ? inner.replace(/stroke-width="[^"]*"/, `stroke-width="${+(3.4 * o.stroke / 2).toFixed(2)}"`) : inner;
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${box} ${box}" width="${px}" height="${px}">`
         + `<title>${name}</title>${defs}${ground}`
+        + (glow ? `<g transform="translate(${off} ${off})" fill="none" stroke="${stroke}" stroke-width="${+(o.stroke * 1.7).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" filter="url(#ovg-glow)" opacity=".7">${drawn}</g>` : '')
         + `<g transform="translate(${off} ${off})" fill="none" stroke="${stroke}" stroke-width="${o.stroke}" stroke-linecap="round" stroke-linejoin="round">${drawn}</g></svg>`;
 }
 

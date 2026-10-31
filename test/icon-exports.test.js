@@ -4,6 +4,8 @@
 // fonts, the sprite and a ZIP of every SVG, and the Font Awesome alternative page; all in the sitemap.
 const assert = require('node:assert/strict');
 const zlib = require('zlib');
+const fs = require('fs');
+const path = require('path');
 const { boot, check, done } = require('./helpers/boot');
 const glyphs = require('openvibe-shared/glyphs');
 const ex = require('../server/glyphs/export');
@@ -73,9 +75,32 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             assert.deepEqual(pngSize((await t.get('/icons/heart.png')).buffer), [256, 256], 'the default');
             assert.equal((await t.get('/icons/nope.png')).status, 404);
             const o = ex.options({ size: '3', color: 'javascript:', stroke: '9', pad: '-4', ground: '<x>', bg: 'zz' });
-            assert.deepEqual(o, { size: 16, scale: 1, color: '0f172a', stroke: 3, pad: 0, ground: 'none', bg: 'ffffff' });
+            assert.deepEqual(o, { size: 16, scale: 1, color: '0f172a', stroke: 3, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat' });
         });
 
+        await check('the finish (L44): flat by default, depth light to deep, a glow behind, or both', async () => {
+            assert.equal(ex.options({}).fx, 'flat');
+            assert.equal(ex.options({ fx: 'nonsense' }).fx, 'flat', 'anything unknown is flat');
+            assert.equal(ex.query(ex.options({ fx: 'depth-glow' })), '?fx=depth-glow', 'the link rebuilds it');
+            const flat = ex.svg('heart', ex.options({}));
+            assert.ok(!/ovg-depth|ovg-glow/.test(flat), 'flat is unchanged');
+            const depth = ex.svg('heart', ex.options({ fx: 'depth', color: '22c55e' }));
+            assert.match(depth, /<linearGradient id="ovg-depth" gradientUnits="userSpaceOnUse"[^>]*><stop offset="0" stop-color="#[0-9a-f]{6}"\/><stop offset="1" stop-color="#[0-9a-f]{6}"\/>/, 'light to deep in its own colour');
+            assert.match(depth, /stroke="url\(#ovg-depth\)"/);
+            const glow = ex.svg('heart', ex.options({ fx: 'glow' }));
+            assert.match(glow, /<filter id="ovg-glow"[^>]*><feGaussianBlur/, 'a blur');
+            assert.equal((glow.match(/<g transform=/g) || []).length, 2, 'the glow is a second, wider copy behind');
+            assert.ok(glow.indexOf('filter="url(#ovg-glow)"') < glow.lastIndexOf('<g transform='), 'behind, not on top');
+            const mark = ex.svg('heart', ex.options({ fx: 'depth', color: 'mark' }));
+            assert.ok(mark.includes('url(#ovg-mark)') && !mark.includes('#4f7cff"/>'), 'the mark\'s two colours take the depth too');
+            const res = await t.get('/icons/heart.png?size=64&fx=depth-glow&color=mark');
+            assert.equal(res.status, 200);
+            assert.equal(res.headers.get('content-type'), 'image/png', 'resvg draws the glow');
+            const page = (await t.get('/icons/heart?fx=glow')).text;
+            assert.ok(page.includes('<option value="glow" selected'), 'the maker remembers the finish');
+            const js = fs.readFileSync(path.join(__dirname, '..', 'public/js/icon.js'), 'utf8');
+            assert.match(js, /fx: 'flat' \}/, 'the maker\'s live link leaves a flat finish out, as the server does');
+        });
         await check('the pack: fonts, the sprite, the CSS, the code points and a ZIP of every SVG', async () => {
             const woff = await t.get('/icons/pack/ov-glyphs.woff2');
             assert.equal(woff.status, 200);
