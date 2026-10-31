@@ -29,6 +29,7 @@ const NAV = [
     { label: 'Arena', href: '/arena', icon: 'fa-crown' },
     { label: 'Tokens', href: '/tokens', icon: 'fa-code' },
     { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
+    { label: 'Motion', href: '/motion', icon: 'fa-wand-magic-sparkles', more: true },
     { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },

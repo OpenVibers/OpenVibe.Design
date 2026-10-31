@@ -1,0 +1,97 @@
+/* /motion: how OpenVibe moves (server/views/motion.js). Theme variables from the Frame; the effects themselves come from
+   openvibe-shared/ov-fx (loaded by the navbar because the page has data-fx). Names in the brand face, as on /brand. */
+.mo{--mo-o:#4f7cff;--mo-v:#8b5cf6;--mo-face:'OV Brand',Nunito,Inter,-apple-system,BlinkMacSystemFont,sans-serif;max-width:1120px;margin:0 auto;padding:clamp(18px,4vw,44px) clamp(16px,3vw,32px) 96px;color:var(--text-primary)}
+.mo svg{display:block;overflow:visible}
+.mo .ov-mark{--ovm-o:var(--mo-o);--ovm-v:var(--mo-v)}
+.mo .ov-mark .sh,.mo .ov-mark .sw2{display:none!important}
+.mo :not(pre)>code{font:600 .88em/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:1px 6px;border-radius:6px;background:color-mix(in srgb,var(--text-primary) 7%,transparent)}
+
+/* The hero: the mark on a stage of its own two colours, the words beside it. */
+.mo-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(20px,4vw,56px);align-items:center;padding:clamp(8px,2vw,20px) 0 clamp(28px,5vw,56px)}
+.mo-hero-stage{position:relative;display:grid;place-items:center;aspect-ratio:1;max-height:440px;border-radius:32px;overflow:hidden;background:radial-gradient(60% 50% at 38% 52%,color-mix(in srgb,var(--mo-o) 26%,transparent),transparent 70%),radial-gradient(55% 50% at 66% 46%,color-mix(in srgb,var(--mo-v) 26%,transparent),transparent 70%),var(--bg-secondary);border:1px solid var(--border)}
+.mo-hero-stage::after{content:'';position:absolute;inset:0;background-image:radial-gradient(color-mix(in srgb,var(--text-primary) 8%,transparent) 1px,transparent 1.2px);background-size:22px 22px;-webkit-mask-image:radial-gradient(closest-side,transparent 40%,#000);mask-image:radial-gradient(closest-side,transparent 40%,#000);pointer-events:none}
+.mo-hero-stage .ov-mark{position:relative;z-index:1;width:min(260px,62%)!important;height:auto!important;aspect-ratio:1}
+.mo-replay{position:absolute;z-index:2;bottom:14px;left:50%;transform:translateX(-50%);min-height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--border);background:color-mix(in srgb,var(--bg-primary) 70%,transparent);backdrop-filter:blur(8px);color:var(--text-primary);font:inherit;font-size:13.5px;font-weight:650;cursor:pointer}
+.mo-replay:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}
+.mo-replay:focus-visible,.mo-btn:focus-visible,.mo-card:focus-visible,.mo-poster:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.mo-eye{margin:0 0 10px;color:var(--accent);font-size:12px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+.mo-h1{margin:0;font-family:var(--mo-face);font-weight:900;font-size:clamp(36px,6vw,64px);line-height:1.02;letter-spacing:-.02em;text-wrap:balance}
+.mo-lede{margin:16px 0 0;max-width:54ch;color:var(--text-secondary);font-size:clamp(15px,1.6vw,17px);line-height:1.6}
+.mo-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+
+/* Sections, as on /brand. */
+.mo-sec{padding:clamp(26px,4vw,44px) 0;border-top:1px solid var(--border)}
+.mo-sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px 32px;align-items:baseline;margin-bottom:22px}
+.mo-sec-head h2{margin:0;font-family:var(--mo-face);font-weight:900;font-size:clamp(22px,3vw,30px);line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
+.mo-sec-head p{margin:0;max-width:60ch;color:var(--text-secondary);line-height:1.55}
+.mo h3{margin:0 0 10px;font-size:14px;font-weight:750}
+
+/* The effects: a stage for each, its name, what it says and the word that turns it on. */
+.mo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px}
+.mo-fx{margin:0;display:grid;grid-template-rows:auto 1fr;border-radius:22px;border:1px solid var(--border);background:var(--bg-card,var(--bg-secondary));overflow:hidden;min-width:0}
+.mo-fx-stage{display:grid;place-items:center;min-height:170px;padding:22px;background:radial-gradient(80% 70% at 50% 40%,color-mix(in srgb,var(--accent) 9%,transparent),transparent),var(--bg-secondary);border-bottom:1px solid var(--border)}
+.mo-fx figcaption{display:grid;align-content:start;gap:6px;padding:14px 16px 16px}
+.mo-fx figcaption b{font-size:15px}
+.mo-fx figcaption span{color:var(--text-secondary);font-size:13.5px;line-height:1.5}
+.mo-fx figcaption code{justify-self:start;margin-top:4px;font-size:12px}
+.mo-btn{min-height:44px;padding:0 20px;border-radius:12px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.mo-btn:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}
+.mo-btn-strong{background:var(--accent-strong,var(--accent));border-color:transparent;color:var(--on-accent-strong,#fff)}
+.mo-card{display:flex;align-items:center;gap:10px;width:100%;max-width:250px;padding:10px 12px;border-radius:16px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);text-decoration:none}
+.mo-card-art{flex:none;width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--bg-secondary)}
+.mo-card-art svg{width:30px;height:30px}
+.mo-card span:last-child{display:grid;gap:2px;min-width:0}
+.mo-card b{font-size:14px}
+.mo-card small{color:var(--text-muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mo-poster{display:grid;justify-items:start;align-content:end;gap:2px;width:min(170px,100%);aspect-ratio:4/5;padding:16px;border-radius:18px;color:#fff;background:radial-gradient(90% 60% at 30% 25%,color-mix(in srgb,var(--mo-o) 85%,#fff 0%),transparent 70%),linear-gradient(160deg,var(--mo-o),var(--mo-v) 70%,#2e1065);box-shadow:0 18px 40px -18px color-mix(in srgb,var(--mo-v) 70%,transparent)}
+.mo-poster-art{margin-bottom:auto}
+.mo-poster-art svg{width:44px;height:44px}
+.mo-poster b{font-family:var(--mo-face);font-weight:900;font-size:17px}
+.mo-poster small{opacity:.85;font-size:12px}
+.mo-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.mo-list li{padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--bg-primary);font-size:13.5px;font-weight:650}
+.mo-num{margin:0;display:grid;justify-items:center;gap:4px;text-align:center}
+.mo-num b{font-family:var(--mo-face);font-weight:900;font-size:clamp(34px,4.2vw,46px);letter-spacing:-.02em;font-variant-numeric:tabular-nums;background:linear-gradient(120deg,var(--mo-o),var(--mo-v));-webkit-background-clip:text;background-clip:text;color:transparent}
+.mo-num span{color:var(--text-secondary);font-size:13px}
+.mo-skel{display:grid;gap:10px;width:100%;max-width:230px}
+.mo-skel span{display:block;height:14px;border-radius:7px;background:color-mix(in srgb,var(--text-muted) 14%,transparent)}
+.mo-skel span:first-child{height:96px;border-radius:14px}
+.mo-skel span:last-child{width:62%}
+
+/* The timing: each curve drawn, with a dot that races along it; the lengths as bars. */
+.mo-curves{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.mo-curve{display:grid;gap:8px;padding:16px;border-radius:20px;border:1px solid var(--border);background:var(--bg-secondary);min-width:0}
+.mo-curve svg{width:100%;max-width:200px;height:auto;justify-self:center}
+.mo-curve-grid{fill:none;stroke:var(--border);stroke-width:1}
+.mo-curve-line{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round}
+.mo-curve p{margin:0;font-size:14px}
+.mo-curve-use{color:var(--text-secondary);font-size:13px!important;line-height:1.5}
+.mo-race{position:relative;height:10px;border-radius:5px;background:color-mix(in srgb,var(--text-muted) 14%,transparent)}
+.mo-race i{position:absolute;top:50%;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:linear-gradient(135deg,var(--mo-o),var(--mo-v));box-shadow:0 0 0 3px var(--bg-secondary)}
+.mo-race.is-run i{left:100%;transition:left 1.1s var(--mo-ease,ease)}
+.mo-durs{list-style:none;margin:16px 0 14px;padding:0;display:grid;gap:8px}
+.mo-durs li{display:grid;grid-template-columns:110px minmax(0,1fr) 64px minmax(0,150px);gap:12px;align-items:center;font-size:13.5px}
+.mo-dur-bar{height:8px;width:var(--w);border-radius:4px;background:linear-gradient(90deg,var(--mo-o),var(--mo-v))}
+.mo-durs small{color:var(--text-secondary)}
+
+/* The rules. */
+.mo-rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.mo-rule{padding:16px 18px;border-radius:18px;border:1px solid var(--border);background:var(--bg-secondary)}
+.mo-rule b{font-size:15px}
+.mo-rule p{margin:6px 0 0;color:var(--text-secondary);font-size:13.5px;line-height:1.55}
+
+/* Use it. */
+.mo-use{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.mo-use>div{min-width:0}
+
+@media (max-width:760px){
+  .mo-hero,.mo-sec-head{grid-template-columns:1fr}
+  /* On a phone the effects and the rules run sideways, every one of them there to swipe to. */
+  .mo-grid,.mo-rules,.mo-curves{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(250px,80%);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
+  .mo-grid>*,.mo-rules>*,.mo-curves>*{scroll-snap-align:start}
+  .mo-hero-stage{max-height:none}
+  .mo-durs li{grid-template-columns:96px minmax(0,1fr) 56px}
+  .mo-durs small{display:none}
+}
+@media (prefers-reduced-motion:reduce){.mo-race.is-run i{transition:none}}
+html[data-ov-motion=reduced] .mo-race.is-run i{transition:none}
