@@ -26,6 +26,7 @@ const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const patternsView = require('../views/patterns');
 const brandView = require('../views/brand');
+const motionView = require('../views/motion');
 const { baseUrl: layoutBase } = require('../render/layout');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
@@ -72,6 +73,8 @@ function createPageRoutes(ctx) {
         if (!svg) return page(res, 404, views.notFound(), req.viewer);
         res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*').type('image/svg+xml').send(svg);
     });
+    // ── How OpenVibe moves: the mark's motion and the shared effects kit (plan L45) ──
+    r.get('/motion', (req, res) => page(res, 200, motionView.motionPage({ base: layoutBase() }), req.viewer));
     r.get('/patterns', (req, res) => page(res, 200, patternsView.index(), req.viewer));
     r.get('/patterns/mark/studies', (req, res) => res.sendFile(path.join(__dirname, '../../public/mark-studies.html')));
     r.get('/patterns/:slug', (req, res) => {
