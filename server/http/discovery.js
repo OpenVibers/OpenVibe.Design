@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const seo = require('openvibe-shared/seo');
+const glyphs = require('openvibe-shared/glyphs');
 const { asyncRouter } = require('./router');
 
 const SITE_NAME = 'OpenVibe.Design';
@@ -34,6 +35,7 @@ function publicPages(themes = []) {
         { path: '/tokens', changefreq: 'weekly', priority: 0.8, title: 'Your theme, as code', text: 'Any OpenVibe theme as design tokens: CSS variables, Tailwind, Jetpack Compose, SwiftUI, Flutter, Figma variables and W3C DTCG JSON, light and dark together.' },
         { path: '/brand', changefreq: 'monthly', priority: 0.7, title: 'The OpenVibe mark', text: 'The OpenVibe mark, a ring O and a round V: what each of its moves means, its forms, colours and the names beside it, with the SVG files and the code to use it on any site.' },
         { path: '/icons', changefreq: 'weekly', priority: 0.7, title: 'The OpenVibe glyphs', text: 'Every OpenVibe icon in one hand, the mark\'s: search them, copy or download their SVG, use them in place of Font Awesome, and draw new ones with OpenVibe.AI.' },
+        { path: '/icons/font-awesome-alternative', changefreq: 'monthly', priority: 0.6, title: 'A free Font Awesome alternative', text: 'Keep your Font Awesome markup and show the OpenVibe glyphs: one script, the same classes, animations and transforms, plus free web and desktop fonts.' },
         { path: '/arena', changefreq: 'daily', priority: 0.9, title: 'The Design Arena', text: 'One prompt, three AI designers, blind votes and an Elo leaderboard per category, with cost and time per generation.' },
     ];
     const themePages = (Array.isArray(themes) ? themes : []).filter((t) => t && t.slug).map((t) => ({
@@ -43,7 +45,13 @@ function publicPages(themes = []) {
         title: String(t.name || t.slug),
         text: `${t.mode ? `${String(t.mode)} theme. ` : ''}${String(t.description || 'A theme in the OpenVibe catalogue.')}`.trim(),
     }));
-    return [...static_, ...themePages];
+    // One page per glyph, with its SVG and a PNG as images (Google Images reads the licence from the page's JSON-LD).
+    const glyphPages = glyphs.NAMES.map((n) => ({
+        path: `/icons/${n}`, changefreq: 'monthly', priority: 0.5, title: `${n} icon`,
+        text: `The ${n.replace(/-/g, ' ')} icon from the OpenVibe glyphs: SVG, PNG at any size and colour, and the font.`,
+        images: [`/icons/${n}.svg`, `/icons/${n}.png?size=512`],
+    }));
+    return [...static_, ...themePages, ...glyphPages];
 }
 
 function createDiscoveryRoutes(ctx) {
@@ -74,7 +82,8 @@ function createDiscoveryRoutes(ctx) {
                     { title: 'OpenVibe.Design', url: abs('/'), note: 'the theme catalogue' },
                     { title: 'The studio', url: abs('/studio'), note: 'try, edit, use, submit and roll back a theme' },
                     { title: 'Tokens', url: abs('/tokens'), note: 'any theme as CSS, Tailwind, Compose (Android), SwiftUI (iOS), Flutter, Figma or DTCG JSON; the API is GET /api/v1/tokens/:theme?format=' },
-                    { title: 'The OpenVibe glyphs', url: abs('/icons'), note: 'every icon in one hand; the registry as data at GET /api/v1/glyphs; openvibe-shared/glyphs and ov-glyphs.js' },
+                    { title: 'The OpenVibe glyphs', url: abs('/icons'), note: 'every icon in one hand, each with its own page (/icons/<name>): SVG, PNG at any size and colour (/icons/<name>.png?size=&color=&stroke=&pad=&ground=&bg=), the WOFF2/TTF/OTF fonts and the sprite (/icons/pack/<file>); the registry as data at GET /api/v1/glyphs' },
+                    { title: 'A free Font Awesome alternative', url: abs('/icons/font-awesome-alternative'), note: 'one script keeps Font Awesome markup, classes, animations and data-fa-transform, and shows the OpenVibe glyphs' },
                     { title: 'The OpenVibe mark', url: abs('/brand'), note: 'the logo, its states and motion, colours, the brand face, SVG files and code (openvibe-shared/mark, ov-mark.js)' },
                     { title: 'The Design Arena', url: abs('/arena'), note: 'one prompt, three AI designers, blind votes and an Elo leaderboard' },
                     { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy' },
@@ -98,7 +107,7 @@ function createDiscoveryRoutes(ctx) {
     r.get('/sitemap.xml', async (_req, res) => {
         const pages = publicPages(await themes());
         const lastmod = siteUpdated();
-        const urls = pages.map((e) => ({ loc: abs(e.path), ...(lastmod ? { lastmod } : {}), changefreq: e.changefreq, priority: e.priority }));
+        const urls = pages.map((e) => ({ loc: abs(e.path), ...(lastmod ? { lastmod } : {}), changefreq: e.changefreq, priority: e.priority, ...(e.images ? { images: e.images.map(abs) } : {}) }));
         res.type('application/xml').set('Cache-Control', TEXT).send(seo.sitemapXml(urls));
     });
 

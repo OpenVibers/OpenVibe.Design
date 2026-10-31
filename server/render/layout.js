@@ -43,7 +43,7 @@ const baseUrl = () => BASE;
 const canonical = (p) => `${BASE}${p || '/'}`;
 
 /** The page around a body: the shared shell with the room's stylesheets and behaviour. */
-function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [] } = {}) {
+function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [], image, imageAlt } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
     const navbar = {
@@ -68,6 +68,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
         canonical,
         robots,
         jsonLd,
+        ...(image ? { image, imageAlt } : {}),
         home: '/',
         navLinks: NAV,
         navbar,
