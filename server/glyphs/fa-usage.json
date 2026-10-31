@@ -1,0 +1,1670 @@
+{
+"counted": "2026-10-31",
+"how": "every fa-* name in every OpenVibe repository (git grep), style and size classes left out",
+"names": [
+{
+"name": "wand-magic-sparkles",
+"uses": 96
+},
+{
+"name": "eye",
+"uses": 91
+},
+{
+"name": "tower-broadcast",
+"uses": 90
+},
+{
+"name": "xmark",
+"uses": 84
+},
+{
+"name": "video",
+"uses": 80
+},
+{
+"name": "robot",
+"uses": 76
+},
+{
+"name": "scissors",
+"uses": 73
+},
+{
+"name": "copy",
+"uses": 73
+},
+{
+"name": "bolt",
+"uses": 67
+},
+{
+"name": "check",
+"uses": 66
+},
+{
+"name": "comments",
+"uses": 65
+},
+{
+"name": "play",
+"uses": 64
+},
+{
+"name": "tree",
+"uses": 63
+},
+{
+"name": "spinner",
+"uses": 63
+},
+{
+"name": "map-pin",
+"uses": 61
+},
+{
+"name": "globe",
+"uses": 59
+},
+{
+"name": "code",
+"uses": 58
+},
+{
+"name": "coins",
+"uses": 57
+},
+{
+"name": "clock",
+"uses": 57
+},
+{
+"name": "shield-halved",
+"uses": 56
+},
+{
+"name": "plus",
+"uses": 54
+},
+{
+"name": "lock",
+"uses": 54
+},
+{
+"name": "arrow-right",
+"uses": 50
+},
+{
+"name": "star",
+"uses": 49
+},
+{
+"name": "volume-high",
+"uses": 48
+},
+{
+"name": "triangle-exclamation",
+"uses": 48
+},
+{
+"name": "link",
+"uses": 48
+},
+{
+"name": "image",
+"uses": 44
+},
+{
+"name": "user",
+"uses": 41
+},
+{
+"name": "server",
+"uses": 41
+},
+{
+"name": "magnifying-glass",
+"uses": 41
+},
+{
+"name": "campground",
+"uses": 40
+},
+{
+"name": "utensils",
+"uses": 38
+},
+{
+"name": "train",
+"uses": 37
+},
+{
+"name": "heart",
+"uses": 36
+},
+{
+"name": "water",
+"uses": 35
+},
+{
+"name": "satellite-dish",
+"uses": 35
+},
+{
+"name": "clock-rotate-left",
+"uses": 35
+},
+{
+"name": "key",
+"uses": 34
+},
+{
+"name": "house",
+"uses": 34
+},
+{
+"name": "film",
+"uses": 34
+},
+{
+"name": "download",
+"uses": 34
+},
+{
+"name": "circle",
+"uses": 34
+},
+{
+"name": "sliders",
+"uses": 33
+},
+{
+"name": "leaf",
+"uses": 33
+},
+{
+"name": "gamepad",
+"uses": 33
+},
+{
+"name": "microphone",
+"uses": 31
+},
+{
+"name": "chevron-right",
+"uses": 31
+},
+{
+"name": "paste",
+"uses": 30
+},
+{
+"name": "arrow-up-right-from-square",
+"uses": 30
+},
+{
+"name": "palette",
+"uses": 29
+},
+{
+"name": "bell",
+"uses": 29
+},
+{
+"name": "gauge-high",
+"uses": 28
+},
+{
+"name": "floppy-disk",
+"uses": 28
+},
+{
+"name": "trash",
+"uses": 27
+},
+{
+"name": "terminal",
+"uses": 27
+},
+{
+"name": "chevron-down",
+"uses": 27
+},
+{
+"name": "chart-line",
+"uses": 27
+},
+{
+"name": "plug",
+"uses": 26
+},
+{
+"name": "file-image",
+"uses": 26
+},
+{
+"name": "compress",
+"uses": 26
+},
+{
+"name": "circle-info",
+"uses": 26
+},
+{
+"name": "pen",
+"uses": 25
+},
+{
+"name": "hand-holding-heart",
+"uses": 25
+},
+{
+"name": "comment",
+"uses": 25
+},
+{
+"name": "city",
+"uses": 25
+},
+{
+"name": "ban",
+"uses": 25
+},
+{
+"name": "screwdriver-wrench",
+"uses": 24
+},
+{
+"name": "music",
+"uses": 24
+},
+{
+"name": "gear",
+"uses": 24
+},
+{
+"name": "eye-slash",
+"uses": 24
+},
+{
+"name": "users",
+"uses": 23
+},
+{
+"name": "people-group",
+"uses": 23
+},
+{
+"name": "paper-plane",
+"uses": 23
+},
+{
+"name": "fire",
+"uses": 23
+},
+{
+"name": "circle-nodes",
+"uses": 23
+},
+{
+"name": "bridge",
+"uses": 23
+},
+{
+"name": "envelope",
+"uses": 22
+},
+{
+"name": "circle-check",
+"uses": 22
+},
+{
+"name": "sun",
+"uses": 21
+},
+{
+"name": "photo-film",
+"uses": 21
+},
+{
+"name": "list-check",
+"uses": 21
+},
+{
+"name": "display",
+"uses": 21
+},
+{
+"name": "rotate",
+"uses": 20
+},
+{
+"name": "comment-dots",
+"uses": 20
+},
+{
+"name": "wave-square",
+"uses": 19
+},
+{
+"name": "volume-xmark",
+"uses": 19
+},
+{
+"name": "newspaper",
+"uses": 19
+},
+{
+"name": "network-wired",
+"uses": 19
+},
+{
+"name": "location-dot",
+"uses": 19
+},
+{
+"name": "file-lines",
+"uses": 19
+},
+{
+"name": "camera",
+"uses": 19
+},
+{
+"name": "book",
+"uses": 19
+},
+{
+"name": "user-secret",
+"uses": 18
+},
+{
+"name": "stop",
+"uses": 18
+},
+{
+"name": "rotate-left",
+"uses": 18
+},
+{
+"name": "restroom",
+"uses": 17
+},
+{
+"name": "map",
+"uses": 17
+},
+{
+"name": "crown",
+"uses": 17
+},
+{
+"name": "youtube",
+"uses": 16
+},
+{
+"name": "wallet",
+"uses": 16
+},
+{
+"name": "sitemap",
+"uses": 16
+},
+{
+"name": "moon",
+"uses": 16
+},
+{
+"name": "microchip",
+"uses": 16
+},
+{
+"name": "list",
+"uses": 16
+},
+{
+"name": "id-card",
+"uses": 16
+},
+{
+"name": "house-chimney",
+"uses": 16
+},
+{
+"name": "file-pdf",
+"uses": 16
+},
+{
+"name": "circle-notch",
+"uses": 16
+},
+{
+"name": "brain",
+"uses": 16
+},
+{
+"name": "cloud",
+"uses": 15
+},
+{
+"name": "chevron-left",
+"uses": 15
+},
+{
+"name": "arrows-rotate",
+"uses": 15
+},
+{
+"name": "upload",
+"uses": 14
+},
+{
+"name": "snowflake",
+"uses": 14
+},
+{
+"name": "shield",
+"uses": 14
+},
+{
+"name": "person-swimming",
+"uses": 14
+},
+{
+"name": "mountain-sun",
+"uses": 14
+},
+{
+"name": "microphone-slash",
+"uses": 14
+},
+{
+"name": "database",
+"uses": 14
+},
+{
+"name": "user-astronaut",
+"uses": 13
+},
+{
+"name": "layer-group",
+"uses": 13
+},
+{
+"name": "hashtag",
+"uses": 13
+},
+{
+"name": "font",
+"uses": 13
+},
+{
+"name": "earth-americas",
+"uses": 13
+},
+{
+"name": "cloud-sun",
+"uses": 13
+},
+{
+"name": "user-shield",
+"uses": 12
+},
+{
+"name": "twitch",
+"uses": 12
+},
+{
+"name": "right-from-bracket",
+"uses": 12
+},
+{
+"name": "language",
+"uses": 12
+},
+{
+"name": "gift",
+"uses": 12
+},
+{
+"name": "diagram-project",
+"uses": 12
+},
+{
+"name": "cloud-showers-heavy",
+"uses": 12
+},
+{
+"name": "circle-exclamation",
+"uses": 12
+},
+{
+"name": "video-slash",
+"uses": 11
+},
+{
+"name": "mountain",
+"uses": 11
+},
+{
+"name": "lightbulb",
+"uses": 11
+},
+{
+"name": "images",
+"uses": 11
+},
+{
+"name": "hand-holding-dollar",
+"uses": 11
+},
+{
+"name": "github",
+"uses": 11
+},
+{
+"name": "file-audio",
+"uses": 11
+},
+{
+"name": "dollar-sign",
+"uses": 11
+},
+{
+"name": "discord",
+"uses": 11
+},
+{
+"name": "cloud-rain",
+"uses": 11
+},
+{
+"name": "clipboard-list",
+"uses": 11
+},
+{
+"name": "cart-shopping",
+"uses": 11
+},
+{
+"name": "bullseye",
+"uses": 11
+},
+{
+"name": "arrow-down",
+"uses": 11
+},
+{
+"name": "trophy",
+"uses": 10
+},
+{
+"name": "trash-can",
+"uses": 10
+},
+{
+"name": "tag",
+"uses": 10
+},
+{
+"name": "shirt",
+"uses": 10
+},
+{
+"name": "route",
+"uses": 10
+},
+{
+"name": "reply",
+"uses": 10
+},
+{
+"name": "person-shelter",
+"uses": 10
+},
+{
+"name": "pen-nib",
+"uses": 10
+},
+{
+"name": "pause",
+"uses": 10
+},
+{
+"name": "face-smile",
+"uses": 10
+},
+{
+"name": "expand",
+"uses": 10
+},
+{
+"name": "box-archive",
+"uses": 10
+},
+{
+"name": "user-plus",
+"uses": 9
+},
+{
+"name": "user-check",
+"uses": 9
+},
+{
+"name": "up-right-and-down-left-from-center",
+"uses": 9
+},
+{
+"name": "ticket",
+"uses": 9
+},
+{
+"name": "thumbtack",
+"uses": 9
+},
+{
+"name": "text-height",
+"uses": 9
+},
+{
+"name": "store",
+"uses": 9
+},
+{
+"name": "rotate-right",
+"uses": 9
+},
+{
+"name": "right-to-bracket",
+"uses": 9
+},
+{
+"name": "keyboard",
+"uses": 9
+},
+{
+"name": "hot-tub-person",
+"uses": 9
+},
+{
+"name": "gavel",
+"uses": 9
+},
+{
+"name": "gauge",
+"uses": 9
+},
+{
+"name": "droplet",
+"uses": 9
+},
+{
+"name": "check-circle",
+"uses": 9
+},
+{
+"name": "broadcast-tower",
+"uses": 9
+},
+{
+"name": "book-open",
+"uses": 9
+},
+{
+"name": "bars",
+"uses": 9
+},
+{
+"name": "arrow-left",
+"uses": 9
+},
+{
+"name": "wifi",
+"uses": 8
+},
+{
+"name": "up-right-from-square",
+"uses": 8
+},
+{
+"name": "umbrella",
+"uses": 8
+},
+{
+"name": "square-parking",
+"uses": 8
+},
+{
+"name": "search",
+"uses": 8
+},
+{
+"name": "code-fork",
+"uses": 8
+},
+{
+"name": "code-branch",
+"uses": 8
+},
+{
+"name": "cloud-arrow-up",
+"uses": 8
+},
+{
+"name": "circle-xmark",
+"uses": 8
+},
+{
+"name": "skull-crossbones",
+"uses": 7
+},
+{
+"name": "phone",
+"uses": 7
+},
+{
+"name": "object-group",
+"uses": 7
+},
+{
+"name": "kit-medical",
+"uses": 7
+},
+{
+"name": "info-circle",
+"uses": 7
+},
+{
+"name": "icons",
+"uses": 7
+},
+{
+"name": "headphones",
+"uses": 7
+},
+{
+"name": "hard-drive",
+"uses": 7
+},
+{
+"name": "folder",
+"uses": 7
+},
+{
+"name": "desktop",
+"uses": 7
+},
+{
+"name": "check-double",
+"uses": 7
+},
+{
+"name": "tv",
+"uses": 6
+},
+{
+"name": "toolbox",
+"uses": 6
+},
+{
+"name": "tags",
+"uses": 6
+},
+{
+"name": "table",
+"uses": 6
+},
+{
+"name": "scale-balanced",
+"uses": 6
+},
+{
+"name": "road",
+"uses": 6
+},
+{
+"name": "people-arrows",
+"uses": 6
+},
+{
+"name": "money-bill-transfer",
+"uses": 6
+},
+{
+"name": "heart-pulse",
+"uses": 6
+},
+{
+"name": "heading",
+"uses": 6
+},
+{
+"name": "hand-fist",
+"uses": 6
+},
+{
+"name": "forward",
+"uses": 6
+},
+{
+"name": "file-code",
+"uses": 6
+},
+{
+"name": "dice",
+"uses": 6
+},
+{
+"name": "circle-play",
+"uses": 6
+},
+{
+"name": "circle-half-stroke",
+"uses": 6
+},
+{
+"name": "calendar",
+"uses": 6
+},
+{
+"name": "briefcase",
+"uses": 6
+},
+{
+"name": "arrow-up",
+"uses": 6
+},
+{
+"name": "x-twitter",
+"uses": 5
+},
+{
+"name": "volume-low",
+"uses": 5
+},
+{
+"name": "tower-cell",
+"uses": 5
+},
+{
+"name": "timeline",
+"uses": 5
+},
+{
+"name": "share-nodes",
+"uses": 5
+},
+{
+"name": "seedling",
+"uses": 5
+},
+{
+"name": "rocket",
+"uses": 5
+},
+{
+"name": "right-left",
+"uses": 5
+},
+{
+"name": "person-hiking",
+"uses": 5
+},
+{
+"name": "money-bill-wave",
+"uses": 5
+},
+{
+"name": "microphone-lines",
+"uses": 5
+},
+{
+"name": "list-ol",
+"uses": 5
+},
+{
+"name": "life-ring",
+"uses": 5
+},
+{
+"name": "infinity",
+"uses": 5
+},
+{
+"name": "inbox",
+"uses": 5
+},
+{
+"name": "folder-open",
+"uses": 5
+},
+{
+"name": "faucet-drip",
+"uses": 5
+},
+{
+"name": "face-grin-stars",
+"uses": 5
+},
+{
+"name": "door-open",
+"uses": 5
+},
+{
+"name": "credit-card",
+"uses": 5
+},
+{
+"name": "cloud-bolt",
+"uses": 5
+},
+{
+"name": "clapperboard",
+"uses": 5
+},
+{
+"name": "circle-question",
+"uses": 5
+},
+{
+"name": "church",
+"uses": 5
+},
+{
+"name": "chevron-up",
+"uses": 5
+},
+{
+"name": "chart-pie",
+"uses": 5
+},
+{
+"name": "calendar-days",
+"uses": 5
+},
+{
+"name": "building",
+"uses": 5
+},
+{
+"name": "broom",
+"uses": 5
+},
+{
+"name": "box-open",
+"uses": 5
+},
+{
+"name": "at",
+"uses": 5
+},
+{
+"name": "arrow-rotate-left",
+"uses": 5
+},
+{
+"name": "apple-whole",
+"uses": 5
+},
+{
+"name": "user-tag",
+"uses": 4
+},
+{
+"name": "user-lock",
+"uses": 4
+},
+{
+"name": "stamp",
+"uses": 4
+},
+{
+"name": "sparkles",
+"uses": 4
+},
+{
+"name": "sort",
+"uses": 4
+},
+{
+"name": "smog",
+"uses": 4
+},
+{
+"name": "signal",
+"uses": 4
+},
+{
+"name": "share",
+"uses": 4
+},
+{
+"name": "shapes",
+"uses": 4
+},
+{
+"name": "save",
+"uses": 4
+},
+{
+"name": "puzzle-piece",
+"uses": 4
+},
+{
+"name": "print",
+"uses": 4
+},
+{
+"name": "mobile-screen",
+"uses": 4
+},
+{
+"name": "minus",
+"uses": 4
+},
+{
+"name": "map-location-dot",
+"uses": 4
+},
+{
+"name": "lock-open",
+"uses": 4
+},
+{
+"name": "kickstarter-k",
+"uses": 4
+},
+{
+"name": "icicles",
+"uses": 4
+},
+{
+"name": "hand",
+"uses": 4
+},
+{
+"name": "ghost",
+"uses": 4
+},
+{
+"name": "flag-checkered",
+"uses": 4
+},
+{
+"name": "fish",
+"uses": 4
+},
+{
+"name": "face-smile-beam",
+"uses": 4
+},
+{
+"name": "face-grin-squint-tears",
+"uses": 4
+},
+{
+"name": "crop-simple",
+"uses": 4
+},
+{
+"name": "compass",
+"uses": 4
+},
+{
+"name": "cloud-arrow-down",
+"uses": 4
+},
+{
+"name": "certificate",
+"uses": 4
+},
+{
+"name": "camera-rotate",
+"uses": 4
+},
+{
+"name": "calendar-check",
+"uses": 4
+},
+{
+"name": "arrows-left-right",
+"uses": 4
+},
+{
+"name": "address-card",
+"uses": 4
+},
+{
+"name": "address-book",
+"uses": 4
+},
+{
+"name": "xmark-circle",
+"uses": 3
+},
+{
+"name": "wrench",
+"uses": 3
+},
+{
+"name": "vial",
+"uses": 3
+},
+{
+"name": "user-circle",
+"uses": 3
+},
+{
+"name": "star-half-stroke",
+"uses": 3
+},
+{
+"name": "sort-alpha-down",
+"uses": 3
+},
+{
+"name": "shuffle",
+"uses": 3
+},
+{
+"name": "shower",
+"uses": 3
+},
+{
+"name": "recycle",
+"uses": 3
+},
+{
+"name": "ranking-star",
+"uses": 3
+},
+{
+"name": "plug-circle-check",
+"uses": 3
+},
+{
+"name": "phone-slash",
+"uses": 3
+},
+{
+"name": "person-walking",
+"uses": 3
+},
+{
+"name": "pen-to-square",
+"uses": 3
+},
+{
+"name": "paw",
+"uses": 3
+},
+{
+"name": "node-js",
+"uses": 3
+},
+{
+"name": "message",
+"uses": 3
+},
+{
+"name": "magnifying-glass-chart",
+"uses": 3
+},
+{
+"name": "k",
+"uses": 3
+},
+{
+"name": "heart-crack",
+"uses": 3
+},
+{
+"name": "headset",
+"uses": 3
+},
+{
+"name": "hands-helping",
+"uses": 3
+},
+{
+"name": "hammer",
+"uses": 3
+},
+{
+"name": "gem",
+"uses": 3
+},
+{
+"name": "gas-pump",
+"uses": 3
+},
+{
+"name": "forward-step",
+"uses": 3
+},
+{
+"name": "folder-tree",
+"uses": 3
+},
+{
+"name": "fingerprint",
+"uses": 3
+},
+{
+"name": "eraser",
+"uses": 3
+},
+{
+"name": "diamond-turn-right",
+"uses": 3
+},
+{
+"name": "cubes",
+"uses": 3
+},
+{
+"name": "crosshairs",
+"uses": 3
+},
+{
+"name": "couch",
+"uses": 3
+},
+{
+"name": "comment-slash",
+"uses": 3
+},
+{
+"name": "code-compare",
+"uses": 3
+},
+{
+"name": "code-commit",
+"uses": 3
+},
+{
+"name": "closed-captioning",
+"uses": 3
+},
+{
+"name": "clone",
+"uses": 3
+},
+{
+"name": "clipboard-check",
+"uses": 3
+},
+{
+"name": "circle-dot",
+"uses": 3
+},
+{
+"name": "bus",
+"uses": 3
+},
+{
+"name": "bullhorn",
+"uses": 3
+},
+{
+"name": "bed",
+"uses": 3
+},
+{
+"name": "bars-staggered",
+"uses": 3
+},
+{
+"name": "backward",
+"uses": 3
+},
+{
+"name": "arrow-up-from-bracket",
+"uses": 3
+},
+{
+"name": "window-restore",
+"uses": 2
+},
+{
+"name": "wind",
+"uses": 2
+},
+{
+"name": "wheat-awn",
+"uses": 2
+},
+{
+"name": "user-slash",
+"uses": 2
+},
+{
+"name": "user-pen",
+"uses": 2
+},
+{
+"name": "user-minus",
+"uses": 2
+},
+{
+"name": "user-group",
+"uses": 2
+},
+{
+"name": "toggle-on",
+"uses": 2
+},
+{
+"name": "thumbs-up",
+"uses": 2
+},
+{
+"name": "text-slash",
+"uses": 2
+},
+{
+"name": "temperature-half",
+"uses": 2
+},
+{
+"name": "table-columns",
+"uses": 2
+},
+{
+"name": "stethoscope",
+"uses": 2
+},
+{
+"name": "square",
+"uses": 2
+},
+{
+"name": "solid-900",
+"uses": 2
+},
+{
+"name": "smoking",
+"uses": 2
+},
+{
+"name": "signature",
+"uses": 2
+},
+{
+"name": "shield-heart",
+"uses": 2
+},
+{
+"name": "rss",
+"uses": 2
+},
+{
+"name": "repeat",
+"uses": 2
+},
+{
+"name": "reddit-alien",
+"uses": 2
+},
+{
+"name": "receipt",
+"uses": 2
+},
+{
+"name": "quote-right",
+"uses": 2
+},
+{
+"name": "quote-left",
+"uses": 2
+},
+{
+"name": "question",
+"uses": 2
+},
+{
+"name": "power-off",
+"uses": 2
+},
+{
+"name": "podcast",
+"uses": 2
+},
+{
+"name": "plug-circle-xmark",
+"uses": 2
+},
+{
+"name": "plug-circle-plus",
+"uses": 2
+},
+{
+"name": "paragraph",
+"uses": 2
+},
+{
+"name": "paintbrush",
+"uses": 2
+},
+{
+"name": "oil-can",
+"uses": 2
+},
+{
+"name": "note-sticky",
+"uses": 2
+},
+{
+"name": "not-a-glyph",
+"uses": 2
+},
+{
+"name": "mobile-screen-button",
+"uses": 2
+},
+{
+"name": "mask",
+"uses": 2
+},
+{
+"name": "markdown",
+"uses": 2
+},
+{
+"name": "magnifying-glass-arrow-right",
+"uses": 2
+},
+{
+"name": "location-crosshairs",
+"uses": 2
+},
+{
+"name": "link-slash",
+"uses": 2
+},
+{
+"name": "landmark",
+"uses": 2
+},
+{
+"name": "id-badge",
+"uses": 2
+},
+{
+"name": "hourglass-half",
+"uses": 2
+},
+{
+"name": "hospital",
+"uses": 2
+},
+{
+"name": "hat-wizard",
+"uses": 2
+},
+{
+"name": "hands-holding-child",
+"uses": 2
+},
+{
+"name": "hand-point-right",
+"uses": 2
+},
+{
+"name": "google",
+"uses": 2
+},
+{
+"name": "glass-water",
+"uses": 2
+},
+{
+"name": "flask-vial",
+"uses": 2
+},
+{
+"name": "flask",
+"uses": 2
+},
+{
+"name": "flag",
+"uses": 2
+},
+{
+"name": "filter",
+"uses": 2
+},
+{
+"name": "file-zipper",
+"uses": 2
+},
+{
+"name": "file-pen",
+"uses": 2
+},
+{
+"name": "face-grin-squint",
+"uses": 2
+},
+{
+"name": "ellipsis-vertical",
+"uses": 2
+},
+{
+"name": "ellipsis",
+"uses": 2
+},
+{
+"name": "ear-listen",
+"uses": 2
+},
+{
+"name": "drumstick-bite",
+"uses": 2
+},
+{
+"name": "down-left-and-up-right-to-center",
+"uses": 2
+},
+{
+"name": "cookie-bite",
+"uses": 2
+},
+{
+"name": "cookie",
+"uses": 2
+},
+{
+"name": "code-merge",
+"uses": 2
+},
+{
+"name": "cloud-upload-alt",
+"uses": 2
+},
+{
+"name": "cloud-sun-rain",
+"uses": 2
+},
+{
+"name": "cloud-moon",
+"uses": 2
+},
+{
+"name": "chart-column",
+"uses": 2
+},
+{
+"name": "chart-area",
+"uses": 2
+},
+{
+"name": "charging-station",
+"uses": 2
+},
+{
+"name": "carrot",
+"uses": 2
+},
+{
+"name": "car",
+"uses": 2
+},
+{
+"name": "camera-cctv",
+"uses": 2
+},
+{
+"name": "calculator",
+"uses": 2
+},
+{
+"name": "braille",
+"uses": 2
+},
+{
+"name": "brackets-curly",
+"uses": 2
+},
+{
+"name": "book-skull",
+"uses": 2
+},
+{
+"name": "bluesky",
+"uses": 2
+},
+{
+"name": "binoculars",
+"uses": 2
+},
+{
+"name": "bezier-curve",
+"uses": 2
+},
+{
+"name": "basket-shopping",
+"uses": 2
+},
+{
+"name": "barcode",
+"uses": 2
+},
+{
+"name": "backpack",
+"uses": 2
+},
+{
+"name": "arrow-right-arrow-left",
+"uses": 2
+},
+{
+"name": "angles-right",
+"uses": 2
+},
+{
+"name": "align-left",
+"uses": 2
+}
+]
+}

@@ -295,7 +295,21 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
         };
     }
 
-    return { enabled, slots, slotPlan, offeredModels, rankOffers, generate, systemPrompt, CATEGORY_BRIEF };
+    /**
+     * Plain text from OpenVibe.AI's routing (the glyph drafts, L32): the same token and run as the Arena, one answer.
+     * → { text, model, provider, run_id }
+     */
+    async function text({ prompt, system, maxTokens = 2000, target = null }) {
+        const startedAt = Date.now();
+        const created = await call('POST', `/api/v1/generate?wait=${Math.min(ai.waitMs, 60_000)}`, {
+            prompt, system, max_tokens: maxTokens, options: { cache: false }, ...(target ? { target } : {}),
+        });
+        const { run } = await waitFor(created && created.run ? created.run : created, startedAt);
+        const prov = run.provenance || {};
+        return { text: textOf(run.output), model: String(prov.model || run.model || 'unknown').slice(0, 120), provider: String(prov.provider || run.provider || 'ai').slice(0, 80), run_id: run.id || null };
+    }
+
+    return { enabled, slots, slotPlan, offeredModels, rankOffers, generate, systemPrompt, text, CATEGORY_BRIEF };
 }
 
 module.exports = { createArenaAi, ArenaAiError, CATEGORY_BRIEF };
