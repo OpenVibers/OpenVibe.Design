@@ -78,7 +78,7 @@ function brandPage({ base = 'https://openvibe.design' } = {}) {
     n = 0;
     const C = mark.COLORS;
     const hero = `<header class="br-hero">
-  <div class="br-hero-stage">${live('data-size="300" data-wide data-br-hero', { wide: true })}</div>
+  <div class="br-hero-stage">${live('data-size="300" data-wide data-glow data-br-hero', { wide: true })}</div>
   <div class="br-hero-words">
     <p class="br-eye">The OpenVibe mark</p>
     <h1 class="br-h1">A ring and a round&nbsp;V.</h1>
@@ -196,7 +196,7 @@ mark.svg({ form: 'heavy' });        // 22 px and under`;
         <ul class="br-mo-fmts">${FORMATS.map(([end, fmt, dims]) => chip(`${v.stem}-${end}`, fmt, dims)).join('')}</ul></figcaption>
     </figure>`;
     const motion = `<section class="br-sec" id="motion" aria-labelledby="br-motion">
-  <div class="br-sec-head"><h2 id="br-motion">The motion, as files</h2><p>For a video, a slide or a stream overlay. Each one is rendered from the same ov-mark.js the navbar runs, so what you download is how the mark really moves. On a web page, drop in the live mark instead: it moves, and it keeps still under reduced motion.</p></div>
+  <div class="br-sec-head"><h2 id="br-motion">The motion, as files</h2><p>For a video, a slide or a stream overlay. Each one is rendered from the same ov-mark.js the navbar runs, so what you download is how the mark really moves. On a web page, drop in the live mark instead: it moves, and it keeps still under reduced motion. Everything else on OpenVibe moves the same way: <a href="/motion">see the motion</a>.</p></div>
   <div class="br-mo">${VARIANTS.map(card).join('')}</div>
   <div class="br-mo-use"><h3>The live mark, on any page</h3>${kit.snippet({ code: useLive, id: 'br-motion-live', label: 'Copy the HTML' })}</div>
 </section>`;
