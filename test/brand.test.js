@@ -23,6 +23,8 @@ const { FILES, STATES } = require('../server/views/brand');
             }
             assert.ok(html.includes('A page on its way'), 'the page-load ring, in words');
             assert.ok(html.includes('data-br-hero') && html.includes('data-br-demo'), 'the live marks for ov-mark.js');
+            assert.ok(/data-glow data-br-hero/.test(html), 'the hero mark keeps its glow on (4.65.0)');
+            assert.ok(html.includes('href="/motion"'), 'and the page points to how everything else moves');
             assert.ok(html.includes('/shared/ov-mark.js&quot; async&gt;&lt;/script&gt;'), 'the script snippet');
             assert.ok(html.includes('require(&#39;openvibe-shared/mark&#39;)'), 'the Node snippet');
             assert.ok(html.includes('/shared/ov-brand.woff2'), 'the font snippet');
