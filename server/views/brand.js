@@ -11,10 +11,13 @@
  *   brandPage({ base })   base: this site's origin, for the snippets
  *   FILES                 the downloads served under /brand/: { name, form, tone, wide, title }
  */
+const fs = require('fs');
+const path = require('path');
 const kit = require('openvibe-shared/kit');
 const mark = require('openvibe-shared/mark');
 const appIcons = require('openvibe-shared/app-icons');
 const { layout, esc } = require('../render/layout');
+const { asset } = require('../assets');
 
 const FILES = Object.freeze([
     { name: 'openvibe-mark.svg', label: 'The mark', note: 'blue and violet, square', form: 'pair', tone: 'brand', wide: false },
@@ -23,6 +26,34 @@ const FILES = Object.freeze([
     { name: 'openvibe-mark-ink.svg', label: 'Ink', note: 'one colour: it takes the text colour', form: 'pair', tone: 'ink', wide: false },
     { name: 'openvibe-mark-white.svg', label: 'White', note: 'for a colour or a photo', form: 'pair', tone: 'white', wide: false },
 ]);
+
+/**
+ * The mark's intro as files: the animation people download, and the still that stands in for it. The sizes are read
+ * from the files themselves, so the page never promises a size the file does not have.
+ */
+const MOTION_DIR = path.join(__dirname, '..', '..', 'public', 'brand', 'motion');
+const MOTION = Object.freeze([
+    { name: 'ov-mark-intro.webm', label: 'The intro', note: '512 px · VP9', art: 'ov-mark-poster.png' },
+    { name: 'ov-mark-intro.mp4', label: 'The intro', note: '1080 px · H.264', art: 'ov-mark-poster.png' },
+    { name: 'ov-mark-intro.gif', label: 'The intro', note: '256 px · GIF, transparent', art: 'ov-mark-poster.png' },
+    { name: 'ov-mark-intro.png', label: 'The intro', note: '256 px · APNG, transparent', art: 'ov-mark-poster.png' },
+    { name: 'ov-mark-live-intro.webm', label: 'The Live intro', note: '512 px · VP9', art: 'ov-mark-live-poster.png' },
+    { name: 'ov-mark-live-intro.mp4', label: 'The Live intro', note: '1080 px · H.264', art: 'ov-mark-live-poster.png' },
+    { name: 'ov-mark-live-intro.gif', label: 'The Live intro', note: '256 px · GIF, transparent', art: 'ov-mark-live-poster.png' },
+    { name: 'ov-mark-live-intro.png', label: 'The Live intro', note: '256 px · APNG, transparent', art: 'ov-mark-live-poster.png' },
+    { name: 'ov-mark-poster.png', label: 'The mark, still', note: '1024 px · PNG, transparent', art: 'ov-mark-poster.png' },
+    { name: 'ov-mark-live-poster.png', label: 'The Live mark, still', note: '1024 px · PNG, transparent', art: 'ov-mark-live-poster.png' },
+]);
+/** The size of a motion file, as it is on disk (0 when it is not there yet). */
+function motionSize(name) {
+    try { return fs.statSync(path.join(MOTION_DIR, name)).size; } catch { return 0; }
+}
+/** A size a person can read: 84 KB, 1.2 MB. */
+function humanSize(bytes) {
+    if (!bytes) return '—';
+    if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+}
 
 let n = 0;
 /** A static mark, its mask ids unique on the page. */
@@ -113,6 +144,8 @@ function brandPage({ base = 'https://openvibe.design' } = {}) {
      data-tone     ink or white: one colour
      data-wide     the box hugs the mark
      OVMark.intro(el) plays the intro again -->`;
+    const useLive = `<script src="${base}/shared/ov-mark.js"></script>
+<span class="ov-mark" data-size="64"></span>`;
     const useNode = `const mark = require('openvibe-shared/mark');
 
 mark.svg({ size: 64 });             // 64 px square
@@ -150,7 +183,25 @@ mark.svg({ form: 'heavy' });        // 22 px and under`;
   </div>
 </section>`;
 
-    const body = `<article class="br">${hero}${moves}${sizes}${grounds}${names}${colours}${use}${rules}</article>`;
+    // The motion as files, one card per variant: the intro playing, what it is, and each format as a chip with its size.
+    const VARIANTS = [
+        { id: '', label: 'The intro', say: 'The ring draws round, the V drops in on a spring, a glint crosses and the glow comes up. About two seconds, once.', stem: 'ov-mark' },
+        { id: 'live', label: 'The Live intro', say: 'The same arrival, with Live&rsquo;s record light in the O.', stem: 'ov-mark-live' },
+    ];
+    const FORMATS = [['intro.webm', 'WebM', '512 px'], ['intro.mp4', 'MP4', '1080 px'], ['intro.gif', 'GIF', '256 px, clear'], ['intro.png', 'APNG', '256 px, clear'], ['poster.png', 'Still', '1024 px PNG']];
+    const chip = (file, fmt, dims) => `<li><a class="br-mo-fmt" href="${esc(asset('brand/motion/' + file))}" download="${esc(file)}"><b>${fmt}</b><span>${esc(dims)} &middot; ${esc(humanSize(motionSize(file)))}</span></a></li>`;
+    const card = (v) => `<figure class="br-mo-card">
+      <div class="br-mo-stage"><video class="br-motion-video" src="${esc(asset(`brand/motion/${v.stem}-intro.webm`))}" poster="${esc(asset(`brand/motion/${v.stem}-poster.png`))}" width="512" height="512" muted loop playsinline autoplay preload="metadata" aria-label="${esc(v.label)}: the OpenVibe mark arriving"></video></div>
+      <figcaption><b>${v.label}</b><small>${v.say}</small>
+        <ul class="br-mo-fmts">${FORMATS.map(([end, fmt, dims]) => chip(`${v.stem}-${end}`, fmt, dims)).join('')}</ul></figcaption>
+    </figure>`;
+    const motion = `<section class="br-sec" id="motion" aria-labelledby="br-motion">
+  <div class="br-sec-head"><h2 id="br-motion">The motion, as files</h2><p>For a video, a slide or a stream overlay. Each one is rendered from the same ov-mark.js the navbar runs, so what you download is how the mark really moves. On a web page, drop in the live mark instead: it moves, and it keeps still under reduced motion.</p></div>
+  <div class="br-mo">${VARIANTS.map(card).join('')}</div>
+  <div class="br-mo-use"><h3>The live mark, on any page</h3>${kit.snippet({ code: useLive, id: 'br-motion-live', label: 'Copy the HTML' })}</div>
+</section>`;
+
+    const body = `<article class="br">${hero}${moves}${motion}${sizes}${grounds}${names}${colours}${use}${rules}</article>`;
     return layout({
         title: 'The OpenVibe mark',
         description: 'The OpenVibe mark: a ring O and a round V. What each of its moves means, its forms, colours and the names beside it, with the SVG files and the code to use it on any site.',
@@ -168,4 +219,4 @@ function file(name) {
     return f ? mark.svg({ form: f.form, tone: f.tone, wide: f.wide, title: 'OpenVibe', id: 'ov' }) : null;
 }
 
-module.exports = { brandPage, file, FILES, STATES };
+module.exports = { brandPage, file, FILES, STATES, MOTION, motionSize, humanSize };
