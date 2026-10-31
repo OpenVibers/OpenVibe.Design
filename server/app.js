@@ -163,6 +163,8 @@ async function createApp(opts = {}) {
     };
     app.use('/css', express.static(path.join(PUBLIC_DIR, 'css'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
     app.use('/js', express.static(path.join(PUBLIC_DIR, 'js'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
+    // The mark's intro, as the files /brand offers to download.
+    app.use('/brand/motion', express.static(path.join(PUBLIC_DIR, 'brand', 'motion'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
 
     // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));

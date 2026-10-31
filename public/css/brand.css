@@ -43,6 +43,15 @@
 .br-mini{display:grid;place-items:center}
 .br-play-side .br-states:has(button:not([hidden]))~.br-meanings{margin-top:14px}
 
+/* The motion: the intro on the brand ground, and the files to download. */
+.br-motion{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+.br-motion-stage{display:grid;justify-items:center;gap:10px;padding:clamp(14px,2.4vw,26px);border-radius:22px;background:#0a0f1c;border:1px solid var(--border)}
+.br-motion-video{display:block;width:min(100%,420px);height:auto;border-radius:16px;background:#0a0f1c}
+.br-motion-note{margin:0;max-width:36ch;color:var(--text-muted);font-size:12.5px;line-height:1.5;text-align:center}
+.br-motion-side{min-width:0}
+.br-motion-files{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.br-motion-files .br-file-art img{width:40px;height:40px;object-fit:contain}
+
 /* Sizes, side by side on a baseline. */
 .br-sizes{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:clamp(16px,4vw,44px);padding:26px clamp(16px,3vw,28px);border-radius:22px;background:var(--bg-secondary);border:1px solid var(--border)}
 .br-sizes figure{margin:0;display:grid;justify-items:center;gap:8px}
@@ -129,6 +138,7 @@
   .br-hero,.br-play,.br-sec-head{grid-template-columns:minmax(0,1fr)}
   .br-hero-stage{aspect-ratio:16/10}
   .br-locks,.br-sws{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .br-motion{grid-template-columns:minmax(0,1fr)}
   .br-play-stage{position:static}
   .br-use{grid-template-columns:minmax(0,1fr)}
   .br-rules{grid-template-columns:repeat(2,minmax(0,1fr))}
