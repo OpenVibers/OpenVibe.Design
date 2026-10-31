@@ -50,7 +50,7 @@ const components = require('openvibe-shared/components');
         });
         await check('component list and detail good and bad arguments', async () => {
             const list = await call('openvibe_design_list_components');
-            assert.strictEqual(list.structuredContent.components.length, 11);
+            assert.strictEqual(list.structuredContent.components.length, Object.keys(components.SPECS).length);
             assert.deepStrictEqual(Object.keys(list.structuredContent.components[0]), ['id', 'name', 'summary']);
             assert.strictEqual((await call('openvibe_design_list_components', { extra: true })).isError, true);
             const detail = await call('openvibe_design_get_component', { name: 'button' });

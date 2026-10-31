@@ -38,6 +38,7 @@ const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
 const { createPageRoutes } = require('./http/pages');
 const { createDiscoveryRoutes } = require('./http/discovery');
+const { createIconRoutes } = require('./http/icons');
 const { createServiceReadiness } = require('./observability');
 const { createArenaStore } = require('./arena/store');
 const { createArenaAi } = require('./arena/ai');
@@ -163,10 +164,11 @@ async function createApp(opts = {}) {
     app.use('/css', express.static(path.join(PUBLIC_DIR, 'css'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
     app.use('/js', express.static(path.join(PUBLIC_DIR, 'js'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
 
-    // ── API: the Arena, then the theme proxy ────────────────
+    // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
     app.use('/api/v1/arena', createArenaApi(ctx));
+    app.use(createIconRoutes(ctx));
     app.use('/api', createApi(ctx));
     app.use('/api', (req, res) => contracts.http.sendProblem(res, 404, 'route.not_found', {
         detail: 'No such API route.',
