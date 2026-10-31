@@ -183,21 +183,22 @@ mark.svg({ form: 'heavy' });        // 22 px and under`;
   </div>
 </section>`;
 
-    const motionFile = (f) => `<li><a href="${esc(asset('brand/motion/' + f.name))}" download="${esc(f.name)}"><span class="br-file-art"><img src="${esc(asset('brand/motion/' + f.art))}" width="40" height="40" alt="" loading="lazy"></span><span><b>${esc(f.label)}</b><small>${esc(f.note)} · ${esc(humanSize(motionSize(f.name)))}</small></span></a></li>`;
+    // The motion as files, one card per variant: the intro playing, what it is, and each format as a chip with its size.
+    const VARIANTS = [
+        { id: '', label: 'The intro', say: 'The ring draws round, the V drops in on a spring, a glint crosses and the glow comes up. About two seconds, once.', stem: 'ov-mark' },
+        { id: 'live', label: 'The Live intro', say: 'The same arrival, with Live&rsquo;s record light in the O.', stem: 'ov-mark-live' },
+    ];
+    const FORMATS = [['intro.webm', 'WebM', '512 px'], ['intro.mp4', 'MP4', '1080 px'], ['intro.gif', 'GIF', '256 px, clear'], ['intro.png', 'APNG', '256 px, clear'], ['poster.png', 'Still', '1024 px PNG']];
+    const chip = (file, fmt, dims) => `<li><a class="br-mo-fmt" href="${esc(asset('brand/motion/' + file))}" download="${esc(file)}"><b>${fmt}</b><span>${esc(dims)} &middot; ${esc(humanSize(motionSize(file)))}</span></a></li>`;
+    const card = (v) => `<figure class="br-mo-card">
+      <div class="br-mo-stage"><video class="br-motion-video" src="${esc(asset(`brand/motion/${v.stem}-intro.webm`))}" poster="${esc(asset(`brand/motion/${v.stem}-poster.png`))}" width="512" height="512" muted loop playsinline autoplay preload="metadata" aria-label="${esc(v.label)}: the OpenVibe mark arriving"></video></div>
+      <figcaption><b>${v.label}</b><small>${v.say}</small>
+        <ul class="br-mo-fmts">${FORMATS.map(([end, fmt, dims]) => chip(`${v.stem}-${end}`, fmt, dims)).join('')}</ul></figcaption>
+    </figure>`;
     const motion = `<section class="br-sec" id="motion" aria-labelledby="br-motion">
-  <div class="br-sec-head"><h2 id="br-motion">The motion, as files</h2><p>The O draws itself round, the V drops in on a spring, a glint crosses the mark and its glow comes up: the mark arriving, once, when it has something to say. It is the same ov-mark.js the navbar runs, so what you download is what we run.</p></div>
-  <div class="br-motion">
-    <div class="br-motion-stage">
-      <video class="br-motion-video" src="${esc(asset('brand/motion/ov-mark-intro.webm'))}" poster="${esc(asset('brand/motion/ov-mark-poster.png'))}" width="512" height="512" muted loop playsinline autoplay aria-label="The OpenVibe mark drawing itself in"></video>
-      <p class="br-motion-note">The intro, on the brand ground. The Live variant, with its record light in the O, is below.</p>
-    </div>
-    <div class="br-motion-side">
-      <h3>Download</h3>
-      <ul class="br-files br-motion-files">${MOTION.map(motionFile).join('')}</ul>
-      <h3 class="br-files-h">Drop it in</h3>
-      ${kit.snippet({ code: useLive, id: 'br-motion-live', label: 'Copy the HTML' })}
-    </div>
-  </div>
+  <div class="br-sec-head"><h2 id="br-motion">The motion, as files</h2><p>For a video, a slide or a stream overlay. Each one is rendered from the same ov-mark.js the navbar runs, so what you download is how the mark really moves. On a web page, drop in the live mark instead: it moves, and it keeps still under reduced motion.</p></div>
+  <div class="br-mo">${VARIANTS.map(card).join('')}</div>
+  <div class="br-mo-use"><h3>The live mark, on any page</h3>${kit.snippet({ code: useLive, id: 'br-motion-live', label: 'Copy the HTML' })}</div>
 </section>`;
 
     const body = `<article class="br">${hero}${moves}${motion}${sizes}${grounds}${names}${colours}${use}${rules}</article>`;
