@@ -121,13 +121,14 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds-history li small { grid-column: 2; color: var(--text-muted, #7386a3); }
 .ds-history li button { grid-column: 3; grid-row: 1 / span 2; }
 
-/* The home's motif: the theme orb (each dot a theme's accent, slowly circling). */
+/* The home's motif: the theme orb (each dot a theme's accent); its dashed ring breathes, it never spins. */
 .ds-orb { position: relative; width: min(100%, 320px); aspect-ratio: 1; margin: 0 auto; }
-.ds-orb-ring { position: absolute; inset: 8%; border-radius: 50%; border: 1.5px dashed color-mix(in srgb, var(--room-accent) 40%, transparent); animation: ds-spin 60s linear infinite; }
+.ds-orb-ring { position: absolute; inset: 8%; border-radius: 50%; border: 1.5px dashed color-mix(in srgb, var(--room-accent) 40%, transparent); animation: ds-breathe 9s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .ds-orb-ring { animation: none; } }
 .ds-orb-core { position: absolute; inset: 30%; border-radius: 50%; background: conic-gradient(from 90deg, var(--room-accent), #5b7cfa, #22c55e, #f59e0b, #ef4444, var(--room-accent)); filter: saturate(1.1); box-shadow: 0 20px 60px -20px var(--room-accent); }
 .ds-orb i { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px; border-radius: 50%; border: 3px solid var(--bg-primary, #0a0f1c); transform: rotate(calc(var(--i) * 60deg)) translateY(-136%) rotate(calc(var(--i) * -60deg)); }
 @supports (container-type: inline-size) { .ds-orb { container-type: inline-size; } .ds-orb i { transform: rotate(calc(var(--i) * 60deg)) translateY(-42cqw) rotate(calc(var(--i) * -60deg)); } }
-@keyframes ds-spin { to { transform: rotate(360deg); } }
+@keyframes ds-breathe { to { transform: scale(1.04); opacity: .55; } }
 .ds-scene-pv { transform: scale(.98); }
 .ds-scene-pv .pv-shop { display: none; }
 .ds-scene-pv { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
