@@ -59,6 +59,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
       <a class="ic-btn is-go" href="${svgUrl}" download="${esc(name)}.svg">${kit.icon('download')} SVG</a>
       <a class="ic-btn" href="#png">${kit.icon('image')} Make a PNG</a>
       <button type="button" class="ic-btn" data-gp-copy="${svgUrl}" hidden>Copy the SVG</button>
+      <a class="ic-btn" href="/icons/kit?names=${encodeURIComponent(name)}">Put it in a kit</a>
     </div>
   </div>
 </header>
@@ -142,7 +143,7 @@ function faAlternativePage({ base = 'https://openvibe.design' } = {}) {
         ['Power Transforms', '<code>data-fa-transform</code>: grow, shrink, up, down, left, right, rotate, flip', 'yes'],
         ['Web font', '<code>ov-glyphs.woff2</code>, with Font Awesome&rsquo;s class names on it (<code>ov-glyphs-fa.css</code>)', 'yes'],
         ['Desktop fonts', 'TTF and OTF, free', 'yes'],
-        ['Subset fonts', 'Coming: pick your icons, get a font with only those', 'soon'],
+        ['Subset fonts (kits)', '<a href="/icons/kit">Pick your icons, get a font with only those</a>: WOFF2, TTF and the CSS', 'yes'],
         ['Brand logos', 'Not ours to draw: keep Font Awesome Brands for those', 'no'],
         ['Price', 'Free, MIT, for everything above', 'yes'],
     ];
@@ -188,4 +189,32 @@ function faAlternativePage({ base = 'https://openvibe.design' } = {}) {
     });
 }
 
-module.exports = { glyphPage, faAlternativePage, related, faOf, title };
+/** /icons/kit: pick glyphs, name the kit, get a font with only those (server/glyphs/kits.js). A plain form. */
+function kitPage({ picked = [], name = '', fa = true, error = '' } = {}) {
+    const on = new Set(picked);
+    const tiles = glyphs.NAMES.map((n) => `<label class="kit-tile" data-name="${esc(n)}" data-fa="${esc(faOf(n).join(' '))}"><input type="checkbox" name="names" value="${esc(n)}"${on.has(n) ? ' checked' : ''}>${glyph(n)}<span>${esc(n)}</span></label>`).join('');
+    const body = `<article class="ic kit">
+<nav class="gp-crumbs" aria-label="Breadcrumb"><a href="/icons">Icons</a><span aria-hidden="true">/</span><span>Make a kit</span></nav>
+<header class="ic-hero"><p class="ic-eye">Icon kits</p><h1 class="ic-h1">Only the icons you use.</h1>
+<p class="ic-lede">Pick them, name the kit, and get a font with just those: three icons weigh under a kilobyte. WOFF2 for the web, TTF for apps, the CSS (with Font Awesome&rsquo;s class names if you like) and each icon&rsquo;s character, in one ZIP. Free, MIT, nothing to sign up for.</p></header>
+${error ? kit.notice({ kind: 'error', text: error }) : ''}
+<form class="kit-form" method="post" action="/icons/kit" data-kit-form>
+  <div class="kit-opts">
+    <label class="kit-name"><span>Kit name</span><input name="name" value="${esc(name || 'my-kit')}" maxlength="40" pattern="[A-Za-z0-9 _-]{1,40}" autocomplete="off" spellcheck="false"></label>
+    <label class="kit-fa"><input type="checkbox" name="fa" value="1"${fa ? ' checked' : ''}><span>Font Awesome&rsquo;s class names too</span></label>
+  </div>
+  <div class="ic-tools" data-kit-tools hidden><label class="ic-find">${kit.icon('search')}<span class="ovk-sr">Find a glyph</span><input type="search" placeholder="Find: a name, or a Font Awesome name" autocomplete="off" data-kit-find></label><button type="button" class="ic-btn" data-kit-clear>Clear</button></div>
+  <div class="kit-grid">${tiles}</div>
+  <div class="kit-bar"><span class="kit-sum" data-kit-sum>${on.size ? `${on.size} picked` : 'Tick the icons you use'}</span><button type="submit" class="ic-btn is-go" data-kit-go>${kit.icon('download')} Download the kit</button></div>
+</form>
+<section class="ic-sec" aria-labelledby="kit-api"><div class="ic-sec-head"><h2 id="kit-api">As a link</h2><p>The same kit from a URL, for a build step or an agent: the names, the kit&rsquo;s name and whether to include Font Awesome&rsquo;s classes.</p></div>
+${kit.snippet({ code: 'https://openvibe.design/icons/kit.zip?names=eye,live,heart&name=my-kit&fa=1', id: 'kit-url', label: 'Copy' })}</section>
+</article>`;
+    return layout({
+        title: 'Make an icon kit: a font with only your icons',
+        description: 'Pick the OpenVibe glyphs your site uses and get a font with only those: WOFF2, TTF, CSS with Font Awesome class names, free and MIT.',
+        path: '/icons/kit', active: '/icons', styles: ['css/icons.css'], scripts: ['js/kit.js'], body,
+    });
+}
+
+module.exports = { glyphPage, faAlternativePage, kitPage, related, faOf, title };
