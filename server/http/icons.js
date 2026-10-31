@@ -9,6 +9,8 @@
  *   GET  /icons/pack/<file>             the fonts (WOFF2, TTF, OTF), the sprite, the CSS, the code points, and
  *                                       ov-glyphs-svg.zip with every glyph
  *   GET  /icons/font-awesome-alternative  how to switch, and what keeps working
+ *   GET  /icons/kit, POST /icons/kit    pick glyphs, get a font with only those (WOFF2, TTF, CSS, code points) as a ZIP
+ *   GET  /icons/kit.zip?names=&name=&fa=  the same kit from a link
  *   POST /icons/draft                   signed in: OpenVibe.AI drafts candidates (same-origin form)
  *   POST /icons/drafts/:id/review       an admin approves or rejects one (same-origin form)
  *   GET  /api/v1/glyphs                 the registry as data
@@ -21,7 +23,8 @@ const { asyncRouter } = require('./router');
 const { send, baseUrl } = require('../render/layout');
 const { writeAllowed } = require('./same-origin');
 const { iconsPage, glyphsJson } = require('../views/icons');
-const { glyphPage, faAlternativePage } = require('../views/icon-page');
+const { glyphPage, faAlternativePage, kitPage } = require('../views/icon-page');
+const kits = require('../glyphs/kits');
 const ex = require('../glyphs/export');
 const { createGlyphDrafts } = require('../glyphs/drafts');
 
@@ -48,6 +51,24 @@ function createIconRoutes(ctx) {
     });
 
     r.get('/icons/font-awesome-alternative', (req, res) => send(res, 200, faAlternativePage({ base: baseUrl() }), { viewer: req.viewer }));
+
+    // Kits: a font with only the glyphs a site uses (L32 I5). The form posts the picks; the link form is for a build step.
+    const sendKit = async (req, res, choice) => {
+        let parsed;
+        try { parsed = kits.parse(choice); } catch (err) {
+            if (req.method === 'POST') return send(res, 422, kitPage({ picked: [], name: choice.name, fa: choice.fa != null, error: err.message }), { viewer: req.viewer });
+            return res.status(422).type('text/plain').send(`${err.message}\n`);
+        }
+        const out = await kits.build(parsed);
+        res.set('Cache-Control', req.method === 'GET' ? 'public, max-age=86400' : 'no-store').set('Access-Control-Allow-Origin', '*')
+            .type('application/zip').attachment(`ov-glyphs-kit-${parsed.slug}.zip`).send(out.zip);
+    };
+    r.get('/icons/kit', (req, res) => {
+        const picked = String(req.query.names || '').split(',').map((n) => n.trim()).filter((n) => glyphs.path(n));
+        send(res, 200, kitPage({ picked, name: String(req.query.name || '').slice(0, 40) }), { viewer: req.viewer });
+    });
+    r.post('/icons/kit', form, (req, res) => sendKit(req, res, { names: (req.body || {}).names, name: (req.body || {}).name, fa: (req.body || {}).fa }));
+    r.get('/icons/kit.zip', (req, res) => sendKit(req, res, { names: req.query.names, name: req.query.name, fa: req.query.fa }));
 
     r.get('/icons/pack/:file', (req, res, next) => {
         const file = req.params.file;

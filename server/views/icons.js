@@ -93,6 +93,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     ];
     const get = `<section class="ic-sec" id="get" aria-labelledby="ic-get">
   <div class="ic-sec-head"><h2 id="ic-get">Get them all</h2><p>Free, MIT. The fonts carry every glyph at its own character (U+E001 up, never reused), so a document made with them keeps working. Each glyph&rsquo;s page makes a PNG at any size and colour.</p></div>
+  <p class="ic-more"><a href="/icons/kit"><b>Make a kit</b></a>: a font with only the icons your site uses, from a few hundred bytes.</p>
   <ul class="ic-packs">${packs.map(([f, label, about]) => `<li><a href="/icons/pack/${esc(f)}" download><b>${esc(label)}</b><small>${esc(about)}</small><code>${esc(f)}</code></a></li>`).join('')}</ul>
 </section>`;
 
