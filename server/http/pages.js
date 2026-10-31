@@ -10,6 +10,8 @@
  *   /arena/vote             the next blind pair, and the reveal after a vote
  *   /arena/r/:id            one round: every output at 390 px and 1280 px, with cost and time
  *   /developers             the API
+ *   /brand                  the OpenVibe mark: its moves, forms, colours, names, files and code
+ *   /brand/<file>.svg       the mark's files (server/views/brand.js FILES)
  *
  * Every page is server-rendered. The Arena's model HTML is only ever inside `<iframe sandbox srcdoc>`; the pages
  * themselves never contain it. `me` comes from the session the SSO middleware already resolved.
@@ -23,6 +25,8 @@ const componentsView = require('../views/components');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const patternsView = require('../views/patterns');
+const brandView = require('../views/brand');
+const { baseUrl: layoutBase } = require('../render/layout');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
 const { ArenaError } = require('../arena/store');
@@ -61,6 +65,13 @@ function createPageRoutes(ctx) {
     };
 
     // ── Production patterns: one data-backed page and generated native spec per pattern ──
+    // ── The OpenVibe mark, and its files ──
+    r.get('/brand', (req, res) => page(res, 200, brandView.brandPage({ base: layoutBase() }), req.viewer));
+    r.get('/brand/:file', (req, res) => {
+        const svg = brandView.file(req.params.file);
+        if (!svg) return page(res, 404, views.notFound(), req.viewer);
+        res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*').type('image/svg+xml').send(svg);
+    });
     r.get('/patterns', (req, res) => page(res, 200, patternsView.index(), req.viewer));
     r.get('/patterns/mark/studies', (req, res) => res.sendFile(path.join(__dirname, '../../public/mark-studies.html')));
     r.get('/patterns/:slug', (req, res) => {

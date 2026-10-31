@@ -32,6 +32,7 @@ function publicPages(themes = []) {
         { path: '/look', changefreq: 'monthly', priority: 0.6, title: 'Your look', text: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.' },
         { path: '/components', changefreq: 'weekly', priority: 0.7, title: 'Components', text: 'The OpenVibe design system\'s components, each with its parts, tokens, states and accessibility, and code for the web, Jetpack Compose and SwiftUI.' },
         { path: '/tokens', changefreq: 'weekly', priority: 0.8, title: 'Your theme, as code', text: 'Any OpenVibe theme as design tokens: CSS variables, Tailwind, Jetpack Compose, SwiftUI, Flutter, Figma variables and W3C DTCG JSON, light and dark together.' },
+        { path: '/brand', changefreq: 'monthly', priority: 0.7, title: 'The OpenVibe mark', text: 'The OpenVibe mark, a ring O and a round V: what each of its moves means, its forms, colours and the names beside it, with the SVG files and the code to use it on any site.' },
         { path: '/arena', changefreq: 'daily', priority: 0.9, title: 'The Design Arena', text: 'One prompt, three AI designers, blind votes and an Elo leaderboard per category, with cost and time per generation.' },
     ];
     const themePages = (Array.isArray(themes) ? themes : []).filter((t) => t && t.slug).map((t) => ({
@@ -72,6 +73,7 @@ function createDiscoveryRoutes(ctx) {
                     { title: 'OpenVibe.Design', url: abs('/'), note: 'the theme catalogue' },
                     { title: 'The studio', url: abs('/studio'), note: 'try, edit, use, submit and roll back a theme' },
                     { title: 'Tokens', url: abs('/tokens'), note: 'any theme as CSS, Tailwind, Compose (Android), SwiftUI (iOS), Flutter, Figma or DTCG JSON; the API is GET /api/v1/tokens/:theme?format=' },
+                    { title: 'The OpenVibe mark', url: abs('/brand'), note: 'the logo, its states and motion, colours, the brand face, SVG files and code (openvibe-shared/mark, ov-mark.js)' },
                     { title: 'The Design Arena', url: abs('/arena'), note: 'one prompt, three AI designers, blind votes and an Elo leaderboard' },
                     { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy' },
                 ] },
