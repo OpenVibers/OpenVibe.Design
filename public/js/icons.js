@@ -1,7 +1,7 @@
 /**
  * /icons in the browser (server/views/icons.js): find a glyph by its name or a Font Awesome name as you type, see the
- * grid at 16, 20, 24 or 32 px, open one large (with what it stands for, Copy the SVG and Download), and Escape or the
- * close button shuts it. Without this script the grid and the forms still work.
+ * grid at 16, 20, 24 or 32 px, open one large (with what it stands for, Copy the SVG, SVG, PNG and its page), and
+ * Escape or the close button shuts it. Without this script every tile is a link to its glyph's page.
  */
 (function () {
     'use strict';
@@ -42,7 +42,9 @@
     const standalone = (name) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svgOf(name)}</svg>`;
     grid.addEventListener('click', (e) => {
         const t = e.target.closest('.ic-tile');
-        if (!t || !sheet || typeof sheet.showModal !== 'function') return;
+        // A tile is a link to the glyph's page: a plain click opens it here large, a new-tab click follows the link.
+        if (!t || !sheet || typeof sheet.showModal !== 'function' || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
         current = t.dataset.name;
         $('[data-ic-sheet-name]', sheet).textContent = current;
         const big = $('[data-ic-sheet-big]', sheet);
@@ -60,6 +62,9 @@
         } else meta.append('No Font Awesome name maps to it.');
         const dl = $('[data-ic-download]', sheet);
         dl.href = `/icons/${encodeURIComponent(current)}.svg`; dl.setAttribute('download', `${current}.svg`);
+        const png = $('[data-ic-png]', sheet);
+        png.href = `/icons/${encodeURIComponent(current)}.png?size=512`; png.setAttribute('download', `${current}-512.png`);
+        $('[data-ic-page]', sheet).href = `/icons/${encodeURIComponent(current)}`;
         sheet.showModal();
     });
     if (sheet) {

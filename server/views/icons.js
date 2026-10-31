@@ -14,6 +14,7 @@ const kit = require('openvibe-shared/kit');
 const glyphs = require('openvibe-shared/glyphs');
 const { layout, esc } = require('../render/layout');
 const usage = require('../glyphs/fa-usage.json');
+const ex = require('../glyphs/export');
 
 const BRANDS = new Set(['youtube', 'twitch', 'github', 'discord', 'twitter', 'x-twitter', 'facebook', 'instagram', 'tiktok', 'reddit', 'google', 'apple', 'android', 'windows', 'linux', 'steam', 'spotify', 'kickstarter', 'patreon', 'paypal', 'stripe', 'bitcoin', 'ethereum', 'telegram', 'whatsapp', 'slack', 'linkedin', 'mastodon', 'bluesky', 'vimeo', 'soundcloud', 'itch-io', 'npm', 'node-js', 'docker', 'cloudflare', 'chrome', 'firefox', 'safari', 'edge', 'opera', 'gitlab', 'bitbucket', 'figma', 'openai', 'markdown', 'kick', 'rumble', 'trello']);
 
@@ -40,14 +41,14 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     const tile = (name) => {
         const aliases = fa.get(name) || [];
         const drawn = glyphs.META[name] && /Opus/.test(glyphs.META[name].by) ? 'Drawn for the set' : 'From the kit';
-        return `<button type="button" class="ic-tile" data-name="${esc(name)}" data-fa="${esc(aliases.join(' '))}" data-by="${esc(drawn)}" aria-label="${esc(name)}">${svg(inner(name))}<span>${esc(name)}</span></button>`;
+        return `<a class="ic-tile" href="/icons/${esc(name)}" data-name="${esc(name)}" data-fa="${esc(aliases.join(' '))}" data-by="${esc(drawn)}">${svg(inner(name))}<span>${esc(name)}</span></a>`;
     };
 
     const hero = `<header class="ic-hero">
   <p class="ic-eye">The OpenVibe glyphs</p>
   <h1 class="ic-h1">One hand for every icon.</h1>
   <p class="ic-lede">${glyphs.NAMES.length} icons in the mark&rsquo;s own line: a 24-unit grid, strokes two units wide with round ends, in the colour of the text around them. They stand in for ${Object.keys(glyphs.FA).length} Font Awesome names, ${Math.round((100 * covered) / Math.max(1, total))}% of what the network&rsquo;s pages ask for.</p>
-  <div class="ic-acts">${kit.button({ href: '#draw', label: 'Draw an icon', icon: 'spark' })}${kit.button({ href: '#use', label: 'Use them', kind: 'quiet', icon: 'code' })}</div>
+  <div class="ic-acts">${kit.button({ href: '#get', label: 'Get them all', icon: 'download' })}${kit.button({ href: '#draw', label: 'Draw an icon', kind: 'quiet', icon: 'spark' })}${kit.button({ href: '/icons/font-awesome-alternative', label: 'Switch from Font Awesome', kind: 'quiet', icon: 'code' })}</div>
 </header>`;
 
     const browse = `<section class="ic-sec" aria-labelledby="ic-all">
@@ -63,7 +64,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   <div class="ic-sheet-head"><h2 id="ic-sheet-h" data-ic-sheet-name></h2><button type="button" class="ovk-icon-btn" data-ic-close aria-label="Close">${kit.icon('close')}</button></div>
   <div class="ic-sheet-big" data-ic-sheet-big></div>
   <p class="ic-sheet-meta" data-ic-sheet-meta></p>
-  <div class="ic-sheet-acts"><button type="button" class="ic-btn" data-ic-copy>Copy the SVG</button><a class="ic-btn" data-ic-download href="#" download>Download</a></div>
+  <div class="ic-sheet-acts"><button type="button" class="ic-btn" data-ic-copy>Copy the SVG</button><a class="ic-btn" data-ic-download href="#" download>SVG</a><a class="ic-btn" data-ic-png href="#" download>PNG</a><a class="ic-btn is-go" data-ic-page href="#">Its page ${kit.icon('arrow-right')}</a></div>
 </div></dialog>`;
 
     const leftHtml = left.length ? `<section class="ic-sec" aria-labelledby="ic-left">
@@ -86,10 +87,20 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   ${reviewer ? `<h3>Waiting for review</h3>${drafts.length ? `<ul class="ic-drafts">${drafts.map((d) => draftCard(d, reviewForm(d))).join('')}</ul>` : '<p class="ic-more">Nothing waiting.</p>'}` : ''}
 </section>`;
 
+    const packs = [
+        ['ov-glyphs-svg.zip', 'Every SVG', `${glyphs.NAMES.length} files and the licence, in a ZIP`],
+        ...['ov-glyphs.woff2', 'ov-glyphs.ttf', 'ov-glyphs.otf', 'ov-glyphs.svg', 'ov-glyphs-font.css', 'ov-glyphs-fa.css'].map((f) => [f, ex.PACK[f].label, ex.PACK[f].about]),
+    ];
+    const get = `<section class="ic-sec" id="get" aria-labelledby="ic-get">
+  <div class="ic-sec-head"><h2 id="ic-get">Get them all</h2><p>Free, MIT. The fonts carry every glyph at its own character (U+E001 up, never reused), so a document made with them keeps working. Each glyph&rsquo;s page makes a PNG at any size and colour.</p></div>
+  <ul class="ic-packs">${packs.map(([f, label, about]) => `<li><a href="/icons/pack/${esc(f)}" download><b>${esc(label)}</b><small>${esc(about)}</small><code>${esc(f)}</code></a></li>`).join('')}</ul>
+</section>`;
+
     const use = `<section class="ic-sec" id="use" aria-labelledby="ic-use">
   <div class="ic-sec-head"><h2 id="ic-use">Use them</h2><p>Every OpenVibe site already shows them in place of Font Awesome&rsquo;s (the navbar loads the drop-in). Anyone else can too; it is open source (MIT).</p></div>
   <div class="ic-use">
-    <div><h3>In place of Font Awesome</h3>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>\n<!-- your <i class="fa-solid fa-eye"> now shows the glyph -->`, id: 'ic-use-web', label: 'Copy the HTML' })}</div>
+    <div><h3>In place of Font Awesome</h3>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>\n<!-- your <i class="fa-solid fa-eye"> now shows the glyph -->`, id: 'ic-use-web', label: 'Copy the HTML' })}<p class="ic-more">Sizes, animations and transforms keep working: <a href="/icons/font-awesome-alternative">what keeps working</a>.</p></div>
+    <div><h3>As a font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-eye"></i>`, id: 'ic-use-font', label: 'Copy the HTML' })}</div>
     <div><h3>On a server</h3>${kit.snippet({ code: "const glyphs = require('openvibe-shared/glyphs');\n\nglyphs.svg('live', { size: 20 });   // a standalone SVG\nglyphs.fromFa('fa-eye');             // 'eye'", id: 'ic-use-node', label: 'Copy the code' })}</div>
     <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/icons/<name>.svg`, id: 'ic-use-api', label: 'Copy' })}</div>
   </div>
@@ -99,7 +110,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
         title: 'The OpenVibe glyphs',
         description: `${glyphs.NAMES.length} icons in one hand, the OpenVibe mark's: search them, copy or download their SVG, use them in place of Font Awesome, and draw new ones with OpenVibe.AI.`,
         path: '/icons', active: '/icons', styles: ['css/icons.css'], scripts: ['js/icons.js'],
-        body: `<article class="ic">${hero}${browse}${leftHtml}${drawSec}${use}</article>`,
+        body: `<article class="ic">${hero}${browse}${get}${leftHtml}${drawSec}${use}</article>`,
     });
 }
 

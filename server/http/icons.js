@@ -2,7 +2,13 @@
 /**
  * The OpenVibe glyphs on openvibe.design (plan L32):
  *   GET  /icons                         the set, what is still Font Awesome, "Draw an icon" and the review list
- *   GET  /icons/<name>.svg              one glyph as a standalone SVG (anyone may fetch it)
+ *   GET  /icons/<name>                  one glyph's own page: every export, the PNG maker, its Font Awesome names
+ *   GET  /icons/<name>.svg              one glyph as a standalone SVG (anyone may fetch it); with the PNG maker's
+ *                                       choices in the query (size, color, stroke, pad, ground, bg), drawn with them
+ *   GET  /icons/<name>.png              the same as a PNG (resvg), any size up to 1024 at 1-3x
+ *   GET  /icons/pack/<file>             the fonts (WOFF2, TTF, OTF), the sprite, the CSS, the code points, and
+ *                                       ov-glyphs-svg.zip with every glyph
+ *   GET  /icons/font-awesome-alternative  how to switch, and what keeps working
  *   POST /icons/draft                   signed in: OpenVibe.AI drafts candidates (same-origin form)
  *   POST /icons/drafts/:id/review       an admin approves or rejects one (same-origin form)
  *   GET  /api/v1/glyphs                 the registry as data
@@ -15,6 +21,8 @@ const { asyncRouter } = require('./router');
 const { send, baseUrl } = require('../render/layout');
 const { writeAllowed } = require('./same-origin');
 const { iconsPage, glyphsJson } = require('../views/icons');
+const { glyphPage, faAlternativePage } = require('../views/icon-page');
+const ex = require('../glyphs/export');
 const { createGlyphDrafts } = require('../glyphs/drafts');
 
 function createIconRoutes(ctx) {
@@ -39,11 +47,29 @@ function createIconRoutes(ctx) {
         send(res, 200, iconsPage({ base: baseUrl(), mine, drafts: waiting, reviewer, notice, error: String(req.query.error || '').slice(0, 200), draw }), { viewer: req.viewer });
     });
 
+    r.get('/icons/font-awesome-alternative', (req, res) => send(res, 200, faAlternativePage({ base: baseUrl() }), { viewer: req.viewer }));
+
+    r.get('/icons/pack/:file', (req, res, next) => {
+        const file = req.params.file;
+        res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*');
+        if (file === 'ov-glyphs-svg.zip') return res.type('application/zip').attachment(file).send(ex.zip());
+        const p = Object.prototype.hasOwnProperty.call(ex.PACK, file) && ex.PACK[file];
+        if (!p) return next();
+        res.type(p.type).attachment(file).sendFile(p.path, (err) => { if (err && !res.headersSent) next(); });
+    });
+
     r.get('/icons/:file', (req, res, next) => {
-        const m = /^([a-z][a-z0-9-]{0,40})\.svg$/.exec(req.params.file);
-        const out = m && glyphs.svg(m[1], { size: 24, title: m[1] });
-        if (!out) return next();
-        res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*').type('image/svg+xml').send(out);
+        const m = /^([a-z][a-z0-9-]{0,40})(?:\.(svg|png))?$/.exec(req.params.file);
+        if (!m || !glyphs.path(m[1])) return next();
+        const [, name, kind] = m;
+        const opts = ex.options(req.query);
+        if (!kind) return send(res, 200, glyphPage({ base: baseUrl(), name, opts }), { viewer: req.viewer });
+        res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*');
+        if (kind === 'svg') return res.type('image/svg+xml').send(ex.isDefault(opts) ? glyphs.svg(name, { size: 24, title: name }) : ex.svg(name, opts));
+        try { res.type('image/png').send(ex.png(name, opts)); } catch (err) {
+            log.warn('[OpenVibe.Design] glyph PNG failed:', err && err.message);
+            res.status(500).set('Cache-Control', 'no-store').type('text/plain').send('That PNG could not be drawn.');
+        }
     });
 
     r.post('/icons/draft', form, async (req, res) => {
