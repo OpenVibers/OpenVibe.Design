@@ -66,7 +66,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
 <section class="gp-sizes" aria-label="At text sizes">${[12, 16, 20, 24, 32, 48].map((s) => `<span style="font-size:${s}px">${glyph(name, s)}<i>Aa</i><small>${s}</small></span>`).join('')}</section>`;
 
     const maker = `<section class="ic-sec" id="png" aria-labelledby="gp-png">
-  <div class="ic-sec-head"><h2 id="gp-png">Make a PNG</h2><p>Any size up to 1024 pixels at 1×, 2× or 3×, in any colour or the mark&rsquo;s two, a lighter or heavier line, room around it and a ground behind it. The link rebuilds the same file every time.</p></div>
+  <div class="ic-sec-head"><h2 id="gp-png">Make a PNG</h2><p>Any size up to 1024 pixels at 1×, 2× or 3×, in any colour or the mark&rsquo;s two, a lighter or heavier line, flat or with the mark&rsquo;s depth and glow, room around it and a ground behind it. The link rebuilds the same file every time.</p></div>
   <form class="gp-maker" method="get" action="/icons/${esc(name)}#png" data-gp-form>
     <div class="gp-preview" data-gp-preview data-ground="${esc(opts.ground)}"><img src="${esc(pngUrl)}" alt="${esc(T)} icon, ${opts.size} pixels" width="${Math.min(opts.size, 256)}" height="${Math.min(opts.size, 256)}" data-gp-img></div>
     <div class="gp-controls">
@@ -75,6 +75,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
       <label class="gp-field"><span>Colour</span><span class="gp-colour"><input type="color" value="#${esc(opts.color === 'mark' ? '4f7cff' : opts.color)}" data-gp-colour aria-label="Line colour"><input type="text" name="color" value="${esc(opts.color)}" maxlength="6" pattern="mark|[0-9a-fA-F]{3}|[0-9a-fA-F]{6}" spellcheck="false" data-gp="color"><button type="button" class="gp-chip" data-gp-mark aria-pressed="${opts.color === 'mark'}">The mark&rsquo;s</button></span></label>
       ${range('stroke', 1, 3, 0.25, opts.stroke, 'Line', '')}
       ${range('pad', 0, 40, 1, opts.pad, 'Room around it', '%')}
+      ${sel('fx', [['flat', 'Flat'], ['depth', 'Depth: light to deep'], ['glow', 'A glow behind it'], ['depth-glow', 'Depth and a glow']], opts.fx, 'Finish')}
       ${sel('ground', [['none', 'None, transparent'], ['circle', 'A circle'], ['squircle', 'A rounded square'], ['square', 'A square']], opts.ground, 'Ground')}
       <label class="gp-field" data-gp-bg-field${opts.ground === 'none' ? ' hidden' : ''}><span>Ground colour</span><span class="gp-colour"><input type="color" value="#${esc(opts.bg)}" data-gp-bgpick aria-label="Ground colour"><input type="text" name="bg" value="${esc(opts.bg)}" maxlength="6" pattern="[0-9a-fA-F]{3}|[0-9a-fA-F]{6}" spellcheck="false" data-gp="bg"></span></label>
       <div class="gp-go">
