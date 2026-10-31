@@ -31,7 +31,10 @@ function createLifecycle({ server, ctx, exit, signals } = {}) {
 async function start() {
     const { app, ctx } = await createApp();
     const { config } = ctx;
-    const server = app.listen(config.port, config.host, () => {
+    // Socket activation (2026-10-31): systemd's .socket unit holds the listener across restarts, so a deploy
+    // queues requests in the kernel instead of answering 502. Without the socket unit, the usual listen.
+    const socketActivated = process.env.LISTEN_FDS === '1' && Number(process.env.LISTEN_PID) === process.pid;
+    const server = app.listen(...(socketActivated ? [{ fd: 3 }] : [config.port, config.host]), () => {
         console.log(`[OpenVibe.Design] ${config.nodeEnv} on http://${config.host}:${config.port} → ${config.baseUrl} (network ${config.networkUrl}, ai ${config.ai.url})`);
         // Load the Network's signing key now, not on the first sign-in, so /api/ready reports sign-in as it is.
         ctx.keys.ensure().catch(() => {});
