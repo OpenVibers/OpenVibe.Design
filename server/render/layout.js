@@ -28,6 +28,7 @@ const NAV = [
     { label: 'Your look', href: '/look', icon: 'fa-circle-half-stroke' },
     { label: 'Arena', href: '/arena', icon: 'fa-crown' },
     { label: 'Tokens', href: '/tokens', icon: 'fa-code' },
+    { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
