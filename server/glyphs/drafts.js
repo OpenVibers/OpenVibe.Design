@@ -39,7 +39,8 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() } }) {
             prompt: `The icon: "${n}".${what ? ` What it stands for: ${what}` : ''}`,
             maxTokens: 1800,
             target: { service: 'design', type: 'glyph_draft', id: n },
-            prefer: /^claude-opus-5-5\b/,   // Claude first on openvibe.design (L37)
+            prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },   // Claude first, soft, on the person's key (L37)
+            person: subject,
         });
         let list = [];
         try {

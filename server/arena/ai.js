@@ -185,27 +185,35 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
 
     /**
      * Who draws a design on openvibe.design (plan L37, the owner: "default to Opus 5.5… most of the site
-     * Anthropic-powered, but configurable"). `claude`, the default, asks for Claude Opus 5.5, Claude Sonnet 5.5 and
-     * a second take from Opus, from the offers AI makes this service; a model AI does not offer is replaced by the
-     * Arena's next pick, and `claude: false` in the answer says no Claude model was offered at all. `compare` is the
-     * Arena's three, one per provider.
+     * Anthropic-powered, but configurable"). `claude`, the default, prefers Claude Opus 5.5, `sonnet` prefers Claude
+     * Sonnet 5.5 and `any` prefers nothing; the preference is soft (AI may use another offer when the person's own key
+     * or the named model cannot serve), never a route pin, so the person's own key is tried first. `compare` is the
+     * one mode that really asks for different providers, and keeps the Arena's pinned three.
+     *
+     * The three slots are three takes of the chosen model; when AI does not offer it they are the Arena's next picks
+     * and `claude: false` says so. `prefer` is what each call sends, and `pin` says whether the slot is a route pin.
      */
-    const CLAUDE = [/^claude-opus-5-5\b/, /^claude-sonnet-5-5\b/, /^claude-opus-5-5\b/];
+    const CLAUDE_PREFER = {
+        claude: { provider: 'anthropic', model: 'claude-opus-5-5' },
+        sonnet: { provider: 'anthropic', model: 'claude-sonnet-5-5' },
+    };
+    function preferFor(who) {
+        if (who === 'any' || who === 'compare') return null;
+        return CLAUDE_PREFER[who] || CLAUDE_PREFER.claude;   // anything else stays Claude, as before
+    }
     async function designPlan(who = 'claude') {
-        if (who === 'compare') return { ...(await slotPlan()), who: 'compare', claude: null };
+        if (who === 'compare') return { ...(await slotPlan()), who: 'compare', claude: null, prefer: null, pin: true };
         let list = configuredModels();
         if (!list.length) list = await offeredModels();
         const offers = rankOffers(list);
-        const slots = [];
-        for (const re of CLAUDE) {
-            const o = offers.find((x) => x.model && re.test(x.model));
-            if (o) slots.push(o);
-        }
-        const claude = slots.length > 0;
-        for (const o of offers) if (slots.length < 3 && !slots.some((x) => x.provider === o.provider && x.model === o.model)) slots.push(o);
+        const prefer = preferFor(who);
+        const match = prefer ? offers.find((x) => x.provider === prefer.provider && x.model === prefer.model) : null;
+        const slots = (match ? [match, match, match] : offers.slice(0, 3)).map((x) => ({ ...x }));
         const poolFallback = slots.length < 3;
         while (slots.length < 3) slots.push({ provider: 'ai', model: null });
-        return { slots, pool_fallback: poolFallback, offered: offers.length, who: 'claude', claude };
+        return { slots, pool_fallback: poolFallback, offered: offers.length,
+            who: who === 'sonnet' ? 'sonnet' : who === 'any' ? 'any' : 'claude',
+            claude: prefer ? Boolean(match) : null, prefer, pin: false };
     }
 
     function systemPrompt(category) {
@@ -260,35 +268,77 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
         return { run: r, ms: msOf(r, Date.now() - startedAt) };
     }
 
-    async function generate({ prompt, category, slot, roundId, index }) {
+    /**
+     * Start one AI run. The run API is what carries `prefer` and the person (`on_behalf_of`); a deployment that
+     * predates it still has POST /api/v1/generate, which takes a route pin but no preference.
+     */
+    async function createRun(body, legacy, wait) {
+        try {
+            return await call('POST', `/api/v1/runs?wait=${wait}`, body);
+        } catch (err) {
+            if (!err || err.status !== 404) throw err;
+            return call('POST', `/api/v1/generate?wait=${wait}`, legacy);
+        }
+    }
+
+    /** AI reads the person a service acts for as a SubjectRef in the run body. */
+    function onBehalfOf(person) {
+        return person ? { type: 'user', id: String(person) } : null;
+    }
+
+    /** A person's own key answers as `byo:self:<subject>:<provider>`; the frame names the provider, not the key. */
+    function providerName(raw) {
+        const s = String(raw || 'ai');
+        return s.startsWith('byo:self:') ? s.split(':').pop() : s;
+    }
+
+    /** Which key paid, and whether the preference was honoured (the run's explain; absent on old/cached runs). */
+    function paidFrom(run) {
+        const explain = run && run.explain && typeof run.explain === 'object' ? run.explain : {};
+        return {
+            paid_by: explain.paid_by != null ? String(explain.paid_by).slice(0, 160) : null,
+            prefer: explain.prefer && typeof explain.prefer === 'object' ? explain.prefer : null,
+        };
+    }
+
+    async function generate({ prompt, category, slot, roundId, index, prefer = null, person = null, pin = true }) {
         if (!enabled) throw new ArenaAiError(503, 'ai.not_configured', 'OpenVibe.AI is not configured for the Arena.');
-        // One offer from GET /api/v1/routes: AI runs that provider/model alone, or refuses it in words.
-        // A pool slot (fewer than three offered) sends no route and lets the routing choose.
-        const pinned = slot && slot.provider && slot.provider !== 'ai' ? { provider: slot.provider, model: slot.model || null } : null;
-        const body = {
+        // A route pin is the Arena's compare mode (and its background rounds): AI runs that provider/model alone.
+        // Everything else is a soft preference, with no route, so AI tries the person's own key first.
+        const pinned = pin && slot && slot.provider && slot.provider !== 'ai' ? { provider: slot.provider, model: slot.model || null } : null;
+        const base = {
             prompt: `${prompt}\n\nCategory: ${category}\nReturn one complete HTML document.`,
             system: systemPrompt(category),
             max_tokens: 8000,
             temperature: 0.7,
-            options: { cache: false },
-            ...(pinned ? { route: pinned } : {}),
-            target: { service: 'design', type: 'arena_output', id: `${roundId}_${index}`.slice(0, 128) },
         };
+        const target = { service: 'design', type: 'arena_output', id: `${roundId}_${index}`.slice(0, 128) };
+        const who = onBehalfOf(person);
         const startedAt = Date.now();
         const wait = Math.min(ai.waitMs, 60_000);
+        const legacy = { ...base, options: { cache: false }, ...(pinned ? { route: pinned } : {}), ...(who ? { on_behalf_of: who } : {}), target };
         let created;
-        try {
-            created = await call('POST', `/api/v1/generate?wait=${wait}`, body);
-        } catch (err) {
-            // A deployment that exposes the run API but not the convenience operation: the same run, by workflow.
-            if (!err || err.status !== 404) throw err;
-            created = await call('POST', `/api/v1/runs?wait=${wait}`, {
+        if (pinned) {
+            created = await createRun({
                 workflow: 'ai.generate',
-                input: { prompt: body.prompt, system: body.system, max_tokens: body.max_tokens, temperature: body.temperature },
-                options: body.options,
-                ...(body.route ? { route: body.route } : {}),
-                target: body.target,
-            });
+                input: { prompt: base.prompt, system: base.system, max_tokens: base.max_tokens, temperature: base.temperature },
+                options: { cache: false },
+                route: pinned,
+                ...(prefer ? { prefer } : {}),
+                ...(who ? { on_behalf_of: who } : {}),
+                target,
+            }, legacy, wait);
+        } else {
+            // The llm step of ai.generate does not pass `prefer` to the router; the chat passthrough does, and it
+            // answers the same `{ text }` on the same default.chat route. A preference is therefore a chat run.
+            created = await createRun({
+                workflow: 'ai.chat',
+                input: { system: base.system, messages: [{ role: 'user', content: base.prompt }], max_tokens: base.max_tokens, temperature: base.temperature },
+                options: { cache: false },
+                ...(prefer ? { prefer } : {}),
+                ...(who ? { on_behalf_of: who } : {}),
+                target,
+            }, legacy, wait);
         }
         const first = created && created.run ? created.run : created;
         const { run, ms } = await waitFor(first, startedAt);
@@ -314,32 +364,34 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
             ms,
             tokens: Math.max(0, Math.round(tokens)),
             model: String(prov.model || run.model || (run.output && run.output.model) || (slot && slot.model) || 'unknown').slice(0, 120),
-            provider: String(prov.provider || run.provider || (slot && slot.provider) || 'ai').slice(0, 80),
+            provider: providerName(prov.provider || run.provider || (slot && slot.provider) || 'ai').slice(0, 80),
             ui_check: run.ui_check || (run.output && run.output.ui_check) || null,
             run_id: run.id || null,
+            ...paidFrom(run),
         };
     }
 
     /**
      * Plain text from OpenVibe.AI's routing (the glyph drafts, L32): the same token and run as the Arena, one answer.
-     * → { text, model, provider, run_id }
+     * → { text, model, provider, run_id, paid_by, prefer }
      */
-    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null }) {
+    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null, person = null }) {
         const startedAt = Date.now();
-        // `prefer` (a model pattern) pins the first offer that matches it (L37: Claude first); no match lets AI's
-        // routing choose, as before.
-        let route = null;
-        if (prefer) {
-            const list = configuredModels().length ? configuredModels() : await offeredModels().catch(() => []);
-            const o = list.find((x) => x.model && prefer.test(x.model));
-            if (o) route = { provider: o.provider, model: o.model };
-        }
-        const created = await call('POST', `/api/v1/generate?wait=${Math.min(ai.waitMs, 60_000)}`, {
-            prompt, system, max_tokens: maxTokens, options: { cache: false }, ...(target ? { target } : {}), ...(route ? { route } : {}),
-        });
+        const who = onBehalfOf(person);
+        const wait = Math.min(ai.waitMs, 60_000);
+        const legacy = { prompt, max_tokens: maxTokens, options: { cache: false },
+            ...(system ? { system } : {}), ...(who ? { on_behalf_of: who } : {}), ...(target ? { target } : {}) };
+        const created = await createRun({
+            workflow: 'ai.chat',
+            input: { ...(system ? { system } : {}), messages: [{ role: 'user', content: String(prompt == null ? '' : prompt) }], max_tokens: maxTokens },
+            options: { cache: false },
+            ...(prefer ? { prefer } : {}),
+            ...(who ? { on_behalf_of: who } : {}),
+            ...(target ? { target } : {}),
+        }, legacy, wait);
         const { run } = await waitFor(created && created.run ? created.run : created, startedAt);
         const prov = run.provenance || {};
-        return { text: textOf(run.output), model: String(prov.model || run.model || 'unknown').slice(0, 120), provider: String(prov.provider || run.provider || 'ai').slice(0, 80), run_id: run.id || null };
+        return { text: textOf(run.output), model: String(prov.model || run.model || 'unknown').slice(0, 120), provider: providerName(prov.provider || run.provider || 'ai').slice(0, 80), run_id: run.id || null, ...paidFrom(run) };
     }
 
     return { enabled, slots, slotPlan, designPlan, offeredModels, rankOffers, generate, systemPrompt, text, CATEGORY_BRIEF };

@@ -107,11 +107,14 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const count = Number(await db.value(`SELECT COUNT(*) FROM designs WHERE ${owner ? 'owner' : 'guest_ip'}=$1 AND created_at >= $2::timestamptz`, [owner || ip, cutoff]));
         if (count >= (owner ? 10 : 2)) throw fail(429, 'design.daily_limit', 'Daily design limit reached.');
         const selected = await theme(themeId);
-        // Claude first (L37); `compare` asks the Arena's three. An AI client without designPlan (tests, older) uses slots.
-        const plan = ai.designPlan ? await ai.designPlan(who === 'compare' ? 'compare' : 'claude') : await ai.slotPlan();
+        // Claude first (L37) as a soft preference: claude -> Opus 5.5, sonnet -> Sonnet 5.5, any -> no preference;
+        // `compare` is the one pinned mode. An AI client without designPlan (tests, older) uses its slots.
+        const plan = ai.designPlan ? await ai.designPlan(who) : await ai.slotPlan();
+        const prefer = plan.prefer || null, pin = plan.pin === true;
         const slots = plan.slots.slice(0, 3);
         const variants = slots.map((slot, index) => ({ id: s.newId('dva'), slot: index, provider: slot.provider,
-            model: slot.model, status: 'pending', html: '', ms: 0, costUsd: 0, error: null }));
+            model: slot.model, status: 'pending', html: '', ms: 0, costUsd: 0, error: null,
+            paid_by: null, prefer: prefer ? { ...prefer } : null, pin }));
         const id = s.newId('dsn'), editKey = owner ? null : random();
         await db.exec('INSERT INTO designs(id,prompt,kind,theme_id,variants,owner,guest_hash,guest_ip,created_at,updated_at) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9::timestamptz,$9::timestamptz)',
             [id, prompt, kind, selected.id, JSON.stringify(variants), owner, editKey ? hash(editKey).toString('hex') : null, owner ? null : ip, s.iso()]);
@@ -134,11 +137,13 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
                 const t = await theme(d.theme_id);
                 const prompt = `${d.prompt}\nUse ONLY these theme CSS custom properties for all colors: ${Object.keys(t.variables || {}).join(', ')}. No external requests. Mobile first. Return one complete HTML document.`;
                 const out = await ai.generate({ prompt, category: d.kind === 'component' ? 'logo' : d.kind === 'screen' ? 'mobile_app' : 'landing',
-                    slot: { provider: v.provider, model: v.model }, roundId: id, index });
+                    slot: { provider: v.provider, model: v.model }, roundId: id, index,
+                    prefer: v.prefer || null, person: d.owner || null, pin: v.pin === true });
                 const current = await db.maybe('SELECT theme_id FROM designs WHERE id=$1', [id]);
                 const currentTheme = await theme(current.theme_id);
                 await updateVariant(id, index, { ...running, status: 'done', html: wrap(out.html, currentTheme.variables || {}),
-                    provider: out.provider, model: out.model, ms: out.ms, costUsd: out.cost_usd, error: null });
+                    provider: out.provider, model: out.model, ms: out.ms, costUsd: out.cost_usd, error: null,
+                    paid_by: out.paid_by || null, prefer: out.prefer || v.prefer || null });
             } catch (err) {
                 await updateVariant(id, index, { ...running, status: 'failed', error: String(err.message).slice(0, 300) });
             }
@@ -277,7 +282,10 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const p = await pickRow(id);
         const versions = p ? await db.many('SELECT * FROM design_versions WHERE design_id=$1 ORDER BY seq', [id]) : [];
         const current = p ? versions.find(v => Number(v.seq) === Number(p.current_seq)) : null;
-        const variants = d.variants.map((v, index) => {
+        const variants = d.variants.map((full, index) => {
+            // `pin` is how the run was asked to route, not part of the frame; `prefer` is the request before the run
+            // and the run's explain (with `honoured`) after it.
+            const { pin, ...v } = full;
             if (p && index === Number(p.variant_index) && current) {
                 return { ...v, html: wrap(current.html, selected.variables || {}), currentSeq: Number(current.seq), edited: current.kind !== 'generated' };
             }
@@ -350,7 +358,14 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             `<<<CURRENT_DESIGN\n${String(current.html || variant.html || '').slice(0, 80000)}\nCURRENT_DESIGN>>>`,
             `Use ONLY these theme CSS custom properties for every colour: ${names || '(the document already uses them)'}. Do not add scripts, event-handler attributes, links, web fonts, remote images or any external request. Mobile first.`,
         ].join('\n\n');
-        const out = await ai.generate({ prompt, category: categoryOf(d.kind), slot: { provider: variant.provider, model: variant.model }, roundId: d.id, index: variant.slot });
+        // An edit stays on the model that drew the frame, as a soft preference (the person's own key first), never a pin.
+        const asked = variant.prefer && variant.prefer.provider ? variant.prefer : null;
+        const prefer = asked && asked.provider && !String(asked.provider).startsWith('byo:self:')
+            ? { provider: asked.provider, model: asked.model || null }
+            : variant.provider && variant.provider !== 'ai' && !String(variant.provider).startsWith('byo:self:') && variant.model
+                ? { provider: variant.provider, model: variant.model } : null;
+        const out = await ai.generate({ prompt, category: categoryOf(d.kind), slot: { provider: variant.provider, model: variant.model },
+            roundId: d.id, index: variant.slot, prefer, person: subject || d.owner || null, pin: false });
         const html = wrap(out.html, variables);
         const version = await addVersion(d, p, { kind: 'chat', html, instruction, model: out.model || variant.model,
             provider: out.provider || variant.provider, costUsd: out.cost_usd, ms: out.ms, createdBy: subject || (d.owner ? 'owner' : 'guest') });
