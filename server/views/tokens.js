@@ -10,6 +10,7 @@
 const kit = require('openvibe-shared/kit');
 const { layout, esc } = require('../render/layout');
 const themeTokens = require('../tokens');
+const tokenFiles = require('../tokens/exports');
 
 const SHORT = { css: 'CSS', tailwind: 'Tailwind', compose: 'Android', swiftui: 'iOS', flutter: 'Flutter', figma: 'Figma', json: 'JSON' };
 
@@ -63,6 +64,14 @@ function tokenTable(found) {
 <p class="ds-fine">Every theme also carries the kit's scales: <code>radius.*</code>, <code>space.*</code> (4 to 32), <code>size.tap</code> (44), <code>type.size.*</code>, <code>type.weight.*</code> and <code>motion.*</code>.</p>`;
 }
 
+/** Files a tool can fetch by address (/tokens/<theme>.<ext>): this theme alone, with the kit's motion and the mark. */
+function filesRow(slug) {
+    const chips = tokenFiles.FORMATS.map((f) => `<li><a class="tk-file" href="/tokens/${esc(slug)}.${esc(f.ext)}"><b>${esc(f.label)}</b><code>.${esc(f.ext)}</code></a></li>`).join('');
+    return `<section class="tk-files" aria-labelledby="tk-files-h"><h2 id="tk-files-h">Files your tools can fetch</h2>
+<p class="tk-how">This theme on its own, with the motion every OpenVibe page shares and the mark&rsquo;s colours. Each one has a lasting address a build or a design tool can read straight from here.</p>
+<ul class="tk-file-list">${chips}</ul></section>`;
+}
+
 function tokensPage({ themes = [], found = null, format = 'css', both = true } = {}) {
     const list = (themes || []).filter((t) => t && (t.slug || t.id));
     const target = themeTokens.TARGETS.find((t) => t.id === format) || themeTokens.TARGETS[0];
@@ -83,6 +92,7 @@ ${kit.tabs({ base, param: 'format', active: target.id, label: 'Platform', items:
 <section class="tk-out" aria-labelledby="tk-out-h"><div class="tk-out-head"><h2 id="tk-out-h">${esc(target.label)}</h2>${kit.button({ href: dl, label: `Download ${themeTokens.fileName(found.docs[0], target.id)}`, kind: 'quiet', small: true, icon: 'download' })}</div>
 <p class="tk-how">${howTo(target.id, name, pair)}</p>
 ${kit.snippet({ code, id: 'tk-code', label: 'Copy the code' })}</section>
+${filesRow(slug)}
 ${kit.fold({ id: 'tk-all', title: 'Every colour token', meta: `${themeTokens.flatten(found.docs[0]).filter((t) => t.type === 'color').length} of them`, body: tokenTable(found) })}
 ${kit.fold({ id: 'tk-why', title: 'Why tokens, and what is next', body: `<p>A theme on OpenVibe is one set of design tokens: semantic names such as <code>color.accent.strong</code> and <code>space.lg</code>, kept apart from any one platform. The web reads them as CSS variables today. An Android or iOS app reads the same values in Compose or SwiftUI, so a native app wears your theme without being a web page in a frame.</p><p>The format is the W3C Design Tokens one, so the same file works in Style Dictionary, Tokens Studio and Figma. Next: the kit's components described the same way (anatomy, states, roles), so a page made on OpenVibe.Design can be drawn natively too.</p><p>${kit.button({ href: `/studio?theme=${encodeURIComponent(found.theme.id || slug)}`, label: 'Change this theme in the studio', kind: 'quiet', small: true })} ${kit.button({ href: '/developers#tokens', label: 'The tokens API', kind: 'quiet', small: true })}</p>` })}`;
     }

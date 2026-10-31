@@ -88,6 +88,26 @@ All of them are server-rendered through the OpenVibe Frame (`openvibe-shared/she
 JavaScript. A page rendered for a signed-in person is `private, no-store`; a public page is
 `public, max-age=120` with `Vary: Cookie`.
 
+## Token files
+
+`GET /tokens/<theme>.<ext>` gives one theme as the file a tool reads. `<theme>` is a built-in theme or a
+community theme from the catalogue (`default` is Vibe); `<ext>` is the format:
+
+| Route | What it is |
+|---|---|
+| `/tokens/<theme>.tokens.json` | the W3C Design Tokens document: `color`, `motion.duration`, `motion.easing`, `brand` |
+| `/tokens/<theme>.css` | `:root { … }` with every variable |
+| `/tokens/<theme>.tailwind.js` | a Tailwind preset (`theme.extend.colors`, `transitionDuration`, `transitionTimingFunction`) |
+| `/tokens/<theme>.style-dictionary.json` | the Style Dictionary source |
+| `/tokens/<theme>.swift` | a Swift enum `OVTokens` (SwiftUI) |
+| `/tokens/<theme>.kt` | a Kotlin object `OVTokens` (Jetpack Compose) |
+| `/tokens/<theme>.xml` | an Android `colors.xml` |
+
+Every file carries the theme's colours, the kit's motion (`--ov-dur-1…4` and the three curves, from
+`openvibe-shared/ov-fx`) and the mark's colours. A built-in theme does not change, so its file is
+`public, max-age=31536000, immutable`; a community theme may be edited, so its file is cached for ten
+minutes. Every file is `Access-Control-Allow-Origin: *`. A theme or a format that is not there is a 404.
+
 ## API
 
 ### MCP

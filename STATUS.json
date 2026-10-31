@@ -37,6 +37,8 @@
     "Design Studio chat edit: POST /api/v1/designs/:id/edit, the picked variant's model via OpenVibe.AI, the previous HTML in context, theme-token re-wrapping, sanitization and the render-time frame CSP; a small per-design paid-AI budget",
     "Design Studio click edit: a render-time iframe overlay reports a validated body > …:nth-of-type path; the floating panel edits text, a theme-token colour, padding and alignment; paths, tags and CSS values are allowlisted server-side and every accepted change is a version",
     "Design Studio versions: migrations/0003_design_working_versions.sql keeps design_picks and an append-only design_versions table with model/provider provenance; undo/redo move a pointer and an edit after undo appends instead of deleting",
+    "The token files: GET /tokens/<theme>.<ext> gives a built-in or community theme (default is Vibe) as the W3C Design Tokens JSON, the CSS variables, a Tailwind preset, the Style Dictionary source, a Swift enum OVTokens, a Kotlin object OVTokens or an Android colors.xml, with the theme's colours, the kit's motion (--ov-dur-1...4 and the three curves) and the mark's colours; built-in themes immutable for a year, community themes cached for ten minutes, every file open to any origin, an unknown theme or format a 404",
+    "The format list (server/tokens/exports.js) is what a page lists: each format with its id, file name, label and type",
     "Tests: pick/vote idempotence, owner and guest-key authorization, chat edit with a fake AI and budget, click-edit safety, CSP after editing, version history/undo/redo and the no-JS page forms"
   ],
   "notYet": [
@@ -65,7 +67,8 @@
     "Design Studio pick and Arena vote",
     "Design Studio chat edit",
     "Design Studio click edit",
-    "Design Studio versions and undo/redo"
+    "Design Studio versions and undo/redo",
+    "Design tokens as files (JSON, CSS, Tailwind, Style Dictionary, Swift, Kotlin, Android XML)"
   ],
   "updated": "2026-10-31"
 }
