@@ -123,7 +123,7 @@ const { boot, check, done } = require('./helpers/boot');
 
     await check('the components API: the contract as JSON, and kit documents checked against it', async () => {
         const spec = (await t.get('/api/v1/components')).json();
-        assert.strictEqual(spec.components.length, 11);
+        assert.strictEqual(spec.components.length, Object.keys(require('openvibe-shared/components').SPECS).length, 'every component openvibe-shared has');
         assert.ok(spec.components.find((c) => c.id === 'card').native.swiftui.includes('struct OvCard'));
         const good = await t.get('/api/v1/components/validate', { json: { doc: { type: 'rail', props: { title: 'Live' }, children: [{ type: 'card', props: { href: '/c/1', title: 'x' } }] } } });
         assert.strictEqual(good.status, 200);
