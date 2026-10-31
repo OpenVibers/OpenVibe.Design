@@ -34,3 +34,12 @@
 .clear-pill{position:absolute;right:10px;bottom:10px;display:inline-flex;align-items:center;height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--border);background:var(--bg-secondary);font-weight:750;font-size:13px}
 .clear-pill::before{content:'';width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--warning)}
 @media(prefers-reduced-motion:reduce){.drag-chip,.clear-toasts{transition:none}}
+.watch-demo{position:relative;display:flex;flex-direction:column;height:240px;max-width:300px;margin:0 auto;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--bg-primary)}
+.watch-player{position:relative;flex:0 0 auto;aspect-ratio:16/9;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 45%,#000),#000)}
+.watch-live{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:999px;background:#e11d48;color:#fff;font-size:.72rem;font-weight:800}
+.watch-chat{flex:1 1 0;min-height:0;overflow:auto;padding:8px 12px 64px;font-size:.85rem;border-top:1px solid var(--border)}
+.watch-chat p{margin:0 0 4px}
+.watch-demo .bottom-nav{transition:transform var(--ov-dur-base,260ms) ease}
+.watch-demo.is-watching .bottom-nav{transform:translateY(110%)}
+.watch-demo.is-watching .watch-chat{padding-bottom:8px}
+@media (prefers-reduced-motion:reduce){.watch-demo .bottom-nav{transition:none}}

@@ -51,6 +51,18 @@
       const nav=node('nav','sample-nav');nav.setAttribute('aria-label','Example page navbar');nav.append(node('strong','','OpenVibe'),node('span','','Patterns'),node('span','','One shared navbar'));widget.append(nav);say('This page itself uses the shared Frame navbar once.');
     } else if (id === 'bottom-tabs') {
       const frame=node('div','bottom-demo');frame.append(node('strong','','Scrollable content'),node('p','','This content reserves space under the fixed phone tabs.'),node('p','','The final row remains visible above the bar.'));const nav=node('nav','bottom-nav');nav.setAttribute('aria-label','Phone tabs');['Home','Runs','Settings'].forEach(x=>nav.append(button(x,()=>say(`${x} tab selected.`))));frame.append(nav);widget.append(frame);
+    } else if (id === 'media-owns-the-screen') {
+      // A phone frame: browsing shows the tabs; the watch screen hides them and docks the stream's chat under the picture.
+      const frame = node('div', 'watch-demo'), player = node('div', 'watch-player'), chat = node('div', 'watch-chat');
+      player.append(node('span', 'watch-live', '● Live'));
+      ['Ana: hi!', 'Ben: what game is this?', 'Cy: the stream looks great'].forEach((x) => chat.append(node('p', '', x)));
+      const nav = node('nav', 'bottom-nav'); nav.setAttribute('aria-label', 'Phone tabs');
+      ['Home', 'Videos', 'Chat'].forEach((x) => nav.append(button(x, () => say(`${x} tab selected.`))));
+      frame.append(player, chat, nav);
+      widget.append(frame);
+      control('Watch screen', () => { frame.classList.add('is-watching'); say('Watching: the tabs step aside and the stream’s chat takes the room.'); }, true);
+      control('Browse', () => { frame.classList.remove('is-watching'); say('Browsing: the tabs are back.'); });
+      frame.classList.add('is-watching');
     } else if (id === 'decor-stays-out') {
       const frame = node('div', 'decor-demo'), bar = node('div', 'decor-bar'), head = node('strong', 'decor-head', 'Conductor');
       bar.append(node('span', 'decor-mark', 'ov'), node('span', '', 'Codes'));
