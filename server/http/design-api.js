@@ -39,7 +39,7 @@ function createDesignApi(ctx) {
     routes.post('/', sameOrigin, safe(async (req, res) => {
         const body = req.body || {};
         const result = await ctx.designs.create({ prompt: body.prompt, kind: body.kind || 'page',
-            themeId: body.themeId, owner: owner(req), ip: req.ip });
+            themeId: body.themeId, owner: owner(req), ip: req.ip, who: body.who });
         if (result.editKey) {
             let links = [];
             try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }

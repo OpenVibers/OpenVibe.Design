@@ -219,7 +219,7 @@ ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
 
 function developers() {
     const rows = [
-        ['POST /api/v1/designs', 'Create three model variants with {prompt, kind, themeId?}; guests receive a secret edit link.'],
+        ['POST /api/v1/designs', 'Create three variants with {prompt, kind, themeId?, who?}: Claude Opus 5.5 first by default, or who: "compare" for three providers; guests receive a secret edit link.'],
         ['GET /api/v1/designs/:id', 'Poll generation status, read each frame, the pick and the version list; guests send X-Design-Key.'],
         ['POST /api/v1/designs/:id/theme', 'Change the token theme with {themeId}.'],
         ['POST /api/v1/designs/:id/pick', 'Choose the working frame with {variantIndex}; the pick is recorded as one Arena vote.'],

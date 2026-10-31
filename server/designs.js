@@ -99,7 +99,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         if (!selected) throw fail(422, 'design.invalid_theme', 'Choose a theme from the catalog.');
         return selected;
     }
-    async function create({ prompt, kind = 'page', themeId, owner = null, ip = '' }) {
+    async function create({ prompt, kind = 'page', themeId, owner = null, ip = '', who = 'claude' }) {
         prompt = String(prompt || '').trim();
         if (!prompt || prompt.length > 4000 || !KINDS.includes(kind))
             throw fail(422, 'design.invalid_input', 'Provide a prompt up to 4000 characters and a valid kind.');
@@ -107,7 +107,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const count = Number(await db.value(`SELECT COUNT(*) FROM designs WHERE ${owner ? 'owner' : 'guest_ip'}=$1 AND created_at >= $2::timestamptz`, [owner || ip, cutoff]));
         if (count >= (owner ? 10 : 2)) throw fail(429, 'design.daily_limit', 'Daily design limit reached.');
         const selected = await theme(themeId);
-        const plan = await ai.slotPlan();
+        // Claude first (L37); `compare` asks the Arena's three. An AI client without designPlan (tests, older) uses slots.
+        const plan = ai.designPlan ? await ai.designPlan(who === 'compare' ? 'compare' : 'claude') : await ai.slotPlan();
         const slots = plan.slots.slice(0, 3);
         const variants = slots.map((slot, index) => ({ id: s.newId('dva'), slot: index, provider: slot.provider,
             model: slot.model, status: 'pending', html: '', ms: 0, costUsd: 0, error: null }));

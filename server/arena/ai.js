@@ -183,6 +183,31 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
 
     async function slots() { return (await slotPlan()).slots; }
 
+    /**
+     * Who draws a design on openvibe.design (plan L37, the owner: "default to Opus 5.5… most of the site
+     * Anthropic-powered, but configurable"). `claude`, the default, asks for Claude Opus 5.5, Claude Sonnet 5.5 and
+     * a second take from Opus, from the offers AI makes this service; a model AI does not offer is replaced by the
+     * Arena's next pick, and `claude: false` in the answer says no Claude model was offered at all. `compare` is the
+     * Arena's three, one per provider.
+     */
+    const CLAUDE = [/^claude-opus-5-5\b/, /^claude-sonnet-5-5\b/, /^claude-opus-5-5\b/];
+    async function designPlan(who = 'claude') {
+        if (who === 'compare') return { ...(await slotPlan()), who: 'compare', claude: null };
+        let list = configuredModels();
+        if (!list.length) list = await offeredModels();
+        const offers = rankOffers(list);
+        const slots = [];
+        for (const re of CLAUDE) {
+            const o = offers.find((x) => x.model && re.test(x.model));
+            if (o) slots.push(o);
+        }
+        const claude = slots.length > 0;
+        for (const o of offers) if (slots.length < 3 && !slots.some((x) => x.provider === o.provider && x.model === o.model)) slots.push(o);
+        const poolFallback = slots.length < 3;
+        while (slots.length < 3) slots.push({ provider: 'ai', model: null });
+        return { slots, pool_fallback: poolFallback, offered: offers.length, who: 'claude', claude };
+    }
+
     function systemPrompt(category) {
         return [
             'You are a senior product designer and front-end engineer competing in the OpenVibe Design Arena.',
@@ -299,17 +324,25 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
      * Plain text from OpenVibe.AI's routing (the glyph drafts, L32): the same token and run as the Arena, one answer.
      * → { text, model, provider, run_id }
      */
-    async function text({ prompt, system, maxTokens = 2000, target = null }) {
+    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null }) {
         const startedAt = Date.now();
+        // `prefer` (a model pattern) pins the first offer that matches it (L37: Claude first); no match lets AI's
+        // routing choose, as before.
+        let route = null;
+        if (prefer) {
+            const list = configuredModels().length ? configuredModels() : await offeredModels().catch(() => []);
+            const o = list.find((x) => x.model && prefer.test(x.model));
+            if (o) route = { provider: o.provider, model: o.model };
+        }
         const created = await call('POST', `/api/v1/generate?wait=${Math.min(ai.waitMs, 60_000)}`, {
-            prompt, system, max_tokens: maxTokens, options: { cache: false }, ...(target ? { target } : {}),
+            prompt, system, max_tokens: maxTokens, options: { cache: false }, ...(target ? { target } : {}), ...(route ? { route } : {}),
         });
         const { run } = await waitFor(created && created.run ? created.run : created, startedAt);
         const prov = run.provenance || {};
         return { text: textOf(run.output), model: String(prov.model || run.model || 'unknown').slice(0, 120), provider: String(prov.provider || run.provider || 'ai').slice(0, 80), run_id: run.id || null };
     }
 
-    return { enabled, slots, slotPlan, offeredModels, rankOffers, generate, systemPrompt, text, CATEGORY_BRIEF };
+    return { enabled, slots, slotPlan, designPlan, offeredModels, rankOffers, generate, systemPrompt, text, CATEGORY_BRIEF };
 }
 
 module.exports = { createArenaAi, ArenaAiError, CATEGORY_BRIEF };

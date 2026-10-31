@@ -10,7 +10,10 @@ function create({ recent = [] } = {}) {
     const body = `<section class="dv-create"><h1>What will you design?</h1>
 <form method="post" action="/create"><label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
 <textarea id="dv-prompt" name="prompt" required maxlength="4000" placeholder="Describe a page, an app screen or a component…"></textarea>
-<button type="submit">Create designs</button></form>
+<div class="dv-foot"><fieldset class="dv-who"><legend class="dv-visually-hidden">Who designs it</legend>
+<label><input type="radio" name="who" value="claude" checked><span><b>Claude Opus 5.5</b><small>three takes, Claude first</small></span></label>
+<label><input type="radio" name="who" value="compare"><span><b>Compare models</b><small>three providers side by side</small></span></label>
+</fieldset><button type="submit">Create designs</button></div></form>
 <div class="dv-examples" aria-label="Try an example">${examples.map(x => `<button type="button" data-example="${esc(x)}">${esc(x)}</button>`).join('')}</div>
 ${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map(d => `<li><a href="${esc(d.url)}">${esc(d.prompt)}</a></li>`).join('')}</ul></section>` : ''}</section>`;
     return layout({ title: 'Create a design', path: '/create', body, active: '/create', scripts: ['js/design.js'] });

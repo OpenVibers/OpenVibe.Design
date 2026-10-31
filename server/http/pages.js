@@ -90,7 +90,7 @@ function createPageRoutes(ctx) {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
         try {
             const out = await ctx.designs.create({ prompt: req.body.prompt, kind: req.body.kind || 'page',
-                owner: subjectOf(req), ip: req.ip });
+                owner: subjectOf(req), ip: req.ip, who: req.body.who });
             if (out.editKey) {
                 let links = [];
                 try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }
