@@ -219,6 +219,7 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             assert.equal(list[0].name, 'hot-tub');
             assert.equal(list[0].status, 'approved');
             assert.ok(clean(list[0].svg).ok, 'what is served passed the validator');
+            assert.ok('solid_svg' in list[0], 'each draft carries its solid twin (or null), for the Shared pull');
             assert.ok(!('subject' in list[0]), 'who asked stays private');
             assert.equal((await t.get('/api/v1/glyphs/drafts?status=rejected')).status, 403);
             assert.equal((await t.get('/api/v1/glyphs/drafts?status=nope', { as: boss })).status, 422);
