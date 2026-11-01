@@ -707,20 +707,24 @@ function miniArt(code, size = 26, tag = '') {
 const chipOf = ({ code, n }) => `<span class="mx-top" data-code="${code}">${miniArt(code)}<b>${code}</b><i>${n}</i></span>`;
 /** What people picked so far (server/brand-picks.js tally), at the top; marks.js redraws it after each save. */
 function tallyBlock(t) {
+    // Clean (the owner, 11-01: "a mess… see which is the most popular easily… everyone else can too"): one line while
+    // there are no votes; then who leads, the Loop against the Pair as one labelled bar, and a short row of the top picks
+    // for each step that has votes. marks.js redraws it the moment a card is tapped.
     const people = (t && t.people) || 0;
     const loop = (t && t.lean && t.lean.loop) || 0, pair = (t && t.lean && t.lean.pair) || 0;
     const loopPct = loop + pair ? Math.round((loop / (loop + pair)) * 100) : 50;
-    const marks = t ? [...(t.top.L || []), ...(t.top.P || [])].sort((a, b) => b.n - a.n || (a.code < b.code ? -1 : 1)).slice(0, 6) : [];
-    const menus = t ? (t.top.M || []).slice(0, 4) : [];
-    const fonts = t ? (t.top.F || []).slice(0, 4) : [];
-    const lead = loop + pair ? (loop === pair ? 'Level so far' : loop > pair ? 'The Loop leads' : 'The Pair leads') : 'No picks yet';
-    return `<section class="mx-tally${people ? '' : ' is-empty'}" data-mx-tally aria-label="What people picked so far">
-<div class="mx-tally-h"><b>Votes so far</b><span data-mx-people>${people ? `${people} ${people === 1 ? 'person' : 'people'}` : 'No votes yet. Be the first.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
-<div class="mx-lean" style="--l:${loopPct}%"><span class="mx-lean-end">${miniArt('L01', 24, 'e')}<span>Loop</span><b data-mx-loop>${loop + pair ? `${loopPct}%` : '–'}</b></span><span class="mx-lean-bar" aria-hidden="true"><i></i></span><span class="mx-lean-end mx-lean-r"><b data-mx-pair>${loop + pair ? `${100 - loopPct}%` : '–'}</b><span>Pair</span>${miniArt('P01', 24, 'e')}</span></div>
-<div class="mx-tops"><span class="mx-tops-k">Top logos</span><span class="mx-tops-list" data-mx-tops>${marks.map(chipOf).join('') || '<em>none yet</em>'}</span></div>
-<div class="mx-mine" data-mx-mine hidden><span class="mx-tops-k">Your votes</span><b data-mx-picks></b><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button><em class="mx-saved" data-mx-saved>saved</em></div>
-<div class="mx-tops"><span class="mx-tops-k">Menu button</span><span class="mx-tops-list" data-mx-tops-m>${menus.map(chipOf).join('') || '<em>none yet</em>'}</span></div>
-<div class="mx-tops"><span class="mx-tops-k">Font</span><span class="mx-tops-list" data-mx-tops-f>${fonts.map(chipOf).join('') || '<em>none yet</em>'}</span></div>
+    const marks = t ? [...(t.top.L || []), ...(t.top.P || [])].sort((a, b) => b.n - a.n || (a.code < b.code ? -1 : 1)).slice(0, 5) : [];
+    const menus = t ? (t.top.M || []).slice(0, 3) : [];
+    const fonts = t ? (t.top.F || []).slice(0, 3) : [];
+    const lead = loop + pair ? (loop === pair ? 'Tied' : loop > pair ? 'The Loop leads' : 'The Pair leads') : '';
+    const row = (label, attr, list) => `<div class="mx-tops"${list.length ? '' : ' hidden'}><span class="mx-tops-k">${label}</span><span class="mx-tops-list" ${attr}>${list.map(chipOf).join('')}</span></div>`;
+    return `<section class="mx-tally${people ? '' : ' is-empty'}" data-mx-tally aria-label="Votes so far" aria-live="polite">
+<div class="mx-tally-h"><b>Votes so far</b><span class="mx-tally-n" data-mx-people>${people ? `${people} ${people === 1 ? 'person' : 'people'}` : 'No votes yet. Tap any logo to vote.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
+<div class="mx-split" data-mx-split style="--l:${loopPct}%"${loop + pair ? '' : ' hidden'}><span class="mx-split-l">${miniArt('L01', 18, 'e')}Loop <b data-mx-loop>${loopPct}%</b></span><span class="mx-split-r"><b data-mx-pair>${100 - loopPct}%</b> Pair${miniArt('P01', 18, 'e')}</span></div>
+${row('Logos', 'data-mx-tops', marks)}
+${row('Menu', 'data-mx-tops-m', menus)}
+${row('Font', 'data-mx-tops-f', fonts)}
+<div class="mx-mine" data-mx-mine hidden><span class="mx-tops-k">Yours</span><b data-mx-picks></b><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button><em class="mx-saved" data-mx-saved>saved</em></div>
 </section>`;
 }
 

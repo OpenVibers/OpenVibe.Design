@@ -390,3 +390,15 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
   .mx-nudge span{flex:1;min-width:0}
   .mx-nudge .mx-btn{flex:none;padding:5px 10px}
 }
+
+/* The tally, clean: one line while empty; a labelled split bar; short rows of the top picks. */
+.mx-tally{gap:8px}
+.mx-tally.is-empty{padding:10px 12px}
+.mx-tally-n{color:var(--text-secondary,#b4bfcc);font-size:14px}
+.mx-split{position:relative;display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 10px;border-radius:999px;overflow:hidden;background:#8b5cf6;color:#fff;font-size:13px;font-weight:700;isolation:isolate}
+.mx-split::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--l,50%);background:#4f7cff;z-index:-1;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.mx-split span{display:inline-flex;align-items:center;gap:5px}
+.mx-split b{font-family:var(--mx-face);font-weight:900}
+.mx-split svg{filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}
+.mx-tops-k{width:56px}
+@media (max-width:640px){.mx-tops-k{width:44px}}
