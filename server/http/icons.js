@@ -107,6 +107,7 @@ function createIconRoutes(ctx) {
         const file = req.params.file;
         res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*');
         if (file === 'ov-glyphs-svg.zip') return res.type('application/zip').attachment(file).send(ex.zip());
+        if (file === 'ov-icon-motion.css') return res.type('text/css').send(require('../glyphs/motion').CSS);
         const p = Object.prototype.hasOwnProperty.call(ex.PACK, file) && ex.PACK[file];
         if (!p) return next();
         res.type(p.type).attachment(file).sendFile(p.path, (err) => { if (err && !res.headersSent) next(); });
