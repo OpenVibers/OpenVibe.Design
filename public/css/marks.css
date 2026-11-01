@@ -317,3 +317,76 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
   .mx-wrap[data-density=sheet] .mx-grid{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
 }
 .mx-panel{scroll-margin-top:calc(var(--ovnav-real-h,56px) + 64px)}
+/* Two steps, numbered in the steps bar; after the first mark is picked, step 2 calls once and a nudge says where it is
+   (the owner, 11-01: "they don't realise they have to scroll to the top to switch to the menu button"). */
+.mx-stepn{display:inline-grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:#8b5cf6;color:#fff;font-size:11.5px;font-weight:800}
+.mx-steps .mx-steps-sep{width:auto;height:auto;background:none;color:var(--mx-muted);font-weight:800;margin:0 2px}
+.mx-step.is-call{animation:mxCall 1.4s cubic-bezier(.2,.9,.3,1) 2}
+@keyframes mxCall{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0)}40%{box-shadow:0 0 0 6px rgba(139,92,246,.45)}}
+.mx-sheet{border:0;background:transparent;color:inherit;cursor:pointer;padding:3px 9px}
+.mx-sheet[aria-pressed=true]{background:#8b5cf6;color:#fff}
+.mx-nudge{position:fixed;left:50%;bottom:calc(16px + var(--ovnav-appbar-h,0px) + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:calc(100vw - 20px);padding:10px 12px;border-radius:16px;border:1px solid #8b5cf6;background:color-mix(in srgb,var(--mx-card) 95%,transparent);backdrop-filter:blur(10px);box-shadow:0 14px 34px rgba(0,0,0,.4);font-size:14px;animation:mxNudgeIn .4s cubic-bezier(.2,.9,.25,1.1)}
+.mx-nudge a.mx-btn{text-decoration:none;display:inline-grid;place-items:center}
+@keyframes mxNudgeIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.mx-step.is-call,.mx-nudge{animation:none}}
+@media (max-width:640px){.mx-steps .mx-stepn{width:18px;height:18px;font-size:10.5px}.mx-steps .mx-steps-sep{display:none}}
+
+/* The menu buttons beside the chosen mark; on a phone the mock bar is just the mark and the button, to compare at a
+   glance (the name cut off before). Step 2 waits softly until a mark is picked. */
+.mb-with{margin:6px 0 2px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,#8b5cf6 12%,var(--mx-card));font-size:13.5px;color:var(--text-secondary,#b4bfcc)}
+.mx-tab-side.is-later{opacity:.7}
+.mx-tab-side.is-later .mx-tab-t em::after{content:" · after step 1";color:#c4b5fd}
+.mx-step-2.is-later{opacity:.6}
+@media (max-width:640px){
+  .mb-nav{justify-content:space-between;padding:6px 8px}
+  .mb-nav .mx-word{display:none}
+  .mb-nav>svg{width:26px;height:26px}
+  .mb-nav .mb-btn{width:38px;height:38px}
+  .mb-nav .mb-btn svg{width:24px;height:24px}
+}
+
+/* Simpler and tighter (the owner, 11-01: "way too much… explain it in simple words… compact"). */
+.mx-hero{gap:6px;margin-bottom:12px}
+.mx-hero h1{font-size:clamp(24px,3.6vw,38px)}
+.mx-lede{font-size:15px}
+.mx-tally{gap:6px;padding:9px 11px}
+.mx-choose{gap:6px}
+.mx-q{margin-top:2px}
+.mx-tab{padding:10px 12px}
+.mx-tab-t small{font-size:12.5px}
+.mx-stephead{display:flex;align-items:center;gap:10px;margin:6px 0 4px;padding:10px 12px;border-radius:14px;background:var(--mx-card);border:1px solid var(--mx-line)}
+.mx-stephead b{display:block;font-family:var(--mx-face);font-weight:900;font-size:17px}
+.mx-stephead small{display:block;font-size:13px;color:var(--text-secondary,#b4bfcc)}
+.mx-stepn-lg{width:30px;height:30px;font-size:15px}
+.mx-row{margin-top:12px}
+.mx-next{margin-top:16px}
+.mx-next a,.mx-next button{padding:11px 14px}
+.mx-next-share{display:grid;gap:2px;border-radius:16px;border:1px solid #8b5cf6;background:color-mix(in srgb,#8b5cf6 14%,var(--mx-card));color:inherit;font:inherit;text-align:left;cursor:pointer}
+.mx-next b{font-size:16px}
+/* Step 3: the name in each face, beside the chosen logo. */
+.fx-stage{aspect-ratio:auto;min-height:96px;padding:14px 10px}
+.fx-lock{display:flex;align-items:center;gap:10px;min-width:0}
+.fx-word{font-size:clamp(22px,2.4vw,28px);letter-spacing:-.01em;white-space:nowrap;color:#f2f5fb}
+.fx-light{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:#f4f6fb;color:#0f1419;font-size:17px;overflow:hidden;white-space:nowrap}
+.fx-sample{margin:0 2px;font-size:14px;color:var(--text-secondary,#b4bfcc)}
+.fx-mini{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#0d1322;color:#e8edf3;font-weight:800;font-size:12px}
+.fx-tabart{font-family:'OV Brand',Nunito,sans-serif;font-weight:900;font-size:20px}
+.mx-tab-side .mx-tab-art .fx-tabart{color:#e8edf3}
+.mx-step-3.is-later{opacity:.6}
+.mx-step.is-done i::after{content:" \2713"}
+@media (max-width:640px){.mx-tab-side .mx-tab-t small{display:none}.fx-word{font-size:22px}.mx-stephead{padding:8px 10px}.mx-stephead b{font-size:15.5px}}
+.fx-site{background:linear-gradient(90deg,#3b6cff,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fx-sample{line-height:1.5;overflow-wrap:anywhere}
+/* Phone: the tally's rows on one line each; the font rows wider so the whole name fits; the nudge on one line. */
+@media (max-width:640px){
+  .mx-tops{flex-direction:row;align-items:center;gap:8px}
+  .mx-tops-k{width:64px;font-size:10px}
+  .mx-tally-lead{margin-left:0}
+  .mx-wrap:not([data-density=sheet]) #font .mx-grid{grid-auto-columns:80%}
+  .fx-word{font-size:20px}
+  .fx-light{font-size:15px}
+  .fx-sample{font-size:13px}
+  .mx-nudge{flex-wrap:nowrap;gap:6px;padding:8px 8px 8px 12px;font-size:13px;width:calc(100vw - 20px)}
+  .mx-nudge span{flex:1;min-width:0}
+  .mx-nudge .mx-btn{flex:none;padding:5px 10px}
+}

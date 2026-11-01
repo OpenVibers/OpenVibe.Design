@@ -5,8 +5,8 @@
 (function () {
     'use strict';
     var KEY = 'ov_mark_picks', VIEW = 'ov_mark_view', TAB = 'ov_mark_tab';
-    var CODE = /^[LPM]\d{2}$/;
-    var TABS = { L: 'loop', P: 'pair', M: 'menu' };
+    var CODE = /^[LPMF]\d{2}$/;
+    var TABS = { L: 'loop', P: 'pair', M: 'menu', F: 'font' };
     var API = '/api/v1/brand/picks';
     function load(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key) || 'null'); return v == null ? fallback : v; } catch (e) { return fallback; } }
     function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* a private window keeps it for the page only */ } }
@@ -59,9 +59,37 @@
                 if (card) card.classList.toggle('is-picked', on);
             });
             if (mineBox) { mineBox.hidden = !picks.length; mineBox.querySelector('[data-mx-picks]').textContent = order(picks).join(', '); }
-            all('[data-mx-count]').forEach(function (el) { var k = el.getAttribute('data-mx-count'); var n = picks.filter(function (c) { return c[0] === k; }).length; el.textContent = n ? String(n) : ''; });
+            syncMenuMark();
+            all('[data-mx-count]').forEach(function (el) { var k = el.getAttribute('data-mx-count'); var n = picks.filter(function (c) { return c[0] === k; }).length; el.textContent = n ? String(n) : ''; var st = el.closest('.mx-step'); if (st) st.classList.toggle('is-done', n > 0); });
             store(KEY, picks);
             if (history.replaceState && (picks.length || /picks=/.test(location.hash))) history.replaceState(null, '', picks.length ? '#picks=' + order(picks).join(',') : location.pathname);
+        }
+        // The menu buttons sit beside the mark this person picked last in step 1 (or today's mark until they pick one),
+        // so they judge each button where it will live (the owner, 11-01). A copy with its own ids, in the page's visible
+        // defs, so it paints whichever tab is open.
+        var shownMark = null;
+        function syncMenuMark() {
+            var marks = picks.filter(function (c) { return c[0] === 'L' || c[0] === 'P'; });
+            var code = marks.length ? marks[marks.length - 1] : null;
+            var withEl = root.querySelector('[data-mb-with]');
+            all('.mx-tab-side, .mx-step-2, .mx-step-3', root).forEach(function (el) { el.classList.toggle('is-later', !code); });
+            if (code === shownMark) return;
+            shownMark = code;
+            var defs = root.querySelector('.mx-defs');
+            var old = defs && defs.querySelector('[data-chosen]');
+            if (old) old.parentNode.removeChild(old);
+            var ref = 'art-pair-today';
+            var src = code && document.getElementById(code) && document.getElementById(code).querySelector('.mx-stage svg');
+            if (src && defs) {
+                var tag = '-ch' + (++copies);
+                var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('data-chosen', code);
+                g.innerHTML = src.innerHTML.replace(/ id="([^"]+)"/g, ' id="$1' + tag + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + tag + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + tag + '"');
+                defs.appendChild(g);
+                ref = 'art-' + code + tag;
+            }
+            all('.mb-nav use, .fx-mark use', root).forEach(function (u) { u.setAttribute('href', '#' + ref); });
+            all('[data-mb-with]', root).forEach(function (el) { el.textContent = code ? 'Next to your logo, ' + code + '.' : 'Next to today\u2019s logo. Pick a logo first to see yours here.'; });
         }
         var saveTimer = 0;
         function toggle(code) {
@@ -70,6 +98,7 @@
             render();
             var card = document.getElementById(code);
             if (card && i === -1 && !still()) { card.classList.remove('just-picked'); void card.offsetWidth; card.classList.add('just-picked'); setTimeout(function () { card.classList.remove('just-picked'); }, 500); }
+            if (i === -1 && typeof offerStep2 === 'function') offerStep2(code);
             clearTimeout(saveTimer); saveTimer = setTimeout(sync, 700);
         }
         function say(btn, words) { var was = btn.textContent; btn.textContent = words; setTimeout(function () { btn.textContent = was; }, 1400); }
@@ -85,15 +114,22 @@
             if (p.length) mark.push('the Pair (' + p.join(', ') + ')');
             if (mark.length) parts.push('The mark: ' + mark.join(', ') + '.');
             if (m.length) parts.push('The menu button: ' + m.join(', ') + '.');
+            var fo = of('F'); if (fo.length) parts.push('The font: ' + fo.join(', ') + '.');
             return 'My picks. ' + parts.join(' ') + ' ' + link();
         }
 
         // ── The tally at the top: saved picks, counted (server/brand-picks.js) ──
         var tally = root.querySelector('[data-mx-tally]');
+        function fontChip(code) {
+            var card = document.getElementById(code), word = card && card.querySelector('.fx-word');
+            var el = document.createElement('span'); el.className = 'fx-mini'; el.textContent = 'Aa';
+            if (word) { el.style.fontFamily = word.style.fontFamily; el.style.fontWeight = word.style.fontWeight; }
+            return el;
+        }
         function chip(t) {
             var el = document.createElement('span');
             el.className = 'mx-top'; el.setAttribute('data-code', t.code);
-            var art = artOf(t.code, 26);
+            var art = t.code[0] === 'F' ? fontChip(t.code) : artOf(t.code, 26);
             if (art) { if (t.code[0] === 'M') art.classList.add('mx-mini-m'); el.appendChild(art); }
             var b = document.createElement('b'); b.textContent = t.code; el.appendChild(b);
             var n = document.createElement('i'); n.textContent = String(t.n); el.appendChild(n);
@@ -111,7 +147,7 @@
             if (!tally || !t) return;
             var loop = t.lean.loop, pair = t.lean.pair, sum = loop + pair, pct = sum ? Math.round((loop / sum) * 100) : 50;
             tally.classList.toggle('is-empty', !t.people);
-            tally.querySelector('[data-mx-people]').textContent = t.people ? t.people + (t.people === 1 ? ' person has picked' : ' people have picked') : 'Nobody has picked yet. Be the first.';
+            tally.querySelector('[data-mx-people]').textContent = t.people ? t.people + (t.people === 1 ? ' person' : ' people') : 'No votes yet. Be the first.';
             tally.querySelector('[data-mx-lead]').textContent = sum ? (loop === pair ? 'Level so far' : loop > pair ? 'The Loop leads' : 'The Pair leads') : 'No picks yet';
             tally.querySelector('.mx-lean').style.setProperty('--l', pct + '%');
             tally.querySelector('[data-mx-loop]').textContent = sum ? pct + '%' : '–';
@@ -119,6 +155,7 @@
             var marks = (t.top.L || []).concat(t.top.P || []).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); }).slice(0, 6);
             fill(tally.querySelector('[data-mx-tops]'), marks);
             fill(tally.querySelector('[data-mx-tops-m]'), (t.top.M || []).slice(0, 4));
+            fill(tally.querySelector('[data-mx-tops-f]'), (t.top.F || []).slice(0, 4));
         }
         var savedNote = root.querySelector('[data-mx-saved]');
         function sync() {
@@ -161,7 +198,12 @@
             store(TAB, name);
             rails();
         }
+        var fontsIn = false;
+        function loadFonts() { if (fontsIn) return; fontsIn = true; var css = root.getAttribute('data-mx-fontcss'); if (!css) return; var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = css; document.head.appendChild(l); }
+        (window.requestIdleCallback || function (f) { return setTimeout(f, 2500); })(loadFonts);
         function go(name) {
+            if (name === 'font') loadFonts();
+            var nd = root.querySelector('[data-mx-nudge]'); if (nd) nd.hidden = true;
             show(name);
             if (!picks.length && history.replaceState) history.replaceState(null, '', '#' + name);
             var p = panelOf(name);
@@ -188,12 +230,12 @@
             if ('IntersectionObserver' in window && choose) new IntersectionObserver(function (en) { steps.classList.toggle('is-on', !en[0].isIntersecting && en[0].boundingClientRect.top < 0); }).observe(choose);
         }
         var h = (location.hash || '').slice(1);
-        var start = /^(loop|pair|menu)$/.test(h) ? h : CODE.test(h) ? TABS[h[0]] : picks.length ? TABS[order(picks)[0][0]] : load(TAB, 'loop');
-        show(/^(loop|pair|menu)$/.test(start) ? start : 'loop');
+        var start = /^(loop|pair|menu|font)$/.test(h) ? h : CODE.test(h) ? TABS[h[0]] : picks.length ? TABS[order(picks)[0][0]] : load(TAB, 'loop');
+        show(/^(loop|pair|menu|font)$/.test(start) ? start : 'loop');
 
         // ── Each tab's example walks through all fifty, so it is plain there are fifty ──
         (function cycle() {
-            var boxes = all('[data-mx-cycle]', root);
+            var boxes = all('[data-mx-cycle]', root).filter(function (b) { return b.getAttribute('data-mx-cycle') !== 'font'; });
             if (!boxes.length) return;
             var state = boxes.map(function (box, k) {
                 var name = box.getAttribute('data-mx-cycle');
@@ -248,57 +290,43 @@
         }
         rails();
 
-        // ── The bar: the name, its font and style, the view ──
-        var tools = root.querySelector('[data-mx-tools]');
+        // ── The view: cards, or Sheet (all at once), from the steps bar ──
         var view = load(VIEW, {}) || {};
-        var fontsLoaded = false;
-        function loadFonts() {
-            if (fontsLoaded) return;
-            fontsLoaded = true;
-            var l = document.createElement('link');
-            l.rel = 'stylesheet';
-            l.href = root.getAttribute('data-mx-fontcss');
-            document.head.appendChild(l);
+        function setDensity(on) {
+            if (on) root.setAttribute('data-density', 'sheet'); else root.removeAttribute('data-density');
+            all('[data-mx-density]', root).forEach(function (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+            view.sheet = !!on; store(VIEW, view); rails();
         }
-        function press(attr, value) { all('[' + attr + ']', tools).forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute(attr) === String(value) ? 'true' : 'false'); }); }
-        var own = tools.querySelector('[data-mx-own]');
-        function setSite(name, typed) {
-            var text = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 14) || 'Live';
-            all('[data-mx-site]').forEach(function (s) { s.textContent = text; });
-            press('data-mx-set-site', typed ? '' : text);
-            if (!typed) own.value = '';
-            view.site = text; view.typed = !!typed;
-        }
-        function setFont(key) {
-            var chipEl = tools.querySelector('[data-mx-font="' + key + '"]') || tools.querySelector('[data-mx-font]');
-            if (chipEl.getAttribute('data-mx-font') !== 'nunito') loadFonts();
-            root.style.setProperty('--mx-lockface', chipEl.getAttribute('data-face'));
-            press('data-mx-font', chipEl.getAttribute('data-mx-font'));
-            view.font = chipEl.getAttribute('data-mx-font');
-        }
-        function setStyle(key) { key = /^(dot|space|stack)$/.test(key) ? key : 'dot'; root.setAttribute('data-lock', key); press('data-mx-lockstyle', key); view.lock = key; }
-        function setDensity(on) { if (on) root.setAttribute('data-density', 'sheet'); else root.removeAttribute('data-density'); press('data-mx-density', on ? 'sheet' : ''); view.sheet = !!on; rails(); }
-        function setStill(on) { root.classList.toggle('mx-still', !!on); press('data-mx-still', on ? '1' : ''); view.still = !!on; }
-        setSite(view.site, view.typed);
-        if (view.typed) own.value = view.site || '';
-        setFont(view.font || 'nunito');
-        setStyle(view.lock);
         setDensity(view.sheet);
-        setStill(view.still);
-        tools.hidden = false;
-        tools.querySelector('[data-mx-fonts]').addEventListener('pointerenter', loadFonts);
-        tools.querySelector('[data-mx-fonts]').addEventListener('focusin', loadFonts);
-        own.addEventListener('input', function () { setSite(own.value || 'Live', !!own.value); store(VIEW, view); });
-        tools.addEventListener('click', function (e) {
-            var b = e.target.closest('button');
-            if (!b) return;
-            if (b.hasAttribute('data-mx-set-site')) setSite(b.getAttribute('data-mx-set-site'));
-            else if (b.hasAttribute('data-mx-font')) setFont(b.getAttribute('data-mx-font'));
-            else if (b.hasAttribute('data-mx-lockstyle')) setStyle(b.getAttribute('data-mx-lockstyle'));
-            else if (b.hasAttribute('data-mx-density')) setDensity(!view.sheet);
-            else if (b.hasAttribute('data-mx-still')) setStill(!view.still);
-            store(VIEW, view);
-        });
+        root.addEventListener('click', function (e) { var b = e.target.closest('[data-mx-density]'); if (b) { e.preventDefault(); setDensity(!view.sheet); } });
+
+        // ── Step 2 is not forgotten: after the first mark is picked, a nudge to the menu button (once a visit) ──
+        var nudge = root.querySelector('[data-mx-nudge]');
+        function offerStep2(code) {
+            if (!nudge) return;
+            var has = function (k) { return picks.some(function (c) { return c[0] === k; }); };
+            var key, text, to, label;
+            if ((code[0] === 'L' || code[0] === 'P') && !has('M')) { key = '2'; text = code + ' voted. Next: pick a menu button.'; to = 'menu'; label = 'Step 2 \u2192'; }
+            else if (code[0] === 'M' && !has('F')) { key = '3'; text = code + ' voted. Last: pick a font.'; to = 'font'; label = 'Step 3 \u2192'; }
+            else if (code[0] === 'F' && (has('L') || has('P')) && has('M')) { key = 'done'; text = 'All three done. Thank you!'; to = null; label = 'Share'; }
+            else return;
+            var seen = {};
+            try { seen = JSON.parse(sessionStorage.getItem('ov_mark_nudged') || '{}') || {}; } catch (e) { seen = {}; }
+            if (seen[key]) return;
+            seen[key] = 1;
+            try { sessionStorage.setItem('ov_mark_nudged', JSON.stringify(seen)); } catch (e) { /* */ }
+            nudge.querySelector('[data-mx-nudge-text]').textContent = text;
+            var go2 = nudge.querySelector('[data-mx-nudge-go]');
+            go2.textContent = label;
+            if (to) { go2.setAttribute('href', '#' + to); go2.setAttribute('data-mx-go', to); go2.removeAttribute('data-mx-share'); }
+            else { go2.removeAttribute('data-mx-go'); go2.setAttribute('href', '#'); go2.setAttribute('data-mx-share', ''); }
+            nudge.hidden = false;
+            clearTimeout(nudge._t);
+            nudge._t = setTimeout(function () { nudge.hidden = true; }, 9000);
+            var step = steps && to && steps.querySelector('[data-mx-go="' + to + '"]');
+            if (step && !still()) { step.classList.remove('is-call'); void step.offsetWidth; step.classList.add('is-call'); }
+        }
+        if (nudge) nudge.addEventListener('click', function (e) { if (e.target.closest('[data-mx-nudge-close]') || e.target.closest('[data-mx-go]') || e.target.closest('[data-mx-share]')) nudge.hidden = true; });
 
         // ── The menu buttons: press to open, and each makes its move when it arrives ──
         function play(btn) {
@@ -321,6 +349,7 @@
             if (p) { toggle(p.getAttribute('data-pick')); return; }
             var share = e.target.closest('[data-mx-share]');
             if (share) {
+                e.preventDefault();
                 var text = picks.length ? summary() : link();
                 var done = function () { share.classList.add('is-done'); setTimeout(function () { share.classList.remove('is-done'); }, 1400); };
                 if (navigator.share && /Mobi|Android/i.test(navigator.userAgent || '')) navigator.share({ title: 'My picks for the OpenVibe mark', text: text.replace(/ https?:\S+$/, ''), url: link() }).then(done, function () { /* closed */ });

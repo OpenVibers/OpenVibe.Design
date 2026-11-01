@@ -11,7 +11,7 @@
  */
 const crypto = require('crypto');
 
-const CODE = /^[LPM](0[1-9]|[1-4][0-9]|50)$/;
+const CODE = /^[LPMF](0[1-9]|[1-9][0-9])$/;
 const COOKIE = 'ov_mx_voter';
 const MAX = 40;
 
@@ -50,7 +50,7 @@ function createBrandPicks({ db, now = () => Date.now() } = {}) {
         const people = lean.length;
         let loop = 0, pair = 0;
         for (const v of lean) { if (v.l > v.p) loop += 1; else if (v.p > v.l) pair += 1; else if (v.l) { loop += 0.5; pair += 0.5; } }
-        const top = { L: [], P: [], M: [] };
+        const top = { L: [], P: [], M: [], F: [] };
         for (const r of counts) { const list = top[r.code[0]]; if (list && list.length < 6) list.push({ code: r.code, n: r.n }); }
         return { people, lean: { loop, pair }, top };
     }
