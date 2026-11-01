@@ -11,6 +11,7 @@
  *   iconsPage({ base, drafts, mine, reviewer, notice, error, draw })
  */
 const kit = require('openvibe-shared/kit');
+const { words: findWords } = require('../glyphs/aliases');
 const glyphs = require('openvibe-shared/glyphs');
 const { layout, esc } = require('../render/layout');
 const usage = require('../glyphs/fa-usage.json');
@@ -41,7 +42,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     const tile = (name) => {
         const aliases = fa.get(name) || [];
         const drawn = glyphs.META[name] && /Opus/.test(glyphs.META[name].by) ? 'Drawn for the set' : 'From the kit';
-        return `<a class="ic-tile" href="/icons/${esc(name)}" data-name="${esc(name)}" data-fa="${esc(aliases.join(' '))}" data-by="${esc(drawn)}">${svg(inner(name))}<span>${esc(name)}</span></a>`;
+        return `<a class="ic-tile" href="/icons/${esc(name)}" data-name="${esc(name)}" data-fa="${esc(aliases.join(' '))}" data-words="${esc(findWords(name).join(' '))}" data-by="${esc(drawn)}">${svg(inner(name))}<span>${esc(name)}</span></a>`;
     };
 
     const hero = `<header class="ic-hero">
@@ -104,6 +105,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     <div><h3>In place of Font Awesome</h3>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>\n<!-- your <i class="fa-solid fa-eye"> now shows the glyph -->`, id: 'ic-use-web', label: 'Copy the HTML' })}<p class="ic-more">Sizes, animations and transforms keep working: <a href="/icons/font-awesome-alternative">what keeps working</a>.</p></div>
     <div><h3>As a font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-eye"></i>`, id: 'ic-use-font', label: 'Copy the HTML' })}</div>
     <div><h3>On a server</h3>${kit.snippet({ code: "const glyphs = require('openvibe-shared/glyphs');\n\nglyphs.svg('live', { size: 20 });   // a standalone SVG\nglyphs.fromFa('fa-eye');             // 'eye'", id: 'ic-use-node', label: 'Copy the code' })}</div>
+    <div><h3>Switching from another set?</h3><p class="ic-more">Font Awesome, Lucide, Material or MUI: <a href="/icons/migrate">paste your page</a> and see every icon with its OpenVibe twin. Their names work in <code>&lt;ov-icon name="lucide:settings"&gt;</code> too.</p></div>
     <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/api/v1/glyphs?names=heart,fa-gear\nGET ${base}/icons/<name>.svg?style=auto|line|solid\nGET ${base}/icons/<name>.mjs | .xml | /favicon.zip`, id: 'ic-use-api', label: 'Copy' })}</div>
   </div>
 </section>`;

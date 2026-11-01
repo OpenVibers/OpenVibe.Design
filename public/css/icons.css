@@ -212,3 +212,25 @@
 .kit-bar .ic-btn:disabled{opacity:.5;cursor:default}
 @media (max-width:760px){.kit-grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}}
 @media (prefers-reduced-motion:reduce){.kit-tile{transition:none}}
+
+/* /icons/migrate (L50 step 4): paste a page, see every icon with its twin. */
+.mg-form{display:grid;gap:10px;margin:0 0 8px}
+.mg-label{font-weight:750;font-size:14px}
+.mg-form textarea{width:100%;box-sizing:border-box;min-height:180px;padding:14px 16px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical}
+.mg-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.mg-go{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.mg-go>span{color:var(--text-muted);font-size:13px}
+.mg-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+.mg-table{width:100%;border-collapse:collapse;font-size:14px}
+.mg-table th{position:sticky;top:0;padding:10px 14px;text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);background:var(--bg-secondary);border-bottom:1px solid var(--border)}
+.mg-table td{padding:10px 14px;border-bottom:1px solid color-mix(in srgb,var(--border) 70%,transparent);vertical-align:middle}
+.mg-table tr:last-child td{border-bottom:0}
+.mg-yours{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.mg-set{color:var(--text-muted);font-size:12px}
+.mg-n{font-variant-numeric:tabular-nums;color:var(--text-secondary)}
+.mg-ours{display:inline-flex;align-items:center;gap:8px;color:var(--text-primary);text-decoration:none;font-weight:650}
+.mg-ours:hover span{text-decoration:underline}
+.mg-ours.is-brand small{color:var(--text-muted);font-weight:400}
+.mg-none{color:var(--text-muted)}
+.mg-table tr.is-missing td{background:color-mix(in srgb,var(--bg-secondary) 50%,transparent)}
+.mg-table code{white-space:nowrap}

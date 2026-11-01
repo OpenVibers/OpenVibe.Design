@@ -11,7 +11,8 @@
     const tools = $('[data-ic-tools]');
     if (tools) tools.hidden = false;
 
-    // Find as you type: a glyph's name or any Font Awesome name it stands for.
+    // Find as you type: a glyph's name, any Font Awesome name it stands for, and the words and other sets' names for it
+    // (server/glyphs/aliases.js: "settings", "delete", Lucide's "trash-2", Material's "delete outline").
     const find = $('[data-ic-find]');
     const none = $('[data-ic-none]');
     const drawLink = $('[data-ic-draw-link]');
@@ -19,7 +20,8 @@
         const q = find.value.trim().toLowerCase().replace(/^fa-/, '');
         let shown = 0;
         grid.querySelectorAll('.ic-tile').forEach((t) => {
-            const hit = !q || t.dataset.name.includes(q) || (t.dataset.fa || '').split(' ').some((f) => f.includes(q));
+            const hit = !q || t.dataset.name.includes(q) || (t.dataset.fa || '').split(' ').some((f) => f.includes(q))
+                || (q.length > 1 && (t.dataset.words || '').includes(q));
             t.hidden = !hit; if (hit) shown++;
         });
         if (none) none.hidden = shown > 0;
