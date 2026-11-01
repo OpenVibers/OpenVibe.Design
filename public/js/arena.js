@@ -93,6 +93,10 @@
         if (/Status:\s*(queued|generating)/i.test(state)) setTimeout(() => window.location.reload(), 4000);
     }
 
+    // On a phone, a pair opens at the phone view: a 1280 px page drawn 270 px wide says little.
+    var phoneView = $('ar-view-phone');
+    if (phoneView && window.matchMedia && window.matchMedia('(max-width: 759px)').matches) phoneView.checked = true;
+
     // Fit every generated frame to the column it sits in: a desktop frame fills the width, a phone stays a handset.
     var shots = document.querySelectorAll('.ar-shot');
     if (shots.length && 'ResizeObserver' in window) {

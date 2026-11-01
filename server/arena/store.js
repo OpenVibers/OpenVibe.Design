@@ -13,6 +13,7 @@
  */
 const { ArenaError, CATEGORIES, WINNERS, K, BASE_ELO, shuffle } = require('./legacy-store');
 const { sanitizeHtml } = require('./sanitize');
+const { DESIGN_KINDS, kindOf, isKind } = require('./kinds');
 
 function entryToOutput(e) {
     const payload = e.payload || {};
@@ -153,6 +154,76 @@ function createArenaStore({ config, bench }) {
         return out;
     }
 
+    // ── The nine design kinds (plan L51 step 1): a blind pair of any kind for a person or a relayed voter, the vote,
+    //    and every kind's board. The outputs are drawn by Bench's render origin, never by this document.
+    const frameOf = (entryId) => (bench.renderUrl ? bench.renderUrl(entryId) : '');
+
+    async function pairFor(kindId, { token = null, voter = null } = {}) {
+        const kind = kindOf(kindId);
+        const pair = await bench.nextJudgement(kind.id, { token, voter });
+        if (!pair) return null;
+        return {
+            kind: kind.id,
+            round: { id: pair.round.id, prompt: String(pair.round.prompt || '') },
+            left: { id: pair.left.id, frame: frameOf(pair.left.id) },
+            right: { id: pair.right.id, frame: frameOf(pair.right.id) },
+        };
+    }
+
+    async function judge({ kind: kindId, roundId, left, right, outcome, token = null, voter = null }) {
+        if (!WINNERS.includes(outcome)) throw new ArenaError(422, 'arena.invalid_winner', 'Pick left, right, a tie or both bad.');
+        if (!left || !right || left === right) throw new ArenaError(422, 'arena.invalid_pair', 'A vote needs two different designs.');
+        if (!roundId) throw new ArenaError(422, 'arena.invalid_pair', 'That pair has no round.');
+        const out = await bench.castJudgement({ roundId, pair: { left, right }, outcome, token, voter });
+        const side = (e, id) => ({
+            id,
+            frame: frameOf(id),
+            model: (e && e.model) || 'unknown',
+            provider: (e && e.provider) || null,
+            cost_usd: e && e.cost_usd != null ? Number(e.cost_usd) : null,
+            ms: e && e.ms != null ? Number(e.ms) : null,
+        });
+        const revealed = out.revealed || {};
+        return {
+            kind: isKind(kindId) ? kindId : kindOf(kindId).id,
+            round: { id: roundId },
+            outcome,
+            left: side(revealed.left, left),
+            right: side(revealed.right, right),
+        };
+    }
+
+    // Nine boards on every view of /arena: kept for a minute (Bench's own answer is public for 30 s).
+    const boardCache = new Map();
+    async function boardsAll({ voters = null, now = Date.now() } = {}) {
+        const key = voters === 'people' || voters === 'anon' ? voters : 'all';
+        const hit = boardCache.get(key);
+        if (hit && now - hit.at < 60_000) return hit.boards;
+        const boards = await Promise.all(DESIGN_KINDS.map(async (kind) => {
+            try {
+                const b = await bench.getBoard(kind.id, { type: 'elo', voters: key === 'all' ? null : key });
+                const v = (b && b.voters) || {};
+                return {
+                    kind: kind.id,
+                    rows: ((b && b.rows) || []).map(boardRowToLocal),
+                    voters: { person: Number(v.person || 0), anon: Number(v.anon || 0), total: Number(v.total || 0) },
+                };
+            } catch {
+                return { kind: kind.id, rows: [], voters: null, failed: true };
+            }
+        }));
+        if (!boards.every((b) => b.failed)) boardCache.set(key, { at: now, boards });
+        return boards;
+    }
+
+    let costCache = null;
+    async function costAll({ now = Date.now() } = {}) {
+        if (costCache && now - costCache.at < 60_000) return costCache.boards;
+        const boards = await costLeaderboard(null);
+        costCache = { at: now, boards };
+        return boards;
+    }
+
     async function datasetJsonl() {
         // The open dataset now lives on Bench; Design redirects to it.
         return { redirect: bench.datasetUrl('design.page') };
@@ -161,6 +232,7 @@ function createArenaStore({ config, bench }) {
     return {
         CATEGORIES, WINNERS, K, BASE_ELO, shuffle,
         counts, createRound, getRound, nextPair, vote, leaderboard, costLeaderboard, datasetJsonl,
+        pairFor, judge, boardsAll, costAll,
     };
 }
 

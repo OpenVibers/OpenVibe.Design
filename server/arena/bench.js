@@ -44,6 +44,10 @@ function mapBenchProblem(status, body) {
         case 'bench.already_judged': return new ArenaError(409, 'arena.already_voted', detail);
         case 'bench.invalid_pair': return new ArenaError(422, 'arena.invalid_pair', detail);
         case 'bench.invalid_outcome': return new ArenaError(422, 'arena.invalid_winner', detail);
+        // A vote relayed for someone who has not signed in (plan L51): Bench's caps all answer the same way.
+        case 'bench.limit_anon': return new ArenaError(429, 'arena.limit_anon', 'Sign in to keep voting today.');
+        case 'bench.anon_disabled': return new ArenaError(403, 'arena.anon_disabled', 'Voting without signing in is off at the moment. Sign in to vote.');
+        case 'bench.anon_kind_not_allowed': return new ArenaError(403, 'arena.anon_kind_not_allowed', 'Sign in to judge this kind.');
         default: return new BenchClientError(status, code, detail);
     }
 }
@@ -77,6 +81,18 @@ function createBenchClient({ config, fetchImpl = globalThis.fetch, log = console
         if (!token) throw new ArenaError(401, 'token.required', 'Sign in to use the Arena.');
         return { Accept: 'application/json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
     }
+
+    /**
+     * Someone who has not signed in (plan L51): Design's own service token, and the voter id Design derived from its
+     * own cookie in X-OV-Voter. Bench keeps only a hash of it, and caps each voter and Design's relay a day.
+     */
+    async function relayHeaders(voter) {
+        const id = String(voter || '');
+        if (!/^[A-Za-z0-9._~:-]{6,200}$/.test(id)) throw new ArenaError(401, 'token.required', 'Sign in to vote.');
+        return { ...(await serviceHeaders()), 'X-OV-Voter': `anon:${id}` };
+    }
+
+    const asViewer = async ({ token = null, voter = null }) => (token ? personHeaders(token) : await relayHeaders(voter));
 
     async function request(method, path, { body = null, headers = null, token = null } = {}) {
         const h = headers || (token ? personHeaders(token) : await serviceHeaders());
@@ -166,9 +182,31 @@ function createBenchClient({ config, fetchImpl = globalThis.fetch, log = console
         });
     }
 
-    async function getBoard(kindId, { type = 'elo', token = null } = {}) {
-        const out = await request('GET', `/api/v1/boards/${encodeURIComponent(kindId)}?type=${encodeURIComponent(type)}`, { token });
+    /** The next blind pair of a kind for this viewer: a person (their token) or a voter Design relays. Null: none. */
+    async function nextJudgement(kindId, { token = null, voter = null } = {}) {
+        const out = await request('GET', `/api/v1/judgements/next?kind=${encodeURIComponent(kindId)}`, { headers: await asViewer({ token, voter }) });
+        return out && out.round && out.left && out.right ? out : null;
+    }
+
+    /** One judgement, as the person or the relayed voter. Bench answers with the two entries revealed. */
+    async function castJudgement({ roundId, pair, outcome, token = null, voter = null }) {
+        return await request('POST', `/api/v1/rounds/${encodeURIComponent(roundId)}/judgements`, {
+            headers: await asViewer({ token, voter }),
+            body: { pair, outcome },
+        });
+    }
+
+    /** A kind's board. voters: null (everyone), 'people' (signed-in votes only) or 'anon'. */
+    async function getBoard(kindId, { type = 'elo', token = null, voters = null } = {}) {
+        const q = new URLSearchParams({ type });
+        if (voters === 'people' || voters === 'anon') q.set('voters', voters);
+        const out = await request('GET', `/api/v1/boards/${encodeURIComponent(kindId)}?${q}`, { token });
         return out.board;
+    }
+
+    /** Where a model's output is drawn: Bench's cookie-less render origin, framed with sandbox="allow-scripts". */
+    function renderUrl(entryId) {
+        return `${String((bench && bench.renderOrigin) || 'https://bench-render.openvibe.services').replace(/\/+$/, '')}/render/e/${encodeURIComponent(entryId)}`;
     }
 
     function datasetUrl(kindId) {
@@ -199,7 +237,10 @@ function createBenchClient({ config, fetchImpl = globalThis.fetch, log = console
         nextPair,
         castVote,
         castImportedVote,
+        nextJudgement,
+        castJudgement,
         getBoard,
+        renderUrl,
         datasetUrl,
         addEntry,
     };

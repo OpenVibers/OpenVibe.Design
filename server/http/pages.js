@@ -18,6 +18,7 @@
  */
 const express = require('express');
 const path = require('path');
+const nodeCrypto = require('crypto');
 const views = require('../views');
 const tokensView = require('../views/tokens');
 const lookView = require('../views/look');
@@ -31,7 +32,8 @@ const { baseUrl: layoutBase } = require('../render/layout');
 const { asyncRouter } = require('./router');
 const { send } = require('../render/layout');
 const { ArenaError } = require('../arena/store');
-const { writeAllowed } = require('./same-origin');
+const { writeAllowed, sameOrigin } = require('./same-origin');
+const arenaKinds = require('../arena/kinds');
 
 function meOf(viewer) {
     if (!viewer || viewer.kind !== 'user') return { signedIn: false, user: null };
@@ -223,20 +225,63 @@ function createPageRoutes(ctx) {
         return page(res, found || !req.query.theme ? 200 : 404, tokensView.tokensPage({ themes, found, format, both }), req.viewer);
     });
 
-    // ── Arena ───────────────────────────────────────────────
-    r.get('/arena', async (req, res) => {
-        const me = meOf(req.viewer);
-        let boards;
-        let costBoards;
-        try {
-            boards = await arena.leaderboard(null);
-            costBoards = await arena.costLeaderboard(null);
-        } catch (err) {
-            log.warn('[OpenVibe.Design] leaderboard failed:', (err && err.message) || err);
-            boards = categories.map((category) => ({ category, leaderboard: [] }));
-            costBoards = [];
+    // ── Arena: a view of Bench's nine design kinds (plan L51 step 1) ──
+    // Someone who has not signed in may judge too. Their voter is a random id in an httpOnly cookie that only the
+    // arena reads; Bench gets a keyed hash of it (X-OV-Voter) and caps each voter a day. Bench does not cap the
+    // address behind a relayed vote, so Design does: a count per day of a keyed hash of the address, in memory.
+    const VOTER_COOKIE = 'ovd_voter';
+    const voterKey = (config.oauth && config.oauth.clientSecret) ? `arena-voter:${config.oauth.clientSecret}` : nodeCrypto.randomBytes(32).toString('hex');
+    const keyed = (v) => nodeCrypto.createHmac('sha256', voterKey).update(String(v)).digest('hex').slice(0, 40);
+    const guestCap = Math.max(0, Number(config.arena && config.arena.guestVotesPerAddress) || 0);
+    const voterOf = (req, res, { make = false } = {}) => {
+        let raw = String((req.cookies && req.cookies[VOTER_COOKIE]) || '');
+        if (!/^[0-9a-f]{32}$/.test(raw)) {
+            if (!make) return null;
+            raw = nodeCrypto.randomBytes(16).toString('hex');
+            res.cookie(VOTER_COOKIE, raw, { httpOnly: true, sameSite: 'lax', secure: /^https:/.test(String(config.baseUrl || '')), maxAge: 365 * 86400 * 1000, path: '/arena' });
         }
-        return page(res, 200, views.arenaHome({ categories: boards, costCategories: costBoards, me, limits: await aria(req.viewer) }), req.viewer);
+        return keyed(raw);
+    };
+    const addressVotes = { day: '', counts: new Map() };
+    const addressAllows = (req, { spend = false } = {}) => {
+        const day = new Date().toISOString().slice(0, 10);
+        if (addressVotes.day !== day) { addressVotes.day = day; addressVotes.counts.clear(); }
+        const key = keyed(`${day}|${req.ip || ''}`);
+        const used = addressVotes.counts.get(key) || 0;
+        if (used >= guestCap) return false;
+        if (spend) addressVotes.counts.set(key, used + 1);
+        return true;
+    };
+    const votersOf = (q) => (q === 'people' || q === 'anon' ? q : null);
+    const arenaBoards = async (voters) => {
+        const [boards, cost] = await Promise.all([
+            arena.boardsAll({ voters }).catch((err) => { log.warn('[OpenVibe.Design] arena boards failed:', (err && err.message) || err); return []; }),
+            arena.costAll().catch(() => []),
+        ]);
+        return { boards, cost };
+    };
+    const arenaPage = (res, status, req, data) => page(res, status, views.arenaHome({
+        me: meOf(req.viewer), guestVotes: guestCap > 0, benchUrl: config.bench && config.bench.publicUrl, ...data,
+    }), req.viewer, { cacheControl: 'private, no-store' });
+
+    r.get('/arena', async (req, res) => {
+        const kind = arenaKinds.kindOf(req.query.kind);
+        const voters = votersOf(req.query.voters);
+        const token = tokenOf(req);
+        let pair = null;
+        let notice = null;
+        if (token || guestCap > 0) {
+            try {
+                pair = await arena.pairFor(kind.id, token ? { token } : { voter: voterOf(req, res, { make: true }) });
+            } catch (err) {
+                if (err instanceof ArenaError) notice = err.detail;
+                else {
+                    log.warn('[OpenVibe.Design] picking a pair failed:', (err && err.message) || err);
+                    notice = 'The next pair could not be read. Try again in a moment.';
+                }
+            }
+        }
+        return arenaPage(res, 200, req, { kind: kind.id, pair, notice, voters, ...(await arenaBoards(voters)) });
     });
 
     r.get('/arena/new', async (req, res) => {
@@ -259,41 +304,42 @@ function createPageRoutes(ctx) {
         }
     });
 
-    r.get('/arena/vote', async (req, res) => {
-        const me = meOf(req.viewer);
-        let pair = null;
-        let notice = null;
-        if (subjectOf(req)) {
-            try { pair = await arena.nextPair(subjectOf(req), { token: tokenOf(req), category: req.query.category === 'logo' ? 'logo' : 'landing', random: ctx.random || Math.random }); } catch (err) {
-                log.warn('[OpenVibe.Design] picking a pair failed:', (err && err.message) || err);
-                notice = 'The next pair could not be read. Try again in a moment.';
-            }
-        }
-        return page(res, 200, views.arenaVote({ pair, me, notice }), req.viewer);
+    // The old address of the vote: the vote is on /arena now, for every kind.
+    r.get('/arena/vote', (req, res) => {
+        const kind = req.query.category === 'logo' ? 'design.component' : arenaKinds.kindOf(req.query.kind).id;
+        return res.redirect(302, `/arena?kind=${encodeURIComponent(kind)}#ar-pair`);
     });
 
-    r.post('/arena/vote', express.urlencoded({ extended: false, limit: '64kb' }), async (req, res) => {
-        const me = meOf(req.viewer);
-        if (!subjectOf(req)) return res.redirect(303, '/auth/login?next=%2Farena%2Fvote');
-        if (!writeAllowed(req, config)) return res.status(403).type('text/plain').send('A vote must come from openvibe.design itself.');
+    // One vote, as the signed-in person or as a voter Design relays. The answer is the arena with the two designs
+    // revealed. A plain form post, so it works without JavaScript.
+    r.post('/arena/vote', express.urlencoded({ extended: false, limit: '16kb' }), async (req, res) => {
         const b = req.body || {};
+        const kind = arenaKinds.kindOf(b.kind || (b.category === 'logo' ? 'design.component' : null));
+        const voters = votersOf(b.voters);
+        const token = tokenOf(req);
+        const again = (status, notice) => arenaBoards(voters).then((more) => arenaPage(res, status, req, { kind: kind.id, pair: null, notice, voters, ...more }));
+        if (token) {
+            if (!writeAllowed(req, config)) return res.status(403).type('text/plain').send('A vote must come from openvibe.design itself.');
+        } else {
+            if (!guestCap) return res.redirect(303, `/auth/login?next=${encodeURIComponent(`/arena?kind=${kind.id}`)}`);
+            if (!sameOrigin(req, config)) return res.status(403).type('text/plain').send('Vote on openvibe.design itself.');
+            if (!addressAllows(req)) return again(429, 'Sign in to keep voting today.');
+        }
+        const voter = token ? null : voterOf(req, res, { make: true });
         try {
-            const out = await arena.vote({
+            const result = await arena.judge({
+                kind: kind.id,
                 roundId: String(b.round_id || ''),
-                subject: subjectOf(req),
-                leftOutput: String(b.left_output || ''),
-                rightOutput: String(b.right_output || ''),
-                winner: String(b.winner || ''),
-                token: tokenOf(req),
+                left: String(b.left_output || ''),
+                right: String(b.right_output || ''),
+                outcome: String(b.winner || ''),
+                ...(token ? { token } : { voter }),
             });
-            return page(res, 201, views.arenaVote({ me, result: {
-                vote: { round: out.round.id, winner: out.winner, at: out.at },
-                revealed: { left: out.left, right: out.right },
-            } }), req.viewer);
+            if (!token) addressAllows(req, { spend: true });
+            return arenaPage(res, 200, req, { kind: kind.id, reveal: result, voters, ...(await arenaBoards(voters)) });
         } catch (err) {
-            const notice = err instanceof ArenaError ? err.detail : 'The vote could not be recorded. Try again in a moment.';
             if (!(err instanceof ArenaError)) log.warn('[OpenVibe.Design] vote failed:', (err && err.message) || err);
-            return page(res, err instanceof ArenaError ? err.status : 500, views.arenaVote({ me, notice }), req.viewer);
+            return again(err instanceof ArenaError ? err.status : 500, err instanceof ArenaError ? err.detail : 'The vote could not be recorded. Try again in a moment.');
         }
     });
 
