@@ -134,6 +134,7 @@ const PARTS = [
 const HELPERS = [
     ['kit.esc(text)', 'Escapes text for HTML. Every builder already does it for its text arguments.'],
     ['kit.url(href)', 'Keeps http(s) and same-site links; anything else becomes #.'],
+    ['kit.mediaW(url, width)', 'A Media picture at a width from its resize ladder (64, 96, 160, 320, 480, 640), so an avatar is not its full upload; any other URL as kit.url gives it.'],
     ['kit.icon(name)', 'One of kit.ICONS as inline SVG, in the text\'s colour. The full set is at /icons.'],
     ['kit.when(ts)', '{ iso, text }: 14:05 today, Yesterday, a weekday this week, Oct 20 this year, else the date.'],
     ['kit.hueOf(key)', 'The colour a mark wears for a name: the same name, the same hue, everywhere.'],
