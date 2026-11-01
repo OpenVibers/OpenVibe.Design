@@ -230,7 +230,7 @@ function createIconRoutes(ctx) {
         if (status !== 'approved' && !isAdmin(req)) return problem(res, req, 403, 'design.glyph_drafts_private', 'Only approved drafts are public.');
         if (!['approved', 'draft', 'rejected'].includes(status)) return problem(res, req, 422, 'design.invalid', 'status is approved, draft or rejected.');
         const rows = await drafts.list({ status, limit: 500 });
-        res.set('Cache-Control', status === 'approved' ? 'public, max-age=300' : 'private, no-store').json({ drafts: rows.map((d) => ({ id: d.id, name: d.name, sentence: d.sentence, svg: d.svg, model: d.model, status: d.status, created_at: d.created_at, reviewed_at: d.reviewed_at })) });
+        res.set('Cache-Control', status === 'approved' ? 'public, max-age=300' : 'private, no-store').json({ drafts: rows.map((d) => ({ id: d.id, name: d.name, sentence: d.sentence, svg: d.svg, solid_svg: d.solid_svg || null, model: d.model, status: d.status, created_at: d.created_at, reviewed_at: d.reviewed_at })) });
     });
     return r;
 }
