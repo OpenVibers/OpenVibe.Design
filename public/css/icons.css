@@ -110,11 +110,20 @@
 .gp-facts div{display:grid;gap:2px}
 .gp-facts dt{color:var(--text-muted);font-size:11.5px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
 .gp-facts dd{margin:0;font-size:14px}
-.gp-sizes{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 26px;padding:18px 20px;margin-bottom:6px;border-radius:16px;border:1px solid var(--border);background:var(--bg-secondary)}
-.gp-sizes span{display:inline-flex;align-items:center;gap:.25em;line-height:1;color:var(--text-primary)}
+/* Every size by itself (L50): the ladder on a light and a dark ground, drawn as the sites draw it. */
+.gp-ladder{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:6px}
+.gp-ladder-h{grid-column:1/-1;margin:0;font-size:15px;font-weight:750}
+.gp-ladder-p{grid-column:1/-1;margin:0 0 4px;max-width:70ch;color:var(--text-secondary);font-size:14px;line-height:1.55}
+.gp-sizes{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px clamp(14px,3vw,30px);padding:16px 20px;border-radius:16px;border:1px solid var(--border);background:var(--bg-secondary)}
+.gp-sizes.is-light{--gp-ink:#141a2b;--gp-muted:#5d6577;background:#fbfcfe;border-color:#e2e6ee}
+.gp-sizes.is-dark{--gp-ink:#eef1f8;--gp-muted:#99a2b5;background:#0d111c;border-color:#232a3a}
+.gp-sizes span{display:inline-flex;align-items:center;gap:.25em;line-height:1;color:var(--gp-ink,var(--text-primary))}
+.ic .gp-sizes svg.is-small{stroke-width:2.4}
+.ic .gp-sizes svg.is-solid{fill:currentColor;stroke:none}
+.ic .gp-sizes svg.is-solid .ln{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .gp-sizes svg{width:1.15em;height:1.15em}
 .gp-sizes i{font-style:normal;font-weight:650}
-.gp-sizes small{align-self:flex-end;margin-left:4px;color:var(--text-muted);font-size:11px;font-variant-numeric:tabular-nums}
+.gp-sizes small{align-self:flex-end;margin-left:4px;color:var(--gp-muted,var(--text-muted));font-size:11px;font-variant-numeric:tabular-nums}
 
 /* The PNG maker. */
 .gp-maker{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;align-items:start}

@@ -17,7 +17,7 @@
     const field = (n) => form.elements[n];
     const pick = $('[data-gp-colour]', form);
     const bgPick = $('[data-gp-bgpick]', form);
-    const DEFAULT = { size: '256', scale: '1', color: '0f172a', stroke: '2', pad: '0', ground: 'none', bg: 'ffffff', fx: 'flat' };
+    const DEFAULT = { size: '256', scale: '1', color: '0f172a', stroke: '2', pad: '0', ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto' };
 
     function query() {
         const p = new URLSearchParams();
