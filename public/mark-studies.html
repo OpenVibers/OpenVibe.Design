@@ -45,11 +45,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 ul.moves{margin:0;padding-left:18px;color:var(--dim);font-size:13.5px;display:grid;gap:3px}
 footer{color:var(--dim);font-size:14px;border-top:1px solid var(--line);padding-top:18px;margin-top:8px;display:grid;gap:8px}
 footer b{color:var(--ink)}
-.spin{animation:spin 1.1s linear infinite;transform-origin:50px 50px;transform-box:view-box}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* Loading: the ring breathes (the network's rule, 2026-10-31: nothing spins). */
+.busy{animation:ringBreathe 1.1s ease-in-out infinite alternate;transform-origin:50px 50px;transform-box:view-box}
+@keyframes ringBreathe{from{transform:scale(1);opacity:1}to{transform:scale(.9);opacity:.5}}
 .run{animation:run 1.15s linear infinite}
 @keyframes run{to{stroke-dashoffset:-151}}
-@media (prefers-reduced-motion:reduce){.spin,.run{animation:none}}
+@media (prefers-reduced-motion:reduce){.busy,.run{animation:none}}
 #scratch{position:absolute;width:0;height:0;overflow:hidden}
 </style>
 
@@ -265,7 +266,7 @@ const study3 = {
     svg.addEventListener('pointerleave', () => this.inner.setAttribute('transform', 'translate(50 50) scale(.5) translate(-50 -50)'));
   },
   async go(s, token) {
-    this.ring.classList.remove('spin'); this.ring.removeAttribute('stroke-dasharray');
+    this.ring.classList.remove('busy');
     const r0 = +this.iris.getAttribute('r');
     if (!s.label) {
       this.text.setAttribute('opacity', 0);
@@ -279,8 +280,8 @@ const study3 = {
   },
   intro(s, token) { this.iris.setAttribute('r', 0); this.m.set(VEE); this.text.setAttribute('opacity', 0); return wait(250).then(() => this.go(s, token)); },
   async loading(on, s, token) {
-    if (!on) { this.ring.classList.remove('spin'); this.ring.removeAttribute('stroke-dasharray'); return; }
-    this.ring.setAttribute('stroke-dasharray', '14 11.1'); this.ring.classList.add('spin');
+    if (!on) { this.ring.classList.remove('busy'); return; }
+    this.ring.classList.add('busy');
   },
   still(s, mode, px) {
     const sw = px <= 16 ? 14 : px <= 24 ? 12 : px <= 32 ? 11 : 10;
