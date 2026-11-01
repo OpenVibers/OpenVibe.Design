@@ -19,6 +19,11 @@ const title = (name) => name.charAt(0).toUpperCase() + name.slice(1).replace(/-/
 const faOf = (name) => Object.entries(glyphs.FA).filter(([, g]) => g === name).map(([fa]) => fa).sort();
 const drawn = (name) => (glyphs.META[name] && /Opus/.test(glyphs.META[name].by) ? 'Drawn for the set' : 'From the kit');
 const glyph = (name, size = 24, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${glyphs.path(name)}</svg>`;
+/** The glyph as the sites show it at that size (L50): its solid drawing at 18 px and under when it has one. */
+const glyphAt = (name, size) => (glyphs.solid(name) && size <= ex.SOLID_BELOW
+    ? `<svg class="is-solid" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${glyphs.solid(name)}</svg>`
+    : glyph(name, size, size <= ex.SOLID_BELOW ? 'is-small' : ''));
+const LADDER = [12, 16, 20, 24, 32, 48];
 
 /** The glyphs that share a word with this one (its name or its Font Awesome names), then its neighbours. */
 function related(name, n = 12) {
@@ -63,7 +68,13 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
     </div>
   </div>
 </header>
-<section class="gp-sizes" aria-label="At text sizes">${[12, 16, 20, 24, 32, 48].map((s) => `<span style="font-size:${s}px">${glyph(name, s)}<i>Aa</i><small>${s}</small></span>`).join('')}</section>`;
+<section class="gp-ladder" aria-labelledby="gp-ladder-h">
+  <h2 class="gp-ladder-h" id="gp-ladder-h">Every size by itself</h2>
+  <p class="gp-ladder-p">${glyphs.solid(name)
+        ? `At ${ex.SOLID_BELOW} px and under it switches to its solid drawing, which stays clear when small; above that it is the line. Sites do it with no code, and the files below do it on <code>style=auto</code>.`
+        : 'Its lines grow a little heavier when small, so it stays clear; it has no solid drawing because it is made of lines.'}</p>
+  ${['light', 'dark'].map((t) => `<div class="gp-sizes is-${t}" role="img" aria-label="${esc(name)} at ${LADDER.join(', ')} pixels, on ${t}">${LADDER.map((sz) => `<span style="font-size:${sz}px">${glyphAt(name, sz)}<i>Aa</i><small>${sz}</small></span>`).join('')}</div>`).join('')}
+</section>`;
 
     const maker = `<section class="ic-sec" id="png" aria-labelledby="gp-png">
   <div class="ic-sec-head"><h2 id="gp-png">Make a PNG</h2><p>Any size up to 1024 pixels at 1×, 2× or 3×, in any colour or the mark&rsquo;s two, a lighter or heavier line, flat or with the mark&rsquo;s depth and glow, room around it and a ground behind it. The link rebuilds the same file every time.</p></div>
@@ -75,6 +86,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
       <label class="gp-field"><span>Colour</span><span class="gp-colour"><input type="color" value="#${esc(opts.color === 'mark' ? '4f7cff' : opts.color)}" data-gp-colour aria-label="Line colour"><input type="text" name="color" value="${esc(opts.color)}" maxlength="6" pattern="mark|[0-9a-fA-F]{3}|[0-9a-fA-F]{6}" spellcheck="false" data-gp="color"><button type="button" class="gp-chip" data-gp-mark aria-pressed="${opts.color === 'mark'}">The mark&rsquo;s</button></span></label>
       ${range('stroke', 1, 3, 0.25, opts.stroke, 'Line', '')}
       ${range('pad', 0, 40, 1, opts.pad, 'Room around it', '%')}
+      ${sel('style', [['auto', `Auto: ${glyphs.solid(name) ? `solid at ${ex.SOLID_BELOW} px and under` : 'the line (it has no solid)'}`], ['line', 'Line'], ['solid', glyphs.solid(name) ? 'Solid' : 'Solid (it has none: the line)']], opts.style, 'Style')}
       ${sel('fx', [['flat', 'Flat'], ['depth', 'Depth: light to deep'], ['glow', 'A glow behind it'], ['depth-glow', 'Depth and a glow']], opts.fx, 'Finish')}
       ${sel('ground', [['none', 'None, transparent'], ['circle', 'A circle'], ['squircle', 'A rounded square'], ['square', 'A square']], opts.ground, 'Ground')}
       <label class="gp-field" data-gp-bg-field${opts.ground === 'none' ? ' hidden' : ''}><span>Ground colour</span><span class="gp-colour"><input type="color" value="#${esc(opts.bg)}" data-gp-bgpick aria-label="Ground colour"><input type="text" name="bg" value="${esc(opts.bg)}" maxlength="6" pattern="[0-9a-fA-F]{3}|[0-9a-fA-F]{6}" spellcheck="false" data-gp="bg"></span></label>
@@ -95,7 +107,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
     ${cp ? `<div><h3>The font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-${name}"></i>`, id: 'gp-font', label: 'Copy' })}</div>` : ''}
     <div><h3>The sprite</h3>${kit.snippet({ code: `<svg width="24" height="24"><use href="${base}/shared/ov-glyphs.svg#ovg-${name}"/></svg>`, id: 'gp-sprite', label: 'Copy' })}</div>
     <div><h3>Node</h3>${kit.snippet({ code: `require('openvibe-shared/glyphs').svg('${name}', { size: 24 })`, id: 'gp-node', label: 'Copy' })}</div>
-    <div><h3>A link</h3>${kit.snippet({ code: `${base}/icons/${name}.svg\n${base}/icons/${name}.png?size=512&color=mark`, id: 'gp-url', label: 'Copy' })}</div>
+    <div><h3>A link</h3>${kit.snippet({ code: `${base}/icons/${name}.svg\n${base}/icons/${name}.png?size=512&color=mark${glyphs.solid(name) ? `\n${base}/icons/${name}.svg?style=solid` : ''}`, id: 'gp-url', label: 'Copy' })}</div>
   </div>
 </section>`;
 

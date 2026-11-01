@@ -74,8 +74,30 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             assert.deepEqual(pngSize((await t.get('/icons/heart.png?size=99999')).buffer), [1024, 1024], 'clamped to 1024');
             assert.deepEqual(pngSize((await t.get('/icons/heart.png')).buffer), [256, 256], 'the default');
             assert.equal((await t.get('/icons/nope.png')).status, 404);
-            const o = ex.options({ size: '3', color: 'javascript:', stroke: '9', pad: '-4', ground: '<x>', bg: 'zz' });
-            assert.deepEqual(o, { size: 16, scale: 1, color: '0f172a', stroke: 3, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat' });
+            const o = ex.options({ size: '3', color: 'javascript:', stroke: '9', pad: '-4', ground: '<x>', bg: 'zz', style: 'bold' });
+            assert.deepEqual(o, { size: 16, scale: 1, color: '0f172a', stroke: 3, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto' });
+        });
+
+        await check('every size by itself (L50): style=auto draws the solid drawing at 18 px and under, line and solid on ask', async () => {
+            assert.ok(glyphs.solid('mic') && !glyphs.solid('check'), 'mic has a solid drawing; check is only lines');
+            const small = (await t.get('/icons/mic.svg?size=16')).text;
+            assert.ok(small.includes('<g transform="translate(0 0)" fill="#0f172a" stroke="none">'), 'small and auto: filled');
+            assert.ok(small.includes('fill="none" stroke="#0f172a" stroke-width="2.6" stroke-linecap="round"'), 'its lines written out, no class left');
+            assert.ok(!small.includes('class='), 'the file needs no page styles');
+            assert.ok((await t.get('/icons/mic.svg?size=16&style=line')).text.includes('fill="none" stroke="#0f172a" stroke-width="2"'), 'line on ask');
+            assert.ok((await t.get('/icons/mic.svg?size=64&style=solid')).text.includes('fill="#0f172a" stroke="none"'), 'solid on ask, any size');
+            assert.ok((await t.get('/icons/mic.svg?size=24')).text.includes('fill="none" stroke="#0f172a"'), 'above 18 px auto is the line');
+            assert.ok((await t.get('/icons/check.svg?size=16&style=solid')).text.includes('fill="none" stroke="#0f172a"'), 'a glyph of lines stays lines');
+            assert.equal(ex.query(ex.options({ size: 16 })), '?size=16', 'auto is the default and stays out of links');
+            assert.equal(ex.query(ex.options({ style: 'solid' })), '?style=solid');
+            const png = (await t.get('/icons/mic.png?size=16&scale=3')).buffer;
+            assert.deepEqual(pngSize(png), [48, 48], 'a small PNG at 3x, drawn solid');
+            const page = (await t.get('/icons/mic')).text;
+            assert.ok(page.includes('<h2 class="gp-ladder-h" id="gp-ladder-h">Every size by itself</h2>'));
+            assert.equal((page.match(/<div class="gp-sizes is-(light|dark)"/g) || []).length, 2, 'the ladder on light and on dark');
+            assert.equal((page.match(/<svg class="is-solid"/g) || []).length, 4, '12 and 16 px solid, on each ground');
+            assert.ok(page.includes('<select name="style" data-gp="style">'), 'the maker offers the style');
+            assert.ok(/its lines grow a little heavier when small/i.test((await t.get('/icons/check')).text), 'a glyph of lines says why it has no solid');
         });
 
         await check('the finish (L44): flat by default, depth light to deep, a glow behind, or both', async () => {
@@ -99,7 +121,7 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             const page = (await t.get('/icons/heart?fx=glow')).text;
             assert.ok(page.includes('<option value="glow" selected'), 'the maker remembers the finish');
             const js = fs.readFileSync(path.join(__dirname, '..', 'public/js/icon.js'), 'utf8');
-            assert.match(js, /fx: 'flat' \}/, 'the maker\'s live link leaves a flat finish out, as the server does');
+            assert.match(js, /fx: 'flat', style: 'auto' \}/, 'the maker\'s live link leaves a flat finish and the auto style out, as the server does');
         });
         await check('the pack: fonts, the sprite, the CSS, the code points and a ZIP of every SVG', async () => {
             const woff = await t.get('/icons/pack/ov-glyphs.woff2');
