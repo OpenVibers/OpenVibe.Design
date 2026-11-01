@@ -12,4 +12,18 @@ assert.ok(
     'the LIVE badge darkens its red under white text'
 );
 assert.ok(!css.includes('.pv-badge { position: absolute; left: 8px; top: 8px; padding: 1px 7px; border-radius: 5px; background: var(--live-red, #e11d48);'), 'the plain live red is gone from the badge');
-console.log('contrast: the LIVE badge reads');
+// The chat and element submit buttons were white on the plain accent (3.7:1). The accent strong pair is text-safe.
+assert.ok(
+    css.includes('background: var(--accent-strong, var(--accent)); color: var(--on-accent-strong, var(--on-accent));'),
+    'the chat and element submit buttons use the accent strong pair'
+);
+// The arena's small lines were muted text on a tint (4.1-4.4:1); the secondary text is the readable pair.
+assert.ok(
+    css.includes('.ar-kind-t small { font-size: .72rem; line-height: 1.3; color: var(--text-secondary, #96a7c2); }'),
+    'the arena kind line uses the secondary text'
+);
+assert.ok(
+    !/\.ar-kb-[a-z]+ \{[^\n]*color: var\(--text-muted, #7386a3\)/.test(css),
+    'no arena leaderboard line uses the muted text'
+);
+console.log('contrast: the LIVE badge, the submit buttons and the arena lines read');
