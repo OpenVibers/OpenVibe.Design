@@ -142,6 +142,31 @@
       const set = (on) => { screen.style.setProperty('--clear', on ? '52px' : '0px'); pill.hidden = false; say(on ? 'The pill says how much room it takes: toasts stack above it.' : 'Nobody says: the toast covers the pill.'); toast(); };
       control('Clear the pill', () => set(true), true);
       control('The bug', () => set(false));
+    } else if (id === 'labelled-cards') {
+      const box = node('div', 'lcards-demo'), table = node('table', 'lcards-table');
+      const head = ['City', 'Studio', '1 bedroom', '2 bedrooms'], rows = [['Huntsville', '$902', '$1,010', '$1,147'], ['Mobile', '$858', '$893', '$1,054']];
+      const thead = node('thead'), htr = node('tr'); head.forEach((h) => htr.append(node('th', '', h))); thead.append(htr);
+      const tbody = node('tbody'); rows.forEach((r) => { const tr = node('tr'); r.forEach((v, i) => { const td = node('td', '', v); td.dataset.label = head[i]; tr.append(td); }); tbody.append(tr); });
+      table.append(thead, tbody); box.append(table); widget.append(box);
+      control('Labelled cards', () => { box.classList.remove('broken'); say('Each value names its column; the city is the card\u2019s title.'); }, true);
+      control('The bug', () => { box.classList.add('broken'); say('The header row is hidden and the cells carry no labels: four bare prices.'); });
+    } else if (id === 'ask-with-a-button') {
+      const card = node('div', 'ask-demo'), p = node('p', '', 'Your watches belong to your OpenVibe account.'), cta = node('p'), a = node('a', 'ask-btn', 'Sign in with OpenVibe');
+      a.href = '#'; a.addEventListener('click', (e) => e.preventDefault()); cta.append(a); card.append(p, cta); widget.append(card);
+      control('With a button', () => { card.classList.remove('broken'); say('One sentence, then the button: the next step stands out.'); }, true);
+      control('The bug', () => { card.classList.add('broken'); say('A link inside the sentence: easy to miss, and it reads like any other link.'); });
+    } else if (id === 'own-places') {
+      const orb = node('div', 'places-demo'), core = node('span', 'places-core', 'Run');
+      const nodes = ['Pair', 'Submit', 'Sandbox', 'Stream', 'Meter'].map((label, i) => { const n = node('span', 'places-node', label); n.style.setProperty('--i', i); return n; });
+      orb.append(core, ...nodes, node('span', 'places-ring r1'), node('span', 'places-ring r2')); widget.append(orb);
+      control('Its own places', () => { orb.classList.remove('broken'); say('Pair, submit, sandbox, stream, meter: the picture says how a job runs here.'); }, true);
+      control('The bug', () => { orb.classList.add('broken'); say('The same rings on six homes: the picture says nothing about this site.'); });
+    } else if (id === 'mixed-words') {
+      const row = node('div', 'mixed-demo');
+      ['light', 'dark'].forEach((kind) => { const panel = node('div', `mixed-panel ${kind}`); [['Legendary', '#fbbf24'], ['Rare', '#38bdf8'], ['AI', '#a78bfa']].forEach(([w, hue]) => { const b = node('span', 'mixed-word', w); b.style.setProperty('--hue', hue); panel.append(b); }); row.append(panel); });
+      widget.append(row);
+      control('Mixed with the text', () => { row.classList.remove('broken'); say('Half the hue, half the text: readable on both.'); }, true);
+      control('The bug', () => { row.classList.add('broken'); say('The pure hue: fine on dark, 1.7:1 for gold on white.'); });
     } else if (id === 'mark-system') {
       const row=node('div','mark-demo'),mark=node('span','ov-mark','ov');row.append(mark,node('span','','OpenVibe'));widget.append(row);control('Loading state',()=>{mark.classList.toggle('loading');say(mark.classList.contains('loading')?'Loading state active.':'Loading state stopped.');});control('Change site',()=>{mark.textContent=mark.textContent==='ov'?'lv':'ov';mark.style.borderRadius=mark.textContent==='lv'?'50%':'16px';say('The mark morphs for the active site.');});control('Open five studies',()=>{window.location.href='/patterns/mark/studies';});
     }
