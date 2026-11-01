@@ -82,7 +82,8 @@ const LUCIDE = keep({
     'external-link': 'open', 'square-arrow-out-up-right': 'open', loader: 'busy', 'loader-circle': 'busy', 'loader-2': 'busy',
     'volume-1': 'volume', 'volume-2': 'volume', 'volume-x': 'mute', 'volume-off': 'mute', users: 'members', 'users-round': 'members',
     'message-circle': 'chat', 'message-square': 'chat', 'messages-square': 'chat', 'message-circle-off': 'chat-off', house: 'home',
-    'map-pin': 'pin', 'map-pinned': 'pin', pin: 'tack', 'chevron-down': 'chevron', 'rotate-ccw': 'retry', 'rotate-cw': 'retry',
+    // Our chevron points right (Font Awesome's chevron-right); down, up and back are the other ways.
+    'map-pin': 'pin', 'map-pinned': 'pin', pin: 'tack', 'chevron-right': 'chevron', 'chevron-down': 'down', 'chevron-up': 'up', 'rotate-ccw': 'retry', 'rotate-cw': 'retry',
     'refresh-cw': 'retry', 'refresh-ccw': 'retry', repeat: 'retry', 'undo-2': 'undo', 'log-in': 'enter', 'log-out': 'leave',
     'circle-help': 'help', 'help-circle': 'help', 'circle-alert': 'alert-circle', 'triangle-alert': 'alert', 'alert-triangle': 'alert',
     'circle-check': 'check-circle', 'circle-check-big': 'check-circle', 'check-circle-2': 'check-circle', 'circle-x': 'x-circle',
@@ -110,7 +111,7 @@ const LUCIDE = keep({
     'arrow-left-right': 'arrows-h', 'arrow-right-left': 'swap', 'columns-2': 'columns', 'table-2': 'table', 'list-checks': 'steps',
     'list-todo': 'task', 'corner-up-left': 'reply', 'circle-parking': 'parking', 'square-parking': 'parking', dumbbell: 'weight',
     'tv-2': 'tv', 'tv-minimal': 'tv', 'circle-dot': 'record', 'mail-open': 'mail', 'bell-ring': 'bell', 'phone-off': 'phone-off',
-    'arrow-left': 'back', 'chevron-left': 'back', 'move-right': 'arrow-right', hourglass: 'hourglass', timer: 'hourglass',
+    'chevron-left': 'back', 'move-right': 'arrow-right', hourglass: 'hourglass', timer: 'hourglass',
     'ticket-check': 'ticket', 'radio-tower': 'live', podcast: 'live', 'ear-off': 'ear', 'scale-3d': 'cubes', 'shapes': 'shapes',
 });
 
@@ -140,8 +141,10 @@ const MATERIAL = keep({
     feed: 'news', campaign: 'megaphone', hearing: 'ear', badge: 'id', vpn_key: 'key', hub: 'nodes', account_tree: 'nodes',
     open_in_new: 'open', launch: 'open', refresh: 'retry', autorenew: 'retry', replay: 'retry', login: 'enter', logout: 'leave',
     fullscreen: 'expand', fullscreen_exit: 'compress', open_with: 'move', swap_horiz: 'swap', view_column: 'columns',
-    table_chart: 'table', table_rows: 'table', checklist: 'steps', task_alt: 'task', arrow_back: 'back', arrow_forward: 'arrow-right',
-    arrow_upward: 'arrow-up', arrow_downward: 'arrow-down', expand_more: 'chevron', keyboard_arrow_down: 'chevron',
+    table_chart: 'table', table_rows: 'table', checklist: 'steps', task_alt: 'task', arrow_back: 'arrow-left', arrow_forward: 'arrow-right',
+    arrow_upward: 'arrow-up', arrow_downward: 'arrow-down', expand_more: 'down', keyboard_arrow_down: 'down', expand_less: 'up',
+    keyboard_arrow_up: 'up', chevron_right: 'chevron', keyboard_arrow_right: 'chevron', navigate_next: 'chevron',
+    chevron_left: 'back', keyboard_arrow_left: 'back', navigate_before: 'back',
     local_fire_department: 'fire', whatshot: 'fire', bolt: 'zap', flash_on: 'zap', auto_awesome: 'spark', card_giftcard: 'gift',
     redeem: 'gift', diamond: 'gem', workspace_premium: 'crown', emoji_events: 'trophy', military_tech: 'ranking', leaderboard: 'ranking',
     gps_fixed: 'target', my_location: 'target', center_focus_strong: 'focus', wb_sunny: 'sun', light_mode: 'sun', dark_mode: 'moon',

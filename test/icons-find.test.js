@@ -25,6 +25,11 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlined";`;
                 'mui:DeleteOutlined': 'trash', 'fa-gear': 'gear', 'fa:gear': 'gear', settings: 'gear', heart: 'heart', 'material:home': 'home' };
             for (const [n, g] of Object.entries(cases)) assert.equal(aliases.resolve(n), g, n);
             assert.equal(aliases.resolve('no-such-icon'), null);
+            // Each chevron points its own way: ours points right, as Font Awesome's chevron-right does.
+            assert.deepEqual(['lucide:chevron-right', 'lucide:chevron-down', 'lucide:chevron-up', 'lucide:chevron-left', 'material:expand_more', 'material:chevron_right', 'material:keyboard_arrow_left'].map(aliases.resolve),
+                ['chevron', 'down', 'up', 'back', 'down', 'chevron', 'back']);
+            assert.equal(aliases.resolve('lucide:chevron-down'), glyphs.fromFa('chevron-down'), 'the same as Font Awesome\'s');
+            assert.deepEqual(['lucide:arrow-left', 'material:arrow_back', 'material:arrow_forward'].map(aliases.resolve), ['arrow-left', 'arrow-left', 'arrow-right'], 'an arrow is an arrow, not a chevron');
             assert.ok(aliases.words('gear').includes('settings') && aliases.words('trash').includes('delete'), 'the words people type');
         });
 
