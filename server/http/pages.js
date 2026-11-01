@@ -74,7 +74,9 @@ function createPageRoutes(ctx) {
     r.get('/brand/explore', async (req, res) => {
         // What people picked so far, at the top (a database hiccup leaves the page whole, without it).
         const tally = ctx.picks ? await safe(() => ctx.picks.tally()) : null;
-        page(res, 200, require('../views/marks-explore').explorePage({ tally }), req.viewer);
+        // The Wildcards are off the vote (the owner, 11-01: "I've changed my mind on them… keep them, they're cool to
+        // look at"): ?wild=1 still shows them.
+        page(res, 200, require('../views/marks-explore').explorePage({ tally, wild: req.query.wild === '1' }), req.viewer);
     });
     r.get('/brand/:file', (req, res) => {
         const svg = brandView.file(req.params.file);
