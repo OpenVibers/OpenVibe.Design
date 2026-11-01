@@ -22,6 +22,7 @@ const components = require('openvibe-shared/components');
                 'openvibe_design_list_themes', 'openvibe_design_get_theme_tokens',
                 'openvibe_design_list_components', 'openvibe_design_get_component',
                 'openvibe_design_validate_kit_document',
+                'openvibe_design_icon_search', 'openvibe_design_icon_svg', 'openvibe_design_icon_code', 'openvibe_design_icon_migrate',
             ]);
             assert.ok(listed.every(x => x.inputSchema && x.annotations.readOnlyHint));
             assert.strictEqual((await t.get('/mcp', { method: 'OPTIONS' })).status, 204);
@@ -31,6 +32,31 @@ const components = require('openvibe-shared/components');
             assert.strictEqual((await t.get('/mcp', { json: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'unknown' } } })).json().error.code, -32602);
             assert.strictEqual((await t.get('/.well-known/agent.json')).json().mcp.url, 'https://openvibe.design/mcp');
             assert.match((await t.get('/llms.txt')).text, /https:\/\/openvibe\.design\/mcp/);
+        });
+        await check('the icon tools (plan L50 step 6): search by any word or set\'s name, an SVG, code to paste, a migration', async () => {
+            const found = (await call('openvibe_design_icon_search', { query: 'settings', limit: 3 })).structuredContent;
+            assert.strictEqual(found.icons[0].name, 'gear');
+            assert.strictEqual(found.icons[0].svg, 'https://openvibe.design/icons/gear.svg');
+            assert.ok(found.icons[0].font_awesome.includes('fa-gear') && found.icons[0].words.includes('settings'));
+            assert.match(found.use, /ov-icon\.js/);
+            assert.strictEqual((await call('openvibe_design_icon_search', { query: 'lucide:trash-2' })).structuredContent.icons[0].name, 'trash');
+            assert.strictEqual((await call('openvibe_design_icon_search', { query: '' })).isError, true);
+            assert.strictEqual((await call('openvibe_design_icon_search', { query: 'x', limit: 99 })).isError, true);
+            assert.strictEqual((await call('openvibe_design_icon_svg', { name: 'material:mic', size: 16 })).structuredContent.name, 'mic', 'a Material name');
+            const mic = (await call('openvibe_design_icon_svg', { name: 'mic', size: 16, color: 'ff0000' })).structuredContent;
+            assert.strictEqual(mic.style, 'solid', 'small and auto: the solid drawing');
+            assert.ok(mic.svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"') && mic.svg.includes('fill="#ff0000"'));
+            assert.strictEqual((await call('openvibe_design_icon_svg', { name: 'mic', size: 48 })).structuredContent.style, 'line');
+            assert.strictEqual((await call('openvibe_design_icon_svg', { name: 'no-such-icon' })).isError, true);
+            assert.strictEqual((await call('openvibe_design_icon_svg', { name: 'mic', color: 'red;}' })).isError, true);
+            const jsx = (await call('openvibe_design_icon_code', { name: 'fa-trash-can', format: 'jsx' })).structuredContent;
+            assert.strictEqual(jsx.name, 'trash');
+            assert.match(jsx.code, /^export function TrashIcon\(props\)/);
+            assert.match((await call('openvibe_design_icon_code', { name: 'robot', format: 'android' })).structuredContent.code, /<vector xmlns:android=/);
+            assert.match((await call('openvibe_design_icon_code', { name: 'heart', format: 'esm' })).structuredContent.code, /export default \{ name, line, solid \};/);
+            assert.strictEqual((await call('openvibe_design_icon_code', { name: 'heart', format: 'png' })).isError, true);
+            const moved = (await call('openvibe_design_icon_migrate', { text: '<i data-lucide="settings"></i><i class="fa-solid fa-house fa-fw"></i>' })).structuredContent;
+            assert.deepStrictEqual(moved.icons.map((f) => [f.set, f.name, f.glyph]), [['fa', 'house', 'home'], ['lucide', 'settings', 'gear']]);
         });
         await check('list themes good and bad arguments', async () => {
             const good = await call('openvibe_design_list_themes', { query: 'nig', mode: 'dark' });

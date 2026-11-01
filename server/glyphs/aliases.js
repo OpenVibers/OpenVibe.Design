@@ -7,6 +7,7 @@
  *   words(glyph)          → the search words for a glyph (its synonyms, then every other set's names for it)
  *   resolve(name)         → our glyph for "gear", "fa-gear", "lucide:settings", "material:settings" or "settings", or null
  *   scan(text)            → every icon a page or a component asks for, by set: [{ set, name, count, glyph, brand }]
+ *   search(query, n)      → the glyphs that best answer a search: its own name, then any set's name, then its words
  *   LUCIDE, MATERIAL      → { theirName: glyph } (only names whose glyph exists)
  */
 const glyphs = require('openvibe-shared/glyphs');
@@ -233,4 +234,24 @@ function scan(text) {
     return [...found.values()].sort((a, b) => (a.glyph || a.brand ? 0 : 1) - (b.glyph || b.brand ? 0 : 1) || order[a.set] - order[b.set] || b.count - a.count || (a.name < b.name ? -1 : 1));
 }
 
-module.exports = { words, resolve, scan, LUCIDE, MATERIAL };
+/** Ranked: the exact glyph a name resolves to, then names that start with or hold the query, then any set's names and
+ *  the words. Every word of a several-word query must match somewhere. */
+function search(query, n = 24) {
+    const q = String(query || '').trim().toLowerCase().slice(0, 100);
+    if (!q) return glyphs.NAMES.slice(0, n);
+    const exact = resolve(q);
+    const terms = q.split(/\s+/).filter(Boolean);
+    const scored = [];
+    for (const g of glyphs.NAMES) {
+        const fa = Object.entries(glyphs.FA).filter(([, x]) => x === g).map(([f]) => f);
+        const hay = [g, ...fa, ...words(g)];
+        if (!terms.every((t) => hay.some((h) => h.includes(t)))) continue;
+        let score = g === exact ? 100 : g === q ? 90 : g.startsWith(q) ? 70 : g.includes(q) ? 60 : 0;
+        if (!score) score = fa.some((f) => f === q) ? 50 : words(g).some((w) => w === q) ? 45 : fa.some((f) => f.includes(q)) ? 30 : 20;
+        scored.push([g, score]);
+    }
+    if (exact && !scored.some(([g]) => g === exact)) scored.push([exact, 100]);
+    return scored.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, n).map(([g]) => g);
+}
+
+module.exports = { words, resolve, scan, search, LUCIDE, MATERIAL };

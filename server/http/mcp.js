@@ -4,6 +4,13 @@
 const express = require('express');
 const components = require('openvibe-shared/components');
 const themeTokens = require('../tokens');
+const glyphs = require('openvibe-shared/glyphs');
+const aliases = require('../glyphs/aliases');
+const ex = require('../glyphs/export');
+const formats = require('../glyphs/formats');
+
+const BASE = 'https://openvibe.design';
+const FORMATS = { svg: null, inline_svg: 'inlineSvg', jsx: 'jsx', data_uri: 'dataUri', css_mask: 'cssMask', android: 'vectorDrawable', esm: 'esModule' };
 const { version } = require('../../package.json');
 
 const PROTOCOL = '2025-06-18';
@@ -25,6 +32,26 @@ const TOOLS = [
     }) },
     { name: 'openvibe_design_validate_kit_document', description: 'Validate a kit document against the component contract and its size limits.', inputSchema: schema(['doc'], {
         doc: { type: 'object', description: 'A kit component document.' },
+    }) },
+    // The OpenVibe glyphs (plan L50 step 6): the same answers as openvibe.design/icons, for agents.
+    { name: 'openvibe_design_icon_search', description: 'Find OpenVibe icons (free, MIT) by a word ("settings", "delete"), our name, or a Font Awesome, Lucide or Material name. Best match first, with each icon\'s page and SVG address.', inputSchema: schema(['query'], {
+        query: { type: 'string', minLength: 1, maxLength: 100 },
+        limit: { type: 'integer', minimum: 1, maximum: 60, default: 12 },
+    }) },
+    { name: 'openvibe_design_icon_svg', description: 'One OpenVibe icon as a standalone SVG. name may be ours or a Font Awesome (fa-gear), Lucide (lucide:settings) or Material (material:delete) name. style auto draws the solid drawing at 18 px and under.', inputSchema: schema(['name'], {
+        name: { type: 'string', minLength: 1, maxLength: 60 },
+        size: { type: 'integer', minimum: 16, maximum: 1024, default: 24 },
+        color: { type: 'string', pattern: '^(mark|[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$', description: 'Hex without #, or mark for the two OpenVibe colours. Default 0f172a.' },
+        style: { type: 'string', enum: ['auto', 'line', 'solid'], default: 'auto' },
+    }) },
+    { name: 'openvibe_design_icon_code', description: 'One OpenVibe icon as code to paste: inline_svg (HTML, Vue, Svelte, Solid; currentColor), jsx (a React component), data_uri, css_mask (a class painted in the text colour), android (VectorDrawable XML), esm (an ES module with the drawings) or svg.', inputSchema: schema(['name', 'format'], {
+        name: { type: 'string', minLength: 1, maxLength: 60 },
+        format: { type: 'string', enum: Object.keys(FORMATS) },
+        size: { type: 'integer', minimum: 16, maximum: 1024, default: 24 },
+        style: { type: 'string', enum: ['auto', 'line', 'solid'], default: 'auto' },
+    }) },
+    { name: 'openvibe_design_icon_migrate', description: 'Read HTML or code and list every Font Awesome, Lucide, Material or MUI icon it uses, with its OpenVibe twin and how often it appears. Read only.', inputSchema: schema(['text'], {
+        text: { type: 'string', minLength: 1, maxLength: 400000 },
     }) },
 ].map(tool => ({ ...tool, annotations: { readOnlyHint: true, openWorldHint: false } }));
 
@@ -76,6 +103,33 @@ async function callTool(name, args, { catalog }) {
         case 'openvibe_design_validate_kit_document':
             if (!Object.prototype.hasOwnProperty.call(args, 'doc')) return toolError('doc is required.');
             return toolResult(components.validate(args.doc));
+        case 'openvibe_design_icon_search': {
+            if (typeof args.query !== 'string' || !args.query.trim() || args.query.length > 100) return toolError('query must be a nonempty string of at most 100 characters.');
+            const limit = args.limit === undefined ? 12 : args.limit;
+            if (!Number.isInteger(limit) || limit < 1 || limit > 60) return toolError('limit must be a whole number from 1 to 60.');
+            const fa = (g) => Object.entries(glyphs.FA).filter(([, x]) => x === g).map(([f]) => `fa-${f}`);
+            return toolResult({ icons: aliases.search(args.query, limit).map((g) => ({
+                name: g, page: `${BASE}/icons/${g}`, svg: `${BASE}/icons/${g}.svg`, solid: !!glyphs.solid(g),
+                font_awesome: fa(g).slice(0, 6), words: aliases.words(g).slice(0, 8),
+            })), use: `<script src="${BASE}/ov-icon.js" defer></script> then <ov-icon name="…"></ov-icon>` });
+        }
+        case 'openvibe_design_icon_svg':
+        case 'openvibe_design_icon_code': {
+            const g = typeof args.name === 'string' && args.name.length <= 60 ? aliases.resolve(args.name) : null;
+            if (!g) return toolError('No OpenVibe icon by that name. Try openvibe_design_icon_search.');
+            if (args.size !== undefined && (!Number.isInteger(args.size) || args.size < 16 || args.size > 1024)) return toolError('size must be a whole number from 16 to 1024.');
+            if (args.style !== undefined && !['auto', 'line', 'solid'].includes(args.style)) return toolError('style is auto, line or solid.');
+            if (args.color !== undefined && (typeof args.color !== 'string' || !/^(mark|[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(args.color))) return toolError('color is a hex colour without # (0f172a), or mark.');
+            const opts = ex.options({ size: args.size || 24, style: args.style || 'auto', ...(args.color ? { color: args.color } : {}) });
+            if (name === 'openvibe_design_icon_svg') return toolResult({ name: g, style: ex.drawnAs(g, opts), svg: ex.svg(g, opts), page: `${BASE}/icons/${g}` });
+            if (!Object.prototype.hasOwnProperty.call(FORMATS, args.format)) return toolError(`format is one of ${Object.keys(FORMATS).join(', ')}.`);
+            const fn = FORMATS[args.format];
+            const code = fn === null ? ex.svg(g, opts) : fn === 'esModule' ? formats.esModule(g) : formats[fn](g, opts);
+            return toolResult({ name: g, format: args.format, code });
+        }
+        case 'openvibe_design_icon_migrate':
+            if (typeof args.text !== 'string' || !args.text || args.text.length > 400000) return toolError('text must be a nonempty string of at most 400,000 characters.');
+            return toolResult({ icons: aliases.scan(args.text), page: `${BASE}/icons/migrate` });
         default:
             return null;
     }
