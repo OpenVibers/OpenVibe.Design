@@ -17,6 +17,8 @@ const TABLES = [
     { table: 'designs', subject: 'owner', file: 'designs.json', order: 'created_at', columns: ['id', 'kind', 'prompt', 'theme_id', 'variants', 'created_at', 'updated_at'] },
     // The icons a person asked OpenVibe.AI to draw (/icons). Who reviewed one is not theirs to export. An approved
     // drawing already taken into openvibe-shared stays there: it is a drawing, it names nobody.
+    // The marks a signed-in person picked on /brand/explore (a guest's picks name nobody).
+    { table: 'brand_picks', subject: 'voter', file: 'brand_picks.json', order: 'created_at', columns: ['code', 'created_at'], erase: 'delete' },
     { table: 'glyph_drafts', subject: 'subject', file: 'glyph_drafts.json', order: 'created_at', columns: ['id', 'name', 'sentence', 'svg', 'model', 'status', 'created_at', 'reviewed_at'], erase: 'delete' },
 ];
 

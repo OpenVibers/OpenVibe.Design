@@ -472,12 +472,12 @@ function markCard(code, kind, [name, line_, spec], i) {
     const art = kind === 'L' ? loopArt(spec, `m${++seq}`) : pairArt(spec, `m${++seq}`);
     const ref = `art-${code}`;
     return `<li class="mx-card" id="${code}" data-code="${code}" style="${delay(i)}">
+<button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false" aria-label="Pick ${code}"></button>
 <div class="mx-stage"><svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="${code} ${esc(name)}" data-idle="${idleOf(kind, spec, i)}"><defs>${art.defs}</defs><g id="${ref}">${art.body}</g></svg></div>
 <div class="mx-lock">${useOf(ref, 26)}${word()}</div>
 <div class="mx-sizes" aria-label="At 16 and 32 pixels"><span class="mx-dark">${useOf(ref, 16)}${useOf(ref, 32)}</span><span class="mx-light">${useOf(ref, 16)}${useOf(ref, 32)}</span></div>
 <p class="mx-name"><b>${code}</b> ${esc(name)}</p>
 <p class="mx-line">${esc(line_)}</p>
-<button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false">Pick ${code}</button>
 </li>`;
 }
 
@@ -485,11 +485,11 @@ const menuSvg = (anim, own, parts, size) => `<svg viewBox="0 0 24 24" width="${s
 function menuCard(code, [name, line_, anim, own, parts], i) {
     const bar = (tone) => `<div class="mb-nav mb-${tone}">${useOf('art-pair-today', 22)}${word()}<button type="button" class="mb-btn" data-mb aria-pressed="false" aria-label="${code} at its real size: press to open">${menuSvg(anim, own, parts, 22)}</button></div>`;
     return `<li class="mx-card mb-card" id="${code}" data-code="${code}" style="${delay(i)}">
+<button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false" aria-label="Pick ${code}"></button>
 <div class="mx-stage"><button type="button" class="mb-btn mb-big" data-mb aria-pressed="false" aria-label="${code} ${esc(name)}: press to open it">${menuSvg(anim, own, parts, 84)}</button></div>
 <div class="mb-bars">${bar('dark')}${bar('light')}</div>
 <p class="mx-name"><b>${code}</b> ${esc(name)}</p>
 <p class="mx-line">${esc(line_)}</p>
-<button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false">Pick ${code}</button>
 </li>`;
 }
 
@@ -499,18 +499,51 @@ function panel(id, kind, rows, label, hidden) {
     const body = rows.map((row) => {
         const first = n + 1;
         const cards = row.items.map((item) => { n += 1; const code = `${kind}${pad(n)}`; return kind === 'M' ? menuCard(code, item, n - 1) : markCard(code, kind, item, n - 1); }).join('');
-        return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
+        return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small><span class="mx-swipe" aria-hidden="true">swipe →</span></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
     }).join('');
-    return `<section class="mx-panel" id="${id}" role="tabpanel" aria-labelledby="mx-tab-${id}" aria-label="${esc(label)}"${hidden ? ' hidden' : ''}>${body}</section>`;
+    const NEXT = {
+        loop: [['pair', 'See the Pair', 'the other direction for the mark'], ['menu', 'Next: the menu button', 'it stays whichever mark wins']],
+        pair: [['loop', 'See the Loop', 'the other direction for the mark'], ['menu', 'Next: the menu button', 'it stays whichever mark wins']],
+        menu: [['loop', 'Back to the Loop', 'the mark, one direction'], ['pair', 'Back to the Pair', 'the mark, the other']],
+    }[id];
+    const next = `<nav class="mx-next" aria-label="Where next">${NEXT.map(([to, title, line_]) => `<a href="#${to}" data-mx-go="${to}"><b>${title} <span aria-hidden="true">${to === 'menu' || id !== 'menu' ? '→' : '↑'}</span></b><small>${line_}</small></a>`).join('')}</nav>`;
+    return `<section class="mx-panel" id="${id}" role="tabpanel" aria-labelledby="mx-tab-${id}" aria-label="${esc(label)}"${hidden ? ' hidden' : ''}>${body}${next}</section>`;
 }
 
-function explorePage() {
+/** One small mark for the tally, drawn on its own (its own ids), so it shows whichever tab is open. */
+function miniArt(code, size = 26, tag = '') {
+    const i = Number(code.slice(1)) - 1;
+    if (code[0] === 'M') { const m = MENUS[i]; return m ? `<span class="mb-btn mx-mini-m">${menuSvg(m[2], m[3], m[4], size - 4)}</span>` : ''; }
+    const item = (code[0] === 'L' ? LOOPS : PAIRS)[i];
+    if (!item) return '';
+    const art = code[0] === 'L' ? loopArt(item[2], `t${tag}${code}`) : pairArt(item[2], `t${tag}${code}`);
+    return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">${art.defs ? `<defs>${art.defs}</defs>` : ''}${art.body}</svg>`;
+}
+const chipOf = ({ code, n }) => `<span class="mx-top" data-code="${code}">${miniArt(code)}<b>${code}</b><i>${n}</i></span>`;
+/** What people picked so far (server/brand-picks.js tally), at the top; marks.js redraws it after each save. */
+function tallyBlock(t) {
+    const people = (t && t.people) || 0;
+    const loop = (t && t.lean && t.lean.loop) || 0, pair = (t && t.lean && t.lean.pair) || 0;
+    const loopPct = loop + pair ? Math.round((loop / (loop + pair)) * 100) : 50;
+    const marks = t ? [...(t.top.L || []), ...(t.top.P || [])].sort((a, b) => b.n - a.n || (a.code < b.code ? -1 : 1)).slice(0, 6) : [];
+    const menus = t ? (t.top.M || []).slice(0, 4) : [];
+    const lead = loop + pair ? (loop === pair ? 'Level so far' : loop > pair ? 'The Loop leads' : 'The Pair leads') : 'No picks yet';
+    return `<section class="mx-tally${people ? '' : ' is-empty'}" data-mx-tally aria-label="What people picked so far">
+<div class="mx-tally-h"><b>So far</b><span data-mx-people>${people ? `${people} ${people === 1 ? 'person has' : 'people have'} picked` : 'Nobody has picked yet. Be the first.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
+<div class="mx-lean" style="--l:${loopPct}%"><span class="mx-lean-end">${miniArt('L02', 24, 'e')}<span>Loop</span><b data-mx-loop>${loop + pair ? `${loopPct}%` : '–'}</b></span><span class="mx-lean-bar" aria-hidden="true"><i></i></span><span class="mx-lean-end mx-lean-r"><b data-mx-pair>${loop + pair ? `${100 - loopPct}%` : '–'}</b><span>Pair</span>${miniArt('P01', 24, 'e')}</span></div>
+<div class="mx-tops"><span class="mx-tops-k">Most picked</span><span class="mx-tops-list" data-mx-tops>${marks.map(chipOf).join('') || '<em>none yet</em>'}</span></div>
+<div class="mx-mine" data-mx-mine hidden><span class="mx-tops-k">Your picks</span><b data-mx-picks></b><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button><em class="mx-saved" data-mx-saved>saved</em></div>
+<div class="mx-tops"><span class="mx-tops-k">Menu button</span><span class="mx-tops-list" data-mx-tops-m>${menus.map(chipOf).join('') || '<em>none yet</em>'}</span></div>
+</section>`;
+}
+
+function explorePage({ tally = null } = {}) {
     seq = 0;
     const today = pairArt(PAIR_ROWS[0].items[0][2], 'xpair');
     const loopEx = loopArt(LOOP_ROWS[0].items[1][2], 'xloop');
     const pairEx = pairArt(PAIR_ROWS[0].items[0][2], 'xpairtab');
     const m1 = MENU_ROWS[0].items[0];
-    const tab = (id, title, line_, art, range, on, side) => `<a class="mx-tab${side ? ' mx-tab-side' : ''}" role="tab" id="mx-tab-${id}" href="#${id}" aria-controls="${id}" aria-selected="${on ? 'true' : 'false'}" data-mx-tab="${id}"><span class="mx-tab-art">${art}</span><span class="mx-tab-t"><b>${title}</b><small>${line_}</small><em>${range}</em></span></a>`;
+    const tab = (id, title, line_, art, range, on, side) => `<a class="mx-tab${side ? ' mx-tab-side' : ''}" role="tab" id="mx-tab-${id}" href="#${id}" aria-controls="${id}" aria-selected="${on ? 'true' : 'false'}" data-mx-tab="${id}"><span class="mx-tab-art" data-mx-cycle="${id}"><span class="mx-ta">${art}</span><em class="mx-tab-code" aria-hidden="true"></em></span><span class="mx-tab-t"><b>${title}</b><small>${line_}</small><em>${range}</em></span></a>`;
     const chip = (attr, value, label, extra = '') => `<button type="button" class="mx-chip" ${attr}="${esc(value)}" aria-pressed="false"${extra}>${label}</button>`;
     const body = `<div class="mx-wrap" data-mx data-lock="dot" data-mx-fontcss="${esc(FONT_CSS)}">
 <svg class="mx-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>${today.defs}</defs><g id="art-pair-today">${today.body}</g></svg>
@@ -518,8 +551,9 @@ function explorePage() {
 <header class="mx-hero">
 <p class="mx-eye">The OpenVibe mark · help us choose</p>
 <h1>The Loop or the Pair?</h1>
-<p class="mx-lede">We&rsquo;re choosing OpenVibe&rsquo;s mark, and it&rsquo;s between two: the <b>Loop</b>, a V folded into a ring, and the <b>Pair</b>, an O beside a V. Each has fifty takes: tell us which of the two you&rsquo;d pick, and the takes you like best. Tap <b>Pick</b> on anything you like, then send us your picks.</p>
+<p class="mx-lede">We&rsquo;re choosing OpenVibe&rsquo;s mark, and it&rsquo;s between two: the <b>Loop</b>, a V folded into a ring, and the <b>Pair</b>, an O beside a V. Each has fifty takes: tell us which of the two you&rsquo;d pick, and the takes you like best. Tap the ones you like: they are saved and counted in the tally below.</p>
 </header>
+${tallyBlock(tally)}
 <nav class="mx-choose" role="tablist" aria-label="What to choose">
 <p class="mx-q" role="presentation"><span class="mx-qn">1</span> The mark: <b>the Loop or the Pair?</b></p>
 <div class="mx-vs" role="presentation">
@@ -529,6 +563,14 @@ ${tab('pair', 'The Pair', 'An O and a V side by side, reading as the letters O V
 </div>
 <p class="mx-q" role="presentation"><span class="mx-qn">2</span> Separately: <b>the menu button&rsquo;s look</b> <small>it stays beside the name whichever mark wins</small></p>
 ${tab('menu', 'The menu button', 'Opens search and every site. Fifty looks for it, each one moves when you hover or tap it.', `<span class="mb-btn mb-tabbtn">${menuSvg(m1[2], m1[3], m1[4], 30)}</span>`, 'M01–M50', false, true)}
+</nav>
+<nav class="mx-steps" data-mx-steps aria-label="Jump between the choices" hidden>
+<span class="mx-steps-k">Mark</span>
+<a href="#loop" data-mx-go="loop" class="mx-step">${miniArt('L02', 20, 's')}<span>Loop</span><i data-mx-count="L"></i></a>
+<a href="#pair" data-mx-go="pair" class="mx-step">${miniArt('P01', 20, 's')}<span>Pair</span><i data-mx-count="P"></i></a>
+<span class="mx-steps-sep" aria-hidden="true"></span>
+<a href="#menu" data-mx-go="menu" class="mx-step">${miniArt('M01', 22, 's')}<span>Menu button</span><i data-mx-count="M"></i></a>
+<button type="button" class="mx-step mx-share" data-mx-share aria-label="Copy your picks and a link to them"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg><span>Share</span></button>
 </nav>
 <div class="mx-tools" data-mx-tools hidden>
 <div class="mx-tool"><span class="mx-tool-k">Name</span><div class="mx-chips" role="group" aria-label="The site's name beside the mark">${SITES.map((s) => chip('data-mx-set-site', s, esc(s))).join('')}<input class="mx-own" type="text" maxlength="14" placeholder="Type one" aria-label="Type a site name" data-mx-own spellcheck="false" autocomplete="off"></div></div>
@@ -540,8 +582,7 @@ ${panel('loop', 'L', LOOP_ROWS, 'The Loop: fifty takes', false)}
 ${panel('pair', 'P', PAIR_ROWS, 'The Pair: fifty takes', true)}
 ${panel('menu', 'M', MENU_ROWS, 'The menu button: fifty ideas', true)}
 <p class="mx-fine">Every mark here is centred and level. None of them replaces the mark the sites use until one is chosen: <a href="/brand">the mark today</a>.</p>
-</div>
-<div class="mx-bar" data-mx-bar hidden><span class="mx-bar-thumbs" data-mx-thumbs aria-hidden="true"></span><span class="mx-bar-t">Your picks: <b data-mx-picks></b></span><button type="button" class="mx-btn" data-mx-copy>Copy</button><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button></div>`;
+</div>`;
     return layout({
         title: 'The Loop or the Pair? Help choose the OpenVibe mark',
         description: 'The OpenVibe mark is between two: the Loop and the Pair, fifty takes on each. Plus fifty looks for the menu button beside the name.',
@@ -557,4 +598,4 @@ ${panel('menu', 'M', MENU_ROWS, 'The menu button: fifty ideas', true)}
 const LOOPS = LOOP_ROWS.flatMap((r) => r.items);
 const PAIRS = PAIR_ROWS.flatMap((r) => r.items);
 const MENUS = MENU_ROWS.flatMap((r) => r.items);
-module.exports = { explorePage, LOOPS, PAIRS, MENUS, LOOP_ROWS, PAIR_ROWS, MENU_ROWS, loopArt, pairArt };
+module.exports = { explorePage, tallyBlock, LOOPS, PAIRS, MENUS, LOOP_ROWS, PAIR_ROWS, MENU_ROWS, loopArt, pairArt };
