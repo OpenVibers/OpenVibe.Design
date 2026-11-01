@@ -114,14 +114,16 @@ const explore = require('../server/views/marks-explore');
             // Each wildcard moves its own way, attaches the name its own way, and shows itself as a status.
             const wilds = r.text.match(/<li class="mx-card mx-wild" id="W\d\d"[\s\S]*?<\/li>/g) || [];
             assert.strictEqual(wilds.length, 40);
-            assert.strictEqual(new Set(wilds.map((c) => /data-wild="([a-z]+)"/.exec(c)[1])).size, 40, 'forty different ideas');
+            assert.strictEqual(new Set(wilds.map((c) => /data-wild="([a-z0-9]+)"/.exec(c)[1])).size, 40, 'forty different ideas');
             assert.ok(wilds.every((c) => /<div class="mx-lock lk-(side|pill|under|bubble|stack|tag|trail)">/.test(c)), 'a lockup each');
             assert.ok(wilds.every((c) => /class="[^"]*\bw-k\b/.test(c)), 'a key part each, for the live status');
             assert.ok(wilds.every((c) => /data-st="live"[\s\S]*data-st="new"/.test(c)), 'the live and new slots');
             assert.ok(new Set(wilds.map((c) => /lk-([a-z]+)/.exec(c)[1])).size >= 6, 'the name attaches in several ways');
             const css = require('fs').readFileSync(require('path').join(__dirname, '..', 'public', 'css', 'marks.css'), 'utf8');
-            const { KEYS } = require('../server/views/wild-marks');
-            assert.deepStrictEqual(KEYS.filter((k) => !css.includes(`svg[data-wild=${k}]`) && !css.includes(`svg[data-wild=${k}],`)), [], 'every idea has its motion');
+            const { MOTIONS, WILD_ROWS } = require('../server/views/wild-marks');
+            assert.deepStrictEqual(MOTIONS.filter((m) => !css.includes(`svg[data-wild-motion=${m}]`)), [], 'every kind of motion is in the CSS');
+            assert.ok(WILD_ROWS.every((r) => r.items.every((it) => MOTIONS.includes(it[4]))), 'every wildcard has one');
+            assert.ok(wilds.every((c) => /data-wild-motion="[a-z]+"/.test(c)));
         });
 
         await check('the files at /brand/:file still answer', async () => {

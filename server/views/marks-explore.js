@@ -619,13 +619,13 @@ function lockOf(kind, ref) {
     }
 }
 
-function markCard(code, kind, [name, line_, spec, lock], i) {
+function markCard(code, kind, [name, line_, spec, lock, motion], i) {
     if (kind === 'W') {
         const art = wildArt(spec, `m${++seq}`);
         const ref = `art-${code}`;
         return `<li class="mx-card mx-wild" id="${code}" data-code="${code}" style="${delay(i)}">
 <button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false" aria-label="Pick ${code}"></button>
-<div class="mx-stage"><svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="${code} ${esc(name)}" data-idle="wild" data-wild="${spec}"><defs>${art.defs}</defs><g id="${ref}">${art.body}</g></svg></div>
+<div class="mx-stage"><svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="${code} ${esc(name)}" data-idle="wild" data-wild="${spec}" data-wild-motion="${motion || 'tilt'}"><defs>${art.defs}</defs><g id="${ref}">${art.body}</g></svg></div>
 <div class="mx-lock lk-${lock || 'side'}">${lockOf(lock, ref)}</div>
 <div class="mx-status" aria-label="As a status: live and new"><span class="mx-dark">${useOf(ref, 16)}${useOf(ref, 28)}</span><span class="st st-live" data-st="live" title="Live"></span><span class="st st-new" data-st="new" title="Something new"></span></div>
 <p class="mx-name"><b>${code}</b> ${esc(name)}</p>
@@ -702,8 +702,8 @@ function panel(id, kind, rows, label, hidden) {
         return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small><span class="mx-swipe" aria-hidden="true">swipe →</span></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
     }).join('');
     const NEXT = {
-        loop: [['pair', 'See the Pair', 'the second kind'], ['wild', 'See the Wildcards', 'forty other ideas'], ['menu', 'Next: menu button', 'step 2']],
-        pair: [['loop', 'See the Loop', 'the first kind'], ['wild', 'See the Wildcards', 'forty other ideas'], ['menu', 'Next: menu button', 'step 2']],
+        loop: [['pair', 'See the Pair', 'the second kind'], ['wild', 'See the Wildcards', 'OV, forty other ways'], ['menu', 'Next: menu button', 'step 2']],
+        pair: [['loop', 'See the Loop', 'the first kind'], ['wild', 'See the Wildcards', 'OV, forty other ways'], ['menu', 'Next: menu button', 'step 2']],
         wild: [['loop', 'See the Loop', 'the first kind'], ['pair', 'See the Pair', 'the second kind'], ['menu', 'Next: menu button', 'step 2']],
         menu: [['loop', 'Back', 'step 1, the logo'], ['font', 'Next: font', 'step 3']],
         font: [['menu', 'Back', 'step 2, the menu button'], ['share', 'Done: share', 'your votes are in']],
@@ -714,7 +714,7 @@ function panel(id, kind, rows, label, hidden) {
     const STEP = {
         loop: [1, 'Pick a logo: the Loop', 'Tap the ones you like. Look at the Pair and the Wildcards too.'],
         pair: [1, 'Pick a logo: the Pair', 'Tap the ones you like. Look at the Loop and the Wildcards too.'],
-        wild: [1, 'Pick a logo: the Wildcards', 'Forty other ideas. Each moves, shows a status, and wears the name its own way.'],
+        wild: [1, 'Pick a logo: the Wildcards', 'The O and the V, forty other ways. Each moves, shows a status, and wears the name its own way.'],
         menu: [2, 'Pick a menu button', 'Tap one to see it open.'],
         font: [3, 'Pick a font', 'Tap the one that looks right.'],
     }[id];
@@ -794,7 +794,7 @@ ${tab('loop', 'The Loop', 'A V inside a ring', `<svg viewBox="0 0 100 100" width
 <span class="mx-or" aria-hidden="true">+</span>
 ${tab('pair', 'The Pair', 'An O next to a V', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${pairEx.defs}</defs>${pairEx.body}</svg>`, `P01–P${PAIRS.length} · ${PAIRS.length} takes`)}
 <span class="mx-or" aria-hidden="true">+</span>
-${tab('wild', 'The Wildcards', 'Forty other ideas', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${wildEx.defs}</defs>${wildEx.body}</svg>`, `W01–W${pad(WN)} · ${WN} ideas`)}
+${tab('wild', 'The Wildcards', 'OV, forty other ways', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${wildEx.defs}</defs>${wildEx.body}</svg>`, `W01–W${pad(WN)} · ${WN} ideas`)}
 </div>
 <p class="mx-q" role="presentation"><span class="mx-qn">2</span> <b>Pick a menu button</b> <small>it sits next to the logo</small></p>
 ${tab('menu', 'The menu button', 'The button next to the logo', `<span class="mb-btn mb-tabbtn">${menuSvg(m1[2], m1[3], m1[4], 30)}</span>`, 'M01–M50', false, true)}

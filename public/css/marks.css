@@ -478,63 +478,37 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 @keyframes stDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.6}}
 .mx-wrap[data-density=sheet] .mx-status{display:none}
 
-/* Each idea's own motion: only while its card is on screen, with long rests, and never under reduced motion. */
+/* Each wildcard moves by its kind of motion (data-wild-motion): only while its card is on screen, with long rests,
+   and never under reduced motion. The parts that move are w-a, w-b and w-c. */
 .mx-wild svg :is(.w-a,.w-b,.w-c){transform-box:fill-box;transform-origin:center}
 @media (prefers-reduced-motion:no-preference){
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild] :is(.w-a,.w-b,.w-c){animation-duration:3.6s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:calc(var(--d,0s) + var(--i,0) * .09s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=soundwave] .w-a{transform-origin:top;animation-name:wBar;animation-duration:1.6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=ripple] .w-a{animation-name:wRipple;animation-duration:2.4s;animation-delay:calc(var(--i,0) * .25s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=fork] .w-a{transform-origin:bottom;animation-name:wHum}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=fork] .w-b{animation-name:wFlash}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=pulse] .w-a{stroke-dasharray:100;animation-name:wDraw;animation-duration:3s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=bubble] .w-a{animation-name:wBob}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=bubble] .w-b{stroke-dasharray:100;animation-name:wDraw}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=door] .w-a{transform-origin:right center;animation-name:wSwing;animation-duration:4.4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=door] .w-b{animation-name:wGlow;animation-duration:4.4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=planet] .w-a{animation-name:wTilt;animation-duration:6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=sunrise] .w-a{animation-name:wRise;animation-duration:5s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=prism] .w-a{animation-name:wShimmer;animation-duration:2.4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=plane] .w-a{animation-name:wGlide;animation-duration:4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=plane] .w-b{animation-name:wFlash;animation-duration:4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=blob] .w-a{animation-name:wMorph;animation-duration:5s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=smile] .w-a{animation-name:wBlink;animation-duration:4.2s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=eye] .w-a{animation-name:wLook;animation-duration:5s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=eye] .w-b{animation-name:wBlink;animation-duration:5s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=spark] :is(.w-a,.w-b,.w-c){animation-name:wTwinkle;animation-duration:3s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=spark] .w-b{animation-delay:.5s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=spark] .w-c{animation-delay:1s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=overlap] .w-a{animation-name:wMeetL;animation-duration:4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=overlap] .w-b{animation-name:wMeetR;animation-duration:4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=stars] :is(.w-a,.w-b){animation-name:wTwinkle;animation-duration:2.8s;animation-delay:calc(var(--i,0) * .35s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=pixel] .w-a{animation-name:wPop;animation-duration:3.4s;animation-delay:calc(var(--i,0) * .06s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=ribbon] .w-a{transform-origin:top;animation-name:wSway;animation-duration:4.6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=code] .w-a{animation-name:wCaret;animation-duration:1.2s;animation-timing-function:steps(1)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=code] .w-b{animation-name:wOpenL}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=code] .w-c{animation-name:wOpenR}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) :is(svg[data-wild=badge],svg[data-wild=shield]) .w-a{animation-name:wShine;animation-duration:3.8s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=wave] .w-a{animation-name:wRoll;animation-duration:4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=wave] .w-b{animation-name:wSpray;animation-duration:4s;animation-delay:calc(var(--i,0) * .3s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=flame] .w-a{transform-origin:bottom;animation-name:wFlicker;animation-duration:1.8s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=leaf] .w-a{transform-origin:bottom;animation-name:wSway;animation-duration:4.6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=moon] :is(.w-a,.w-b){animation-name:wTwinkle;animation-duration:3.2s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=bolt] .w-a{animation-name:wZap;animation-duration:3.4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=headphones] .w-a rect{transform-box:fill-box;transform-origin:center;animation:wBeat .9s ease-in-out infinite;animation-delay:calc(var(--i,0) * .15s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=play] .w-a{animation-name:wPress;animation-duration:3s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=play] .w-b{animation-name:wRing;animation-duration:3s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=antenna] .w-a path{animation:wFlash 2s ease-in-out infinite;animation-delay:calc(var(--i,0) * .35s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=gem] .w-a{animation-name:wTwinkle;animation-duration:3.2s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=dice] .w-a{animation-name:wRoll90;animation-duration:5s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=pin] .w-a{transform-origin:bottom;animation-name:wDrop;animation-duration:3.6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=pin] .w-b{animation-name:wShadow;animation-duration:3.6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=heart] .w-a{animation-name:wHeart;animation-duration:2.2s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=chevrons] .w-a{animation-name:wCascade;animation-duration:2.4s;animation-delay:calc(var(--i,0) * .22s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=infinity] .w-a{animation:wLoop 3.2s linear infinite}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=kite] .w-a{transform-origin:50% 0;animation-name:wSway;animation-duration:4.4s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=bird] :is(.w-a,.w-b){transform-origin:bottom;animation-name:wFlap;animation-duration:1.6s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=bounce] .w-a{animation-name:wHop;animation-duration:2.8s;animation-delay:calc(var(--i,0) * .12s)}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=orbit] .w-a{transform-box:view-box;transform-origin:50px 50px;animation:wOrbit 6s linear infinite}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=cursor] .w-a{animation-name:wClick;animation-duration:3s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild=cursor] .w-b{animation-name:wRing;animation-duration:3s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion] :is(.w-a,.w-b,.w-c){animation-duration:3.6s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:calc(var(--d,0s) + var(--i,0) * .09s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=draw] .w-a{stroke-dasharray:100;animation-name:wDraw;animation-duration:3.4s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=join] .w-a{animation-name:wJoinL}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=join] .w-b{animation-name:wJoinR}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=flicker] :is(.w-a,.w-b){animation-name:wFlick;animation-duration:3.2s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=flicker] .w-b{animation-delay:.35s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=tilt] .w-a{animation-name:wTilt;animation-duration:5s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=drip] .w-a{transform-origin:top;animation-name:wDrip;animation-duration:3s;animation-delay:calc(var(--i,0) * .4s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=wobble] .w-a{animation-name:wMorph;animation-duration:4.4s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=shine] .w-a{animation-name:wShine;animation-duration:3.8s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=drop] .w-a{transform-origin:bottom;animation-name:wDrop}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=drop] .w-b{animation-name:wShadow}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=wave] .w-a{transform-origin:bottom center;animation-name:wCheer;animation-duration:2.6s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=pulse] :is(.w-a,.w-b){animation-name:wFlash;animation-duration:2.4s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=float] .w-a{animation-name:wBob;animation-duration:3.4s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=glide] .w-a{animation-name:wGlide;animation-duration:4s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rise] .w-a{animation-name:wRise;animation-duration:5s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=hop] .w-a{animation-name:wHop;animation-duration:2.4s;animation-delay:calc(var(--i,0) * .25s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rocket] .w-a{animation-name:wBob;animation-duration:2.2s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rocket] .w-b{transform-origin:top;animation-name:wFlame;animation-duration:.5s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=cascade] .w-a{animation-name:wCascade;animation-duration:1.6s;animation-delay:calc(var(--i,0) * .2s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=press] .w-a{animation-name:wPress;animation-duration:3s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=bars] .w-a{transform-origin:bottom;animation-name:wBar;animation-duration:1.4s;animation-delay:calc(var(--i,0) * .1s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=land] .w-a{animation-name:wLand;animation-duration:3.4s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=pop] .w-a{animation-name:wPop;animation-duration:3.4s;animation-delay:calc(var(--i,0) * .045s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=twinkle] .w-a{animation-name:wTwinkle;animation-duration:2.8s;animation-delay:calc(var(--i,0) * .3s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=blink] .w-a{animation-name:wBlink;animation-duration:4.2s}
 }
 @keyframes wBar{0%,100%{transform:scaleY(1)}30%{transform:scaleY(.55)}60%{transform:scaleY(1.08)}}
 @keyframes wRipple{0%,60%,100%{opacity:1;transform:scale(1)}25%{opacity:.2;transform:scale(1.08)}}
@@ -577,3 +551,10 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 @keyframes wHop{0%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
 @keyframes wOrbit{to{transform:rotate(360deg)}}
 @keyframes wClick{0%,40%,100%{transform:scale(1)}10%{transform:scale(.88)}20%{transform:scale(1)}}
+@keyframes wJoinL{0%,100%{transform:translateX(0)}20%,45%{transform:translateX(-4px)}}
+@keyframes wJoinR{0%,100%{transform:translateX(0)}20%,45%{transform:translateX(4px)}}
+@keyframes wFlick{0%,100%{opacity:1}4%{opacity:.25}7%{opacity:1}10%{opacity:.5}13%{opacity:1}}
+@keyframes wDrip{0%,30%{transform:scaleY(.2);opacity:0}45%{opacity:1}75%,100%{transform:scaleY(1);opacity:1}}
+@keyframes wCheer{0%,100%{transform:rotate(0)}20%{transform:rotate(-7deg)}40%{transform:rotate(7deg)}60%{transform:rotate(0)}}
+@keyframes wFlame{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.75)}}
+@keyframes wLand{0%{transform:translate(14px,-14px);opacity:0}25%,85%{transform:none;opacity:1}100%{transform:none;opacity:1}}
