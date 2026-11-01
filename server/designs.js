@@ -75,6 +75,23 @@ function wrap(html, variables) {
     return `<!doctype html>${clean.replace(/^\s*<!doctype\s+html[^>]*>/i, '')}`;
 }
 
+
+// ── The prompts this service sends (published word for word at openvibe.design/prompts) ──
+/** A design drawn in the person's theme: their words, then the theme's colour variables. */
+function themePrompt(prompt, variableNames) {
+    return `${prompt}\nUse ONLY these theme CSS custom properties for all colors: ${variableNames.join(', ')}. No external requests. Mobile first. Return one complete HTML document.`;
+}
+/** An edit of a drawn design: the person's instruction, the current document, and the theme's colour variables. */
+function editPrompt(instruction, html, names) {
+    return [
+        'Edit one existing generated design. Return one complete HTML document and nothing else.',
+        `The person's instruction: ${instruction}`,
+        'The current document is between the markers. Keep its theme, its content and its structure unless the instruction asks otherwise.',
+        `<<<CURRENT_DESIGN\n${html}\nCURRENT_DESIGN>>>`,
+        `Use ONLY these theme CSS custom properties for every colour: ${names || '(the document already uses them)'}. Do not add scripts, event-handler attributes, links, web fonts, remote images or any external request. Mobile first.`,
+    ].join('\n\n');
+}
+
 function createDesigns({ s, ai, bench = null, catalog, config = {}, log = console, now = () => Date.now() }) {
     const db = s.db;
     const chatEditLimit = Math.max(1, Number(config.studio && config.studio.chatEditsPerDesign) || CHAT_EDITS_DEFAULT);
@@ -135,7 +152,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             await updateVariant(id, index, running);
             try {
                 const t = await theme(d.theme_id);
-                const prompt = `${d.prompt}\nUse ONLY these theme CSS custom properties for all colors: ${Object.keys(t.variables || {}).join(', ')}. No external requests. Mobile first. Return one complete HTML document.`;
+                const prompt = themePrompt(d.prompt, Object.keys(t.variables || {}));
                 const out = await ai.generate({ prompt, category: d.kind === 'component' ? 'logo' : d.kind === 'screen' ? 'mobile_app' : 'landing',
                     slot: { provider: v.provider, model: v.model }, roundId: id, index,
                     prefer: v.prefer || null, person: d.owner || null, pin: v.pin === true });
@@ -351,13 +368,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const current = await versionRow(id, p.current_seq);
         const variables = selected.variables || {};
         const names = Object.keys(variables).join(', ');
-        const prompt = [
-            'Edit one existing generated design. Return one complete HTML document and nothing else.',
-            `The person's instruction: ${instruction}`,
-            'The current document is between the markers. Keep its theme, its content and its structure unless the instruction asks otherwise.',
-            `<<<CURRENT_DESIGN\n${String(current.html || variant.html || '').slice(0, 80000)}\nCURRENT_DESIGN>>>`,
-            `Use ONLY these theme CSS custom properties for every colour: ${names || '(the document already uses them)'}. Do not add scripts, event-handler attributes, links, web fonts, remote images or any external request. Mobile first.`,
-        ].join('\n\n');
+        const prompt = editPrompt(instruction, String(current.html || variant.html || '').slice(0, 80000), names);
         // An edit stays on the model that drew the frame, as a soft preference (the person's own key first), never a pin.
         const asked = variant.prefer && variant.prefer.provider ? variant.prefer : null;
         const prefer = asked && asked.provider && !String(asked.provider).startsWith('byo:self:')
@@ -461,4 +472,4 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
     return { create, read, setTheme, recent, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit };
 }
 
-module.exports = { createDesigns, wrap, tokenCss, themeCss };
+module.exports = { createDesigns, wrap, tokenCss, themeCss, themePrompt, editPrompt };

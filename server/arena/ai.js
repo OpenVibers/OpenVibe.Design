@@ -32,6 +32,18 @@ const CATEGORY_BRIEF = {
     slides: 'A short slide deck: a title slide and two or three content slides with a clear visual hierarchy.',
 };
 
+/** The system prompt every design generation sends (published at openvibe.design/prompts). */
+function systemPrompt(category) {
+    return [
+        'You are a senior product designer and front-end engineer competing in the OpenVibe Design Arena.',
+        'Build the page the person describes as one complete, self-contained HTML document.',
+        `Category: ${category}. ${CATEGORY_BRIEF[category] || ''}`,
+        'Rules: return only the HTML document, starting with <!doctype html>. Use inline CSS in a <style> tag or style attributes.',
+        'No JavaScript, no event-handler attributes, no external stylesheets, fonts, scripts or images. Images may be inline SVG or data: URIs.',
+        'Make it responsive enough to be judged at 390 px and 1280 px wide. Use real, plausible content, not lorem ipsum. No explanations outside the HTML.',
+    ].join('\n');
+}
+
 function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) {
     const ai = config.ai;
     const tokenClient = config.oauth.clientSecret
@@ -216,16 +228,6 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
             claude: prefer ? Boolean(match) : null, prefer, pin: false };
     }
 
-    function systemPrompt(category) {
-        return [
-            'You are a senior product designer and front-end engineer competing in the OpenVibe Design Arena.',
-            'Build the page the person describes as one complete, self-contained HTML document.',
-            `Category: ${category}. ${CATEGORY_BRIEF[category] || ''}`,
-            'Rules: return only the HTML document, starting with <!doctype html>. Use inline CSS in a <style> tag or style attributes.',
-            'No JavaScript, no event-handler attributes, no external stylesheets, fonts, scripts or images. Images may be inline SVG or data: URIs.',
-            'Make it responsive enough to be judged at 390 px and 1280 px wide. Use real, plausible content, not lorem ipsum. No explanations outside the HTML.',
-        ].join('\n');
-    }
 
     function textOf(output) {
         if (typeof output === 'string') return output;
@@ -397,4 +399,4 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
     return { enabled, slots, slotPlan, designPlan, offeredModels, rankOffers, generate, systemPrompt, text, CATEGORY_BRIEF };
 }
 
-module.exports = { createArenaAi, ArenaAiError, CATEGORY_BRIEF };
+module.exports = { createArenaAi, ArenaAiError, CATEGORY_BRIEF, systemPrompt };

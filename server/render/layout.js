@@ -34,6 +34,7 @@ const NAV = [
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
+    { label: 'Prompts', href: '/prompts', icon: 'fa-quote-left', more: true },
 ];
 
 let RELEASE = 'dev';
