@@ -68,6 +68,8 @@ function createPageRoutes(ctx) {
     // ── Production patterns: one data-backed page and generated native spec per pattern ──
     // ── The OpenVibe mark, and its files ──
     r.get('/brand', (req, res) => page(res, 200, brandView.brandPage({ base: layoutBase() }), req.viewer));
+    // A hundred takes on the Loop and the Pair, for feedback (the owner, 2026-11-01). Before /brand/:file.
+    r.get('/brand/explore', (req, res) => page(res, 200, require('../views/marks-explore').explorePage(), req.viewer));
     r.get('/brand/:file', (req, res) => {
         const svg = brandView.file(req.params.file);
         if (!svg) return page(res, 404, views.notFound(), req.viewer);
