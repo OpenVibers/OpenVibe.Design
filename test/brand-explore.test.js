@@ -26,16 +26,19 @@ const explore = require('../server/views/marks-explore');
             const r = await t.get('/brand/explore');
             assert.strictEqual(r.status, 200);
             const codes = [...r.text.matchAll(/<li class="mx-card(?: mb-card| fx-card| mx-wild)?" id="([LPMFW]\d{2})" data-code="\1"/g)].map((m) => m[1]);
-            assert.strictEqual(codes.length, 234);
-            assert.strictEqual(new Set(codes).size, 234, 'each number once');
-            assert.deepStrictEqual(['L', 'P', 'W', 'M', 'F'].map((k) => codes.filter((c) => c[0] === k).length), [72, 60, 40, 50, 12], 'the Wildcards: forty other ideas (the owner, 11-01)');
+            assert.strictEqual(codes.length, 194, 'the Loop, the Pair, the menu buttons and the fonts: the Wildcards are off the vote');
+            assert.strictEqual(new Set(codes).size, 194, 'each number once');
+            assert.deepStrictEqual(['L', 'P', 'W', 'M', 'F'].map((k) => codes.filter((c) => c[0] === k).length), [72, 60, 0, 50, 12]);
+            // The owner, 11-01: "I've changed my mind on them… keep them, they're cool to look at": ?wild=1 still shows them.
+            const withWild = await t.get('/brand/explore?wild=1');
+            assert.strictEqual((withWild.text.match(/<li class="mx-card mx-wild" id="W\d\d"/g) || []).length, 40, 'the Wildcards, to look at');
             assert.ok(codes.every((c) => r.text.includes(`data-pick="${c}"`)), 'each has its Pick button');
-            for (const tab of ['loop', 'pair', 'wild', 'menu', 'font']) {
+            for (const tab of ['loop', 'pair', 'menu', 'font']) {
                 assert.match(r.text, new RegExp(`<a class="mx-tab(?: mx-tab-side)?" role="tab" id="mx-tab-${tab}" href="#${tab}" aria-controls="${tab}"[^>]*><span class="mx-tab-art" data-mx-cycle="${tab}"><span class="mx-ta"><(svg|span)`), `the ${tab} tab shows an example`);
                 assert.match(r.text, new RegExp(`<section class="mx-panel" id="${tab}" role="tabpanel"`));
             }
             assert.match(r.text, /<noscript><style>\.mx-panel\[hidden\]\{display:block!important\}<\/style><\/noscript>/, 'without the script every tab shows');
-            assert.match(r.text, /<h1>Which logo should OpenVibe use\?<\/h1>\n<p class="mx-lede">Tap every logo you like: the Loop, the Pair and\/or the Wildcards, any mix\. Then pick a menu button and a font\. Votes count right away\.<\/p>/, 'the top says it simply');
+            assert.match(r.text, /<h1>Which logo should OpenVibe use\?<\/h1>\n<p class="mx-lede">Tap every logo you like, from both kinds if you want\. Then pick a menu button and a font\. Votes count right away\.<\/p>/, 'the top says it simply');
             assert.match(r.text, /<span class="mx-qn">1<\/span> <b>Pick a logo<\/b>[\s\S]*?<span class="mx-or" aria-hidden="true">\+<\/span>[\s\S]*?<span class="mx-qn">2<\/span> <b>Pick a menu button<\/b>[\s\S]*?<span class="mx-qn">3<\/span> <b>Pick a font<\/b>/, 'three steps: a logo, a menu button, a font');
             assert.ok((r.text.match(/<section class="mx-row">/g) || []).length >= 15, 'sorted into rows by idea');
             assert.match(r.text, /<meta name="robots" content="noindex, follow">/, 'proposals are not indexed');
@@ -44,7 +47,8 @@ const explore = require('../server/views/marks-explore');
             assert.ok(!/data-mx-tools|data-mx-set-site|data-mx-own/.test(r.text), 'no per-site picker: one example name');
             assert.match(r.text, /<div class="mx-nudge" data-mx-nudge role="status" hidden>/, 'a nudge to step 2 waits for the first pick');
             assert.match(r.text, /<span class="mx-stepn" aria-hidden="true">1<\/span>[\s\S]*?<span class="mx-stepn" aria-hidden="true">2<\/span>[\s\S]*?<span class="mx-stepn" aria-hidden="true">3<\/span>/, 'the steps bar numbers the three steps');
-            assert.strictEqual((r.text.match(/<div class="mx-stephead">/g) || []).length, 5, 'each section opens with its step');
+            assert.strictEqual((r.text.match(/<div class="mx-stephead">/g) || []).length, 4, 'each section opens with its step');
+            assert.ok(!r.text.includes('data-mx-tab="wild"') && !r.text.includes('data-mx-go="wild"'), 'no Wildcards tab or step on the vote');
         });
 
         await check('each mark beside a site\'s name and small, reusing one drawing; every id unique', async () => {
@@ -97,10 +101,12 @@ const explore = require('../server/views/marks-explore');
             const page = await t.get('/brand/explore');
             assert.match(page.text, /<section class="mx-tally" data-mx-tally[\s\S]*?4 people<\/span>[\s\S]*?data-code="P0[12]"/, 'the tally is at the top of the page');
             assert.match(page.text, /<p class="mx-both" data-mx-both>2 people like more than one kind<\/p>/);
-            assert.match(page.text, /<span class="mx-s3 mx-s3-w">[\s\S]*?Wild <b data-mx-wild>1<\/b>/, 'the bar counts the three kinds');
-            assert.match(page.text, /<span class="mx-tops-k">Wild<\/span><span class="mx-tops-list" data-mx-tops-w>/);
+            assert.ok(!page.text.includes('data-mx-wild>'), 'the vote counts the Loop and the Pair');
+            const pageW = await t.get('/brand/explore?wild=1');
+            assert.match(pageW.text, /<span class="mx-s3 mx-s3-w">[\s\S]*?Wild <b data-mx-wild>1<\/b>/, 'with ?wild=1 the bar counts the three kinds');
+            assert.match(pageW.text, /<span class="mx-tops-k">Wild<\/span><span class="mx-tops-list" data-mx-tops-w>/);
             assert.match(page.text, /<span class="mx-tops-k">Loop<\/span><span class="mx-tops-list" data-mx-tops-l>[\s\S]*?<span class="mx-tops-k">Pair<\/span><span class="mx-tops-list" data-mx-tops-p>/, 'the Loop and the Pair on rows of their own');
-            assert.match(page.text, /<details class="mx-all" data-mx-all><summary>Every vote <span data-mx-all-n>7 takes<\/span>/, 'every vote, open to anyone');
+            assert.match(page.text, /<details class="mx-all" data-mx-all><summary>Every vote <span data-mx-all-n>5 takes<\/span>/, 'every vote, open to anyone (the Wildcards\' only with ?wild=1)');
             const js = require('fs').readFileSync(require('path').join(__dirname, '..', 'public', 'js', 'marks.js'), 'utf8');
             assert.match(js, /function navPreview\(\)/, 'the site\'s own bar wears the picks while the page is open');
         });
@@ -108,11 +114,12 @@ const explore = require('../server/views/marks-explore');
         await check('the steps bar and "where next" connect the two choices', async () => {
             const r = await t.get('/brand/explore');
             assert.match(r.text, /<nav class="mx-steps" data-mx-steps aria-label="Jump between the choices" hidden>/);
-            for (const to of ['loop', 'pair', 'wild', 'menu', 'font']) assert.ok(r.text.includes(`data-mx-go="${to}"`), to);
-            assert.strictEqual((r.text.match(/<nav class="mx-next" aria-label="Where next">/g) || []).length, 5, 'each choice ends with where to go next');
-            assert.strictEqual((r.text.match(/data-mx-cycle="/g) || []).length, 5, 'each tab has its example');
-            // Each wildcard moves its own way, attaches the name its own way, and shows itself as a status.
-            const wilds = r.text.match(/<li class="mx-card mx-wild" id="W\d\d"[\s\S]*?<\/li>/g) || [];
+            for (const to of ['loop', 'pair', 'menu', 'font']) assert.ok(r.text.includes(`data-mx-go="${to}"`), to);
+            assert.strictEqual((r.text.match(/<nav class="mx-next" aria-label="Where next">/g) || []).length, 4, 'each choice ends with where to go next');
+            assert.strictEqual((r.text.match(/data-mx-cycle="/g) || []).length, 4, 'each tab has its example');
+            // Each wildcard (shown with ?wild=1) moves its own way, attaches the name its own way, and shows a status.
+            const rw = await t.get('/brand/explore?wild=1');
+            const wilds = rw.text.match(/<li class="mx-card mx-wild" id="W\d\d"[\s\S]*?<\/li>/g) || [];
             assert.strictEqual(wilds.length, 40);
             assert.strictEqual(new Set(wilds.map((c) => /data-wild="([a-z0-9]+)"/.exec(c)[1])).size, 40, 'forty different ideas');
             assert.ok(wilds.every((c) => /<div class="mx-lock lk-(side|pill|under|bubble|stack|tag|trail)">/.test(c)), 'a lockup each');

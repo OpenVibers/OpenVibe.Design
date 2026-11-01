@@ -222,13 +222,14 @@
         function showTally(t) {
             if (!tally || !t) return;
             lastTally = t;
-            var loop = t.lean.loop, pair = t.lean.pair, wild = t.lean.wild || 0, both = t.lean.both || 0, sum = loop + pair + wild;
-            var pct = sum ? Math.round((loop / sum) * 100) : 34, ppct = sum ? Math.round((pair / sum) * 100) : 33;
+            var showWild = !!tally.querySelector('[data-mx-wild]');   // the Wildcards count only where they are shown (?wild=1)
+            var loop = t.lean.loop, pair = t.lean.pair, wild = showWild ? t.lean.wild || 0 : 0, both = t.lean.both || 0, sum = loop + pair + wild;
+            var pct = sum ? Math.round((loop / sum) * 100) : (showWild ? 34 : 50), ppct = showWild ? (sum ? Math.round((pair / sum) * 100) : 33) : 100 - pct;
             var ppl = function (n) { return n + (n === 1 ? ' person' : ' people'); };
             tally.classList.toggle('is-empty', !t.people);
             tally.querySelector('[data-mx-people]').textContent = t.people ? ppl(t.people) : 'No votes yet. Tap any logo to vote.';
             var top3 = Math.max(loop, pair, wild);
-            var leaders = [['the Loop', loop], ['the Pair', pair], ['the Wildcards', wild]].filter(function (x) { return x[1] === top3; });
+            var leaders = [['the Loop', loop], ['the Pair', pair]].concat(showWild ? [['the Wildcards', wild]] : []).filter(function (x) { return x[1] === top3; });
             tally.querySelector('[data-mx-lead]').textContent = sum ? (leaders.length > 1 ? 'Even so far' : 'More people like ' + leaders[0][0]) : '';
             var split = tally.querySelector('[data-mx-split]');
             split.hidden = !sum;
