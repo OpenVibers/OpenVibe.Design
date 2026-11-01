@@ -1,0 +1,21 @@
+/* /prompts: every prompt openvibe.design sends, word for word (server/views/prompts.js). */
+.pr-wrap{max-width:900px;margin:0 auto;padding:clamp(16px,3vw,36px) clamp(14px,3vw,28px) 80px;color:var(--text-primary,#e8edf3)}
+.pr-hero{display:grid;gap:10px;margin-bottom:18px}
+.pr-eye{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#4f7cff)}
+.pr-hero h1{margin:0;font-family:'OV Brand',Nunito,Inter,sans-serif;font-weight:900;font-size:clamp(26px,4vw,40px);line-height:1.08;text-wrap:balance}
+.pr-lede{margin:0;max-width:68ch;line-height:1.55;color:var(--text-secondary,#b4bfcc)}
+.pr-lede code,.pr-card code{font-size:.9em;padding:1px 5px;border-radius:5px;background:var(--bg-tertiary,#141c2e)}
+.pr-toc{display:flex;flex-wrap:wrap;gap:6px}
+.pr-toc a{padding:6px 12px;border-radius:999px;border:1px solid var(--border,#1f2d47);color:inherit;text-decoration:none;font-size:13.5px;font-weight:650}
+.pr-toc a:hover{border-color:var(--accent,#4f7cff)}
+.pr-card{margin-top:14px;padding:14px 16px;border-radius:16px;border:1px solid var(--border,#1f2d47);background:var(--bg-secondary,#101828);scroll-margin-top:80px}
+.pr-card h2{margin:0;font-family:'OV Brand',Nunito,Inter,sans-serif;font-weight:900;font-size:20px}
+.pr-used{margin:4px 0 10px;font-size:14px;color:var(--text-secondary,#b4bfcc)}
+.pr-used a{color:var(--accent,#4f7cff);font-size:12.5px}
+.pr-part{margin-top:10px}
+.pr-part-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#7386a3)}
+.pr-copy{padding:4px 12px;min-height:30px;border-radius:999px;border:1px solid var(--border,#1f2d47);background:transparent;color:inherit;font:inherit;font-size:12px;font-weight:700;letter-spacing:0;text-transform:none;cursor:pointer}
+.pr-copy:hover{border-color:var(--accent,#4f7cff)}
+.pr-part pre{margin:0;max-height:420px;overflow:auto;overscroll-behavior:auto;padding:10px 12px;border-radius:10px;background:var(--bg-tertiary,#0b111c);font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.pr-fine{margin-top:22px;font-size:14px;color:var(--text-muted,#7386a3)}
+.pr-fine a{color:var(--accent,#4f7cff)}

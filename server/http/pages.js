@@ -69,6 +69,8 @@ function createPageRoutes(ctx) {
     // ── The OpenVibe mark, and its files ──
     r.get('/brand', (req, res) => page(res, 200, brandView.brandPage({ base: layoutBase() }), req.viewer));
     // A hundred takes on the Loop and the Pair, for feedback (the owner, 2026-11-01). Before /brand/:file.
+    // Every prompt the service sends, word for word (the owner, 2026-11-01).
+    r.get('/prompts', (req, res) => page(res, 200, require('../views/prompts').promptsPage(), req.viewer));
     r.get('/brand/explore', async (req, res) => {
         // What people picked so far, at the top (a database hiccup leaves the page whole, without it).
         const tally = ctx.picks ? await safe(() => ctx.picks.tally()) : null;

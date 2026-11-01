@@ -174,6 +174,7 @@ async function createApp(opts = {}) {
     app.use('/api', express.json({ limit: '64kb' }));
     app.use('/api/v1/arena', createArenaApi(ctx));
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
+    app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
     app.use(createIconRoutes(ctx));
     app.use('/api', createApi(ctx));
     app.use('/api', (req, res) => contracts.http.sendProblem(res, 404, 'route.not_found', {
