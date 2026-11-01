@@ -35,8 +35,8 @@ const explore = require('../server/views/marks-explore');
                 assert.match(r.text, new RegExp(`<section class="mx-panel" id="${tab}" role="tabpanel"`));
             }
             assert.match(r.text, /<noscript><style>\.mx-panel\[hidden\]\{display:block!important\}<\/style><\/noscript>/, 'without the script every tab shows');
-            assert.match(r.text, /<h1>Which logo should OpenVibe use\?<\/h1>\n<p class="mx-lede">Tap the ones you like\. Then pick a menu button and a font\. Votes count right away\.<\/p>/, 'the top says it simply');
-            assert.match(r.text, /<span class="mx-qn">1<\/span> <b>Pick a logo<\/b>[\s\S]*?<span class="mx-or" aria-hidden="true">or<\/span>[\s\S]*?<span class="mx-qn">2<\/span> <b>Pick a menu button<\/b>[\s\S]*?<span class="mx-qn">3<\/span> <b>Pick a font<\/b>/, 'three steps: a logo, a menu button, a font');
+            assert.match(r.text, /<h1>Which logo should OpenVibe use\?<\/h1>\n<p class="mx-lede">Tap every logo you like, from both kinds if you want\. Then pick a menu button and a font\. Votes count right away\.<\/p>/, 'the top says it simply');
+            assert.match(r.text, /<span class="mx-qn">1<\/span> <b>Pick a logo<\/b>[\s\S]*?<span class="mx-or" aria-hidden="true">\+<\/span>[\s\S]*?<span class="mx-qn">2<\/span> <b>Pick a menu button<\/b>[\s\S]*?<span class="mx-qn">3<\/span> <b>Pick a font<\/b>/, 'three steps: a logo, a menu button, a font');
             assert.ok((r.text.match(/<section class="mx-row">/g) || []).length >= 15, 'sorted into rows by idea');
             assert.match(r.text, /<meta name="robots" content="noindex, follow">/, 'proposals are not indexed');
             assert.match(r.text, /data-mx-mine hidden/, 'your picks wait for a pick');
@@ -77,14 +77,25 @@ const explore = require('../server/views/marks-explore');
             const ana = t.network.addUser('ana');
             const signed = (await t.get('/api/v1/brand/picks', { method: 'PUT', as: ana, json: { picks: ['P01', 'P02', 'M07'] }, origin: own })).json();
             assert.strictEqual(signed.tally.people, 2);
-            assert.deepStrictEqual(signed.tally.lean, { loop: 1, pair: 1 });
+            assert.deepStrictEqual(signed.tally.lean, { loop: 1, pair: 1, both: 0 });
+            // Picking from both families counts for both (the owner, 11-01: "a combination is fine… gauge all of it").
+            const bea = t.network.addUser('bea');
+            const mixed = (await t.get('/api/v1/brand/picks', { method: 'PUT', as: bea, json: { picks: ['L03', 'L40', 'P02'] }, origin: own })).json();
+            assert.deepStrictEqual(mixed.tally.lean, { loop: 2, pair: 2, both: 1 }, 'two Loop takes and one Pair take: one person for each, and one who likes both');
+            assert.deepStrictEqual(mixed.tally.top.P.map((x) => [x.code, x.n]), [['P02', 2], ['P01', 1]], 'the Pair take shows in the results');
+            assert.deepStrictEqual(mixed.tally.all.map((x) => x.code).sort(), ['L03', 'L40', 'M07', 'P01', 'P02'], 'every take that has a vote, for the next round');
             assert.deepStrictEqual(signed.tally.top.P.map((x) => x.code), ['P01', 'P02']);
             assert.deepStrictEqual(signed.tally.top.M, [{ code: 'M07', n: 1 }]);
             assert.deepStrictEqual((await t.get('/api/v1/brand/picks', { as: ana })).json().mine, ['M07', 'P01', 'P02'], 'a person sees their own picks');
             assert.strictEqual((await t.get('/api/v1/brand/picks', { method: 'PUT', json: { picks: ['L01'] }, origin: 'https://evil.example' })).status, 403, 'another site cannot cast a ballot');
             assert.strictEqual((await t.get('/api/v1/brand/picks', { method: 'PUT', json: { picks: ['L01'] } })).status, 403, 'nor a request that says nothing of where it came from');
             const page = await t.get('/brand/explore');
-            assert.match(page.text, /<section class="mx-tally" data-mx-tally[\s\S]*?2 people<\/span>[\s\S]*?data-code="P01"/, 'the tally is at the top of the page');
+            assert.match(page.text, /<section class="mx-tally" data-mx-tally[\s\S]*?3 people<\/span>[\s\S]*?data-code="P0[12]"/, 'the tally is at the top of the page');
+            assert.match(page.text, /<p class="mx-both" data-mx-both>1 person like both<\/p>/);
+            assert.match(page.text, /<span class="mx-tops-k">Loop<\/span><span class="mx-tops-list" data-mx-tops-l>[\s\S]*?<span class="mx-tops-k">Pair<\/span><span class="mx-tops-list" data-mx-tops-p>/, 'the Loop and the Pair on rows of their own');
+            assert.match(page.text, /<details class="mx-all" data-mx-all><summary>Every vote <span data-mx-all-n>5 takes<\/span>/, 'every vote, open to anyone');
+            const js = require('fs').readFileSync(require('path').join(__dirname, '..', 'public', 'js', 'marks.js'), 'utf8');
+            assert.match(js, /function navPreview\(\)/, 'the site\'s own bar wears the picks while the page is open');
         });
 
         await check('the steps bar and "where next" connect the two choices', async () => {

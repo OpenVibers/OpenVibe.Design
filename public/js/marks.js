@@ -73,7 +73,7 @@
             var code = marks.length ? marks[marks.length - 1] : null;
             all('.mx-tab-side, .mx-step-2, .mx-step-3', root).forEach(function (el) { el.classList.toggle('is-later', !code); });
             syncPickFont();
-            if (code === shownMark) return;
+            if (code === shownMark) { navPreview(); return; }
             shownMark = code;
             var defs = root.querySelector('.mx-defs');
             var old = defs && defs.querySelector('[data-chosen]');
@@ -89,8 +89,73 @@
                 ref = 'art-' + code + tag;
             }
             all('.mb-nav use, .fx-mark use', root).forEach(function (u) { u.setAttribute('href', '#' + ref); });
+            navRef = code ? ref : null;
             all('[data-mb-with]', root).forEach(function (el) { el.textContent = code ? 'Next to your logo, ' + code + '.' : 'Next to today\u2019s logo. Pick a logo first to see yours here.'; });
+            navPreview();
         }
+        // The site's own bar at the top wears the picks as you make them (the owner, 11-01: "when you tap an icon… it
+        // changes the one in your current page in real time, so you can see what it looks like"): the logo picked last
+        // in place of the bar's mark, the menu button picked last in place of its menu button, the font picked last on
+        // the name. Only on this page while it is open; nothing about the bar is saved, and clearing a pick puts the
+        // bar's own back. The navbar mounts after this script and can redraw itself, so it is re-applied when it does.
+        var navRef = null, navSeen = '';
+        function lastPick(k) { var l = picks.filter(function (c) { return c[0] === k; }); return l.length ? l[l.length - 1] : null; }
+        function swapIn(box, cls, make) {
+            var mine = box.querySelector(':scope > .' + cls);
+            var own = Array.prototype.filter.call(box.children, function (c) { return !c.classList.contains(cls); });
+            if (make) {
+                if (!mine) { mine = make(); box.appendChild(mine); }
+                own.forEach(function (c) { if (!c.hasAttribute('data-mx-hid')) { c.setAttribute('data-mx-hid', c.style.display || ''); c.style.display = 'none'; } });
+                return mine;
+            }
+            if (mine) mine.parentNode.removeChild(mine);
+            own.forEach(function (c) { if (c.hasAttribute('data-mx-hid')) { c.style.display = c.getAttribute('data-mx-hid'); c.removeAttribute('data-mx-hid'); } });
+            return null;
+        }
+        function navPreview() {
+            var bar = document.querySelector('.openvibe-navbar');
+            var brand = bar && bar.querySelector('.openvibe-navbar-brand');
+            if (!brand) return;
+            var menu = lastPick('M'), font = lastPick('F');
+            var flame = brand.querySelector('.flame');
+            if (flame) {
+                var mark = swapIn(flame, 'mx-navmark', navRef ? function () {
+                    var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    s.setAttribute('class', 'mx-navmark'); s.setAttribute('viewBox', '0 0 100 100'); s.setAttribute('aria-hidden', 'true');
+                    s.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'use'));
+                    return s;
+                } : null);
+                if (mark) mark.firstChild.setAttribute('href', '#' + navRef);
+            }
+            var orb = bar.querySelector('.ovnav-orb');
+            var src = menu && document.getElementById(menu) && document.getElementById(menu).querySelector('.mb-nav .mb-btn svg');
+            if (orb) {
+                var box = swapIn(orb, 'mx-navmenu', src ? function () { var b = document.createElement('span'); b.className = 'mx-navmenu mb-btn'; return b; } : null);
+                if (box && box.getAttribute('data-code') !== menu) { box.innerHTML = src.outerHTML; box.setAttribute('data-code', menu); }
+            }
+            var name = brand.querySelector('.name');
+            var word = font && document.getElementById(font) && document.getElementById(font).querySelector('.fx-word');
+            if (name) name.style.fontFamily = word && word.style.fontFamily ? word.style.fontFamily : '';
+            // A short glow on what changed, so the eye goes to the bar.
+            var now = [navRef, menu, font].join('|');
+            if (navSeen && now !== navSeen) { brand.classList.remove('mx-nav-flash'); if (orb) orb.classList.remove('mx-nav-flash'); void brand.offsetWidth; brand.classList.add('mx-nav-flash'); if (orb && menu) orb.classList.add('mx-nav-flash'); }
+            navSeen = now;
+        }
+        (function watchNav() {
+            var tries = 0, obs = null;
+            function hook() {
+                var bar = document.querySelector('.openvibe-navbar');
+                if (!bar) { if (++tries < 40) setTimeout(hook, 250); return; }
+                navPreview();
+                if (obs || !window.MutationObserver) return;
+                // The navbar redraws its brand on sign-in and account changes: put the picks back when it does.
+                obs = new MutationObserver(function () {
+                    if ((navRef && !bar.querySelector('.mx-navmark')) || (lastPick('M') && !bar.querySelector('.mx-navmenu'))) navPreview();
+                });
+                obs.observe(bar, { childList: true, subtree: true });
+            }
+            hook();
+        })();
         // The last font picked dresses the name in the menu bars too, so the bar shows all three picks together.
         function syncPickFont() {
             var fonts = picks.filter(function (c) { return c[0] === 'F'; });
@@ -157,40 +222,61 @@
         function showTally(t) {
             if (!tally || !t) return;
             lastTally = t;
-            var loop = t.lean.loop, pair = t.lean.pair, sum = loop + pair, pct = sum ? Math.round((loop / sum) * 100) : 50;
+            var loop = t.lean.loop, pair = t.lean.pair, both = t.lean.both || 0, sum = loop + pair, pct = sum ? Math.round((loop / sum) * 100) : 50;
+            var ppl = function (n) { return n + (n === 1 ? ' person' : ' people'); };
             tally.classList.toggle('is-empty', !t.people);
-            tally.querySelector('[data-mx-people]').textContent = t.people ? t.people + (t.people === 1 ? ' person' : ' people') : 'No votes yet. Tap any logo to vote.';
-            tally.querySelector('[data-mx-lead]').textContent = sum ? (loop === pair ? 'Tied' : loop > pair ? 'The Loop leads' : 'The Pair leads') : '';
+            tally.querySelector('[data-mx-people]').textContent = t.people ? ppl(t.people) : 'No votes yet. Tap any logo to vote.';
+            tally.querySelector('[data-mx-lead]').textContent = sum ? (loop === pair ? 'Even so far' : loop > pair ? 'More people like the Loop' : 'More people like the Pair') : '';
             var split = tally.querySelector('[data-mx-split]');
             split.hidden = !sum;
             split.style.setProperty('--l', pct + '%');
-            tally.querySelector('[data-mx-loop]').textContent = pct + '%';
-            tally.querySelector('[data-mx-pair]').textContent = (100 - pct) + '%';
-            var marks = (t.top.L || []).concat(t.top.P || []).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); }).slice(0, 5);
-            [['[data-mx-tops]', marks], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 3)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 3)]].forEach(function (pair2) {
-                var list = tally.querySelector(pair2[0]);
+            tally.querySelector('[data-mx-loop]').textContent = String(loop);
+            tally.querySelector('[data-mx-pair]').textContent = String(pair);
+            var bothEl = tally.querySelector('[data-mx-both]');
+            if (bothEl) { bothEl.hidden = !both; bothEl.textContent = ppl(both) + ' like both'; }
+            [['[data-mx-tops-l]', (t.top.L || []).slice(0, 4)], ['[data-mx-tops-p]', (t.top.P || []).slice(0, 4)], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 3)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 3)]].forEach(function (row) {
+                var list = tally.querySelector(row[0]);
                 if (!list) return;
-                list.closest('.mx-tops').hidden = !pair2[1].length;
-                fill(list, pair2[1]);
+                list.closest('.mx-tops').hidden = !row[1].length;
+                fill(list, row[1]);
             });
+            var every = t.all || [];
+            var box = tally.querySelector('[data-mx-all]');
+            if (box) {
+                box.hidden = !every.length;
+                box.querySelector('[data-mx-all-n]').textContent = every.length + (every.length === 1 ? ' take' : ' takes');
+                ['L', 'P', 'M', 'F'].forEach(function (k) {
+                    var list = box.querySelector('[data-mx-all-' + k.toLowerCase() + ']');
+                    if (!list) return;
+                    var mine = every.filter(function (x) { return x.code[0] === k; });
+                    list.closest('.mx-all-row').hidden = !mine.length;
+                    if (box.open || !list.childElementCount || list.childElementCount !== mine.length) fill(list, mine);
+                });
+            }
         }
         // The tap shows at once: this person's vote is counted into the last tally on the page before the server answers
-        // (then the server's own count replaces it).
-        var before = null;
+        // (then the server's own count replaces it). Liking both families counts for both.
         function countLocally(prev) {
             if (!lastTally) return;
             var t = JSON.parse(JSON.stringify(lastTally));
             var had = prev.length > 0, has = picks.length > 0;
             t.people = Math.max(0, t.people + (has && !had ? 1 : !has && had ? -1 : 0));
+            var bump = function (list, c, d) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n += d; else if (d > 0) list.push({ code: c, n: d }); };
+            t.all = t.all || [];
             ['L', 'P', 'M', 'F'].forEach(function (k) {
                 var list = t.top[k] || (t.top[k] = []);
-                prev.filter(function (c) { return c[0] === k && picks.indexOf(c) === -1; }).forEach(function (c) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n -= 1; });
-                picks.filter(function (c) { return c[0] === k && prev.indexOf(c) === -1; }).forEach(function (c) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n += 1; else list.push({ code: c, n: 1 }); });
-                t.top[k] = list.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; });
+                prev.filter(function (c) { return c[0] === k && picks.indexOf(c) === -1; }).forEach(function (c) { bump(list, c, -1); bump(t.all, c, -1); });
+                picks.filter(function (c) { return c[0] === k && prev.indexOf(c) === -1; }).forEach(function (c) { bump(list, c, 1); bump(t.all, c, 1); });
+                t.top[k] = list.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); });
             });
-            var lean = function (arr) { var l = arr.filter(function (c) { return c[0] === 'L'; }).length, p = arr.filter(function (c) { return c[0] === 'P'; }).length; return l > p ? [1, 0] : p > l ? [0, 1] : l ? [0.5, 0.5] : [0, 0]; };
-            var a = lean(prev), b = lean(picks);
-            t.lean = { loop: Math.max(0, t.lean.loop - a[0] + b[0]), pair: Math.max(0, t.lean.pair - a[1] + b[1]) };
+            t.all = t.all.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); });
+            var likes = function (arr, k) { return arr.some(function (c) { return c[0] === k; }) ? 1 : 0; };
+            var l0 = likes(prev, 'L'), p0 = likes(prev, 'P'), l1 = likes(picks, 'L'), p1 = likes(picks, 'P');
+            t.lean = {
+                loop: Math.max(0, t.lean.loop - l0 + l1),
+                pair: Math.max(0, t.lean.pair - p0 + p1),
+                both: Math.max(0, (t.lean.both || 0) - (l0 && p0 ? 1 : 0) + (l1 && p1 ? 1 : 0)),
+            };
             showTally(t);
         }
         var savedNote = root.querySelector('[data-mx-saved]');

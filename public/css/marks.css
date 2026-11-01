@@ -407,3 +407,23 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 
 /* The mock bars and the font step's word wear the font picked in step 3, if any (marks.js sets --mx-pick-font). */
 .mb-nav .mx-word{font-family:var(--mx-pick-font,var(--mx-face));font-weight:var(--mx-pick-weight,800)}
+
+/* The site's bar wears the picks while this page is open (marks.js navPreview). */
+.openvibe-navbar .flame .mx-navmark{display:block;width:28px;height:28px;overflow:visible}
+.openvibe-navbar .ovnav-orb .mx-navmenu{all:unset;position:relative;display:grid;place-items:center;width:24px;height:24px;color:inherit}
+.openvibe-navbar .ovnav-orb .mx-navmenu svg{width:22px;height:22px}
+.openvibe-navbar .mx-nav-flash{animation:mxNavFlash 1.1s ease-out}
+@keyframes mxNavFlash{0%{box-shadow:0 0 0 0 color-mix(in srgb,#8b5cf6 70%,transparent);border-radius:12px}60%{box-shadow:0 0 0 10px transparent;border-radius:12px}100%{box-shadow:none}}
+@media (prefers-reduced-motion:reduce){.openvibe-navbar .mx-nav-flash{animation:none}}
+
+/* The tally counts both families (a person can like both), and every vote sits in a fold under it. */
+.mx-both{margin:-2px 0 0;font-size:12.5px;color:var(--mx-muted);text-align:center}
+.mx-all{border-top:1px solid var(--mx-line);padding-top:6px}
+.mx-all>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--text-secondary,#b4bfcc);list-style:none;display:flex;gap:6px;align-items:center}
+.mx-all>summary::-webkit-details-marker{display:none}
+.mx-all>summary::before{content:"\25B8";font-size:11px;transition:transform .2s}
+.mx-all[open]>summary::before{transform:rotate(90deg)}
+.mx-all>summary span{color:var(--mx-muted);font-weight:600}
+.mx-all-row{display:flex;align-items:flex-start;gap:8px;margin-top:6px}
+.mx-all-list{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+@media (max-width:640px){.mx-all-row{flex-direction:column;gap:4px}}

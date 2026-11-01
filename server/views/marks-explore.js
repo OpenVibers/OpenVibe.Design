@@ -707,23 +707,29 @@ function miniArt(code, size = 26, tag = '') {
 const chipOf = ({ code, n }) => `<span class="mx-top" data-code="${code}">${miniArt(code)}<b>${code}</b><i>${n}</i></span>`;
 /** What people picked so far (server/brand-picks.js tally), at the top; marks.js redraws it after each save. */
 function tallyBlock(t) {
-    // Clean (the owner, 11-01: "a mess… see which is the most popular easily… everyone else can too"): one line while
-    // there are no votes; then who leads, the Loop against the Pair as one labelled bar, and a short row of the top picks
-    // for each step that has votes. marks.js redraws it the moment a card is tapped.
+    // Every pick counts (the owner, 11-01: "I have the Pair selected and it doesn't show in the vote results… let them
+    // choose both… a combination is fine… so I can take the final results and generate more"): how many people like
+    // each family (someone who picks from both counts for both), the top takes of each family on its own row, and
+    // every take's count in a fold anyone can open. marks.js redraws it the moment a card is tapped.
     const people = (t && t.people) || 0;
-    const loop = (t && t.lean && t.lean.loop) || 0, pair = (t && t.lean && t.lean.pair) || 0;
+    const loop = (t && t.lean && t.lean.loop) || 0, pair = (t && t.lean && t.lean.pair) || 0, both = (t && t.lean && t.lean.both) || 0;
     const loopPct = loop + pair ? Math.round((loop / (loop + pair)) * 100) : 50;
-    const marks = t ? [...(t.top.L || []), ...(t.top.P || [])].sort((a, b) => b.n - a.n || (a.code < b.code ? -1 : 1)).slice(0, 5) : [];
-    const menus = t ? (t.top.M || []).slice(0, 3) : [];
-    const fonts = t ? (t.top.F || []).slice(0, 3) : [];
-    const lead = loop + pair ? (loop === pair ? 'Tied' : loop > pair ? 'The Loop leads' : 'The Pair leads') : '';
+    const fam = (k, n) => (t ? (t.top[k] || []).slice(0, n) : []);
+    const lead = loop + pair ? (loop === pair ? 'Even so far' : loop > pair ? 'More people like the Loop' : 'More people like the Pair') : '';
+    const ppl = (n) => `${n} ${n === 1 ? 'person' : 'people'}`;
     const row = (label, attr, list) => `<div class="mx-tops"${list.length ? '' : ' hidden'}><span class="mx-tops-k">${label}</span><span class="mx-tops-list" ${attr}>${list.map(chipOf).join('')}</span></div>`;
+    const every = t && Array.isArray(t.all) ? t.all : [];
+    const allRow = (k, label) => { const list = every.filter((x) => x.code[0] === k); return `<div class="mx-all-row"${list.length ? '' : ' hidden'}><span class="mx-tops-k">${label}</span><span class="mx-all-list" data-mx-all-${k.toLowerCase()}>${list.map(chipOf).join('')}</span></div>`; };
     return `<section class="mx-tally${people ? '' : ' is-empty'}" data-mx-tally aria-label="Votes so far" aria-live="polite">
-<div class="mx-tally-h"><b>Votes so far</b><span class="mx-tally-n" data-mx-people>${people ? `${people} ${people === 1 ? 'person' : 'people'}` : 'No votes yet. Tap any logo to vote.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
-<div class="mx-split" data-mx-split style="--l:${loopPct}%"${loop + pair ? '' : ' hidden'}><span class="mx-split-l">${miniArt('L01', 18, 'e')}Loop <b data-mx-loop>${loopPct}%</b></span><span class="mx-split-r"><b data-mx-pair>${100 - loopPct}%</b> Pair${miniArt('P01', 18, 'e')}</span></div>
-${row('Logos', 'data-mx-tops', marks)}
-${row('Menu', 'data-mx-tops-m', menus)}
-${row('Font', 'data-mx-tops-f', fonts)}
+<div class="mx-tally-h"><b>Votes so far</b><span class="mx-tally-n" data-mx-people>${people ? ppl(people) : 'No votes yet. Tap any logo to vote.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
+<div class="mx-split" data-mx-split style="--l:${loopPct}%"${loop + pair ? '' : ' hidden'}><span class="mx-split-l">${miniArt('L01', 18, 'e')}Loop <b data-mx-loop>${loop}</b></span><span class="mx-split-r"><b data-mx-pair>${pair}</b> Pair${miniArt('P01', 18, 'e')}</span></div>
+<p class="mx-both" data-mx-both${both ? '' : ' hidden'}>${ppl(both)} like both</p>
+${row('Loop', 'data-mx-tops-l', fam('L', 4))}
+${row('Pair', 'data-mx-tops-p', fam('P', 4))}
+${row('Menu', 'data-mx-tops-m', fam('M', 3))}
+${row('Font', 'data-mx-tops-f', fam('F', 3))}
+<details class="mx-all" data-mx-all${every.length ? '' : ' hidden'}><summary>Every vote <span data-mx-all-n>${every.length} take${every.length === 1 ? '' : 's'}</span></summary>
+${allRow('L', 'Loop')}${allRow('P', 'Pair')}${allRow('M', 'Menu')}${allRow('F', 'Font')}</details>
 <div class="mx-mine" data-mx-mine hidden><span class="mx-tops-k">Yours</span><b data-mx-picks></b><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button><em class="mx-saved" data-mx-saved>saved</em></div>
 </section>`;
 }
@@ -742,14 +748,14 @@ function explorePage({ tally = null } = {}) {
 <header class="mx-hero">
 <p class="mx-eye">OpenVibe logo vote</p>
 <h1>Which logo should OpenVibe use?</h1>
-<p class="mx-lede">Tap the ones you like. Then pick a menu button and a font. Votes count right away.</p>
+<p class="mx-lede">Tap every logo you like, from both kinds if you want. Then pick a menu button and a font. Votes count right away.</p>
 </header>
 ${tallyBlock(tally)}
 <nav class="mx-choose" role="tablist" aria-label="What to choose">
 <p class="mx-q" role="presentation"><span class="mx-qn">1</span> <b>Pick a logo</b></p>
 <div class="mx-vs" role="presentation">
 ${tab('loop', 'The Loop', 'A V inside a ring', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${loopEx.defs}</defs>${loopEx.body}</svg>`, `L01–L${LOOPS.length} · ${LOOPS.length} takes`, true)}
-<span class="mx-or" aria-hidden="true">or</span>
+<span class="mx-or" aria-hidden="true">+</span>
 ${tab('pair', 'The Pair', 'An O next to a V', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${pairEx.defs}</defs>${pairEx.body}</svg>`, `P01–P${PAIRS.length} · ${PAIRS.length} takes`)}
 </div>
 <p class="mx-q" role="presentation"><span class="mx-qn">2</span> <b>Pick a menu button</b> <small>it sits next to the logo</small></p>
