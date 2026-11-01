@@ -13,6 +13,7 @@ const kit = require('openvibe-shared/kit');
 const glyphs = require('openvibe-shared/glyphs');
 const { layout, esc } = require('../render/layout');
 const ex = require('../glyphs/export');
+const formats = require('../glyphs/formats');
 const usage = require('../glyphs/fa-usage.json');
 
 const title = (name) => name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
@@ -100,14 +101,35 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
 </section>`;
 
     const faTag = fa.length ? `<i class="fa-solid fa-${esc(fa[0])}"></i>` : `<svg><use href="${base}/shared/ov-glyphs.svg#ovg-${esc(name)}"/></svg>`;
+    // L50 step 3: every form people paste, built from the same drawing (server/glyphs/formats.js). The four most asked
+    // for show; the rest sit in a counted fold, never behind tabs.
+    const at24 = ex.options({ size: 24 });
+    const way = (h, code, id, note = '') => `<div class="gp-way"><h3>${h}</h3>${note ? `<p class="gp-note">${note}</p>` : ''}${kit.snippet({ code, id, label: 'Copy' })}</div>`;
+    const first = [
+        way('Any page', `<script src="${base}/ov-icon.js" defer></script>\n<ov-icon name="${name}"></ov-icon>`, 'gp-wc', 'No sign-in. It follows the text&rsquo;s size and colour, and turns solid when small.'),
+        way('Inline SVG', formats.inlineSvg(name, at24), 'gp-inline', 'HTML, Vue, Svelte, Solid, Angular.'),
+        way('React', formats.jsx(name, at24), 'gp-jsx'),
+        way('A link', `${base}/icons/${name}.svg\n${base}/icons/${name}.png?size=512&color=mark${glyphs.solid(name) ? `\n${base}/icons/${name}.svg?style=solid` : ''}`, 'gp-url'),
+    ];
+    const more = [
+        fa.length ? way('Font Awesome markup', `<script src="${base}/shared/ov-glyphs.js" defer></script>\n${faTag}`, 'gp-fa', 'Keep your markup; the drop-in draws ours.') : '',
+        cp ? way('The font', `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-${name}"></i>`, 'gp-font') : '',
+        way('The sprite', `<svg width="24" height="24"><use href="${base}/shared/ov-glyphs.svg#ovg-${name}"/></svg>`, 'gp-sprite'),
+        way('CSS, no markup', formats.cssMask(name, at24), 'gp-mask', 'A mask painted in the text&rsquo;s colour: <code>&lt;span class="icon-${esc(name)}"&gt;&lt;/span&gt;</code>.'),
+        way('Data URI', formats.dataUri(name, at24), 'gp-data', 'For an <code>&lt;img&gt;</code> or a CSS <code>url()</code>, in a fixed colour.'),
+        way('ES module', `import ${name.replace(/-([a-z])/g, (_, c) => c.toUpperCase())} from '${base}/icons/${name}.mjs';\n// { name, line, solid }: the drawings, for a component of your own`, 'gp-mjs'),
+        way('Node', `require('openvibe-shared/glyphs').svg('${name}', { size: 24 })`, 'gp-node'),
+        way('Android', `<!-- res/drawable/ic_${name.replace(/-/g, '_')}.xml -->\n${base}/icons/${name}.xml`, 'gp-android', `A VectorDrawable: <a href="/icons/${esc(name)}.xml" download="ic_${esc(name.replace(/-/g, '_'))}.xml">download the XML</a>. iOS: Xcode takes the SVG as it is (keep &ldquo;Preserve Vector Data&rdquo; on).`),
+    ].filter(Boolean);
     const use = `<section class="ic-sec" aria-labelledby="gp-use">
-  <div class="ic-sec-head"><h2 id="gp-use">Use it</h2><p>Every way is the same drawing. On an OpenVibe site the navbar already loads the drop-in, so Font Awesome&rsquo;s markup shows it.</p></div>
-  <div class="gp-use">
-    ${fa.length ? `<div><h3>Font Awesome markup</h3>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>\n${faTag}`, id: 'gp-fa', label: 'Copy' })}</div>` : ''}
-    ${cp ? `<div><h3>The font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-${name}"></i>`, id: 'gp-font', label: 'Copy' })}</div>` : ''}
-    <div><h3>The sprite</h3>${kit.snippet({ code: `<svg width="24" height="24"><use href="${base}/shared/ov-glyphs.svg#ovg-${name}"/></svg>`, id: 'gp-sprite', label: 'Copy' })}</div>
-    <div><h3>Node</h3>${kit.snippet({ code: `require('openvibe-shared/glyphs').svg('${name}', { size: 24 })`, id: 'gp-node', label: 'Copy' })}</div>
-    <div><h3>A link</h3>${kit.snippet({ code: `${base}/icons/${name}.svg\n${base}/icons/${name}.png?size=512&color=mark${glyphs.solid(name) ? `\n${base}/icons/${name}.svg?style=solid` : ''}`, id: 'gp-url', label: 'Copy' })}</div>
+  <div class="ic-sec-head"><h2 id="gp-use">Use it</h2><p>Every way is the same drawing, free to use with no sign-in. On an OpenVibe site the navbar already loads the drop-in, so Font Awesome&rsquo;s markup shows it.</p></div>
+  <div class="gp-use">${first.join('')}</div>
+  <details class="gp-more"><summary>${more.length} more ways <span>${more.map((m) => /<h3>([^<]+)<\/h3>/.exec(m)[1]).join(' · ')}</span></summary><div class="gp-use">${more.join('')}</div></details>
+  <div class="gp-files"><span>Files:</span>
+    <a class="ic-btn" href="/icons/${esc(name)}.svg" download="${esc(name)}.svg">SVG</a>
+    ${[1, 2, 3].map((x) => `<a class="ic-btn" href="/icons/${esc(name)}.png?size=24&amp;scale=${x}" download="${esc(name)}-24@${x}x.png">PNG ${x}×</a>`).join('')}
+    <a class="ic-btn" href="/icons/${esc(name)}.xml" download="ic_${esc(name.replace(/-/g, '_'))}.xml">Android XML</a>
+    <a class="ic-btn" href="/icons/${esc(name)}/favicon.zip${esc(q)}" data-gp-fav download="${esc(name)}-favicon.zip">Favicon set</a>
   </div>
 </section>`;
 

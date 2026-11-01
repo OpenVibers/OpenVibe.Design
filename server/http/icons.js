@@ -6,6 +6,10 @@
  *   GET  /icons/<name>.svg              one glyph as a standalone SVG (anyone may fetch it); with the PNG maker's
  *                                       choices in the query (size, color, stroke, pad, ground, bg), drawn with them
  *   GET  /icons/<name>.png              the same as a PNG (resvg), any size up to 1024 at 1-3x
+ *   GET  /icons/<name>.mjs              an ES module with the line and solid drawings (L50)
+ *   GET  /icons/<name>.xml              an Android VectorDrawable, with the maker's colour and style
+ *   GET  /icons/<name>/favicon.zip      a favicon set from the maker's choices: SVG, PNGs, manifest, the <head> lines
+ *   GET  /ov-icon.js (also /icons.js)   the <ov-icon name="…"> web component: any page, no sign-in (L50 step 2)
  *   GET  /icons/pack/<file>             the fonts (WOFF2, TTF, OTF), the sprite, the CSS, the code points, and
  *                                       ov-glyphs-svg.zip with every glyph
  *   GET  /icons/font-awesome-alternative  how to switch, and what keeps working
@@ -13,7 +17,7 @@
  *   GET  /icons/kit.zip?names=&name=&fa=  the same kit from a link
  *   POST /icons/draft                   signed in: OpenVibe.AI drafts candidates (same-origin form)
  *   POST /icons/drafts/:id/review       an admin approves or rejects one (same-origin form)
- *   GET  /api/v1/glyphs                 the registry as data
+ *   GET  /api/v1/glyphs                 the registry as data; ?names=a,b,fa-c (up to 120) for just those, with solids
  *   GET  /api/v1/glyphs/drafts          approved drafts, for openvibe-shared to take in (an admin may ask for others)
  */
 const express = require('express');
@@ -27,6 +31,14 @@ const { glyphPage, faAlternativePage, kitPage } = require('../views/icon-page');
 const kits = require('../glyphs/kits');
 const ex = require('../glyphs/export');
 const { createGlyphDrafts } = require('../glyphs/drafts');
+const formats = require('../glyphs/formats');
+const fs = require('fs');
+const path = require('path');
+
+// The web component, read once: a stable address other sites put in a <script> tag, so a day's cache, not immutable.
+let ovIconJs = null;
+const ovIcon = () => (ovIconJs = ovIconJs || fs.readFileSync(path.join(__dirname, '..', '..', 'public', 'ov-icon.js'), 'utf8'));
+const OPEN = { 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' };
 
 function createIconRoutes(ctx) {
     const { config, s, ai, log = console } = ctx;
@@ -79,13 +91,27 @@ function createIconRoutes(ctx) {
         res.type(p.type).attachment(file).sendFile(p.path, (err) => { if (err && !res.headersSent) next(); });
     });
 
+    r.get(['/ov-icon.js', '/icons.js'], (_req, res) => {
+        res.set(OPEN).set('Cache-Control', 'public, max-age=86400').type('application/javascript').send(ovIcon());
+    });
+
+    r.get('/icons/:name/favicon.zip', (req, res, next) => {
+        const name = req.params.name;
+        if (!/^[a-z][a-z0-9-]{0,40}$/.test(name) || !glyphs.path(name)) return next();
+        const q = { ground: 'squircle', bg: '0b1020', color: 'mark', pad: '14', ...req.query };
+        res.set(OPEN).set('Cache-Control', 'public, max-age=86400').type('application/zip').attachment(`${name}-favicon.zip`)
+            .send(formats.faviconZip(name, ex.options(q)));
+    });
+
     r.get('/icons/:file', (req, res, next) => {
-        const m = /^([a-z][a-z0-9-]{0,40})(?:\.(svg|png))?$/.exec(req.params.file);
+        const m = /^([a-z][a-z0-9-]{0,40})(?:\.(svg|png|mjs|xml))?$/.exec(req.params.file);
         if (!m || !glyphs.path(m[1])) return next();
         const [, name, kind] = m;
         const opts = ex.options(req.query);
         if (!kind) return send(res, 200, glyphPage({ base: baseUrl(), name, opts }), { viewer: req.viewer });
-        res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*');
+        res.set('Cache-Control', 'public, max-age=86400').set(OPEN);
+        if (kind === 'mjs') return res.type('text/javascript').send(formats.esModule(name));
+        if (kind === 'xml') return res.type('application/xml').send(formats.vectorDrawable(name, ex.options({ size: 24, ...req.query })));
         if (kind === 'svg') return res.type('image/svg+xml').send(ex.isDefault(opts) ? glyphs.svg(name, { size: 24, title: name }) : ex.svg(name, opts));
         try { res.type('image/png').send(ex.png(name, opts)); } catch (err) {
             log.warn('[OpenVibe.Design] glyph PNG failed:', err && err.message);
@@ -115,7 +141,18 @@ function createIconRoutes(ctx) {
         } catch (err) { back(res, { error: err.message }); }
     });
 
-    r.get('/api/v1/glyphs', (_req, res) => res.set('Cache-Control', 'public, max-age=300').set('Access-Control-Allow-Origin', '*').json(glyphsJson()));
+    r.get('/api/v1/glyphs', (req, res) => {
+        res.set('Cache-Control', 'public, max-age=300').set(OPEN);
+        if (req.query.names == null) return res.json(glyphsJson());
+        // Just the names asked for (<ov-icon> asks for a page's in one go): a glyph or a Font Awesome name, each answered
+        // under the name it was asked by; an unknown one is left out.
+        const asked = [...new Set(String(req.query.names).split(',').map((n) => n.trim().toLowerCase()).filter((n) => /^[a-z][a-z0-9-]{0,47}$/.test(n)))].slice(0, 120);
+        const out = asked.map((a) => {
+            const name = glyphs.path(a) ? a : glyphs.fromFa(a);
+            return name ? { asked: a, name, svg: glyphs.path(name), solid: glyphs.solid(name) || '' } : null;
+        }).filter(Boolean);
+        res.json({ count: out.length, glyphs: out });
+    });
     r.get('/api/v1/glyphs/drafts', async (req, res) => {
         const status = String(req.query.status || 'approved');
         if (status !== 'approved' && !isAdmin(req)) return problem(res, req, 403, 'design.glyph_drafts_private', 'Only approved drafts are public.');

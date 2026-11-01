@@ -51,6 +51,9 @@
             pngLink.setAttribute('download', `${name}-${px}.png`);
             pngLink.lastChild.textContent = ` PNG, ${px} px`;
             svgLink.href = `/icons/${name}.svg${q}`;
+            // The favicon set follows the maker too (its own defaults when nothing is chosen).
+            const fav = document.querySelector('[data-gp-fav]');
+            if (fav) fav.href = `/icons/${name}/favicon.zip${q}`;
             history.replaceState(null, '', `${location.pathname}${q}#png`);
         }, 120);
     }

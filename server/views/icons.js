@@ -100,10 +100,11 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     const use = `<section class="ic-sec" id="use" aria-labelledby="ic-use">
   <div class="ic-sec-head"><h2 id="ic-use">Use them</h2><p>Every OpenVibe site already shows them in place of Font Awesome&rsquo;s (the navbar loads the drop-in). Anyone else can too; it is open source (MIT).</p></div>
   <div class="ic-use">
+    <div><h3>On any page</h3>${kit.snippet({ code: `<script src="${base}/ov-icon.js" defer></script>\n<ov-icon name="heart"></ov-icon>\n<ov-icon name="mic" size="16" label="Microphone"></ov-icon>`, id: 'ic-use-wc', label: 'Copy the HTML' })}<p class="ic-more">A web component: no sign-in, any framework. It follows the text&rsquo;s size and colour and turns solid when small.</p></div>
     <div><h3>In place of Font Awesome</h3>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>\n<!-- your <i class="fa-solid fa-eye"> now shows the glyph -->`, id: 'ic-use-web', label: 'Copy the HTML' })}<p class="ic-more">Sizes, animations and transforms keep working: <a href="/icons/font-awesome-alternative">what keeps working</a>.</p></div>
     <div><h3>As a font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-eye"></i>`, id: 'ic-use-font', label: 'Copy the HTML' })}</div>
     <div><h3>On a server</h3>${kit.snippet({ code: "const glyphs = require('openvibe-shared/glyphs');\n\nglyphs.svg('live', { size: 20 });   // a standalone SVG\nglyphs.fromFa('fa-eye');             // 'eye'", id: 'ic-use-node', label: 'Copy the code' })}</div>
-    <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/icons/<name>.svg`, id: 'ic-use-api', label: 'Copy' })}</div>
+    <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/api/v1/glyphs?names=heart,fa-gear\nGET ${base}/icons/<name>.svg?style=auto|line|solid\nGET ${base}/icons/<name>.mjs | .xml | /favicon.zip`, id: 'ic-use-api', label: 'Copy' })}</div>
   </div>
 </section>`;
 
@@ -118,7 +119,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
 /** The registry as data (GET /api/v1/glyphs). */
 function glyphsJson() {
     const fa = faByGlyph();
-    return { count: glyphs.NAMES.length, glyphs: glyphs.NAMES.map((n) => ({ name: n, svg: glyphs.path(n), fa: fa.get(n) || [], by: glyphs.META[n].by })), fa: glyphs.FA };
+    return { count: glyphs.NAMES.length, glyphs: glyphs.NAMES.map((n) => ({ name: n, svg: glyphs.path(n), solid: glyphs.solid(n) || '', fa: fa.get(n) || [], by: glyphs.META[n].by })), fa: glyphs.FA };
 }
 
 module.exports = { iconsPage, glyphsJson, stillFontAwesome };
