@@ -88,13 +88,51 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             ]) assert.equal(clean(bad).ok, false, what);
         });
 
-        await check('drawing needs a signed-in person and this site\'s own form', async () => {
-            const anon = await t.get('/icons/draft', { method: 'POST', ...form({ name: 'hot-tub' }), origin: ORIGIN });
-            assert.equal(anon.status, 303);
-            assert.match(anon.headers.get('location'), /^\/auth\/login\?next=/);
+        await check('drawing takes this site\'s own form, signed in or not', async () => {
             const cross = await t.get('/icons/draft', { method: 'POST', as: ana, ...form({ name: 'hot-tub' }), origin: 'https://evil.test' });
             assert.equal(cross.status, 403);
-            assert.equal(asked.length, 0, 'no AI call for either');
+            const anonCross = await t.get('/icons/draft', { method: 'POST', ...form({ name: 'hot-tub' }), origin: 'https://evil.test' });
+            assert.equal(anonCross.status, 403, 'a guest\'s post must come from openvibe.design too');
+            const noOrigin = await t.get('/icons/draft', { method: 'POST', ...form({ name: 'hot-tub' }) });
+            assert.equal(noOrigin.status, 403, 'and say so');
+            assert.equal(asked.length, 0, 'no AI call for any of them');
+        });
+
+        await check('a guest draws without signing in, inside the caps: per guest, per address, all guests', async () => {
+            answer = JSON.stringify({ candidates: ['<rect x="4" y="10" width="16" height="8" rx="2"/><line x1="8" y1="4" x2="8" y2="7"/>', '<path d="M5 10h14v8H5z"/><path d="M9 6c0-1 1-1 1-2"/>'] });
+            const before = asked.length;
+            const page0 = await t.get('/icons');
+            assert.ok(page0.text.includes('you can draw 2 icons a day as a guest'), 'the form says what a guest may do');
+            const first = await t.get('/icons/draft', { method: 'POST', ...form({ name: 'kettle', sentence: 'A kettle' }), origin: ORIGIN });
+            assert.equal(first.status, 303);
+            assert.match(first.headers.get('location'), /^\/icons\?drafted=2&draw=kettle#draw$/);
+            const cookie = (first.headers.get('set-cookie') || '').split(';')[0];
+            assert.match(cookie, /^ovd_guest=[0-9a-f]{32}$/, 'a random guest id, in a cookie');
+            assert.match(first.headers.get('set-cookie'), /HttpOnly/i);
+            assert.equal(asked.length, before + 1);
+            assert.equal(asked[asked.length - 1].person, undefined, 'a guest runs on OpenVibe\'s key, not a person\'s');
+            const row = await t.store.db.maybe("SELECT subject FROM glyph_drafts WHERE name = 'kettle'");
+            assert.match(row.subject, /^guest:[0-9a-f]{40}$/, 'stored under a keyed hash, never the id itself');
+            const mine = await t.get('/icons', { headers: { cookie } });
+            assert.ok(mine.text.includes('<h3>Your drafts, on this browser</h3>'), 'the guest sees their drafts');
+            assert.match(mine.headers.get('cache-control'), /no-store/);
+            const said = (r) => decodeURIComponent(String(r.headers.get('location') || '').replace(/\+/g, ' '));
+            const asGuest = (f) => { const x = form(f); return { ...x, headers: { ...x.headers, cookie } }; };
+            const second = await t.get('/icons/draft', { method: 'POST', ...asGuest({ name: 'teapot' }), origin: ORIGIN });
+            assert.match(second.headers.get('location'), /drafted=2/);
+            const third = await t.get('/icons/draft', { method: 'POST', ...asGuest({ name: 'mugs' }), origin: ORIGIN });
+            assert.match(said(third), /you can draw 2 icons a day/, 'the guest\'s day is spent');
+            assert.equal(asked.length, before + 2, 'and no model was asked for the third');
+            // Two drawn so far from this address; two more from fresh browsers reach its four, the fifth is refused.
+            const fresh = () => t.get('/icons/draft', { method: 'POST', ...form({ name: 'cups' }), origin: ORIGIN });
+            assert.match(said(await fresh()), /drafted=2/);
+            assert.match(said(await fresh()), /drafted=2/);
+            assert.match(said(await fresh()), /this connection can draw today/, 'a new cookie does not reset the address');
+            const rows = await t.store.db.many('SELECT guest, ip_hash FROM glyph_guest_draws');
+            assert.ok(rows.length >= 4 && rows.every((r) => /^[0-9a-f]{40}$/.test(r.guest) && /^[0-9a-f]{40}$/.test(r.ip_hash)), 'only hashes are kept');
+            await t.store.db.exec('DELETE FROM glyph_guest_draws');
+            await t.store.db.exec("DELETE FROM glyph_drafts WHERE subject LIKE 'guest:%'");
+            asked.length = 0;
         });
 
         await check('OpenVibe.AI drafts candidates; the checked ones are kept, the rest refused', async () => {

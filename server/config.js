@@ -73,6 +73,16 @@ function load(env = process.env) {
             scope: env.DESIGN_BENCH_SCOPE || 'bench.task.create bench.round.create bench.round.read bench.judgement.cast bench.entry.create bench.board.read',
         },
 
+        // Drawing an icon without signing in (plan L50 step 5): caps per guest, per address and for all guests a day,
+        // and Cloudflare Turnstile when both of its keys are set (the guest form then carries its widget).
+        glyphGuests: {
+            perGuest: Math.max(0, int(env.DESIGN_GLYPH_GUEST_PER_DAY, 2)),
+            perAddress: Math.max(0, int(env.DESIGN_GLYPH_GUEST_PER_ADDRESS, 4)),
+            daily: Math.max(0, int(env.DESIGN_GLYPH_GUEST_DAILY, 25)),
+            turnstileSiteKey: env.DESIGN_TURNSTILE_SITE_KEY || '',
+            turnstileSecret: env.DESIGN_TURNSTILE_SECRET || '',
+        },
+
         // Design Studio part B: a small per-design AI edit budget (click edits and undo do not spend AI).
         studio: {
             chatEditsPerDesign: Math.max(1, int(env.DESIGN_CHAT_EDITS_PER_DESIGN, 5)),
