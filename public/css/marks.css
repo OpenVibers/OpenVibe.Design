@@ -22,7 +22,7 @@
 .mx-lean-end b{font-family:var(--mx-face);font-weight:900;font-size:16px;min-width:3ch}
 .mx-lean-r b{text-align:right}
 .mx-lean-bar{position:relative;height:10px;border-radius:999px;background:#8b5cf6;overflow:hidden}
-.mx-lean-bar i{position:absolute;inset:0 auto 0 0;width:var(--l,50%);background:#4f7cff;border-right:2px solid var(--mx-card);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.mx-lean-bar i{position:absolute;inset:0 auto 0 0;width:var(--l,50%);background:#4f7cff;border-right:2px solid var(--mx-card);transition:width var(--ov-dur-4, .6s) var(--ov-ease-out, cubic-bezier(.2,.8,.2,1))}
 .mx-tops{display:flex;align-items:center;gap:8px;min-width:0}
 .mx-tops-k{flex:none;width:92px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mx-muted)}
 .mx-tops-list{display:flex;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;padding:1px}
@@ -32,7 +32,7 @@
 .mx-top b{font-family:var(--mx-face);font-weight:900}
 .mx-top i{font-style:normal;font-weight:800;color:#c4b5fd}
 .mx-top svg,.mx-lean-end svg{display:block;flex:none}
-.mx-top.is-new{animation:mxTopIn .5s cubic-bezier(.2,.9,.25,1.2) both}
+.mx-top.is-new{animation:mxTopIn var(--ov-dur-4, .5s) var(--ov-ease-spring, cubic-bezier(.2,.9,.25,1.2)) both}
 @keyframes mxTopIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 .mx-mini-m{width:26px;height:26px;border-radius:50%;--mb-c:#c9d3e0}
 .mx-tally.is-empty .mx-lean-bar{opacity:.4}
@@ -46,15 +46,15 @@
 .mx-qn{display:inline-grid;place-items:center;align-self:center;width:22px;height:22px;border-radius:50%;background:#8b5cf6;color:#fff;font-size:12.5px;font-weight:800}
 .mx-vs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:10px}
 .mx-or{align-self:center;font-family:var(--mx-face);font-weight:900;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--mx-muted)}
-.mx-tab{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid var(--mx-line);background:var(--mx-card);color:inherit;text-decoration:none;transition:border-color .2s,background .2s}
+.mx-tab{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid var(--mx-line);background:var(--mx-card);color:inherit;text-decoration:none;transition:border-color var(--ov-dur-2, .2s),background var(--ov-dur-2, .2s)}
 .mx-tab:hover{border-color:color-mix(in srgb,#8b5cf6 55%,var(--mx-line))}
 .mx-tab[aria-selected=true]{border-color:#8b5cf6;background:color-mix(in srgb,#8b5cf6 12%,var(--mx-card));box-shadow:0 0 0 1px #8b5cf6 inset}
 .mx-tab-art{position:relative;flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:14px;background:#0d1322;color:#e8edf3;overflow:hidden}
 .mx-tab-art svg{width:46px;height:46px}
 /* The tab's example walks through all fifty (marks.js): each take rises in as the last one leaves, its number below. */
 .mx-ta{position:absolute;inset:0;display:grid;place-items:center}
-.mx-ta.is-in{animation:mxTaIn .62s cubic-bezier(.2,.9,.25,1.15) both}
-.mx-ta.is-out{animation:mxTaOut .42s cubic-bezier(.4,0,.6,1) both}
+.mx-ta.is-in{animation:mxTaIn var(--ov-dur-4, .62s) var(--ov-ease-spring, cubic-bezier(.2,.9,.25,1.15)) both}
+.mx-ta.is-out{animation:mxTaOut var(--ov-dur-3, .42s) var(--ov-ease-out, cubic-bezier(.4,0,.6,1)) both}
 @keyframes mxTaIn{from{opacity:0;transform:translateY(55%) scale(.6)}to{opacity:1;transform:none}}
 @keyframes mxTaOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-55%) scale(.6)}}
 .mx-tab-code{position:absolute;right:3px;bottom:3px;padding:0 4px;border-radius:5px;background:#8b5cf6;color:#fff;font:800 9.5px/14px Inter,system-ui,sans-serif;font-style:normal;letter-spacing:.02em}
@@ -70,7 +70,7 @@
 
 /* The steps bar: once the big tabs have scrolled away it waits under the navbar, so switching between the mark and the
    menu button never means scrolling back up (the owner, 11-01). Each step shows how many you picked there. */
-.mx-steps{position:fixed;z-index:55;left:50%;top:calc(var(--ovnav-real-h,56px) + 8px);display:flex;align-items:center;gap:4px;max-width:calc(100vw - 16px);padding:4px;border-radius:999px;border:1px solid color-mix(in srgb,#8b5cf6 45%,var(--mx-line));background:color-mix(in srgb,var(--mx-card) 92%,transparent);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.35);transform:translate(-50%,-12px);opacity:0;pointer-events:none;transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.25,1.1)}
+.mx-steps{position:fixed;z-index:55;left:50%;top:calc(var(--ovnav-real-h,56px) + 8px);display:flex;align-items:center;gap:4px;max-width:calc(100vw - 16px);padding:4px;border-radius:999px;border:1px solid color-mix(in srgb,#8b5cf6 45%,var(--mx-line));background:color-mix(in srgb,var(--mx-card) 92%,transparent);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.35);transform:translate(-50%,-12px);opacity:0;pointer-events:none;transition:opacity var(--ov-dur-2, .25s),transform var(--ov-dur-3, .35s) var(--ov-ease-spring, cubic-bezier(.2,.9,.25,1.1))}
 .mx-steps.is-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .mx-steps-k{padding:0 4px 0 8px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mx-muted)}
 .mx-steps-sep{width:1px;height:22px;margin:0 2px;background:var(--mx-line)}
@@ -137,7 +137,7 @@
 
 /* Picking: tap a card (or its corner toggle). A picked card glows and wears a tick; nothing covers the marks. */
 .mx-card{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.mx-pick{position:absolute;z-index:2;top:13px;right:13px;display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:50%;border:1.5px solid #ffffff4d;background:#0d1322b3;color:#e8edf3;cursor:pointer;backdrop-filter:blur(4px);transition:background .2s,border-color .2s,transform .25s cubic-bezier(.2,1.4,.3,1)}
+.mx-pick{position:absolute;z-index:2;top:13px;right:13px;display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:50%;border:1.5px solid #ffffff4d;background:#0d1322b3;color:#e8edf3;cursor:pointer;backdrop-filter:blur(4px);transition:background var(--ov-dur-2, .2s),border-color var(--ov-dur-2, .2s),transform var(--ov-dur-2, .25s) var(--ov-ease-spring, cubic-bezier(.2,1.4,.3,1))}
 .mx-pick::before{content:"+";font:700 18px/1 Inter,system-ui,sans-serif}
 .mx-pick::after{content:"";position:absolute;inset:-7px}
 .mx-card:hover .mx-pick{border-color:#a78bfa}
@@ -146,14 +146,14 @@
 .mx-pick:focus-visible{outline:2px solid #c4b5fd;outline-offset:2px}
 .mx-card.is-picked{border-color:#8b5cf6;background:color-mix(in srgb,#8b5cf6 13%,var(--mx-card));box-shadow:0 0 0 1px #8b5cf6,0 12px 30px color-mix(in srgb,#8b5cf6 24%,transparent)}
 .mx-card.is-picked .mx-stage{box-shadow:inset 0 0 0 1px color-mix(in srgb,#8b5cf6 55%,transparent)}
-.mx-card.just-picked{animation:mxPicked .45s cubic-bezier(.2,1.4,.3,1)}
+.mx-card.just-picked{animation:mxPicked var(--ov-dur-4, .45s) var(--ov-ease-spring, cubic-bezier(.2,1.4,.3,1))}
 @keyframes mxPicked{0%,100%{scale:1}40%{scale:.96}75%{scale:1.02}}
 /* Your picks, in the tally at the top: copy a link to them or clear them. */
 .mx-mine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}
 .mx-mine b{font-family:var(--mx-face);font-weight:900;font-size:14px;overflow-wrap:anywhere}
 .mx-btn{padding:5px 12px;border-radius:999px;border:0;background:#8b5cf6;color:#fff;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;min-height:32px}
 .mx-btn-quiet{background:transparent;color:inherit;border:1px solid var(--mx-line)}
-.mx-saved{font-style:normal;font-size:12px;font-weight:700;color:#86efac;opacity:0;transition:opacity .3s}
+.mx-saved{font-style:normal;font-size:12px;font-weight:700;color:#86efac;opacity:0;transition:opacity var(--ov-dur-3, .3s)}
 .mx-saved.is-on{opacity:1}
 .mx-share{border:0;background:transparent;font:inherit;font-weight:750;font-size:13.5px;cursor:pointer;color:inherit}
 .mx-share.is-done span::after{content:" \2713"}
@@ -173,20 +173,20 @@
    Arrival: transitions (the card rises, strokes draw along their 100-unit length, fills fade). Idle: animations,
    only while a card is on screen (is-on). Parts turn about their own middles. */
 .mx-stage>svg,.mx-stage .mx-a,.mx-stage .mx-b,.mx-stage .mx-dot,.mx-stage .mx-glow{transform-box:fill-box;transform-origin:center}
-.mx-wrap.mx-live .mx-card{transition:opacity .5s ease var(--d,0s),transform .6s cubic-bezier(.2,.8,.2,1) var(--d,0s),border-color .2s,box-shadow .2s}
+.mx-wrap.mx-live .mx-card{transition:opacity var(--ov-dur-4, .5s) var(--ov-ease-out, ease) var(--d,0s),transform var(--ov-dur-4, .6s) var(--ov-ease-out, cubic-bezier(.2,.8,.2,1)) var(--d,0s),border-color var(--ov-dur-2, .2s),box-shadow var(--ov-dur-2, .2s)}
 .mx-wrap.mx-live .mx-card:not(.is-in){opacity:0;transform:translateY(14px)}
-.mx-wrap.mx-live .mx-stage .mx-s:not([stroke-dasharray]){stroke-dasharray:100;transition:stroke-dashoffset 1.1s cubic-bezier(.45,0,.2,1) calc(var(--d,0s) + .1s)}
+.mx-wrap.mx-live .mx-stage .mx-s:not([stroke-dasharray]){stroke-dasharray:100;transition:stroke-dashoffset 1.1s var(--ov-ease-out, cubic-bezier(.45,0,.2,1)) calc(var(--d,0s) + .1s)}
 .mx-wrap.mx-live .mx-card:not(.is-in) .mx-stage .mx-s:not([stroke-dasharray]){stroke-dashoffset:100}
-.mx-wrap.mx-live .mx-stage .mx-f{transition:opacity .8s ease calc(var(--d,0s) + .5s)}
+.mx-wrap.mx-live .mx-stage .mx-f{transition:opacity var(--ov-dur-4, .8s) var(--ov-ease-out, ease) calc(var(--d,0s) + .5s)}
 .mx-wrap.mx-live .mx-card:not(.is-in) .mx-stage .mx-f{opacity:0}
 @media (prefers-reduced-motion:no-preference){
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=breathe]{animation:mxBreathe 5s ease-in-out calc(1.3s + var(--d,0s)) infinite}
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=drift]{animation:mxDrift 9s ease-in-out calc(1.3s + var(--d,0s)) infinite}
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=rock]{animation:mxRock 6.5s ease-in-out calc(1.3s + var(--d,0s)) infinite}
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=float]{animation:mxFloat 4.6s ease-in-out calc(1.3s + var(--d,0s)) infinite}
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=nod] .mx-b{animation:mxNod 4.2s ease-in-out calc(1.3s + var(--d,0s)) infinite}
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=dot] .mx-dot{animation:mxDot 3.4s ease-in-out calc(1.3s + var(--d,0s)) infinite}
-  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=pulse] .mx-glow{animation:mxPulse 3.6s ease-in-out calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=breathe]{animation:mxBreathe 5s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=drift]{animation:mxDrift 9s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=rock]{animation:mxRock 6.5s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=float]{animation:mxFloat 4.6s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=nod] .mx-b{animation:mxNod 4.2s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=dot] .mx-dot{animation:mxDot 3.4s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
+  .mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .mx-stage>svg[data-idle=pulse] .mx-glow{animation:mxPulse 3.6s var(--ov-ease-in-out, ease-in-out) calc(1.3s + var(--d,0s)) infinite}
 }
 @keyframes mxBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
 @keyframes mxDrift{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(-32deg) saturate(1.15)}}
@@ -205,7 +205,7 @@ html[data-ov-motion=reduced] .mx-wrap .mx-card:not(.is-in){opacity:1!important;t
    make their move; pressed (is-open) they show they are open. */
 .mb-btn{all:unset;box-sizing:border-box;position:relative;display:inline-grid;place-items:center;flex:none;width:34px;height:34px;border-radius:11px;cursor:pointer;color:var(--mb-c);--mb-c:#a8b3c4;--mb-hc:#eef2f8;--mb-bg:#0d1322;--mb-a:#7aa2ff}
 .mb-btn:focus-visible{outline:2px solid #8b5cf6;outline-offset:2px}
-.mb-btn::before{content:"";position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--mb-a) 34%,transparent),transparent);opacity:0;transform:scale(.5);transition:opacity .25s,transform .4s cubic-bezier(.2,1.4,.3,1);pointer-events:none}
+.mb-btn::before{content:"";position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--mb-a) 34%,transparent),transparent);opacity:0;transform:scale(.5);transition:opacity var(--ov-dur-2, .25s),transform var(--ov-dur-3, .4s) var(--ov-ease-spring, cubic-bezier(.2,1.4,.3,1));pointer-events:none}
 .mb-btn:is(:hover,:focus-visible,.is-play,.is-open)::before{opacity:1;transform:none}
 .mb-btn:is(:hover,:focus-visible,.is-play,.is-open){color:var(--mb-hc)}
 .mb-btn svg{position:relative;display:block;overflow:visible;fill:currentColor}
@@ -216,8 +216,8 @@ html[data-ov-motion=reduced] .mx-wrap .mx-card:not(.is-in){opacity:1!important;t
 .mb-btn .mb-soft{opacity:.6}
 .mb-btn .mb-shine{fill:#fff;opacity:.6}
 .mb-btn .mb-hole{stroke:var(--mb-bg);stroke-width:1.8}
-.mb-btn .mb-p{transform-box:fill-box;transform-origin:center;transition:transform .45s cubic-bezier(.2,1.3,.3,1),opacity .25s}
-.mb-btn :is(.mb-i,.mb-x,.mb-g){transform-box:view-box;transform-origin:12px 12px;transition:transform .5s cubic-bezier(.2,1.3,.3,1),opacity .25s}
+.mb-btn .mb-p{transform-box:fill-box;transform-origin:center;transition:transform var(--ov-dur-4, .45s) var(--ov-ease-spring, cubic-bezier(.2,1.3,.3,1)),opacity var(--ov-dur-2, .25s)}
+.mb-btn :is(.mb-i,.mb-x,.mb-g){transform-box:view-box;transform-origin:12px 12px;transition:transform var(--ov-dur-4, .5s) var(--ov-ease-spring, cubic-bezier(.2,1.3,.3,1)),opacity var(--ov-dur-2, .25s)}
 .mb-btn .mb-x{opacity:0;transform:rotate(-90deg) scale(.4)}
 .mb-btn .mb-x path{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
 .mb-btn.is-open svg:not([data-own]) .mb-i{opacity:0;transform:rotate(90deg) scale(.4)}
@@ -235,18 +235,18 @@ html[data-ov-motion=reduced] .mx-wrap .mx-card:not(.is-in){opacity:1!important;t
 .mb-btn.is-open svg[data-own=burger2] .mb-l0{transform:translateY(3px) rotate(45deg)}
 .mb-btn.is-open svg[data-own=burger2] .mb-l2{transform:translateY(-3px) rotate(-45deg)}
 @media (prefers-reduced-motion:no-preference){
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=ripple] .mb-p{animation:mbRipple .75s cubic-bezier(.3,.7,.3,1) calc(var(--i,0) * .08s)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=wave] .mb-p{animation:mbWave .7s ease-in-out calc(var(--i,0) * .07s)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=bloom] .mb-p{animation:mbBloom .7s cubic-bezier(.3,.7,.3,1) calc(var(--i,0) * .06s)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=twinkle] .mb-p{animation:mbTwinkle .8s ease-in-out calc(var(--i,0) * .12s)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=slide] .mb-p{animation:mbSlide .6s ease-in-out calc(var(--i,0) * .07s)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=fan] .mb-p{animation:mbFan .8s cubic-bezier(.3,.7,.3,1)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=bars] .mb-p{transform-origin:center bottom;animation:mbBars .8s ease-in-out calc(var(--i,0) * .08s)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=draw] .mb-s{animation:mbDraw .8s cubic-bezier(.45,0,.2,1) calc(var(--i,0) * .14s) both}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=ripple] .mb-p{animation:mbRipple var(--ov-dur-4, .75s) var(--ov-ease-out, cubic-bezier(.3,.7,.3,1)) calc(var(--i,0) * .08s)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=wave] .mb-p{animation:mbWave var(--ov-dur-4, .7s) var(--ov-ease-in-out, ease-in-out) calc(var(--i,0) * .07s)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=bloom] .mb-p{animation:mbBloom var(--ov-dur-4, .7s) var(--ov-ease-out, cubic-bezier(.3,.7,.3,1)) calc(var(--i,0) * .06s)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=twinkle] .mb-p{animation:mbTwinkle var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out) calc(var(--i,0) * .12s)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=slide] .mb-p{animation:mbSlide var(--ov-dur-4, .6s) var(--ov-ease-in-out, ease-in-out) calc(var(--i,0) * .07s)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=fan] .mb-p{animation:mbFan var(--ov-dur-4, .8s) var(--ov-ease-out, cubic-bezier(.3,.7,.3,1))}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=bars] .mb-p{transform-origin:center bottom;animation:mbBars var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out) calc(var(--i,0) * .08s)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=draw] .mb-s{animation:mbDraw var(--ov-dur-4, .8s) var(--ov-ease-out, cubic-bezier(.45,0,.2,1)) calc(var(--i,0) * .14s) both}
   .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=blink] .mb-k{animation:mbBlink 1s steps(1) 2}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg:is([data-anim=pop],[data-anim=pulse]) .mb-i{animation:mbPop .6s cubic-bezier(.3,.7,.3,1)}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=tilt] .mb-i{animation:mbTilt .8s ease-in-out}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=nod] .mb-i{animation:mbNod .8s ease-in-out}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg:is([data-anim=pop],[data-anim=pulse]) .mb-i{animation:mbPop var(--ov-dur-4, .6s) var(--ov-ease-out, cubic-bezier(.3,.7,.3,1))}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=tilt] .mb-i{animation:mbTilt var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out)}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=nod] .mb-i{animation:mbNod var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out)}
 }
 @keyframes mbRipple{0%,100%{transform:scale(1)}35%{transform:scale(.5)}70%{transform:scale(1.2)}}
 @keyframes mbWave{0%,100%{transform:translateY(0)}40%{transform:translateY(-2.6px)}}
@@ -303,7 +303,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
   .mx-wrap:not([data-density=sheet]) .mx-grid.is-scrolled:not(.has-more){-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%);mask-image:linear-gradient(90deg,transparent,#000 8%)}
   .mx-wrap:not([data-density=sheet]) .mx-card{scroll-snap-align:start}
   .mx-wrap:not([data-density=sheet]) .mx-swipe{display:inline}
-  .mx-wrap:not([data-density=sheet]) .mx-grid.is-peek>li{animation:mxPeek 1.15s cubic-bezier(.3,.7,.3,1)}
+  .mx-wrap:not([data-density=sheet]) .mx-grid.is-peek>li{animation:mxPeek 1.15s var(--ov-ease-out, cubic-bezier(.3,.7,.3,1))}
   .mx-card{padding:6px 6px 8px;gap:5px;border-radius:14px}
   .mx-lock{padding:6px 7px;gap:6px}
   .mx-lock svg{width:20px;height:20px}
@@ -321,11 +321,11 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
    (the owner, 11-01: "they don't realise they have to scroll to the top to switch to the menu button"). */
 .mx-stepn{display:inline-grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:#8b5cf6;color:#fff;font-size:11.5px;font-weight:800}
 .mx-steps .mx-steps-sep{width:auto;height:auto;background:none;color:var(--mx-muted);font-weight:800;margin:0 2px}
-.mx-step.is-call{animation:mxCall 1.4s cubic-bezier(.2,.9,.3,1) 2}
+.mx-step.is-call{animation:mxCall 1.4s var(--ov-ease-out, cubic-bezier(.2,.9,.3,1)) 2}
 @keyframes mxCall{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0)}40%{box-shadow:0 0 0 6px rgba(139,92,246,.45)}}
 .mx-sheet{border:0;background:transparent;color:inherit;cursor:pointer;padding:3px 9px}
 .mx-sheet[aria-pressed=true]{background:#8b5cf6;color:#fff}
-.mx-nudge{position:fixed;left:50%;bottom:calc(16px + var(--ovnav-appbar-h,0px) + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:calc(100vw - 20px);padding:10px 12px;border-radius:16px;border:1px solid #8b5cf6;background:color-mix(in srgb,var(--mx-card) 95%,transparent);backdrop-filter:blur(10px);box-shadow:0 14px 34px rgba(0,0,0,.4);font-size:14px;animation:mxNudgeIn .4s cubic-bezier(.2,.9,.25,1.1)}
+.mx-nudge{position:fixed;left:50%;bottom:calc(16px + var(--ovnav-appbar-h,0px) + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:calc(100vw - 20px);padding:10px 12px;border-radius:16px;border:1px solid #8b5cf6;background:color-mix(in srgb,var(--mx-card) 95%,transparent);backdrop-filter:blur(10px);box-shadow:0 14px 34px rgba(0,0,0,.4);font-size:14px;animation:mxNudgeIn var(--ov-dur-3, .4s) var(--ov-ease-spring, cubic-bezier(.2,.9,.25,1.1))}
 .mx-nudge a.mx-btn{text-decoration:none;display:inline-grid;place-items:center}
 @keyframes mxNudgeIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.mx-step.is-call,.mx-nudge{animation:none}}
@@ -398,7 +398,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mx-tally.is-empty{padding:10px 12px}
 .mx-tally-n{color:var(--text-secondary,#b4bfcc);font-size:14px}
 .mx-split{position:relative;display:flex;justify-content:space-between;align-items:center;height:30px;padding:0 10px;border-radius:999px;overflow:hidden;background:#8b5cf6;color:#fff;font-size:13px;font-weight:700;isolation:isolate}
-.mx-split::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--l,50%);background:#4f7cff;z-index:-1;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.mx-split::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--l,50%);background:#4f7cff;z-index:-1;transition:width var(--ov-dur-4, .5s) var(--ov-ease-out, cubic-bezier(.2,.8,.2,1))}
 .mx-split span{display:inline-flex;align-items:center;gap:5px}
 .mx-split b{font-family:var(--mx-face);font-weight:900}
 .mx-split svg{filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}
@@ -412,7 +412,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .openvibe-navbar .flame .mx-navmark{display:block;width:28px;height:28px;overflow:visible}
 .openvibe-navbar .ovnav-orb .mx-navmenu{all:unset;position:relative;display:grid;place-items:center;width:24px;height:24px;color:inherit}
 .openvibe-navbar .ovnav-orb .mx-navmenu svg{width:22px;height:22px}
-.openvibe-navbar .mx-nav-flash{animation:mxNavFlash 1.1s ease-out}
+.openvibe-navbar .mx-nav-flash{animation:mxNavFlash 1.1s var(--ov-ease-out, ease-out)}
 @keyframes mxNavFlash{0%{box-shadow:0 0 0 0 color-mix(in srgb,#8b5cf6 70%,transparent);border-radius:12px}60%{box-shadow:0 0 0 10px transparent;border-radius:12px}100%{box-shadow:none}}
 @media (prefers-reduced-motion:reduce){.openvibe-navbar .mx-nav-flash{animation:none}}
 
@@ -421,7 +421,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mx-all{border-top:1px solid var(--mx-line);padding-top:6px}
 .mx-all>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--text-secondary,#b4bfcc);list-style:none;display:flex;gap:6px;align-items:center}
 .mx-all>summary::-webkit-details-marker{display:none}
-.mx-all>summary::before{content:"\25B8";font-size:11px;transition:transform .2s}
+.mx-all>summary::before{content:"\25B8";font-size:11px;transition:transform var(--ov-dur-2, .2s)}
 .mx-all[open]>summary::before{transform:rotate(90deg)}
 .mx-all>summary span{color:var(--mx-muted);font-weight:600}
 .mx-all-row{display:flex;align-items:flex-start;gap:8px;margin-top:6px}
@@ -433,7 +433,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 @media (max-width:640px){.mx-vs{gap:4px}.mx-vs .mx-or{font-size:12px}.mx-vs .mx-tab-t b{font-size:14px}.mx-vs .mx-tab-t em{font-size:10.5px}.mx-vs .mx-tab-art{width:50px;height:50px}.mx-vs .mx-tab-art svg{width:38px;height:38px}}
 
 /* The tally's three kinds as one bar: the Loop, the Pair and the Wildcards side by side. */
-.mx-split3{position:relative;display:grid;grid-template-columns:var(--l,34%) var(--p,33%) 1fr;height:30px;border-radius:999px;overflow:hidden;font-size:12.5px;font-weight:700;color:#fff;transition:grid-template-columns .5s cubic-bezier(.2,.8,.2,1)}
+.mx-split3{position:relative;display:grid;grid-template-columns:var(--l,34%) var(--p,33%) 1fr;height:30px;border-radius:999px;overflow:hidden;font-size:12.5px;font-weight:700;color:#fff;transition:grid-template-columns var(--ov-dur-4, .5s) var(--ov-ease-out, cubic-bezier(.2,.8,.2,1))}
 .mx-split3[hidden]{display:none}
 .mx-s3{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:0;padding:0 6px;white-space:nowrap;overflow:hidden}
 .mx-s3 b{font-family:var(--mx-face);font-weight:900}
@@ -460,7 +460,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .lk-tag svg{margin-top:-7px;margin-left:1px}
 .lk-trail{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .lk-trail i{width:22px;height:0;border-top:2px dashed color-mix(in srgb,#8b5cf6 70%,transparent)}
-.mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .lk-trail svg{animation:lkTow 3.2s ease-in-out infinite}
+.mx-wrap.mx-live:not(.mx-still) .mx-card.is-on .lk-trail svg{animation:lkTow 3.2s var(--ov-ease-in-out, ease-in-out) infinite}
 @keyframes lkTow{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-2px)}}
 
 /* The statuses: as itself (16 and 28 px), live, and with something new. */
@@ -471,8 +471,8 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .st-live small{color:#fca5a5!important}
 .st-live svg .w-k:not([fill=none]){fill:#ef4444}
 .st-live svg .w-k[fill=none]{stroke:#ef4444}
-.st-live svg .w-k{transform-box:fill-box;transform-origin:center;animation:stLive 1.3s ease-in-out infinite}
-.st-live::after{content:"";position:absolute;top:6px;right:calc(50% - 20px);width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 2px #0d1322;animation:stDot 1.3s ease-in-out infinite}
+.st-live svg .w-k{transform-box:fill-box;transform-origin:center;animation:stLive 1.3s var(--ov-ease-in-out, ease-in-out) infinite}
+.st-live::after{content:"";position:absolute;top:6px;right:calc(50% - 20px);width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 2px #0d1322;animation:stDot 1.3s var(--ov-ease-in-out, ease-in-out) infinite}
 .st-new::after{content:"3";position:absolute;top:3px;right:calc(50% - 24px);min-width:15px;height:15px;padding:0 3px;border-radius:999px;background:#8b5cf6;color:#fff;font:800 10px/15px var(--mx-face);text-align:center;box-shadow:0 0 0 2px #0d1322}
 @keyframes stLive{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes stDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.6}}
@@ -482,7 +482,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
    and never under reduced motion. The parts that move are w-a, w-b and w-c. */
 .mx-wild svg :is(.w-a,.w-b,.w-c){transform-box:fill-box;transform-origin:center}
 @media (prefers-reduced-motion:no-preference){
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion] :is(.w-a,.w-b,.w-c){animation-duration:3.6s;animation-iteration-count:infinite;animation-timing-function:ease-in-out;animation-delay:calc(var(--d,0s) + var(--i,0) * .09s)}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion] :is(.w-a,.w-b,.w-c){animation-duration:3.6s;animation-iteration-count:infinite;animation-timing-function:var(--ov-ease-in-out, ease-in-out);animation-delay:calc(var(--d,0s) + var(--i,0) * .09s)}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=draw] .w-a{stroke-dasharray:100;animation-name:wDraw;animation-duration:3.4s}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=join] .w-a{animation-name:wJoinL}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=join] .w-b{animation-name:wJoinR}
@@ -501,7 +501,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rise] .w-a{animation-name:wRise;animation-duration:5s}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=hop] .w-a{animation-name:wHop;animation-duration:2.4s;animation-delay:calc(var(--i,0) * .25s)}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rocket] .w-a{animation-name:wBob;animation-duration:2.2s}
-  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rocket] .w-b{transform-origin:top;animation-name:wFlame;animation-duration:.5s}
+  .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=rocket] .w-b{transform-origin:top;animation-name:wFlame;animation-duration:var(--ov-dur-4, .5s)}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=cascade] .w-a{animation-name:wCascade;animation-duration:1.6s;animation-delay:calc(var(--i,0) * .2s)}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=press] .w-a{animation-name:wPress;animation-duration:3s}
   .mx-wrap.mx-live:not(.mx-still) :is(.mx-card.is-on,.st) svg[data-wild-motion=bars] .w-a{transform-origin:bottom;animation-name:wBar;animation-duration:1.4s;animation-delay:calc(var(--i,0) * .1s)}

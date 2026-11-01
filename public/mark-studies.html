@@ -46,7 +46,7 @@ ul.moves{margin:0;padding-left:18px;color:var(--dim);font-size:13.5px;display:gr
 footer{color:var(--dim);font-size:14px;border-top:1px solid var(--line);padding-top:18px;margin-top:8px;display:grid;gap:8px}
 footer b{color:var(--ink)}
 /* Loading: the ring breathes (the network's rule, 2026-10-31: nothing spins). */
-.busy{animation:ringBreathe 1.1s ease-in-out infinite alternate;transform-origin:50px 50px;transform-box:view-box}
+.busy{animation:ringBreathe 1.1s var(--ov-ease-in-out, ease-in-out) infinite alternate;transform-origin:50px 50px;transform-box:view-box}
 @keyframes ringBreathe{from{transform:scale(1);opacity:1}to{transform:scale(.9);opacity:.5}}
 .run{animation:run 1.15s linear infinite}
 @keyframes run{to{stroke-dashoffset:-151}}
