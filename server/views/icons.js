@@ -38,7 +38,7 @@ function stillFontAwesome() {
 const inner = (name) => glyphs.path(name);
 const svg = (d, size = 24) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${d}</svg>`;
 
-function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '' } = {}) {
+function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '', guest = null } = {}) {
     const fa = faByGlyph();
     const left = stillFontAwesome();
     const covered = usage.names.filter((n) => glyphs.fromFa(n.name)).reduce((a, n) => a + n.uses, 0);
@@ -97,9 +97,11 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   <form class="ic-form" method="post" action="/icons/draft">
     <label><span>Name</span><input name="name" required pattern="[a-z][a-z0-9-]{1,31}" maxlength="32" placeholder="hot-tub" value="${esc(draw)}" autocomplete="off" spellcheck="false"></label>
     <label class="ic-grow"><span>What it stands for</span><input name="sentence" maxlength="200" placeholder="A tub with steam over it: a hot tub at a rental"></label>
+    ${guest && guest.turnstile ? `<div class="cf-turnstile ic-human" data-sitekey="${esc(guest.turnstile)}" data-theme="auto" data-size="flexible"></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>` : ''}
     <button type="submit" class="ic-btn is-go">${kit.icon('spark')} Draw it</button>
   </form>
-  ${mine.length ? `<h3>Your drafts</h3><ul class="ic-drafts">${mine.map((d) => draftCard(d)).join('')}</ul>` : ''}
+  ${guest ? `<p class="ic-more">No account needed: you can draw ${guest.perDay} icon${guest.perDay === 1 ? '' : 's'} a day as a guest. <a href="/auth/login?next=${encodeURIComponent('/icons#draw')}">Sign in</a> to draw more and see your drafts on any device.</p>` : ''}
+  ${mine.length ? `<h3>${guest ? 'Your drafts, on this browser' : 'Your drafts'}</h3><ul class="ic-drafts">${mine.map((d) => draftCard(d)).join('')}</ul>` : ''}
   ${reviewer ? `<h3>Waiting for review</h3>${drafts.length ? `<ul class="ic-drafts">${drafts.map((d) => draftCard(d, reviewForm(d))).join('')}</ul>` : '<p class="ic-more">Nothing waiting.</p>'}` : ''}
 </section>`;
 

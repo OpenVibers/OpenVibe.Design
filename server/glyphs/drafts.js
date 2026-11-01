@@ -5,7 +5,9 @@
  * each one. Approved drafts are what openvibe-shared's scripts/pull-glyph-drafts.js takes into the registry; nothing
  * reaches a page without that review and a Shared release.
  *
- *   draft({ subject, name, sentence }) → { kept: [draft…], refused: [why…] }   (at most PER_DAY a person per day)
+ *   draft({ subject, name, sentence, guest }) → { kept: [draft…], refused: [why…] }   (at most PER_DAY a person per day)
+ *       guest: { id, ipHash } for someone not signed in (L50 step 5): subject is then guest:<id>, and the guest caps
+ *       (per guest, per address, all guests, a day; config.glyphGuests) are checked and the attempt recorded first.
  *   list({ status, subject, limit })    → drafts, newest first
  *   review({ id, action: 'approve' | 'reject', reviewer })
  */
@@ -34,18 +36,36 @@ reads at 16 px, in the hand of a clean line icon set. A dot is a zero-length lin
 different idea, not the same drawing moved. Answer with JSON only:
 {"candidates": ["<path d=\\"…\\"/>", …]} with ${CANDIDATES} different candidates.${examples()}`;
 
-function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() } }) {
+function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests = { perGuest: 2, perAddress: 4, daily: 25 } }) {
     const id = () => `gd_${crypto.randomBytes(8).toString('hex')}`;
     const iso = () => new Date(clock.now()).toISOString();
 
-    async function draft({ subject, name, sentence = '' }) {
-        if (!subject) throw Object.assign(new Error('sign in to draw an icon'), { status: 401 });
+    /** A guest's three caps, then their attempt recorded (before any model is asked, so a failure counts too). */
+    async function admitGuest(guest) {
+        const count = async (where, args) => Number(((await db.maybe(`SELECT count(*)::int AS n FROM glyph_guest_draws WHERE ${where} AND created_at > now() - interval '1 day'`, args)) || {}).n || 0);
+        const busy = (msg) => Object.assign(new Error(msg), { status: 429 });
+        if (!guests.daily || await count('true', []) >= guests.daily) throw busy('Guests have drawn all the icons they can today. Sign in to draw more, or come back tomorrow.');
+        if (!guests.perAddress || await count('ip_hash = $1', [guest.ipHash]) >= guests.perAddress) throw busy('That is all the icons this connection can draw today without signing in. Sign in to draw more.');
+        if (!guests.perGuest || await count('guest = $1', [guest.id]) >= guests.perGuest) throw busy(`Without signing in you can draw ${guests.perGuest} icon${guests.perGuest === 1 ? '' : 's'} a day. Sign in to draw more.`);
+        await db.exec('INSERT INTO glyph_guest_draws (guest, ip_hash) VALUES ($1, $2)', [guest.id, guest.ipHash]);
+        // Two days is enough to count a day; older rows go.
+        db.exec("DELETE FROM glyph_guest_draws WHERE created_at < now() - interval '2 days'").catch(() => {});
+    }
+
+    async function draft({ subject, name, sentence = '', guest = null }) {
+        if (!subject && !guest) throw Object.assign(new Error('sign in to draw an icon'), { status: 401 });
+        if (guest && !/^[0-9a-f]{16,64}$/.test(String(guest.id || ''))) throw Object.assign(new Error('this browser cannot draw without signing in'), { status: 400 });
+        const who = subject || `guest:${guest.id}`;
         const n = String(name || '').trim().toLowerCase();
         if (!NAME_RE.test(n)) throw Object.assign(new Error('a name is 2 to 32 lowercase letters, digits and dashes, like "hot-tub"'), { status: 422 });
         const what = String(sentence || '').trim().slice(0, 200);
-        const today = await db.maybe("SELECT count(*)::int AS n FROM glyph_drafts WHERE subject = $1 AND created_at > now() - interval '1 day'", [subject]);
-        if ((today && today.n) >= PER_DAY) throw Object.assign(new Error(`${PER_DAY} drafts a day: more tomorrow`), { status: 429 });
         if (!ai || !ai.enabled) throw Object.assign(new Error('drawing needs OpenVibe.AI, which is not configured here'), { status: 503 });
+        if (subject) {
+            const today = await db.maybe("SELECT count(*)::int AS n FROM glyph_drafts WHERE subject = $1 AND created_at > now() - interval '1 day'", [subject]);
+            if ((today && today.n) >= PER_DAY) throw Object.assign(new Error(`${PER_DAY} drafts a day: more tomorrow`), { status: 429 });
+        } else {
+            await admitGuest(guest);
+        }
         const ask = async (extra = '') => {
             const answer = await ai.text({
                 system: SYSTEM,
@@ -53,7 +73,8 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() } }) {
                 maxTokens: 1800,
                 target: { service: 'design', type: 'glyph_draft', id: n },
                 prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },   // Claude first, soft, on the person's key (L37)
-                person: subject,
+                // A person's own key when they have one (L37); a guest runs on OpenVibe's, inside the caps above.
+                ...(subject ? { person: subject } : {}),
             });
             let got = [];
             try {
@@ -78,7 +99,7 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() } }) {
             if (!r.ok) { refused.push(r.why); continue; }
             if (seen.has(r.svg)) continue;
             seen.add(r.svg);
-            const row = { id: id(), subject, name: n, sentence: what, svg: r.svg, provider: answer.provider, model: answer.model, status: 'draft', created_at: iso() };
+            const row = { id: id(), subject: who, name: n, sentence: what, svg: r.svg, provider: answer.provider, model: answer.model, status: 'draft', created_at: iso() };
             await db.exec('INSERT INTO glyph_drafts (id, subject, name, sentence, svg, provider, model, status, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
                 [row.id, row.subject, row.name, row.sentence, row.svg, row.provider, row.model, row.status, row.created_at]);
             kept.push(row);

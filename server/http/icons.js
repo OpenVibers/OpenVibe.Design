@@ -17,7 +17,8 @@
  *                                       it with its OpenVibe twin (L50 step 4); POST /api/v1/glyphs/migrate as data
  *   GET  /icons/kit, POST /icons/kit    pick glyphs, get a font with only those (WOFF2, TTF, CSS, code points) as a ZIP
  *   GET  /icons/kit.zip?names=&name=&fa=  the same kit from a link
- *   POST /icons/draft                   signed in: OpenVibe.AI drafts candidates (same-origin form)
+ *   POST /icons/draft                   OpenVibe.AI drafts candidates (same-origin form); signed out too, inside the
+ *                                       guest caps (L50 step 5), behind Cloudflare Turnstile when it is configured
  *   POST /icons/drafts/:id/review       an admin approves or rejects one (same-origin form)
  *   GET  /api/v1/glyphs                 the registry as data; ?names=a,b,fa-c (up to 120) for just those, with solids
  *   GET  /api/v1/glyphs/drafts          approved drafts, for openvibe-shared to take in (an admin may ask for others)
@@ -27,7 +28,8 @@ const { http } = require('openvibe-contracts');
 const glyphs = require('openvibe-shared/glyphs');
 const { asyncRouter } = require('./router');
 const { send, baseUrl } = require('../render/layout');
-const { writeAllowed } = require('./same-origin');
+const { writeAllowed, sameOrigin } = require('./same-origin');
+const nodeCrypto = require('crypto');
 const { iconsPage, glyphsJson } = require('../views/icons');
 const { glyphPage, faAlternativePage, kitPage, migratePage } = require('../views/icon-page');
 const aliases = require('../glyphs/aliases');
@@ -45,7 +47,39 @@ const OPEN = { 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy
 
 function createIconRoutes(ctx) {
     const { config, s, ai, log = console } = ctx;
-    const drafts = ctx.glyphDrafts || createGlyphDrafts({ db: s.db, ai });
+    const guestCaps = config.glyphGuests || { perGuest: 2, perAddress: 4, daily: 25 };
+    const drafts = ctx.glyphDrafts || createGlyphDrafts({ db: s.db, ai, guests: guestCaps });
+    // A guest (L50 step 5): a random id in an httpOnly cookie, stored only as a keyed hash; the address only as a hash
+    // salted with the day. The key is the service's own secret (a new one each start where none is set: development).
+    const GUEST_COOKIE = 'ovd_guest';
+    const guestKey = (config.oauth && config.oauth.clientSecret) ? `glyph-guest:${config.oauth.clientSecret}` : nodeCrypto.randomBytes(32).toString('hex');
+    const keyed = (v) => nodeCrypto.createHmac('sha256', guestKey).update(String(v)).digest('hex').slice(0, 40);
+    const guestOf = (req, res, { make = false } = {}) => {
+        let raw = String((req.cookies && req.cookies[GUEST_COOKIE]) || '');
+        if (!/^[0-9a-f]{32}$/.test(raw)) {
+            if (!make) return null;
+            raw = nodeCrypto.randomBytes(16).toString('hex');
+            res.cookie(GUEST_COOKIE, raw, { httpOnly: true, sameSite: 'lax', secure: /^https:/.test(String(config.baseUrl || '')), maxAge: 365 * 86400 * 1000, path: '/icons' });
+        }
+        const day = new Date().toISOString().slice(0, 10);
+        return { id: keyed(raw), ipHash: keyed(`${day}|${req.ip || ''}`) };
+    };
+    // Cloudflare Turnstile, when both keys are set: the guest form carries its widget and the token is checked here.
+    const turnstileOn = !!(guestCaps.turnstileSiteKey && guestCaps.turnstileSecret);
+    async function turnstileOk(req) {
+        if (!turnstileOn) return true;
+        const token = String((req.body || {})['cf-turnstile-response'] || '');
+        if (!token || token.length > 2048) return false;
+        try {
+            const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ secret: guestCaps.turnstileSecret, response: token, ...(req.ip ? { remoteip: req.ip } : {}) }).toString(),
+                signal: AbortSignal.timeout(5000),
+            });
+            const j = await r.json().catch(() => ({}));
+            return j.success === true;
+        } catch { return false; }
+    }
     const r = asyncRouter();
     const form = express.urlencoded({ extended: false, limit: '8kb' });
     const subjectOf = (req) => (req.viewer && req.viewer.kind === 'user' ? req.viewer.subject : null);
@@ -56,13 +90,14 @@ function createIconRoutes(ctx) {
     r.get('/icons', async (req, res) => {
         const subject = subjectOf(req);
         const reviewer = isAdmin(req);
+        const guest = subject ? null : guestOf(req, res);
         const [mine, waiting] = await Promise.all([
-            subject ? drafts.list({ subject, limit: 24 }).catch(() => []) : [],
+            subject ? drafts.list({ subject, limit: 24 }).catch(() => []) : guest ? drafts.list({ subject: `guest:${guest.id}`, limit: 24 }).catch(() => []) : [],
             reviewer ? drafts.list({ status: 'draft', limit: 60 }).catch(() => []) : [],
         ]);
         const notice = req.query.drafted != null ? (Number(req.query.drafted) ? `${Number(req.query.drafted)} candidate${Number(req.query.drafted) === 1 ? '' : 's'} drawn: they wait for review below.` : 'No candidate passed the checks this time: try saying more about it.') : req.query.reviewed ? `Draft ${String(req.query.reviewed).slice(0, 20)}.` : '';
         const draw = /^[a-z][a-z0-9-]{1,31}$/.test(String(req.query.draw || '')) ? String(req.query.draw) : '';
-        send(res, 200, iconsPage({ base: baseUrl(), mine, drafts: waiting, reviewer, notice, error: String(req.query.error || '').slice(0, 200), draw }), { viewer: req.viewer });
+        send(res, 200, iconsPage({ base: baseUrl(), mine, drafts: waiting, reviewer, notice, error: String(req.query.error || '').slice(0, 200), draw, guest: !subject ? { perDay: guestCaps.perGuest, turnstile: turnstileOn ? guestCaps.turnstileSiteKey : '' } : null }), { viewer: req.viewer, ...(guest ? { cacheControl: 'private, no-store' } : {}) });
     });
 
     r.get('/icons/font-awesome-alternative', (req, res) => send(res, 200, faAlternativePage({ base: baseUrl() }), { viewer: req.viewer }));
@@ -144,9 +179,16 @@ function createIconRoutes(ctx) {
     r.post('/icons/draft', form, async (req, res) => {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
         const subject = subjectOf(req);
-        if (!subject) return res.redirect(303, `/auth/login?next=${encodeURIComponent('/icons#draw')}`);
+        let guest = null;
+        if (!subject) {
+            // A guest's post must come from this site (a cross-site form could spend the guests' day), and pass
+            // Turnstile when it is on.
+            if (!sameOrigin(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+            if (!await turnstileOk(req)) return back(res, { error: 'The check that you are a person did not pass: try again.', draw: String((req.body || {}).name || '') });
+            guest = guestOf(req, res, { make: true });
+        }
         try {
-            const out = await drafts.draft({ subject, name: (req.body || {}).name, sentence: (req.body || {}).sentence });
+            const out = await drafts.draft({ subject, guest, name: (req.body || {}).name, sentence: (req.body || {}).sentence });
             back(res, { drafted: String(out.kept.length), draw: String((req.body || {}).name || '') });
         } catch (err) {
             if (!err.status || err.status >= 500) log.warn('[OpenVibe.Design] glyph draft failed:', err && err.message);

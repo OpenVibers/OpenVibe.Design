@@ -88,6 +88,8 @@ async function createApp(opts = {}) {
 
     const app = express();
     app.disable('x-powered-by');
+    // Cloudflare Turnstile on the guest icon form (L50 step 5), only when both of its keys are set.
+    const turnstileSrc = config.glyphGuests && config.glyphGuests.turnstileSiteKey && config.glyphGuests.turnstileSecret ? ['https://challenges.cloudflare.com'] : [];
     app.set('trust proxy', config.trustProxy);
     app.locals.ctx = ctx;
 
@@ -106,7 +108,7 @@ async function createApp(opts = {}) {
             directives: {
                 defaultSrc: ["'self'"],
                 // The OpenVibe Frame (theme-loader, navbar, footer) comes from the Network; the inline init is ours.
-                scriptSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://static.cloudflareinsights.com'],
+                scriptSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://static.cloudflareinsights.com', ...turnstileSrc],
                 styleSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
                 fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
                 // Theme previews may carry inline data: images and any https image the catalogue references.
@@ -114,7 +116,7 @@ async function createApp(opts = {}) {
                 // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
                 connectSrc: ["'self'", 'https://openvibe.network', 'https://cloudflareinsights.com', 'https://openvibe.events'],
                 // 'self' covers the Arena's about:srcdoc iframes; generated pages cannot navigate the top window.
-                frameSrc: ["'self'", 'https://openvibe.network'],
+                frameSrc: ["'self'", 'https://openvibe.network', ...turnstileSrc],
                 frameAncestors: ["'none'"],
                 objectSrc: ["'none'"],
                 baseUri: ["'self'"],
