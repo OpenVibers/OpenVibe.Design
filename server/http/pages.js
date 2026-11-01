@@ -23,6 +23,7 @@ const views = require('../views');
 const tokensView = require('../views/tokens');
 const lookView = require('../views/look');
 const componentsView = require('../views/components');
+const kitView = require('../views/kit');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const patternsView = require('../views/patterns');
@@ -211,6 +212,12 @@ function createPageRoutes(ctx) {
     });
 
     // ── Components: the design system's components for web, Android and iOS (views/components.js) ──
+    // The OpenVibe Kit, part by part (plan L54 K3).
+    r.get('/kit', (req, res) => page(res, 200, kitView.kitIndex(), req.viewer));
+    r.get('/kit/:id', (req, res) => {
+        const html = kitView.kitPart(String(req.params.id || ''));
+        return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);
+    });
     r.get('/components', (req, res) => page(res, 200, componentsView.componentsPage({ id: String(req.query.c || ''), platform: String(req.query.p || 'web') }), req.viewer));
 
     // ── Tokens: any public theme as code (views/tokens.js) ──

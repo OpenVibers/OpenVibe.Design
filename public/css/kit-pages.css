@@ -1,0 +1,106 @@
+/* openvibe.design/kit (plan L54 K3): the OpenVibe Kit, part by part.
+   The index draws every part small, by group (a sideways rail per group on a phone, so 45 parts never make a long
+   page); a part's page draws it for real on a stage, then the code, the weight and the parts either side. */
+.kt { padding-top: clamp(18px, 4vw, 40px); padding-bottom: 48px; }
+.kt-kicker { margin: 0 0 6px; font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--room-strong); }
+.kt-hero h1, .kt-part-h h1 { margin: 0; font-size: clamp(1.8rem, 4.6vw, 3rem); line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
+.kt-hero h1 { max-width: 20ch; }
+.kt-lede { margin: 12px 0 0; max-width: 68ch; color: var(--text-secondary, #96a7c2); line-height: 1.6; font-size: 1.02rem; }
+.kt code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
+
+/* Groups, as a rail of links */
+.kt-gnav { display: flex; gap: 6px; margin: 22px 0 0; padding: 2px 0 8px; overflow-x: auto; scrollbar-width: thin; }
+.kt-gnav a { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 13px; border: 1px solid var(--border, #26344d); border-radius: 999px;
+    color: var(--text-primary, #e6edf7); font-weight: 750; font-size: .86rem; text-decoration: none; background: var(--bg-card, #0f1729); }
+.kt-gnav a span { color: var(--text-muted, #7386a3); font-weight: 700; font-variant-numeric: tabular-nums; }
+.kt-gnav a:hover { border-color: color-mix(in srgb, var(--room-strong) 50%, var(--border, #26344d)); }
+.kt-gnav a:focus-visible { outline: 2px solid var(--room-strong); outline-offset: 2px; }
+
+/* Use it: three ways in */
+.kt-use { margin-top: 26px; }
+.kt-use > h2, .kt-group-h h2, .kt-code > h2, .kt-weight > h2 { margin: 0; font-size: clamp(1.15rem, 2.4vw, 1.45rem); letter-spacing: -.015em; }
+.kt-use-grid { display: grid; gap: 12px; margin-top: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); align-items: start; }
+.kt-use-card { min-width: 0; padding: 16px; border: 1px solid var(--border, #26344d); border-radius: 16px; background: var(--bg-card, #0f1729); }
+.kt .kt-use-card h3, .kt .kt-code h3 { margin: 0; font-size: .95rem; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--text-primary, #e6edf7); }
+.kt-use-card p { margin: 6px 0 10px; color: var(--text-secondary, #96a7c2); font-size: .9rem; line-height: 1.55; }
+.kt-files { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
+.kt-file { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 9px; background: color-mix(in srgb, var(--text-primary, #e6edf7) 4%, transparent); font-size: .86rem; }
+.kt-file span { color: var(--text-muted, #7386a3); font-variant-numeric: tabular-nums; }
+
+/* A group and its tiles */
+.kt-group { margin-top: 34px; scroll-margin-top: 72px; }
+.kt-group-h { display: flex; align-items: baseline; gap: 10px; }
+.kt-group-h span { padding: 1px 9px; border-radius: 999px; background: color-mix(in srgb, var(--room-strong) 16%, transparent); color: var(--room-strong); font-weight: 800; font-size: .78rem; }
+.kt-group-l { margin: 4px 0 0; color: var(--text-muted, #7386a3); font-size: .9rem; }
+.kt-grid { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr)); }
+@media (min-width: 900px) { .kt-tile--wide { grid-column: span 2; } }
+.kt-tile { position: relative; min-width: 0; display: grid; grid-template-rows: auto auto 1fr auto; border: 1px solid var(--border, #26344d); border-radius: 16px; background: var(--bg-card, #0f1729); overflow: hidden;
+    transition: border-color .15s, box-shadow .15s; scroll-margin-top: 72px; }
+.kt-tile:hover { border-color: color-mix(in srgb, var(--room-strong) 55%, var(--border, #26344d)); box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--room-strong) 60%, transparent); }
+.kt-tile:has(.kt-tile-a:focus-visible) { outline: 2px solid var(--room-strong); outline-offset: 2px; }
+/* The part itself, drawn small: never clickable, fixed children kept inside, a fade where it is cut */
+.kt-thumb { position: relative; height: 164px; padding: 16px; overflow: hidden; pointer-events: none; transform: translateZ(0); border-bottom: 1px solid var(--border, #26344d);
+    background: radial-gradient(color-mix(in srgb, var(--text-muted, #7386a3) 20%, transparent) 1px, transparent 1.2px) 0 0 / 14px 14px, var(--bg-primary, #0a0f1c);
+    -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent); mask-image: linear-gradient(180deg, #000 72%, transparent); }
+/* The stage and the thumbnails set what a sample returns side by side with a gap, as a page would: inline parts
+   (buttons, badges, marks) sit in a row, and anything that is a block takes the whole width. */
+.kt-thumb, .kt-stage { display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 10px; }
+.kt-thumb > :is(div, section, ul, ol, form, details, nav, header, table, figure, p, aside, dl, fieldset),
+.kt-stage > :is(div, section, ul, ol, form, details, nav, header, table, figure, p, aside, dl, fieldset) { flex: 1 1 100%; min-width: 0; }
+.kt-thumb > * { max-width: 100%; }
+.kt-thumb .ovk-head { position: static; }
+.kt-tile-t { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; padding: 12px 14px 0; }
+.kt-tile-a { font-weight: 800; font-size: 1rem; color: var(--text-primary, #e6edf7); text-decoration: none; }
+.kt-tile-a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+.kt-tile-a:focus-visible { outline: none; }
+.kt-tile-t code { color: var(--text-muted, #7386a3); font-size: .76rem; }
+.kt-tile-l { margin: 6px 14px 0; color: var(--text-secondary, #96a7c2); font-size: .86rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kt-tile-w { margin: 8px 14px 12px; color: var(--text-muted, #7386a3); font-size: .74rem; font-variant-numeric: tabular-nums; }
+
+.kt-helper-list { margin: 12px 0 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.kt-helper-list > div { padding: 10px 12px; border: 1px dashed var(--border, #26344d); border-radius: 12px; }
+.kt-helper-list dt code { color: var(--room-strong); font-weight: 700; }
+.kt-helper-list dd { margin: 4px 0 0; color: var(--text-secondary, #96a7c2); font-size: .86rem; line-height: 1.5; }
+.kt-more { margin: 30px 0 0; color: var(--text-muted, #7386a3); }
+.kt-more a, .kt-weight a { color: var(--room-strong); font-weight: 700; }
+
+/* A part's page */
+.kt-crumb { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; font-size: .86rem; color: var(--text-muted, #7386a3); }
+.kt-crumb a { color: var(--text-secondary, #96a7c2); text-decoration: none; font-weight: 700; }
+.kt-crumb a:hover { color: var(--room-strong); }
+.kt-facts { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.kt-facts li { padding: 4px 11px; border-radius: 999px; border: 1px solid var(--border, #26344d); font-size: .8rem; font-weight: 700; color: var(--text-secondary, #96a7c2); }
+.kt-facts li:first-child { border-color: color-mix(in srgb, var(--room-strong) 50%, var(--border, #26344d)); color: var(--room-strong); }
+/* The stage: the part for real, on a quiet dotted ground; a fixed part (the composer) stays inside it */
+.kt-stage { position: relative; margin-top: 22px; min-height: 180px; padding: clamp(18px, 3.4vw, 34px); border: 1px solid var(--border, #26344d); border-radius: 20px; transform: translateZ(0); overflow: hidden;
+    background: radial-gradient(color-mix(in srgb, var(--text-muted, #7386a3) 20%, transparent) 1px, transparent 1.2px) 0 0 / 16px 16px, var(--bg-primary, #0a0f1c); }
+.kt-stage:not(.kt-stage--wide) > * { max-width: 720px; }
+.kt-stage > dialog { flex: none; }
+.kt-stage[data-part="dock"], .kt-part[data-part="dock"] .kt-stage { min-height: 260px; }
+.kt-err { margin: 0; color: var(--text-muted, #7386a3); }
+.kt-code { margin-top: 30px; }
+.kt .kt-code h3 { margin-top: 16px; margin-bottom: 8px; }
+.kt-code .ovk-fold { margin-top: 16px; }
+.kt-weight { margin-top: 30px; }
+.kt-weight p { margin: 8px 0 0; max-width: 70ch; color: var(--text-secondary, #96a7c2); line-height: 1.6; }
+.kt-bar { margin-top: 12px; height: 10px; max-width: 520px; border-radius: 999px; background: color-mix(in srgb, var(--text-primary, #e6edf7) 8%, transparent); overflow: hidden; }
+.kt-bar i { display: block; height: 100%; min-width: 6px; border-radius: inherit; background: var(--room-strong); }
+.kt-pn { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: stretch; margin-top: 36px; }
+.kt-pn a { display: grid; align-content: center; gap: 2px; min-height: 58px; padding: 10px 14px; border: 1px solid var(--border, #26344d); border-radius: 14px; background: var(--bg-card, #0f1729);
+    color: var(--text-primary, #e6edf7); font-weight: 800; text-decoration: none; }
+.kt-pn a small { color: var(--text-muted, #7386a3); font-weight: 700; font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; }
+.kt-pn a[rel="next"] { text-align: right; }
+.kt-pn .kt-pn-all { place-items: center; color: var(--room-strong); }
+.kt-pn a:hover { border-color: color-mix(in srgb, var(--room-strong) 55%, var(--border, #26344d)); }
+
+@media (max-width: 759px) {
+  /* A group is a rail a swipe wide, not a column of tiles */
+  .kt-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+  .kt-tile { scroll-snap-align: start; }
+  .kt-use-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 88%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; align-items: stretch; }
+  .kt-use-card { scroll-snap-align: start; }
+  .kt-thumb { height: 148px; }
+  .kt-pn { grid-template-columns: 1fr 1fr; }
+  .kt-pn .kt-pn-all { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (prefers-reduced-motion: reduce) { .kt-tile { transition: none; } }
