@@ -599,12 +599,39 @@ function idleOf(kind, spec, i) {
 }
 
 let seq = 0;
+const { WILD_ROWS, wildArt } = require('./wild-marks');
 // One real name as the example (the owner, 11-01: "see what it looks like with the full domain spelled out").
 const word = () => '<span class="mx-word"><b>OpenVibe</b><span class="mx-sep">.</span><span class="mx-site">Chat</span></span>';
 const useOf = (ref, size) => `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true"><use href="#${ref}"/></svg>`;
 const delay = (i) => `--d:${f((i % 4) * 0.07)}s`;
 
-function markCard(code, kind, [name, line_, spec], i) {
+// How the name attaches to a wild mark (the owner, 11-01: "how the label could be attached… for the branding").
+function lockOf(kind, ref) {
+    const name = word();
+    switch (kind) {
+        case 'pill': return `<span class="lk-pill">${useOf(ref, 22)}${name}</span>`;
+        case 'under': return `${useOf(ref, 26)}<span class="lk-under">${name}<svg class="lk-line" viewBox="0 0 120 8" preserveAspectRatio="none" aria-hidden="true"><path d="M2 4 Q12 0 22 4 T42 4 T62 4 T82 4 T102 4 T118 4"/></svg></span>`;
+        case 'bubble': return `${useOf(ref, 24)}<span class="lk-bubble">${name}</span>`;
+        case 'stack': return `<span class="lk-stack">${useOf(ref, 30)}${name}</span>`;
+        case 'tag': return `<span class="lk-tag">${name}${useOf(ref, 18)}</span>`;
+        case 'trail': return `<span class="lk-trail">${name}<i aria-hidden="true"></i>${useOf(ref, 24)}</span>`;
+        default: return `${useOf(ref, 26)}${name}`;
+    }
+}
+
+function markCard(code, kind, [name, line_, spec, lock], i) {
+    if (kind === 'W') {
+        const art = wildArt(spec, `m${++seq}`);
+        const ref = `art-${code}`;
+        return `<li class="mx-card mx-wild" id="${code}" data-code="${code}" style="${delay(i)}">
+<button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false" aria-label="Pick ${code}"></button>
+<div class="mx-stage"><svg viewBox="0 0 100 100" width="132" height="132" role="img" aria-label="${code} ${esc(name)}" data-idle="wild" data-wild="${spec}"><defs>${art.defs}</defs><g id="${ref}">${art.body}</g></svg></div>
+<div class="mx-lock lk-${lock || 'side'}">${lockOf(lock, ref)}</div>
+<div class="mx-status" aria-label="As a status: live and new"><span class="mx-dark">${useOf(ref, 16)}${useOf(ref, 28)}</span><span class="st st-live" data-st="live" title="Live"></span><span class="st st-new" data-st="new" title="Something new"></span></div>
+<p class="mx-name"><b>${code}</b> ${esc(name)}</p>
+<p class="mx-line">${esc(line_)}</p>
+</li>`;
+    }
     const art = kind === 'L' ? loopArt(spec, `m${++seq}`) : pairArt(spec, `m${++seq}`);
     const ref = `art-${code}`;
     return `<li class="mx-card" id="${code}" data-code="${code}" style="${delay(i)}">
@@ -675,8 +702,9 @@ function panel(id, kind, rows, label, hidden) {
         return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small><span class="mx-swipe" aria-hidden="true">swipe →</span></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
     }).join('');
     const NEXT = {
-        loop: [['pair', 'See the Pair', 'the other logo'], ['menu', 'Next: menu button', 'step 2']],
-        pair: [['loop', 'See the Loop', 'the other logo'], ['menu', 'Next: menu button', 'step 2']],
+        loop: [['pair', 'See the Pair', 'the second kind'], ['wild', 'See the Wildcards', 'forty other ideas'], ['menu', 'Next: menu button', 'step 2']],
+        pair: [['loop', 'See the Loop', 'the first kind'], ['wild', 'See the Wildcards', 'forty other ideas'], ['menu', 'Next: menu button', 'step 2']],
+        wild: [['loop', 'See the Loop', 'the first kind'], ['pair', 'See the Pair', 'the second kind'], ['menu', 'Next: menu button', 'step 2']],
         menu: [['loop', 'Back', 'step 1, the logo'], ['font', 'Next: font', 'step 3']],
         font: [['menu', 'Back', 'step 2, the menu button'], ['share', 'Done: share', 'your votes are in']],
     }[id];
@@ -684,8 +712,9 @@ function panel(id, kind, rows, label, hidden) {
         ? `<button type="button" class="mx-next-share" data-mx-share><b>${title} <span aria-hidden="true">✓</span></b><small>${line_}</small></button>`
         : `<a href="#${to}" data-mx-go="${to}"><b>${title} <span aria-hidden="true">${/^Back/.test(title) ? '←' : '→'}</span></b><small>${line_}</small></a>`).join('')}</nav>`;
     const STEP = {
-        loop: [1, 'Pick a logo: the Loop', 'Tap the ones you like. Look at the Pair too.'],
-        pair: [1, 'Pick a logo: the Pair', 'Tap the ones you like. Look at the Loop too.'],
+        loop: [1, 'Pick a logo: the Loop', 'Tap the ones you like. Look at the Pair and the Wildcards too.'],
+        pair: [1, 'Pick a logo: the Pair', 'Tap the ones you like. Look at the Loop and the Wildcards too.'],
+        wild: [1, 'Pick a logo: the Wildcards', 'Forty other ideas. Each moves, shows a status, and wears the name its own way.'],
         menu: [2, 'Pick a menu button', 'Tap one to see it open.'],
         font: [3, 'Pick a font', 'Tap the one that looks right.'],
     }[id];
@@ -699,6 +728,7 @@ function miniArt(code, size = 26, tag = '') {
     const i = Number(code.slice(1)) - 1;
     if (code[0] === 'M') { const m = MENUS[i]; return m ? `<span class="mb-btn mx-mini-m">${menuSvg(m[2], m[3], m[4], size - 4)}</span>` : ''; }
     if (code[0] === 'F') { const fo = FONTS[i]; return fo ? `<span class="fx-mini" style="font-family:${esc(fo[2])};font-weight:${fo[3]}">Aa</span>` : ''; }
+    if (code[0] === 'W') { const w = WILD_ROWS.flatMap((r) => r.items)[i]; if (!w) return ''; const a = wildArt(w[2], `t${tag}${code}`); return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">${a.defs ? `<defs>${a.defs}</defs>` : ''}${a.body}</svg>`; }
     const item = (code[0] === 'L' ? LOOPS : PAIRS)[i];
     if (!item) return '';
     const art = code[0] === 'L' ? loopArt(item[2], `t${tag}${code}`) : pairArt(item[2], `t${tag}${code}`);
@@ -712,24 +742,28 @@ function tallyBlock(t) {
     // each family (someone who picks from both counts for both), the top takes of each family on its own row, and
     // every take's count in a fold anyone can open. marks.js redraws it the moment a card is tapped.
     const people = (t && t.people) || 0;
-    const loop = (t && t.lean && t.lean.loop) || 0, pair = (t && t.lean && t.lean.pair) || 0, both = (t && t.lean && t.lean.both) || 0;
-    const loopPct = loop + pair ? Math.round((loop / (loop + pair)) * 100) : 50;
+    const loop = (t && t.lean && t.lean.loop) || 0, pair = (t && t.lean && t.lean.pair) || 0, wild = (t && t.lean && t.lean.wild) || 0, both = (t && t.lean && t.lean.both) || 0;
+    const sum3 = loop + pair + wild;
+    const loopPct = sum3 ? Math.round((loop / sum3) * 100) : 34, pairPct = sum3 ? Math.round((pair / sum3) * 100) : 33;
     const fam = (k, n) => (t ? (t.top[k] || []).slice(0, n) : []);
-    const lead = loop + pair ? (loop === pair ? 'Even so far' : loop > pair ? 'More people like the Loop' : 'More people like the Pair') : '';
+    const top3 = Math.max(loop, pair, wild);
+    const leaders = [['the Loop', loop], ['the Pair', pair], ['the Wildcards', wild]].filter(([, n]) => n === top3);
+    const lead = sum3 ? (leaders.length > 1 ? 'Even so far' : `More people like ${leaders[0][0]}`) : '';
     const ppl = (n) => `${n} ${n === 1 ? 'person' : 'people'}`;
     const row = (label, attr, list) => `<div class="mx-tops"${list.length ? '' : ' hidden'}><span class="mx-tops-k">${label}</span><span class="mx-tops-list" ${attr}>${list.map(chipOf).join('')}</span></div>`;
     const every = t && Array.isArray(t.all) ? t.all : [];
     const allRow = (k, label) => { const list = every.filter((x) => x.code[0] === k); return `<div class="mx-all-row"${list.length ? '' : ' hidden'}><span class="mx-tops-k">${label}</span><span class="mx-all-list" data-mx-all-${k.toLowerCase()}>${list.map(chipOf).join('')}</span></div>`; };
     return `<section class="mx-tally${people ? '' : ' is-empty'}" data-mx-tally aria-label="Votes so far" aria-live="polite">
 <div class="mx-tally-h"><b>Votes so far</b><span class="mx-tally-n" data-mx-people>${people ? ppl(people) : 'No votes yet. Tap any logo to vote.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
-<div class="mx-split" data-mx-split style="--l:${loopPct}%"${loop + pair ? '' : ' hidden'}><span class="mx-split-l">${miniArt('L01', 18, 'e')}Loop <b data-mx-loop>${loop}</b></span><span class="mx-split-r"><b data-mx-pair>${pair}</b> Pair${miniArt('P01', 18, 'e')}</span></div>
-<p class="mx-both" data-mx-both${both ? '' : ' hidden'}>${ppl(both)} like both</p>
+<div class="mx-split3" data-mx-split style="--l:${loopPct}%;--p:${pairPct}%"${sum3 ? '' : ' hidden'}><span class="mx-s3 mx-s3-l">${miniArt('L01', 16, 'e')}Loop <b data-mx-loop>${loop}</b></span><span class="mx-s3 mx-s3-p">${miniArt('P01', 16, 'e')}Pair <b data-mx-pair>${pair}</b></span><span class="mx-s3 mx-s3-w">${miniArt('W01', 16, 'e')}Wild <b data-mx-wild>${wild}</b></span></div>
+<p class="mx-both" data-mx-both${both ? '' : ' hidden'}>${ppl(both)} like more than one kind</p>
 ${row('Loop', 'data-mx-tops-l', fam('L', 4))}
 ${row('Pair', 'data-mx-tops-p', fam('P', 4))}
+${row('Wild', 'data-mx-tops-w', fam('W', 4))}
 ${row('Menu', 'data-mx-tops-m', fam('M', 3))}
 ${row('Font', 'data-mx-tops-f', fam('F', 3))}
 <details class="mx-all" data-mx-all${every.length ? '' : ' hidden'}><summary>Every vote <span data-mx-all-n>${every.length} take${every.length === 1 ? '' : 's'}</span></summary>
-${allRow('L', 'Loop')}${allRow('P', 'Pair')}${allRow('M', 'Menu')}${allRow('F', 'Font')}</details>
+${allRow('L', 'Loop')}${allRow('P', 'Pair')}${allRow('W', 'Wild')}${allRow('M', 'Menu')}${allRow('F', 'Font')}</details>
 <div class="mx-mine" data-mx-mine hidden><span class="mx-tops-k">Yours</span><b data-mx-picks></b><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button><em class="mx-saved" data-mx-saved>saved</em></div>
 </section>`;
 }
@@ -739,6 +773,8 @@ function explorePage({ tally = null } = {}) {
     const today = pairArt(PAIR_ROWS[0].items[0][2], 'xpair');
     const loopEx = loopArt(LOOP_ROWS[0].items[0][2], 'xloop');
     const pairEx = pairArt(PAIR_ROWS[0].items[0][2], 'xpairtab');
+    const wildEx = wildArt(WILD_ROWS[0].items[0][2], 'xwildtab');
+    const WN = WILD_ROWS.reduce((n, r) => n + r.items.length, 0);
     const m1 = MENU_ROWS[0].items[0];
     const tab = (id, title, line_, art, range, on, side) => `<a class="mx-tab${side ? ' mx-tab-side' : ''}" role="tab" id="mx-tab-${id}" href="#${id}" aria-controls="${id}" aria-selected="${on ? 'true' : 'false'}" data-mx-tab="${id}"><span class="mx-tab-art" data-mx-cycle="${id}"><span class="mx-ta">${art}</span><em class="mx-tab-code" aria-hidden="true"></em></span><span class="mx-tab-t"><b>${title}</b><small>${line_}</small><em>${range}</em></span></a>`;
     const chip = (attr, value, label, extra = '') => `<button type="button" class="mx-chip" ${attr}="${esc(value)}" aria-pressed="false"${extra}>${label}</button>`;
@@ -748,7 +784,7 @@ function explorePage({ tally = null } = {}) {
 <header class="mx-hero">
 <p class="mx-eye">OpenVibe logo vote</p>
 <h1>Which logo should OpenVibe use?</h1>
-<p class="mx-lede">Tap every logo you like, from both kinds if you want. Then pick a menu button and a font. Votes count right away.</p>
+<p class="mx-lede">Tap every logo you like: the Loop, the Pair and/or the Wildcards, any mix. Then pick a menu button and a font. Votes count right away.</p>
 </header>
 ${tallyBlock(tally)}
 <nav class="mx-choose" role="tablist" aria-label="What to choose">
@@ -757,6 +793,8 @@ ${tallyBlock(tally)}
 ${tab('loop', 'The Loop', 'A V inside a ring', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${loopEx.defs}</defs>${loopEx.body}</svg>`, `L01–L${LOOPS.length} · ${LOOPS.length} takes`, true)}
 <span class="mx-or" aria-hidden="true">+</span>
 ${tab('pair', 'The Pair', 'An O next to a V', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${pairEx.defs}</defs>${pairEx.body}</svg>`, `P01–P${PAIRS.length} · ${PAIRS.length} takes`)}
+<span class="mx-or" aria-hidden="true">+</span>
+${tab('wild', 'The Wildcards', 'Forty other ideas', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${wildEx.defs}</defs>${wildEx.body}</svg>`, `W01–W${pad(WN)} · ${WN} ideas`)}
 </div>
 <p class="mx-q" role="presentation"><span class="mx-qn">2</span> <b>Pick a menu button</b> <small>it sits next to the logo</small></p>
 ${tab('menu', 'The menu button', 'The button next to the logo', `<span class="mb-btn mb-tabbtn">${menuSvg(m1[2], m1[3], m1[4], 30)}</span>`, 'M01–M50', false, true)}
@@ -767,6 +805,7 @@ ${tab('font', 'The font', 'The letters of the name', '<span class="fx-tabart" ar
 <span class="mx-stepn" aria-hidden="true">1</span><span class="mx-steps-k">The mark</span>
 <a href="#loop" data-mx-go="loop" class="mx-step">${miniArt('L01', 20, 's')}<span>Loop</span><i data-mx-count="L"></i></a>
 <a href="#pair" data-mx-go="pair" class="mx-step">${miniArt('P01', 20, 's')}<span>Pair</span><i data-mx-count="P"></i></a>
+<a href="#wild" data-mx-go="wild" class="mx-step">${miniArt('W01', 20, 's')}<span>Wild</span><i data-mx-count="W"></i></a>
 <span class="mx-steps-sep" aria-hidden="true">→</span><span class="mx-stepn" aria-hidden="true">2</span>
 <a href="#menu" data-mx-go="menu" class="mx-step mx-step-2">${miniArt('M01', 22, 's')}<span>Menu button</span><i data-mx-count="M"></i></a>
 <span class="mx-steps-sep" aria-hidden="true">→</span><span class="mx-stepn" aria-hidden="true">3</span>
@@ -776,6 +815,7 @@ ${tab('font', 'The font', 'The letters of the name', '<span class="fx-tabart" ar
 </nav>
 ${panel('loop', 'L', LOOP_ROWS, `The Loop: ${LOOPS.length} takes`, false)}
 ${panel('pair', 'P', PAIR_ROWS, `The Pair: ${PAIRS.length} takes`, true)}
+${panel('wild', 'W', WILD_ROWS, `The Wildcards: ${WN} ideas`, true)}
 ${panel('menu', 'M', MENU_ROWS, 'The menu button: fifty ideas', true)}
 ${panel('font', 'F', FONT_ROWS, 'The font: twelve faces', true)}
 <div class="mx-nudge" data-mx-nudge role="status" hidden><span data-mx-nudge-text></span><a href="#menu" data-mx-go="menu" class="mx-btn" data-mx-nudge-go>Go to step 2 →</a><button type="button" class="mx-btn mx-btn-quiet" data-mx-nudge-close aria-label="Close">✕</button></div>
@@ -783,7 +823,7 @@ ${panel('font', 'F', FONT_ROWS, 'The font: twelve faces', true)}
 </div>`;
     return layout({
         title: 'Help choose the OpenVibe mark',
-        description: 'Help choose the OpenVibe mark in three quick steps: the Loop or the Pair, the menu button beside it, and the font of the name.',
+        description: 'Help choose the OpenVibe mark in three quick steps: the Loop, the Pair and/or the Wildcards, the menu button beside it, and the font of the name.',
         path: '/brand/explore',
         active: '/brand',
         robots: 'noindex, follow',
@@ -796,4 +836,5 @@ ${panel('font', 'F', FONT_ROWS, 'The font: twelve faces', true)}
 const LOOPS = LOOP_ROWS.flatMap((r) => r.items);
 const PAIRS = PAIR_ROWS.flatMap((r) => r.items);
 const MENUS = MENU_ROWS.flatMap((r) => r.items);
-module.exports = { explorePage, tallyBlock, FONTS, LOOPS, PAIRS, MENUS, LOOP_ROWS, PAIR_ROWS, MENU_ROWS, loopArt, pairArt };
+const WILDS = WILD_ROWS.flatMap((r) => r.items);
+module.exports = { explorePage, tallyBlock, FONTS, LOOPS, PAIRS, MENUS, WILDS, LOOP_ROWS, PAIR_ROWS, MENU_ROWS, WILD_ROWS, loopArt, pairArt, wildArt };
