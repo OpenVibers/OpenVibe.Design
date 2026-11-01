@@ -228,7 +228,7 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             const map = (await t.get('/sitemap.xml')).text;
             assert.ok(map.includes('<loc>https://openvibe.design/icons/eye</loc>'));
             assert.ok(map.includes('<image:image><image:loc>https://openvibe.design/icons/eye.svg</image:loc></image:image>'));
-            assert.equal((map.match(/<loc>https:\/\/openvibe\.design\/icons\/[a-z0-9-]+<\/loc>/g) || []).length, glyphs.NAMES.length + 1, 'each glyph, and the alternative');
+            assert.equal((map.match(/<loc>https:\/\/openvibe\.design\/icons\/[a-z0-9-]+<\/loc>/g) || []).length, glyphs.NAMES.length + 2, 'each glyph, the alternative and the migration page');
             assert.ok((await t.get('/llms.txt')).text.includes('/icons/font-awesome-alternative'));
         });
     } finally {

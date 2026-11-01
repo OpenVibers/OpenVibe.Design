@@ -13,6 +13,8 @@
  *   GET  /icons/pack/<file>             the fonts (WOFF2, TTF, OTF), the sprite, the CSS, the code points, and
  *                                       ov-glyphs-svg.zip with every glyph
  *   GET  /icons/font-awesome-alternative  how to switch, and what keeps working
+ *   GET  /icons/migrate, POST /icons/migrate   paste a page or code: every Font Awesome, Lucide, Material or MUI icon in
+ *                                       it with its OpenVibe twin (L50 step 4); POST /api/v1/glyphs/migrate as data
  *   GET  /icons/kit, POST /icons/kit    pick glyphs, get a font with only those (WOFF2, TTF, CSS, code points) as a ZIP
  *   GET  /icons/kit.zip?names=&name=&fa=  the same kit from a link
  *   POST /icons/draft                   signed in: OpenVibe.AI drafts candidates (same-origin form)
@@ -27,7 +29,8 @@ const { asyncRouter } = require('./router');
 const { send, baseUrl } = require('../render/layout');
 const { writeAllowed } = require('./same-origin');
 const { iconsPage, glyphsJson } = require('../views/icons');
-const { glyphPage, faAlternativePage, kitPage } = require('../views/icon-page');
+const { glyphPage, faAlternativePage, kitPage, migratePage } = require('../views/icon-page');
+const aliases = require('../glyphs/aliases');
 const kits = require('../glyphs/kits');
 const ex = require('../glyphs/export');
 const { createGlyphDrafts } = require('../glyphs/drafts');
@@ -63,6 +66,24 @@ function createIconRoutes(ctx) {
     });
 
     r.get('/icons/font-awesome-alternative', (req, res) => send(res, 200, faAlternativePage({ base: baseUrl() }), { viewer: req.viewer }));
+
+    // Switching from another set (L50 step 4). The text is only read, never stored, fetched from or run.
+    const bigForm = express.urlencoded({ extended: false, limit: '450kb' });
+    r.get('/icons/migrate', (req, res) => send(res, 200, migratePage({ base: baseUrl() }), { viewer: req.viewer }));
+    r.post('/icons/migrate', bigForm, (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const text = String((req.body || {}).text || '').slice(0, 400000);
+        send(res, 200, migratePage({ base: baseUrl(), text, found: aliases.scan(text) }), { viewer: req.viewer, cacheControl: 'private, no-store' });
+    });
+    r.options('/api/v1/glyphs/migrate', (_req, res) => res.set(OPEN).set('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        .set('Access-Control-Allow-Headers', 'Content-Type').set('Access-Control-Max-Age', '86400').status(204).end());
+    r.post('/api/v1/glyphs/migrate', (req, res) => {
+        res.set(OPEN).set('Cache-Control', 'no-store');
+        const text = req.body && typeof req.body.text === 'string' ? req.body.text : null;
+        if (text == null) return problem(res, req, 422, 'design.invalid', 'Send { "text": "…" }: a page, a template or code, up to 64 KB.');
+        const found = aliases.scan(text);
+        res.json({ count: found.length, matched: found.filter((f) => f.glyph || f.brand).length, icons: found });
+    });
 
     // Kits: a font with only the glyphs a site uses (L32 I5). The form posts the picks; the link form is for a build step.
     const sendKit = async (req, res, choice) => {
@@ -146,9 +167,10 @@ function createIconRoutes(ctx) {
         if (req.query.names == null) return res.json(glyphsJson());
         // Just the names asked for (<ov-icon> asks for a page's in one go): a glyph or a Font Awesome name, each answered
         // under the name it was asked by; an unknown one is left out.
-        const asked = [...new Set(String(req.query.names).split(',').map((n) => n.trim().toLowerCase()).filter((n) => /^[a-z][a-z0-9-]{0,47}$/.test(n)))].slice(0, 120);
+        // Any set's name works (L50 step 4): "gear", "fa-gear", "lucide:settings", "material:delete", or a bare "settings".
+        const asked = [...new Set(String(req.query.names).split(',').map((n) => n.trim().toLowerCase()).filter((n) => /^(?:(?:lucide|material|mui|fa):)?[a-z][a-z0-9_-]{0,47}$/.test(n)))].slice(0, 120);
         const out = asked.map((a) => {
-            const name = glyphs.path(a) ? a : glyphs.fromFa(a);
+            const name = aliases.resolve(a);
             return name ? { asked: a, name, svg: glyphs.path(name), solid: glyphs.solid(name) || '' } : null;
         }).filter(Boolean);
         res.json({ count: out.length, glyphs: out });

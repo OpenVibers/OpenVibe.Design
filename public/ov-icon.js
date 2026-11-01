@@ -3,7 +3,8 @@
  * <script src="https://openvibe.design/ov-icon.js" defer></script>
  * <ov-icon name="heart"></ov-icon>                       follows the text: 1em, currentColor
  * <ov-icon name="mic" size="16" label="Microphone"></ov-icon>   a size in pixels; a label makes it an image to screen readers
- * <ov-icon name="fa-gear"></ov-icon>                     a Font Awesome name works too
+ * <ov-icon name="fa-gear"></ov-icon>                     a Font Awesome name works too, and Lucide's or Material's:
+ * <ov-icon name="lucide:settings"></ov-icon>  <ov-icon name="material:delete"></ov-icon>   (openvibe.design/icons/migrate)
  * <ov-icon name="bell" variant="solid"></ov-icon>        line | solid | auto (the default)
  *
  * Every size by itself: on auto, an icon 18 px or smaller shows its solid drawing when it has one (a container query,
@@ -19,7 +20,7 @@
     var script = document.currentScript;
     var BASE = 'https://openvibe.design';
     try { if (script && script.src) BASE = new URL(script.src).origin; } catch (e) { /* the default */ }
-    var NAME = /^(?:fa-)?[a-z][a-z0-9-]{0,47}$/;
+    var NAME = /^(?:(?:lucide|material|mui|fa):)?[a-z][a-z0-9_-]{0,47}$/;
 
     // ── The drawings: asked for together, kept for the page's life ──
     var known = Object.create(null);   // name → Promise<{ line, solid } | null>

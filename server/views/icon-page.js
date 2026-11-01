@@ -202,7 +202,7 @@ function faAlternativePage({ base = 'https://openvibe.design' } = {}) {
   <div class="ic-sec-head"><h2 id="fa-switch">Switch in a minute</h2><p>${Object.keys(glyphs.FA).length} Font Awesome names map to ${glyphs.NAMES.length} glyphs today. A name we have not drawn stays Font Awesome&rsquo;s, so nothing goes blank.</p></div>
   <ol class="fa-steps">
     <li><b>Add the drop-in.</b>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>`, id: 'fa-step1', label: 'Copy' })}</li>
-    <li><b>Check what your pages use</b> against <a href="/icons#ic-left">what is still Font Awesome</a>. Missing one? <a href="/icons#draw">Draw it</a>.</li>
+    <li><b>Check what your pages use:</b> <a href="/icons/migrate">paste a page</a> and see each icon&rsquo;s twin, or look at <a href="/icons#ic-left">what is still Font Awesome</a>. Missing one? <a href="/icons#draw">Draw it</a>.</li>
     <li><b>Drop Font Awesome&rsquo;s stylesheet</b> once every name is covered: one less stylesheet and font on every first visit. Or use the font with Font Awesome&rsquo;s names on it:${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-fa.css">`, id: 'fa-step3', label: 'Copy' })}</li>
   </ol>
 </section>
@@ -252,4 +252,58 @@ ${kit.snippet({ code: 'https://openvibe.design/icons/kit.zip?names=eye,live,hear
     });
 }
 
-module.exports = { glyphPage, faAlternativePage, kitPage, related, faOf, title };
+/**
+ * /icons/migrate (plan L50 step 4): paste a page, a template or a component, and see every icon it asks for with its
+ * OpenVibe twin: Font Awesome, Lucide (data-lucide, lucide-react/vue/svelte imports), Material Symbols and MUI. A plain
+ * form; nothing is fetched or run, the text is only read (server/glyphs/aliases.js scan) and never kept.
+ */
+function migratePage({ base = 'https://openvibe.design', text = '', found = null, error = '' } = {}) {
+    const SETS = { fa: 'Font Awesome', 'fa-brands': 'Font Awesome brand', lucide: 'Lucide', material: 'Material' };
+    const theirs = (f) => (f.set === 'fa' || f.set === 'fa-brands' ? `fa-${f.name}` : f.set === 'material' ? f.name : f.name);
+    let results = '';
+    if (found) {
+        const matched = found.filter((f) => f.glyph || f.brand);
+        const uses = found.reduce((a, f) => a + f.count, 0), usesOk = matched.reduce((a, f) => a + f.count, 0);
+        const sets = [...new Set(found.map((f) => f.set))];
+        const how = [
+            sets.includes('fa') || sets.includes('fa-brands') ? `<li><b>Font Awesome: keep your markup.</b> Add the drop-in, and every name with a twin shows ours, brands included.${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>`, id: 'mg-fa', label: 'Copy' })}</li>` : '',
+            sets.includes('lucide') || sets.includes('material') ? `<li><b>Lucide and Material: one tag each.</b> Add the web component, then swap each icon for the <code>&lt;ov-icon&gt;</code> in the table (or keep the old name with <code>lucide:</code> or <code>material:</code> in front).${kit.snippet({ code: `<script src="${base}/ov-icon.js" defer></script>`, id: 'mg-wc', label: 'Copy' })}</li>` : '',
+        ].filter(Boolean).join('');
+        const row = (f) => {
+            const ours = f.glyph ? `<a class="mg-ours" href="/icons/${esc(f.glyph)}">${glyph(f.glyph, 22)}<span>${esc(f.glyph)}</span></a>`
+                : f.brand ? `<span class="mg-ours is-brand">${esc(f.brand)} <small>the brand&rsquo;s own logo</small></span>`
+                    : `<span class="mg-none">None yet. <a href="/icons?draw=${esc(String(f.name).replace(/_/g, '-').slice(0, 31))}#draw">Draw it</a></span>`;
+            const use = f.glyph ? `<code>&lt;ov-icon name="${esc(f.glyph)}"&gt;&lt;/ov-icon&gt;</code>` : f.brand ? '<code>the drop-in draws it</code>' : '';
+            return `<tr${f.glyph || f.brand ? '' : ' class="is-missing"'}><td><span class="mg-yours"><span class="mg-set">${esc(SETS[f.set] || f.set)}</span><code>${esc(theirs(f))}</code></span></td><td class="mg-n">${f.count}</td><td>${ours}</td><td>${use}</td></tr>`;
+        };
+        results = found.length ? `<section class="ic-sec" id="results" aria-labelledby="mg-res">
+  <div class="ic-sec-head"><h2 id="mg-res">${matched.length} of ${found.length} have a twin</h2><p>${usesOk} of the ${uses} times your text asks for an icon would show an OpenVibe one. The rest stay as they are until someone draws them.</p></div>
+  ${how ? `<ol class="fa-steps">${how}</ol>` : ''}
+  <div class="mg-wrap"><table class="mg-table"><thead><tr><th scope="col">Yours</th><th scope="col">Uses</th><th scope="col">OpenVibe</th><th scope="col">Use</th></tr></thead><tbody>${found.map(row).join('')}</tbody></table></div>
+</section>` : `<section class="ic-sec" id="results" aria-labelledby="mg-res"><div class="ic-sec-head"><h2 id="mg-res">No icons found</h2><p>Nothing in that text looks like a Font Awesome class, a Lucide icon or a Material one. Paste the HTML of a page, a template, or a component&rsquo;s imports.</p></div></section>`;
+    }
+    const body = `<article class="ic mg">
+<nav class="gp-crumbs" aria-label="Breadcrumb"><a href="/icons">Icons</a><span aria-hidden="true">/</span><span>Switch from another set</span></nav>
+<header class="ic-hero">
+  <p class="ic-eye">Switch icon sets</p>
+  <h1 class="ic-h1">Paste your page. See your icons, ours.</h1>
+  <p class="ic-lede">Font Awesome, Lucide, Material Symbols or MUI: paste a page&rsquo;s HTML, a template or a component, and every icon it uses comes back with its OpenVibe twin and the line to use it. Nothing is stored or fetched; the text is only read.</p>
+</header>
+${error ? kit.notice({ kind: 'error', text: error }) : ''}
+<form class="mg-form" method="post" action="/icons/migrate#results">
+  <label class="mg-label" for="mg-text">Your HTML or code</label>
+  <textarea id="mg-text" name="text" rows="10" maxlength="400000" spellcheck="false" placeholder="&lt;i class=&quot;fa-solid fa-gear&quot;&gt;&lt;/i&gt;   &lt;i data-lucide=&quot;trash-2&quot;&gt;&lt;/i&gt;   import { Settings } from 'lucide-react'   &lt;span class=&quot;material-symbols-outlined&quot;&gt;home&lt;/span&gt;">${esc(text)}</textarea>
+  <div class="mg-go"><button type="submit" class="ic-btn is-go">${kit.icon('search')} Find the twins</button><span>Up to 400 KB. Font Awesome, Lucide, Material, MUI.</span></div>
+</form>
+${results}
+<section class="ic-sec" aria-labelledby="mg-api"><div class="ic-sec-head"><h2 id="mg-api">For a build step or an agent</h2><p>The same answer as data, and any set&rsquo;s name works in <code>&lt;ov-icon&gt;</code> and the drawings API.</p></div>
+${kit.snippet({ code: `POST ${base}/api/v1/glyphs/migrate\nContent-Type: application/json\n\n{ "text": "<i data-lucide=\"settings\"></i>" }\n\n<ov-icon name="lucide:settings"></ov-icon>   <ov-icon name="material:delete"></ov-icon>`, id: 'mg-api-code', label: 'Copy' })}</section>
+</article>`;
+    return layout({
+        title: 'Switch from Font Awesome, Lucide or Material',
+        description: 'Paste your HTML or code and see every Font Awesome, Lucide, Material or MUI icon it uses with its free OpenVibe twin, and the line to use it.',
+        path: '/icons/migrate', active: '/icons', styles: ['css/icons.css'], scripts: [], body,
+    });
+}
+
+module.exports = { glyphPage, faAlternativePage, kitPage, migratePage, related, faOf, title };
