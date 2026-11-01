@@ -12,7 +12,7 @@
  *   androidXml(doc)     an Android colors.xml
  */
 const tokens = require('openvibe-shared/tokens');
-const { MOTION, BRAND, colourList } = require('./kit');
+const { MOTION, BRAND, colourList, radiusList } = require('./kit');
 
 const metaOf = (doc) => (doc && doc.$extensions && doc.$extensions['network.openvibe']) || { name: 'Theme', slug: 'theme', mode: 'dark' };
 const camel = (path) => String(path).split('.').map((p, i) => (i ? p[0].toUpperCase() + p.slice(1) : p)).join('').replace(/[^A-Za-z0-9]/g, '');
@@ -61,6 +61,8 @@ function css(doc) {
     lines.push(`    /* the kit's motion (openvibe-shared/ov-fx) */`);
     for (const d of MOTION.durations) lines.push(`    ${d.css}: ${d.ms}ms;`);
     for (const e of MOTION.easings) lines.push(`    ${e.css}: cubic-bezier(${e.value.join(', ')});`);
+    lines.push(`    /* the kit's shape (openvibe-shared kit.css) */`);
+    for (const r of radiusList(doc)) lines.push(`    ${r.css}: ${r.px}px;`);
     lines.push(`    /* the mark */`);
     for (const b of BRAND) lines.push(`    ${b.css}: ${b.value};`);
     lines.push(`    color-scheme: ${m.mode === 'light' ? 'light' : 'dark'};`);
@@ -84,7 +86,9 @@ function tailwind(doc) {
     for (const d of MOTION.durations) transitionDuration[d.id] = `${d.ms}ms`;
     const transitionTimingFunction = {};
     for (const e of MOTION.easings) transitionTimingFunction[e.id] = `cubic-bezier(${e.value.join(', ')})`;
-    const config = { theme: { extend: { colors, transitionDuration, transitionTimingFunction } } };
+    const borderRadius = {};
+    for (const r of radiusList(doc)) borderRadius[`ov-${r.id}`] = `${r.px}px`;
+    const config = { theme: { extend: { colors, transitionDuration, transitionTimingFunction, borderRadius } } };
     return `${header(doc, 'js')}\nmodule.exports = ${JSON.stringify(config, null, 4)};\n`;
 }
 
@@ -100,6 +104,7 @@ function styleDictionary(doc) {
     for (const c of colourList(doc)) put(out, c.path, { value: c.value, type: 'color', description: c.description });
     for (const d of MOTION.durations) put(out, `motion.duration.${d.id}`, { value: `${d.ms}ms`, type: 'duration', description: d.description });
     for (const e of MOTION.easings) put(out, `motion.easing.${e.id}`, { value: e.value.slice(), type: 'cubicBezier', description: e.description });
+    for (const r of radiusList(doc)) put(out, `shape.radius.${r.id}`, { value: `${r.px}px`, type: 'dimension', description: r.description });
     for (const b of BRAND) put(out, `brand.${b.id}`, { value: b.value, type: 'color', description: b.description });
     return `${JSON.stringify(out, null, 2)}\n`;
 }
@@ -138,6 +143,10 @@ function swift(doc) {
         lines.push(`    /// The kit's motion: ${e.css}.`);
         lines.push(`    public static let ${e.name} = Animation.timingCurve(${e.value.join(', ')})`);
     }
+    for (const r of radiusList(doc)) {
+        lines.push(`    /// The kit's shape: ${r.css}, ${safe(r.description).toLowerCase()}.`);
+        lines.push(`    public static let ${r.name}: CGFloat = ${r.px}`);
+    }
     for (const b of BRAND) {
         lines.push(`    /// ${safe(b.description)}`);
         lines.push(`    public static let ${b.name} = Color(hex: 0x${argb(b.value).argb})`);
@@ -155,6 +164,7 @@ function kotlin(doc) {
     lines.push('');
     lines.push('import androidx.compose.animation.core.CubicBezierEasing');
     lines.push('import androidx.compose.ui.graphics.Color');
+    lines.push('import androidx.compose.ui.unit.dp');
     lines.push('');
     lines.push(`/** OpenVibe's tokens for ${safe(m.name)} (${m.mode === 'light' ? 'light' : 'dark'}). */`);
     lines.push('object OVTokens {');
@@ -171,6 +181,10 @@ function kotlin(doc) {
     for (const e of MOTION.easings) {
         lines.push(`    /** The kit's motion: ${e.css}. */`);
         lines.push(`    val ${e.name} = CubicBezierEasing(${e.value.map((n) => `${n}f`).join(', ')})`);
+    }
+    for (const r of radiusList(doc)) {
+        lines.push(`    /** The kit's shape: ${r.css}, ${safe(r.description).toLowerCase()}. */`);
+        lines.push(`    val ${r.name} = ${r.px}.dp`);
     }
     for (const b of BRAND) {
         lines.push(`    /** ${safe(b.description)} */`);
@@ -196,6 +210,10 @@ function androidXml(doc) {
     for (const b of BRAND) {
         lines.push(`    <!-- ${safe(b.description)} -->`);
         lines.push(`    <color name="ov_brand_${b.id}">#${argb(b.value).rgb}</color>`);
+    }
+    for (const r of radiusList(doc)) {
+        lines.push(`    <!-- The kit's shape: ${safe(r.description).toLowerCase()} -->`);
+        lines.push(`    <dimen name="ov_radius_${r.id}">${r.px}dp</dimen>`);
     }
     lines.push('</resources>');
     return `${lines.join('\n')}\n`;

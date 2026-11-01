@@ -29,6 +29,21 @@ const MOTION = {
     ],
 };
 
+// The kit's shape (openvibe-shared 4.81.0, kit.css --ov-radius-1…3): three corner radii, set by the look's personality.
+// The quiet looks are square, Neon Tokyo and Vapor round, every other look the kit's own corners.
+const SQUARE = new Set(['paper', 'solarized-light', 'nord', 'nord-light', 'matrix', 'hacker', 'high-contrast']);
+const ROUND = new Set(['neon-tokyo', 'vapor']);
+const RADII = { default: [10, 14, 20], square: [4, 6, 10], round: [14, 20, 28] };
+const RADIUS = [
+    { id: '1', name: 'radius1', css: '--ov-radius-1', description: 'Small things: chips, inputs, rows' },
+    { id: '2', name: 'radius2', css: '--ov-radius-2', description: 'Cards, sections, panels' },
+    { id: '3', name: 'radius3', css: '--ov-radius-3', description: 'Sheets, dialogs, big surfaces' },
+];
+/** The look's shape: 'square', 'round' or 'default', by its id (the same lists as kit.css). */
+const shapeOf = (theme) => { const id = String((theme || {}).slug || (theme || {}).id || ''); return SQUARE.has(id) ? 'square' : ROUND.has(id) ? 'round' : 'default'; };
+/** The look's three corner radii: [{ id, name, css, px, description }]. */
+const radii = (theme) => RADIUS.map((r, i) => ({ ...r, px: RADII[shapeOf(theme)][i] }));
+
 // The mark's own two colours (openvibe-shared/ov-fx.js names them as the mark's O and V).
 const BRAND = [
     { id: 'o', name: 'brandO', value: '#4f7cff', css: '--ov-brand-o', description: "The mark's O" },
@@ -79,8 +94,17 @@ function tokenDocument(theme) {
         },
         color: {},
         motion: { duration: {}, easing: {} },
+        shape: { radius: {} },
         brand: {},
     };
+    for (const r of radii(t)) {
+        doc.shape.radius[r.id] = {
+            $type: 'dimension',
+            $value: `${r.px}px`,
+            $description: r.description,
+            $extensions: { 'network.openvibe': { css: r.css, shape: shapeOf(t) } },
+        };
+    }
     for (const c of colours(t)) {
         put(doc.color, c.path.replace(/^color\./, ''), {
             $type: 'color',
@@ -132,4 +156,13 @@ function colourList(doc) {
     return out;
 }
 
-module.exports = { MOTION, BRAND, colours, tokenDocument, colourList };
+/** The corner radii of a document, in order, with their CSS names and pixels (the kit's own when the document has none). */
+function radiusList(doc) {
+    const own = (doc && doc.shape && doc.shape.radius) || {};
+    return RADIUS.map((r, i) => {
+        const px = parseInt(String((own[r.id] || {}).$value || ''), 10);
+        return { ...r, px: Number.isFinite(px) && px >= 0 && px <= 64 ? px : RADII.default[i] };
+    });
+}
+
+module.exports = { MOTION, BRAND, colours, tokenDocument, colourList, radiusList, shapeOf, radii };

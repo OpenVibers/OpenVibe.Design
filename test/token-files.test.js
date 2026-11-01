@@ -36,6 +36,15 @@ const curveOf = (v) => { const m = /cubic-bezier\(([^)]+)\)/.exec(String(v)); re
         }
     });
 
+    await check('a look\'s shape: the quiet looks square, Neon round, the rest the kit\'s own corners', async () => {
+        const kitTokens = require('../server/tokens/kit');
+        const px = (theme) => kitTokens.radiusList(kitTokens.tokenDocument(theme)).map((r) => r.px);
+        assert.deepStrictEqual(px({ slug: 'paper' }), [4, 6, 10]);
+        assert.deepStrictEqual(px({ slug: 'neon-tokyo' }), [14, 20, 28]);
+        assert.deepStrictEqual(px({ slug: 'vibe' }), [10, 14, 20]);
+        assert.strictEqual(kitTokens.tokenDocument({ slug: 'paper' }).shape.radius['1'].$extensions['network.openvibe'].shape, 'square');
+    });
+
     await check('the motion tokens are exactly the kit\'s', async () => {
         assert.deepStrictEqual(Object.keys(KIT_VARS).sort(), ['--ov-dur-1', '--ov-dur-2', '--ov-dur-3', '--ov-dur-4', '--ov-ease-in-out', '--ov-ease-out', '--ov-ease-spring']);
         assert.strictEqual(msOf(KIT_VARS['--ov-dur-1']), 120);
@@ -113,7 +122,15 @@ const curveOf = (v) => { const m = /cubic-bezier\(([^)]+)\)/.exec(String(v)); re
         assert.match(kt, /const val duration1 = 120L/);
         assert.match(kt, /val easeOut = CubicBezierEasing\(0\.2f, 0\.8f, 0\.2f, 1f\)/);
 
+        // The kit's shape (openvibe-shared 4.81.0): Vibe has the kit's own corners in every format.
+        assert.match(css, /--ov-radius-1: 10px;\n    --ov-radius-2: 14px;\n    --ov-radius-3: 20px;/);
+        assert.strictEqual(preset.borderRadius['ov-2'], '14px');
+        assert.strictEqual(sd.shape.radius['3'].value, '20px');
+        assert.strictEqual(sd.shape.radius['3'].type, 'dimension');
+        assert.match(swift, /public static let radius1: CGFloat = 10/);
+        assert.match(kt, /val radius2 = 14\.dp/);
         const xml = (await t.get('/tokens/vibe.xml')).text;
+        assert.match(xml, /<dimen name="ov_radius_3">20dp<\/dimen>/);
         assert.match(xml, /<color name="ov_bg_base">#0A0F1C<\/color>/);
         assert.match(xml, /<color name="ov_accent_base">#3B82F6<\/color>/);
         assert.match(xml, /<color name="ov_brand_v">#8B5CF6<\/color>/);
