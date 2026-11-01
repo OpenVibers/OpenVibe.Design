@@ -339,7 +339,9 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mx-step-2.is-later{opacity:.6}
 @media (max-width:640px){
   .mb-nav{justify-content:space-between;padding:6px 8px}
-  .mb-nav .mx-word{display:none}
+  .mb-nav .mx-word{flex:1;min-width:0;font-size:15px}
+  .mb-nav .mx-word b,.mb-nav .mx-word .mx-sep{display:none}
+  .mb-nav .mx-site{color:inherit;font-weight:800}
   .mb-nav>svg{width:26px;height:26px}
   .mb-nav .mb-btn{width:38px;height:38px}
   .mb-nav .mb-btn svg{width:24px;height:24px}
@@ -402,3 +404,6 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mx-split svg{filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}
 .mx-tops-k{width:56px}
 @media (max-width:640px){.mx-tops-k{width:44px}}
+
+/* The mock bars and the font step's word wear the font picked in step 3, if any (marks.js sets --mx-pick-font). */
+.mb-nav .mx-word{font-family:var(--mx-pick-font,var(--mx-face));font-weight:var(--mx-pick-weight,800)}

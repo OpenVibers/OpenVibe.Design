@@ -71,8 +71,8 @@
         function syncMenuMark() {
             var marks = picks.filter(function (c) { return c[0] === 'L' || c[0] === 'P'; });
             var code = marks.length ? marks[marks.length - 1] : null;
-            var withEl = root.querySelector('[data-mb-with]');
             all('.mx-tab-side, .mx-step-2, .mx-step-3', root).forEach(function (el) { el.classList.toggle('is-later', !code); });
+            syncPickFont();
             if (code === shownMark) return;
             shownMark = code;
             var defs = root.querySelector('.mx-defs');
@@ -90,6 +90,14 @@
             }
             all('.mb-nav use, .fx-mark use', root).forEach(function (u) { u.setAttribute('href', '#' + ref); });
             all('[data-mb-with]', root).forEach(function (el) { el.textContent = code ? 'Next to your logo, ' + code + '.' : 'Next to today\u2019s logo. Pick a logo first to see yours here.'; });
+        }
+        // The last font picked dresses the name in the menu bars too, so the bar shows all three picks together.
+        function syncPickFont() {
+            var fonts = picks.filter(function (c) { return c[0] === 'F'; });
+            var card = fonts.length && document.getElementById(fonts[fonts.length - 1]);
+            var w = card && card.querySelector('.fx-word');
+            if (w && w.style.fontFamily) { root.style.setProperty('--mx-pick-font', w.style.fontFamily); root.style.setProperty('--mx-pick-weight', w.style.fontWeight || '800'); }
+            else { root.style.removeProperty('--mx-pick-font'); root.style.removeProperty('--mx-pick-weight'); }
         }
         var saveTimer = 0;
         function toggle(code) {
