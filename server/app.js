@@ -72,12 +72,13 @@ async function createApp(opts = {}) {
     const jobs = opts.jobs || { tick: async () => null, start: () => null, stop: () => null, get running() { return false; } };
     const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now });
     const accountData = accountDataLib.create({ db: s.db, log });
+    const picks = opts.picks || require('./brand-picks').createBrandPicks({ db: s.db, now });
     const accountSend = opts.accountSend || (config.oauth.clientSecret
         ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl })
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, catalog, arena, bench, ai, jobs, designs, accountData, accountSend, log,
+        config, s, store: s, keys, sso, catalog, arena, bench, ai, jobs, designs, accountData, accountSend, log, picks,
         random: opts.random || Math.random,
     };
 
@@ -172,6 +173,7 @@ async function createApp(opts = {}) {
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
     app.use('/api/v1/arena', createArenaApi(ctx));
+    app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.use(createIconRoutes(ctx));
     app.use('/api', createApi(ctx));
     app.use('/api', (req, res) => contracts.http.sendProblem(res, 404, 'route.not_found', {

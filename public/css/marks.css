@@ -5,12 +5,38 @@
 .mx-wrap{--mx-face:'OV Brand',Nunito,Inter,-apple-system,BlinkMacSystemFont,sans-serif;--mx-lockface:'OV Brand',Nunito,sans-serif;--mx-card:var(--bg-secondary,#101828);--mx-line:var(--border,#1f2d47);--mx-muted:var(--text-muted,#7386a3);max-width:1180px;margin:0 auto;padding:clamp(14px,3vw,36px) clamp(12px,3vw,32px) 120px;color:var(--text-primary,#e8edf3)}
 .mx-wrap svg{display:block;overflow:visible}
 .mx-defs{position:absolute;width:0;height:0;overflow:hidden}
-.mx-wrap [hidden],.mx-bar[hidden]{display:none!important}
+.mx-wrap [hidden]{display:none!important}
 .mx-hero{display:grid;gap:8px;max-width:860px;margin:0 0 clamp(14px,2.4vw,24px)}
 .mx-eye{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#4f7cff)}
 .mx-hero h1{margin:0;font-family:var(--mx-face);font-weight:900;font-size:clamp(26px,4.2vw,46px);line-height:1.05;letter-spacing:-.02em;text-wrap:balance}
 .mx-lede,.mx-how{margin:0;max-width:72ch;font-size:clamp(14.5px,1.6vw,16px);line-height:1.55;color:var(--text-secondary,#b4bfcc)}
 .mx-lede b,.mx-how b{color:var(--text-primary,#e8edf3)}
+
+/* What people picked so far (marks.js redraws it after each save): the Loop against the Pair, and the most picked. */
+.mx-tally{display:grid;gap:8px;margin:0 0 12px;padding:10px 12px;border-radius:16px;border:1px solid color-mix(in srgb,#8b5cf6 40%,var(--mx-line));background:linear-gradient(135deg,color-mix(in srgb,#4f7cff 10%,var(--mx-card)),color-mix(in srgb,#8b5cf6 12%,var(--mx-card)))}
+.mx-tally-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:14px;color:var(--text-secondary,#b4bfcc)}
+.mx-tally-h b{font-family:var(--mx-face);font-weight:900;font-size:17px;color:var(--text-primary,#e8edf3)}
+.mx-tally-lead{margin-left:auto;font-weight:700;color:#c4b5fd}
+.mx-lean{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
+.mx-lean-end{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px}
+.mx-lean-end b{font-family:var(--mx-face);font-weight:900;font-size:16px;min-width:3ch}
+.mx-lean-r b{text-align:right}
+.mx-lean-bar{position:relative;height:10px;border-radius:999px;background:#8b5cf6;overflow:hidden}
+.mx-lean-bar i{position:absolute;inset:0 auto 0 0;width:var(--l,50%);background:#4f7cff;border-right:2px solid var(--mx-card);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.mx-tops{display:flex;align-items:center;gap:8px;min-width:0}
+.mx-tops-k{flex:none;width:92px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mx-muted)}
+.mx-tops-list{display:flex;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none;padding:1px}
+.mx-tops-list::-webkit-scrollbar{display:none}
+.mx-tops-list em{font-size:13px;color:var(--mx-muted)}
+.mx-top{flex:none;display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;border-radius:999px;background:#0d1322;color:#e8edf3;font-size:12.5px}
+.mx-top b{font-family:var(--mx-face);font-weight:900}
+.mx-top i{font-style:normal;font-weight:800;color:#c4b5fd}
+.mx-top svg,.mx-lean-end svg{display:block;flex:none}
+.mx-top.is-new{animation:mxTopIn .5s cubic-bezier(.2,.9,.25,1.2) both}
+@keyframes mxTopIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.mx-mini-m{width:26px;height:26px;border-radius:50%;--mb-c:#c9d3e0}
+.mx-tally.is-empty .mx-lean-bar{opacity:.4}
+@media (max-width:640px){.mx-tops-k{width:auto}.mx-tops{flex-direction:column;align-items:flex-start;gap:4px}.mx-tops-list{max-width:100%}}
 
 /* The choice: 1, the mark (the Loop or the Pair, side by side); 2, separately, the menu button's look. */
 .mx-choose{display:grid;gap:8px;margin:0 0 12px}
@@ -23,8 +49,16 @@
 .mx-tab{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid var(--mx-line);background:var(--mx-card);color:inherit;text-decoration:none;transition:border-color .2s,background .2s}
 .mx-tab:hover{border-color:color-mix(in srgb,#8b5cf6 55%,var(--mx-line))}
 .mx-tab[aria-selected=true]{border-color:#8b5cf6;background:color-mix(in srgb,#8b5cf6 12%,var(--mx-card));box-shadow:0 0 0 1px #8b5cf6 inset}
-.mx-tab-art{flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:14px;background:#0d1322;color:#e8edf3}
+.mx-tab-art{position:relative;flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:14px;background:#0d1322;color:#e8edf3;overflow:hidden}
 .mx-tab-art svg{width:46px;height:46px}
+/* The tab's example walks through all fifty (marks.js): each take rises in as the last one leaves, its number below. */
+.mx-ta{position:absolute;inset:0;display:grid;place-items:center}
+.mx-ta.is-in{animation:mxTaIn .62s cubic-bezier(.2,.9,.25,1.15) both}
+.mx-ta.is-out{animation:mxTaOut .42s cubic-bezier(.4,0,.6,1) both}
+@keyframes mxTaIn{from{opacity:0;transform:translateY(55%) scale(.6)}to{opacity:1;transform:none}}
+@keyframes mxTaOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-55%) scale(.6)}}
+.mx-tab-code{position:absolute;right:3px;bottom:3px;padding:0 4px;border-radius:5px;background:#8b5cf6;color:#fff;font:800 9.5px/14px Inter,system-ui,sans-serif;font-style:normal;letter-spacing:.02em}
+.mx-tab-code:empty{display:none}
 .mx-tab-t{display:grid;gap:2px;min-width:0}
 .mx-tab-t b{font-family:var(--mx-face);font-weight:900;font-size:19px;line-height:1.15}
 .mx-tab-t small{font-size:13px;line-height:1.35;color:var(--text-secondary,#b4bfcc)}
@@ -33,6 +67,27 @@
 .mx-tab-side[aria-selected=true]{border-style:solid}
 .mx-tab-side .mx-tab-art{width:46px;height:46px;border-radius:12px}
 .mx-tab-side .mx-tab-t b{font-size:16px}
+
+/* The steps bar: once the big tabs have scrolled away it waits under the navbar, so switching between the mark and the
+   menu button never means scrolling back up (the owner, 11-01). Each step shows how many you picked there. */
+.mx-steps{position:fixed;z-index:55;left:50%;top:calc(var(--ovnav-real-h,56px) + 8px);display:flex;align-items:center;gap:4px;max-width:calc(100vw - 16px);padding:4px;border-radius:999px;border:1px solid color-mix(in srgb,#8b5cf6 45%,var(--mx-line));background:color-mix(in srgb,var(--mx-card) 92%,transparent);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(0,0,0,.35);transform:translate(-50%,-12px);opacity:0;pointer-events:none;transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.25,1.1)}
+.mx-steps.is-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.mx-steps-k{padding:0 4px 0 8px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mx-muted)}
+.mx-steps-sep{width:1px;height:22px;margin:0 2px;background:var(--mx-line)}
+.mx-step{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:3px 11px 3px 6px;border-radius:999px;color:inherit;text-decoration:none;font-weight:750;font-size:13.5px;white-space:nowrap}
+.mx-step svg,.mx-step .mb-btn{flex:none}
+.mx-step .mb-btn{width:22px;height:22px}
+.mx-step[aria-current=true]{background:#8b5cf6;color:#fff}
+.mx-step[aria-current=true] .mb-btn{--mb-c:#fff;--mb-a:#fff}
+.mx-step i{font-style:normal;font-size:11px;font-weight:800;padding:0 5px;border-radius:999px;background:#ffffff26}
+.mx-step i:empty{display:none}
+/* The end of each choice: where to go next. */
+.mx-next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:22px}
+.mx-next a{display:grid;gap:2px;padding:14px 16px;border-radius:16px;border:1px solid var(--mx-line);background:var(--mx-card);color:inherit;text-decoration:none}
+.mx-next a:last-child{border-color:#8b5cf6;background:color-mix(in srgb,#8b5cf6 14%,var(--mx-card))}
+.mx-next b{font-family:var(--mx-face);font-weight:900;font-size:17px}
+.mx-next small{font-size:13px;color:var(--text-secondary,#b4bfcc)}
+@media (max-width:640px){.mx-steps-k{display:none}.mx-step{padding:3px 9px 3px 5px;font-size:12.5px;gap:5px}.mx-next{grid-template-columns:1fr}}
 
 /* The bar: the name, its font and style, the view. Sticky on wide screens. */
 .mx-tools{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:0 0 6px;padding:8px 10px;border-radius:14px;border:1px solid var(--mx-line);background:color-mix(in srgb,var(--mx-card) 92%,transparent);backdrop-filter:blur(10px);z-index:20}
@@ -51,6 +106,7 @@
 /* Rows of cards. */
 .mx-row{margin-top:18px}
 .mx-wrap .mx-row h3:not(.ovk-card-title){display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:0;font-family:var(--mx-face);font-weight:900;font-size:19px;text-transform:none;letter-spacing:-.01em;color:var(--text-primary,#e8edf3)}
+.mx-swipe{display:none;margin-left:auto;font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:700;color:#a78bfa}
 .mx-row h3 small{font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:12.5px;color:var(--mx-muted)}
 .mx-row-line{margin:2px 0 8px;font-size:13.5px;color:var(--text-secondary,#b4bfcc)}
 .mx-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
@@ -76,23 +132,41 @@
 .mx-name{margin:0 2px;font-size:14px;line-height:1.25}
 .mx-name b{font-family:var(--mx-face);font-weight:900;color:var(--accent,#4f7cff);margin-right:2px}
 .mx-line{margin:0 2px;font-size:12.5px;line-height:1.35;color:var(--text-secondary,#b4bfcc)}
-.mx-pick{position:relative;justify-self:start;padding:5px 12px;border-radius:999px;border:1px solid var(--mx-line);background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:34px}
-.mx-pick:hover{border-color:#8b5cf6}
-.mx-pick::after{content:"";position:absolute;inset:-6px -4px}
-.mx-pick[aria-pressed=true]{background:#8b5cf6;border-color:#8b5cf6;color:#fff}
 .mx-fine{margin-top:28px;font-size:14px;color:var(--mx-muted)}
 .mx-fine a{color:var(--accent,#4f7cff)}
 
+/* Picking: tap a card (or its corner toggle). A picked card glows and wears a tick; nothing covers the marks. */
+.mx-card{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mx-pick{position:absolute;z-index:2;top:13px;right:13px;display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:50%;border:1.5px solid #ffffff4d;background:#0d1322b3;color:#e8edf3;cursor:pointer;backdrop-filter:blur(4px);transition:background .2s,border-color .2s,transform .25s cubic-bezier(.2,1.4,.3,1)}
+.mx-pick::before{content:"+";font:700 18px/1 Inter,system-ui,sans-serif}
+.mx-pick::after{content:"";position:absolute;inset:-7px}
+.mx-card:hover .mx-pick{border-color:#a78bfa}
+.mx-pick[aria-pressed=true]{background:#8b5cf6;border-color:#c4b5fd;transform:scale(1.08)}
+.mx-pick[aria-pressed=true]::before{content:"\2713";font-size:15px}
+.mx-pick:focus-visible{outline:2px solid #c4b5fd;outline-offset:2px}
+.mx-card.is-picked{border-color:#8b5cf6;background:color-mix(in srgb,#8b5cf6 13%,var(--mx-card));box-shadow:0 0 0 1px #8b5cf6,0 12px 30px color-mix(in srgb,#8b5cf6 24%,transparent)}
+.mx-card.is-picked .mx-stage{box-shadow:inset 0 0 0 1px color-mix(in srgb,#8b5cf6 55%,transparent)}
+.mx-card.just-picked{animation:mxPicked .45s cubic-bezier(.2,1.4,.3,1)}
+@keyframes mxPicked{0%,100%{scale:1}40%{scale:.96}75%{scale:1.02}}
+/* Your picks, in the tally at the top: copy a link to them or clear them. */
+.mx-mine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}
+.mx-mine b{font-family:var(--mx-face);font-weight:900;font-size:14px;overflow-wrap:anywhere}
+.mx-btn{padding:5px 12px;border-radius:999px;border:0;background:#8b5cf6;color:#fff;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;min-height:32px}
+.mx-btn-quiet{background:transparent;color:inherit;border:1px solid var(--mx-line)}
+.mx-saved{font-style:normal;font-size:12px;font-weight:700;color:#86efac;opacity:0;transition:opacity .3s}
+.mx-saved.is-on{opacity:1}
+.mx-share{border:0;background:transparent;font:inherit;font-weight:750;font-size:13.5px;cursor:pointer;color:inherit}
+.mx-share.is-done span::after{content:" \2713"}
+@media (max-width:640px){.mx-share span{display:none}.mx-pick{top:10px;right:10px}}
+
 /* Sheet: all fifty at once, just the marks; tap one to pick it. */
 .mx-wrap[data-density=sheet] .mx-grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px}
-.mx-wrap[data-density=sheet] .mx-card{padding:5px 5px 7px;gap:4px;border-radius:13px;cursor:pointer}
+.mx-wrap[data-density=sheet] .mx-card{padding:5px 5px 7px;gap:4px;border-radius:13px}
+.mx-wrap[data-density=sheet] .mx-pick{top:9px;right:9px;width:24px;height:24px}
+.mx-wrap[data-density=sheet] .mx-pick::before{font-size:15px}
 .mx-wrap[data-density=sheet] :is(.mx-lock,.mx-sizes,.mx-line,.mb-bars,.mx-row-line){display:none}
 .mx-wrap[data-density=sheet] .mx-stage{aspect-ratio:1}
 .mx-wrap[data-density=sheet] .mx-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mx-wrap[data-density=sheet] .mx-pick{position:absolute;top:8px;right:8px;display:grid;place-items:center;width:24px;height:24px;min-height:0;padding:0;border-radius:50%;font-size:0;background:#0d1322cc;color:#e8edf3;border-color:#ffffff38}
-.mx-wrap[data-density=sheet] .mx-pick::before{content:"+";font-size:16px;font-weight:700;line-height:1}
-.mx-wrap[data-density=sheet] .mx-pick[aria-pressed=true]{background:#8b5cf6;border-color:#8b5cf6}
-.mx-wrap[data-density=sheet] .mx-pick[aria-pressed=true]::before{content:"\2713";font-size:13px}
 .mx-wrap[data-density=sheet] .mx-row{margin-top:12px}
 
 /* ── Motion ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -121,8 +195,9 @@
 @keyframes mxNod{0%,60%,100%{transform:translateY(0)}72%{transform:translateY(3px)}84%{transform:translateY(-1px)}}
 @keyframes mxDot{0%,100%{transform:scale(1)}50%{transform:scale(1.28)}}
 @keyframes mxPulse{0%,100%{opacity:.4}50%{opacity:.95}}
+@keyframes mxPeek{0%,100%{transform:none}34%{transform:translateX(-68px)}58%{transform:translateX(6px)}76%{transform:translateX(-16px)}}
 @media (prefers-reduced-motion:reduce){.mx-wrap.mx-live .mx-card,.mx-wrap.mx-live .mx-stage :is(.mx-s,.mx-f){transition:none!important}.mx-wrap.mx-live .mx-card:not(.is-in){opacity:1;transform:none}.mx-wrap.mx-live .mx-card:not(.is-in) .mx-stage :is(.mx-s,.mx-f){stroke-dashoffset:0;opacity:1}}
-html[data-ov-motion=reduced] .mx-wrap .mx-card,html[data-ov-motion=reduced] .mx-wrap .mx-card *{animation:none!important;transition:none!important}
+html[data-ov-motion=reduced] .mx-wrap .mx-card,html[data-ov-motion=reduced] .mx-wrap .mx-card *,html[data-ov-motion=reduced] .mx-ta{animation:none!important;transition:none!important}
 html[data-ov-motion=reduced] .mx-wrap .mx-card:not(.is-in){opacity:1!important;transform:none!important}
 
 /* ── The menu buttons ───────────────────────────────────────────────────────────────────────────────────────────
@@ -199,16 +274,6 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mb-light .mb-btn{--mb-c:#55627a;--mb-hc:#0f1419;--mb-bg:#f4f6fb;--mb-a:#3b6cff}
 .mb-light .mx-sep,.mb-light .mx-site{background:linear-gradient(90deg,#3b6cff,#7c3aed);-webkit-background-clip:text;background-clip:text}
 
-/* The picks: a bar at the bottom while there are any, with the picked marks small. */
-.mx-bar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px) + var(--ovnav-appbar-h,0px));transform:translateX(-50%);z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;max-width:calc(100vw - 24px);padding:8px 10px 8px 12px;border-radius:18px;border:1px solid color-mix(in srgb,#8b5cf6 55%,var(--border,#1f2d47));background:color-mix(in srgb,var(--bg-secondary,#101828) 94%,transparent);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(0,0,0,.35);font-size:14px}
-.mx-bar-thumbs{display:flex;gap:3px;max-width:42vw;overflow-x:auto;scrollbar-width:none}
-.mx-bar-thumbs>*{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#0d1322;color:#e8edf3}
-.mx-bar-thumbs svg{width:24px;height:24px}
-.mx-bar-thumbs:empty{display:none}
-.mx-bar b{font-family:var(--mx-face);font-weight:900;overflow-wrap:anywhere}
-.mx-btn{padding:6px 12px;border-radius:999px;border:0;background:#8b5cf6;color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:34px}
-.mx-btn-quiet{background:transparent;color:inherit;border:1px solid var(--border,#1f2d47)}
-
 /* Widths. A phone gets sideways rails: a row is one swipe, not a page of cards. */
 @media (max-width:1100px){.mx-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:860px){.mx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mx-vs .mx-tab-t small{display:none}}
@@ -228,8 +293,17 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
   .mx-row{margin-top:14px}
   .mx-wrap .mx-row h3:not(.ovk-card-title){font-size:17px}
   .mx-row-line{margin-bottom:6px;font-size:12.5px}
-  .mx-wrap:not([data-density=sheet]) .mx-grid{display:grid;grid-auto-flow:column;grid-auto-columns:46%;grid-template-columns:none;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-left:2px;padding:2px 2px 6px;margin:0 -2px;scrollbar-width:thin}
+  /* A rail scrolls sideways only: overflow-y hidden, so a vertical swipe that starts on it moves the page (the owner,
+     11-01: "you can't scroll without going outside the box"). Its right edge fades while there is more, and the first
+     time it comes into view it nudges left and back (marks.js), so it reads as something to swipe. */
+  .mx-wrap:not([data-density=sheet]) .mx-grid{display:grid;grid-auto-flow:column;grid-auto-columns:46%;grid-template-columns:none;gap:8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scroll-snap-type:x proximity;scroll-padding-left:2px;padding:2px 2px 6px;margin:0 -2px;scrollbar-width:none}
+  .mx-wrap:not([data-density=sheet]) .mx-grid::-webkit-scrollbar{display:none}
+  .mx-wrap:not([data-density=sheet]) .mx-grid.has-more{-webkit-mask-image:linear-gradient(90deg,#000 78%,transparent 99%);mask-image:linear-gradient(90deg,#000 78%,transparent 99%)}
+  .mx-wrap:not([data-density=sheet]) .mx-grid.has-more.is-scrolled{-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 78%,transparent 99%);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 78%,transparent 99%)}
+  .mx-wrap:not([data-density=sheet]) .mx-grid.is-scrolled:not(.has-more){-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%);mask-image:linear-gradient(90deg,transparent,#000 8%)}
   .mx-wrap:not([data-density=sheet]) .mx-card{scroll-snap-align:start}
+  .mx-wrap:not([data-density=sheet]) .mx-swipe{display:inline}
+  .mx-wrap:not([data-density=sheet]) .mx-grid.is-peek>li{animation:mxPeek 1.15s cubic-bezier(.3,.7,.3,1)}
   .mx-card{padding:6px 6px 8px;gap:5px;border-radius:14px}
   .mx-lock{padding:6px 7px;gap:6px}
   .mx-lock svg{width:20px;height:20px}
@@ -239,7 +313,7 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
   .mx-sizes span{gap:6px;padding:5px 4px}
   .mx-name{font-size:13px}
   .mx-line{font-size:12px}
-  .mx-pick{min-height:34px;padding:4px 10px;font-size:12.5px}
   .mx-chip,.mx-own{min-height:40px}
   .mx-wrap[data-density=sheet] .mx-grid{grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
 }
+.mx-panel{scroll-margin-top:calc(var(--ovnav-real-h,56px) + 64px)}
