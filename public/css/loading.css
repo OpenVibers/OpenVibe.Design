@@ -1,0 +1,64 @@
+/* /loading (plan L52 step 5): how OpenVibe waits. Theme variables from the Frame; the placeholders are kit.css's. */
+.ld { --ld-face: 'OV Brand', Nunito, Inter, -apple-system, BlinkMacSystemFont, sans-serif; max-width: 1120px; margin: 0 auto; padding: clamp(18px, 4vw, 44px) clamp(16px, 3vw, 32px) 96px; color: var(--text-primary); }
+.ld-hero { max-width: 780px; padding-bottom: clamp(18px, 3vw, 28px); }
+.ld-eye { margin: 0 0 10px; color: var(--accent); font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.ld-h1 { margin: 0; font-family: var(--ld-face); font-weight: 900; font-size: clamp(32px, 5.2vw, 56px); line-height: 1.05; letter-spacing: -.02em; text-wrap: balance; }
+.ld-lede { margin: 14px 0 0; max-width: 62ch; color: var(--text-secondary); font-size: clamp(15px, 1.6vw, 17px); line-height: 1.6; }
+.ld-jump { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 18px; font-size: 14px; }
+.ld-jump a { color: var(--text-secondary); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+.ld-jump a:hover { color: var(--text-primary); }
+
+.ld-sec { margin: 0; padding: clamp(22px, 3.5vw, 38px) 0; border-top: 1px solid var(--border); }
+.ld-sec-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px 32px; align-items: baseline; margin-bottom: 18px; }
+.ld-sec-head h2 { margin: 0; font-family: var(--ld-face); font-weight: 900; font-size: clamp(22px, 3vw, 30px); line-height: 1.15; text-wrap: balance; }
+.ld-sec-head p { margin: 0; max-width: 62ch; color: var(--text-secondary); line-height: 1.55; }
+.ld h3 { margin: 0 0 10px; font-size: 14px; font-weight: 750; }
+
+/* The seven shapes, each with Fill in and the measured move. */
+.ld-demos { list-style: none; margin: 0; padding: 0; display: grid; align-items: start; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 12px; }
+.ld-demo { display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-secondary); min-width: 0; }
+.ld-demo[data-ld-kind="card"] { grid-column: 1 / -1; }
+.ld-demo-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ld-demo-head b { font-size: 15px; }
+.ld-demo > p { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+.ld-fill { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-primary); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.ld-fill[aria-pressed="true"] { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); color: var(--accent); }
+.ld-fill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ld-stage { min-width: 0; }
+.ld-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; font-size: 12px; color: var(--text-muted); }
+.ld-foot code { font-size: 12px; }
+.ld-foot output { font-weight: 750; font-variant-numeric: tabular-nums; }
+.ld-foot output.is-zero { color: #22c55e; }
+
+/* The real content, at the placeholders' exact sizes (kit.css .ovk-skel-*): filling in moves nothing. */
+.ld-thumb, .ld-tile, .ld-avatar, .ld-dot { display: block; background: linear-gradient(135deg, hsl(var(--h, 220) 70% 55%), hsl(calc(var(--h, 220) + 40) 70% 40%)); }
+.ld-thumb { aspect-ratio: 16 / 9; border-radius: 12px; }
+.ld-l1, .ld-l2, .ld-line { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ld-l1 { height: 13px; font-size: 13px; line-height: 13px; font-weight: 650; }
+.ld-l2 { height: 11px; font-size: 11px; line-height: 11px; color: var(--text-muted); }
+.ld-avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px; }
+.ld-tile { aspect-ratio: 1; border-radius: 14px; }
+.ld-chip { display: inline-grid; place-items: center; width: 84px; height: 30px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--text-primary); font-size: 13px; font-weight: 650; }
+.ld-line { height: 12px; font-size: 12px; line-height: 12px; color: var(--text-secondary); }
+.ld-dot { flex: none; width: 22px; height: 22px; border-radius: 50%; }
+.ld-real .ld-l1 b { color: var(--accent); }
+.ld-num { display: block; height: 22px; font-size: 21px; line-height: 22px; font-weight: 850; font-variant-numeric: tabular-nums; }
+
+/* The mark at work. */
+.ld-mark { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: center; margin-bottom: 14px; }
+.ld-screen { position: relative; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #05070c; display: grid; place-items: center; }
+.ld-screen-idle { color: #8e99b0; font-size: 14px; }
+.ld-ctrls { display: flex; flex-wrap: wrap; gap: 8px; }
+.ld-navdemo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 14px; }
+.ld-navdemo span { color: var(--text-secondary); font-size: 14px; }
+
+/* The rules and the code. */
+.ld-rules { margin: 0; padding-left: 1.3em; display: grid; gap: 12px; max-width: 78ch; line-height: 1.6; color: var(--text-secondary); }
+.ld-rules b { color: var(--text-primary); }
+.ld-use { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ld-use > div { min-width: 0; }
+.ld-use pre { font-size: 12.5px; white-space: pre; overflow-x: auto; padding-right: 52px; }
+
+@media (max-width: 860px) {
+    .ld-sec-head, .ld-mark, .ld-use { grid-template-columns: minmax(0, 1fr); }
+}

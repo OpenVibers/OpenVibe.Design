@@ -30,6 +30,7 @@ const NAV = [
     { label: 'Tokens', href: '/tokens', icon: 'fa-code' },
     { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
     { label: 'Motion', href: '/motion', icon: 'fa-wand-magic-sparkles', more: true },
+    { label: 'Loading', href: '/loading', icon: 'fa-hourglass-half', more: true },
     { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
@@ -45,7 +46,7 @@ const baseUrl = () => BASE;
 const canonical = (p) => `${BASE}${p || '/'}`;
 
 /** The page around a body: the shared shell with the room's stylesheets and behaviour. */
-function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [], image, imageAlt } = {}) {
+function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [], image, imageAlt, shared = [] } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
     const navbar = {
@@ -84,6 +85,7 @@ ${(styles || []).map((rel) => `<link rel="stylesheet" href="${esc(asset(rel))}">
 ${(inlineStyles || []).map((css) => `<style>${css}</style>`).join('\n')}
 <script src="${esc(ovServe.url('kit-web.js'))}" defer></script>
 <script src="${esc(ovServe.url('motion.js'))}" defer></script>
+${(shared || []).map((file) => `<script src="${esc(ovServe.url(file))}" defer></script>`).join('\n')}
 ${(scripts || []).map((rel) => `<script src="${esc(asset(rel))}" defer></script>`).join('\n')}
 <meta name="ov-boost" content="design@${esc(RELEASE)}">`,
         body: `<a class="skip" href="#main">Skip to content</a>
