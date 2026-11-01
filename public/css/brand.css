@@ -158,3 +158,9 @@
 }
 @media (prefers-reduced-motion:reduce){.br-chip,.br-files a{transition:none}.br .br-files a:hover{transform:none}}
 .br-h3-note{margin-left:6px;color:var(--text-muted);font-weight:600;font-size:12px}
+
+/* A phone: the motion files are a sideways rail (the owner, 10-31: short pages by rails and folds, never by hiding). */
+@media (max-width:640px){
+  .br-mo{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;margin-right:-16px;padding:0 16px 8px 0;scrollbar-width:thin}
+  .br-mo>.br-mo-card{flex:0 0 82%;scroll-snap-align:start}
+}
