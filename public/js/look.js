@@ -39,6 +39,7 @@
         check('scheme', L.scheme.get());
         check('text', d.text);
         check('motion', d.motion);
+        check('icons', d.icons || 'auto');
         const s = root.querySelector('input[name="seasonal"]');
         if (s) s.checked = d.seasonal !== 'off';
         for (const k of Object.keys(COMFORT)) { const c = root.querySelector(`input[name="${k}"]`); if (c) c.checked = d[k] === COMFORT[k][0]; }
@@ -48,7 +49,7 @@
         if (!i || !i.name) return;
         if (i.name === 'scheme') L.scheme.set(i.value);
         else if (i.name === 'seasonal') L.display.set({ seasonal: i.checked ? 'on' : 'off' });
-        else if (i.name === 'text' || i.name === 'motion') L.display.set({ [i.name]: i.value });
+        else if (i.name === 'text' || i.name === 'motion' || i.name === 'icons') L.display.set({ [i.name]: i.value });
         else if (COMFORT[i.name]) L.display.set({ [i.name]: COMFORT[i.name][i.checked ? 0 : 1] });
         showTheme();
         showSettings();

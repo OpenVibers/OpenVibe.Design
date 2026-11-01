@@ -27,6 +27,11 @@ function lookPage({ themes = [], me = {} } = {}) {
         body: kit.seg({ name: 'scheme', label: 'Light or dark', options: [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Match my device']], value: 'auto' })
             + kit.seg({ name: 'text', label: 'Text size', options: [['100', 'Standard'], ['112', 'Larger'], ['125', 'Largest']], value: '100' })
             + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'Full'], ['reduced', 'Reduced']], value: 'auto' })
+            // Icons (openvibe-shared 4.71.0, plan L56; the owner, 2026-11-01: "a setting to prefer a certain icon type…
+            // configurable for users in most cases"): the sample under it is ordinary page markup, drawn by ov-glyphs.js, so
+            // it changes as the choice does.
+            + kit.seg({ name: 'icons', label: 'Icons', options: [['auto', 'Auto'], ['line', 'Line'], ['solid', 'Solid']], value: 'auto' })
+            + `<p class="lk-icons" aria-label="A sample of the icons"><span>${['fa-house', 'fa-tower-broadcast', 'fa-comments', 'fa-bell', 'fa-heart', 'fa-user'].map((n) => `<i class="fa-solid ${n}" aria-hidden="true"></i>`).join('')}</span><span class="lk-icons-big">${['fa-house', 'fa-tower-broadcast', 'fa-comments', 'fa-bell'].map((n) => `<i class="fa-solid ${n}" aria-hidden="true"></i>`).join('')}</span><small>Auto: line, solid when small and for the tab you are on.</small></p>`
             + kit.switchRow({ name: 'seasonal', label: 'The season\'s themes', hint: 'Halloween and winter stand in for the default theme while they last', on: true }),
     });
     // Comfort (openvibe-shared 4.45.0): how any theme reads for this person. The sample under the switches is ordinary page
