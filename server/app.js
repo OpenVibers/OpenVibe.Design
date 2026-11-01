@@ -89,6 +89,8 @@ async function createApp(opts = {}) {
     const app = express();
     app.disable('x-powered-by');
     // Cloudflare Turnstile on the guest icon form (L50 step 5), only when both of its keys are set.
+    // The arena draws each Bench output in a sandboxed frame from Bench's render origin (plan L51).
+    const benchRender = config.bench && /^https?:\/\/[^/\s'";]+$/.test(String(config.bench.renderOrigin || '')) ? [config.bench.renderOrigin] : [];
     const turnstileSrc = config.glyphGuests && config.glyphGuests.turnstileSiteKey && config.glyphGuests.turnstileSecret ? ['https://challenges.cloudflare.com'] : [];
     app.set('trust proxy', config.trustProxy);
     app.locals.ctx = ctx;
@@ -116,7 +118,7 @@ async function createApp(opts = {}) {
                 // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
                 connectSrc: ["'self'", 'https://openvibe.network', 'https://cloudflareinsights.com', 'https://openvibe.events'],
                 // 'self' covers the Arena's about:srcdoc iframes; generated pages cannot navigate the top window.
-                frameSrc: ["'self'", 'https://openvibe.network', ...turnstileSrc],
+                frameSrc: ["'self'", 'https://openvibe.network', ...turnstileSrc, ...benchRender],
                 frameAncestors: ["'none'"],
                 objectSrc: ["'none'"],
                 baseUri: ["'self'"],

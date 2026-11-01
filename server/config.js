@@ -69,6 +69,8 @@ function load(env = process.env) {
         bench: {
             url: trim(env.OV_BENCH_INTERNAL_URL || 'http://127.0.0.1:5230'),
             publicUrl: trim(env.OV_BENCH_URL || 'https://bench.openvibe.services'),
+            // Bench's cookie-less render origin: the arena frames each output from it (plan L51).
+            renderOrigin: trim(env.OV_BENCH_RENDER_ORIGIN || 'https://bench-render.openvibe.services'),
             audience: env.DESIGN_BENCH_AUDIENCE || 'openvibe.bench',
             scope: env.DESIGN_BENCH_SCOPE || 'bench.task.create bench.round.create bench.round.read bench.judgement.cast bench.entry.create bench.board.read',
         },
@@ -95,6 +97,9 @@ function load(env = process.env) {
             intervalMs: Math.max(250, int(env.DESIGN_ARENA_JOB_INTERVAL_MS, 1500)),
             pollMs: Math.max(250, int(env.DESIGN_ARENA_POLL_MS, 20_000)),
             maxPrompt: Math.max(20, int(env.DESIGN_ARENA_MAX_PROMPT, 4000)),
+            // Judging without signing in (plan L51): Bench caps each voter (30 a day) and Design's relay, but not the
+            // address behind a relayed vote, so Design caps that itself. 0 turns signed-out voting off.
+            guestVotesPerAddress: Math.max(0, int(env.DESIGN_ARENA_GUEST_VOTES_PER_ADDRESS, 60)),
         },
 
         // OpenVibe.Events → this service for ADR-033 account export/deletion. Off when the secret is unset.

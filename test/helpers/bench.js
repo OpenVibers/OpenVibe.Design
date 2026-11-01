@@ -124,6 +124,22 @@ async function startBench({ network } = {}) {
         ['design.page', { id: 'design.page', room: 'design', entry: 'html_page', judge: 'human_pairwise', name: 'Design page arena', metrics: ['elo', 'cost_usd', 'ms'], schema: { entry: 'html_page', payload: { html: 'string' } } }],
         ['design.component', { id: 'design.component', room: 'design', entry: 'html_page', judge: 'human_pairwise', name: 'Design component arena', metrics: ['elo', 'cost_usd', 'ms'], schema: { entry: 'html_page', payload: { html: 'string' } } }],
     ]);
+    // The other seven design kinds (plan L51): Design's /arena shows all nine.
+    for (const [kid, entry, field] of [['design.svg', 'svg_art', 'svg'], ['design.motion', 'motion_html', 'html'], ['design.ui', 'ui_page', 'html'], ['design.dataviz', 'dataviz_page', 'html'], ['design.model3d', 'gltf_model', 'gltf_base64'], ['design.shader', 'shader_glsl', 'glsl'], ['design.interface', 'component_set', 'html']]) {
+        kinds.set(kid, { id: kid, room: 'design', entry, judge: 'human_pairwise', name: kid, metrics: ['elo'], schema: { entry, payload: { [field]: 'string' } } });
+    }
+    // Anonymous voters a first-party service relays (X-OV-Voter), as Bench does: a hash of the id, a daily cap.
+    state.anonPerDay = 30;
+    state.anonUsed = new Map();
+    function relayed(req) {
+        const header = String(req.headers['x-ov-voter'] || '');
+        if (!header) return null;
+        const v = verify(getAuth(req));
+        if (!v || v.kind !== 'service') throw problem(403, 'bench.relay_not_allowed', 'Only a first-party service may relay an anonymous voter.');
+        if (!v.cap.includes('bench.judgement.cast')) throw problem(403, 'bench.capability_denied', 'Need bench.judgement.cast.');
+        if (!header.startsWith('anon:') || !/^[A-Za-z0-9._~:-]{6,200}$/.test(header.slice(5))) throw problem(400, 'bench.anon_voter_invalid', 'anon:<id>');
+        return { subject: `anon_${crypto.createHash('sha256').update(`relay:design|${header.slice(5)}`).digest('hex').slice(0, 24)}`, creator: v.sub };
+    }
 
     function defaultHtml(prompt) {
         const p = String(prompt || '').split('\n')[0].slice(0, 200);
@@ -375,7 +391,7 @@ async function startBench({ network } = {}) {
             let body = {};
             try { body = text ? JSON.parse(text) : {}; } catch { body = {}; }
             const url = new URL(req.url, 'http://x');
-            state.requests.push({ method: req.method, path: url.pathname, query: url.search, authorization: req.headers.authorization || null, body: text });
+            state.requests.push({ method: req.method, path: url.pathname, query: url.search, authorization: req.headers.authorization || null, voter: req.headers['x-ov-voter'] || null, body: text });
 
             const json = (status, obj, headers = {}) => {
                 res.writeHead(status, { 'Content-Type': 'application/json', ...headers });
@@ -471,6 +487,18 @@ async function startBench({ network } = {}) {
                     return json(201, { entry: fullEntry(entry) });
                 }
 
+                if (req.method === 'GET' && url.pathname === '/api/v1/judgements/next' && req.headers['x-ov-voter']) {
+                    const anon = relayed(req);
+                    const kindId = url.searchParams.get('kind') || 'design.page';
+                    if (!kinds.has(kindId) || kinds.get(kindId).judge !== 'human_pairwise') return sendProblem(403, 'bench.anon_kind_not_allowed', 'Only pairwise kinds.');
+                    const round = [...state.rounds.values()].find((r) => r.kind_id === kindId && r.status === 'finished' && r.created_by !== 'service:design'
+                        && !state.judgements.some((j) => j.round_id === r.id && j.subject === anon.subject)
+                        && [...state.entries.values()].filter((e) => e.round_id === r.id && !e.error).length >= 2);
+                    if (!round) { res.writeHead(204); return res.end(); }
+                    const [left, right] = shuffle([...state.entries.values()].filter((e) => e.round_id === round.id && !e.error));
+                    return json(200, { round: { id: round.id, kind_id: round.kind_id, prompt: round.prompt }, left: { id: left.id, payload: left.payload }, right: { id: right.id, payload: right.payload } });
+                }
+
                 if (req.method === 'GET' && url.pathname === '/api/v1/judgements/next') {
                     const person = requirePerson(req);
                     const kindId = url.searchParams.get('kind') || 'design.page';
@@ -491,12 +519,17 @@ async function startBench({ network } = {}) {
                 }
 
                 if (req.method === 'POST' && /^\/api\/v1\/rounds\/([^/]+)\/judgements$/.test(url.pathname)) {
-                    const person = requirePerson(req);
+                    const anon = relayed(req);
+                    const person = anon ? { subject: anon.subject, anon: true } : requirePerson(req);
+                    if (anon) {
+                        const used = state.anonUsed.get(anon.subject) || 0;
+                        if (used >= state.anonPerDay) return sendProblem(429, 'bench.limit_anon', 'Sign in to keep voting today');
+                    }
                     const roundId = decodeURIComponent(url.pathname.split('/').slice(-2)[0]);
                     const round = state.rounds.get(roundId);
                     if (!round) return sendProblem(404, 'bench.round_not_found', 'No such round.');
                     if (round.status !== 'finished') return sendProblem(409, 'bench.round_not_ready', 'Round not ready.');
-                    if (round.created_by === person.subject) return sendProblem(403, 'bench.creator_cannot_vote', 'You cannot judge a round you started.');
+                    if (round.created_by === person.subject || (person.anon && round.created_by === 'service:design')) return sendProblem(403, 'bench.creator_cannot_vote', 'You cannot judge a round you started.');
                     const pair = body.pair || {};
                     if (!pair.left || !pair.right || pair.left === pair.right) return sendProblem(422, 'bench.invalid_pair', 'Invalid pair.');
                     if (state.judgements.some((j) => j.round_id === round.id && j.subject === person.subject)) return sendProblem(409, 'bench.already_judged', 'Already judged.');
@@ -516,7 +549,9 @@ async function startBench({ network } = {}) {
                         subject: person.subject,
                         at: new Date().toISOString(),
                     };
+                    judgement.voter_kind = person.anon ? 'anon' : 'person';
                     state.judgements.push(judgement);
+                    if (person.anon) state.anonUsed.set(person.subject, (state.anonUsed.get(person.subject) || 0) + 1);
                     updateRating(round.kind_id, entries.find((e) => e.id === pair.left), entries.find((e) => e.id === pair.right), outcome);
                     return json(201, { judgement, revealed: { left: fullEntry(entries.find((e) => e.id === pair.left)), right: fullEntry(entries.find((e) => e.id === pair.right)) } });
                 }
@@ -526,6 +561,10 @@ async function startBench({ network } = {}) {
                     const type = url.searchParams.get('type') || 'elo';
                     const b = board(kindId, type);
                     if (!b) return sendProblem(404, 'bench.kind_not_found', 'No such kind.');
+                    const js = state.judgements.filter((j) => j.kind_id === kindId);
+                    const anonN = js.filter((j) => j.voter_kind === 'anon').length;
+                    b.voters = { person: js.length - anonN, anon: anonN, service: 0, total: js.length };
+                    if (url.searchParams.get('voters')) b.category = url.searchParams.get('voters');
                     return json(200, { board: b });
                 }
 
@@ -563,7 +602,17 @@ async function startBench({ network } = {}) {
         await new Promise((r) => server.close(r));
     }
 
-    return { base, url: base, state, tick, close, addEntry };
+    /** A finished round of any kind, started by a person (so a relayed voter may judge it), with two entries. */
+    function seedRound({ kind = 'design.svg', prompt = 'A small fox', createdBy = 'usr_seed', models = ['alpha-1', 'beta-2'] } = {}) {
+        const task = { id: id('btk'), kind_id: kind, prompt, task_class: null, public: true, created_by: 'service:design', created_at: new Date().toISOString() };
+        state.tasks.set(task.id, task);
+        const round = { id: id('brd'), task_id: task.id, kind_id: kind, offers: [], status: 'running', seed: 0, pool_fallback: false, receipt: null, params: {}, created_by: createdBy, created_at: new Date().toISOString(), finished_at: null, task_class: null, prompt };
+        state.rounds.set(round.id, round);
+        models.forEach((model) => addEntry(round.id, { provider: 'acme', model, payload: { svg: '<svg viewBox="0 0 10 10"></svg>' }, cost_usd: 0.002, ms: 1500, tokens: 10 }));
+        return round;
+    }
+
+    return { base, url: base, state, tick, close, addEntry, seedRound };
 }
 
 module.exports = { startBench };

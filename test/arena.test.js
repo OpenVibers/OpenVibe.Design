@@ -74,8 +74,8 @@ const ORIGIN = 'https://openvibe.design';
             assert.ok(cost.json().leaderboard.some((r) => r.entries > 0 && r.cost_per_solved != null));
             assert.ok(t.bench.state.requests.some((x) => x.path === '/api/v1/boards/design.page' && x.query === '?type=cost'));
             const page = await t.get('/arena');
-            assert.match(page.text, /Cost view/);
-            assert.match(page.text, /provisional/);
+            assert.match(page.text, /What each model costs/, 'the cost view, folded under the boards');
+            assert.match(page.text, /class="ar-provisional" title="Fewer than 10 games">new</, 'a model with few games is marked new');
         });
 
         await check('logo uses design.component and dataset redirects to public Bench', async () => {
