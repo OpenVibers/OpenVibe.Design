@@ -234,3 +234,13 @@
 .mg-none{color:var(--text-muted)}
 .mg-table tr.is-missing td{background:color-mix(in srgb,var(--bg-secondary) 50%,transparent)}
 .mg-table code{white-space:nowrap}
+
+/* Make it move (L50 step 7): each preset on the glyph, played by pointing, pressing or tapping. */
+.mv-grid{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.mv-tile{position:relative;width:100%;display:grid;justify-items:center;gap:6px;padding:20px 8px 14px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit;cursor:pointer}
+.mv-tile svg{width:40px;height:40px;margin-bottom:4px}
+.mv-tile b{font-size:14px}
+.mv-tile small{color:var(--text-muted);font-size:12px}
+.mv-tile i{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-style:normal;font-size:11px;font-weight:750}
+.mv-tile.is-suits{border-color:color-mix(in srgb,var(--accent) 50%,var(--border))}
+.mv-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}

@@ -181,6 +181,30 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             assert.ok((await t.get('/llms.txt')).text.includes('/ov-icon.js'), 'llms.txt names it for agents');
         });
 
+        await check('make it move (L50 step 7): six presets, the one that suits marked, a stylesheet, <ov-icon motion>', async () => {
+            const motion = require('../server/glyphs/motion');
+            assert.deepEqual(motion.PRESETS.map((p) => p.id), ['draw', 'pop', 'nudge', 'ring', 'beat', 'shake']);
+            assert.deepEqual(['bell', 'heart', 'arrow-right', 'check', 'ban', 'gear'].map(motion.suggest), ['ring', 'beat', 'nudge', 'draw', 'shake', 'pop']);
+            assert.deepEqual(motion.nudgeOf('back'), { x: -2, y: 0 }, 'an arrow leans its own way');
+            const page = (await t.get('/icons/bell')).text;
+            assert.ok(page.includes('<h2 id="gp-move">Make it move</h2>'));
+            assert.equal((page.match(/<button type="button" class="mv-tile/g) || []).length, 6);
+            assert.match(page, /class="mv-tile is-suits" data-mv="ring"/, 'a bell rings');
+            assert.ok(page.includes('&lt;ov-icon name=&quot;bell&quot; motion=&quot;ring&quot;&gt;') || page.includes('<ov-icon name="bell" motion="ring">'));
+            assert.match(page, /\/css\/icon-motion\.css/, 'the page loads the moves');
+            const css = await t.get('/icons/pack/ov-icon-motion.css');
+            assert.match(css.headers.get('content-type'), /text\/css/);
+            assert.equal(css.headers.get('access-control-allow-origin'), '*');
+            for (const id of ['draw', 'pop', 'nudge', 'ring', 'beat', 'shake']) assert.ok(css.text.includes(`.ovm-${id}`), id);
+            assert.ok(!/infinite|rotate\(360deg\)|turn\)/.test(css.text), 'nothing loops or spins');
+            assert.match(css.text, /@media \(prefers-reduced-motion: reduce\)/);
+            assert.match(css.text, /html\[data-ov-motion="reduced"\]/, 'OpenVibe\'s calm setting stops them too');
+            const wc = (await t.get('/ov-icon.js')).text;
+            for (const k of ['ovm-draw', 'ovm-ring', 'ovm-beat', 'ovm-shake']) assert.ok(wc.includes(`@keyframes ${k}{`) && css.text.includes(`@keyframes ${k} {`), `${k} in both`);
+            assert.ok(!/infinite/.test(wc), 'the component loops nothing either');
+            assert.ok(wc.includes(":host([data-calm]) svg,:host([data-calm]) svg *{animation:none!important;transition:none!important}"));
+        });
+
         await check('the pack: fonts, the sprite, the CSS, the code points and a ZIP of every SVG', async () => {
             const woff = await t.get('/icons/pack/ov-glyphs.woff2');
             assert.equal(woff.status, 200);

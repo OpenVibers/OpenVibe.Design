@@ -57,6 +57,11 @@
             history.replaceState(null, '', `${location.pathname}${q}#png`);
         }, 120);
     }
+    // Make it move: a tap on "Draw in" draws it again (a fresh copy restarts its animation).
+    document.querySelectorAll('[data-mv="draw"]').forEach((b) => b.addEventListener('click', () => {
+        const svg = b.querySelector('svg');
+        if (svg) svg.replaceWith(svg.cloneNode(true));
+    }));
     form.addEventListener('input', update);
     form.addEventListener('change', update);
     form.addEventListener('submit', (e) => { e.preventDefault(); update(); });

@@ -14,6 +14,7 @@ const glyphs = require('openvibe-shared/glyphs');
 const { layout, esc } = require('../render/layout');
 const ex = require('../glyphs/export');
 const formats = require('../glyphs/formats');
+const motion = require('../glyphs/motion');
 const usage = require('../glyphs/fa-usage.json');
 
 const title = (name) => name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
@@ -133,6 +134,19 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
   </div>
 </section>`;
 
+    // L50 step 7: make it move. Each preset on this glyph, played by pointing at it (or pressing, or tapping to replay
+    // the draw); the one that suits it is marked. Nothing loops; calm stops it.
+    const suits = motion.suggest(name);
+    const lean = motion.nudgeOf(name);
+    const moving = `<section class="ic-sec" id="move" aria-labelledby="gp-move">
+  <div class="ic-sec-head"><h2 id="gp-move">Make it move</h2><p>One move when something happens: point at each, press it, or tap the first to draw it again. Nothing loops or spins, and calm or reduced motion stops them.</p></div>
+  <ul class="mv-grid">${motion.PRESETS.map((p) => `<li><button type="button" class="mv-tile${p.id === suits ? ' is-suits' : ''}" data-mv="${esc(p.id)}"${p.id === 'nudge' ? ` style="--ovm-x:${lean.x}px;--ovm-y:${lean.y}px"` : ''}>${glyph(name, 40, `ovm-${p.id}${p.id === 'shake' ? ' ovm-demo' : ''}`)}<b>${esc(p.name)}</b><small>${esc(p.when)}</small>${p.id === suits ? '<i>Suits it</i>' : ''}</button></li>`).join('')}</ul>
+  <div class="gp-use">
+    <div class="gp-way"><h3>With &lt;ov-icon&gt;</h3>${kit.snippet({ code: `<ov-icon name="${name}" motion="${suits}"></ov-icon>${glyphs.solid(name) ? `\n<ov-icon name="${name}" motion="beat" on></ov-icon>  <!-- on: the solid drawing, as when turned on -->` : ''}`, id: 'gp-mv-wc', label: 'Copy' })}</div>
+    <div class="gp-way"><h3>On any SVG</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/icons/pack/ov-icon-motion.css">\n<svg class="ovm-${suits}" …>…</svg>`, id: 'gp-mv-css', label: 'Copy' })}</div>
+  </div>
+</section>`;
+
     const near = related(name);
     const rel = `<section class="ic-sec" aria-labelledby="gp-rel">
   <div class="ic-sec-head"><h2 id="gp-rel">Near it</h2><p>Glyphs that share a word with ${esc(name)}, then its neighbours. <a href="/icons">All ${glyphs.NAMES.length}</a>.</p></div>
@@ -156,9 +170,9 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
     return layout({
         title: head.length <= 40 ? head : `${T} icon: SVG, PNG, font`,
         description: `A free ${T.toLowerCase()} icon: download the SVG, make a PNG at any size and colour, or use the font.${fa.length ? ` A drop-in for Font Awesome's fa-${fa[0]}.` : ''} MIT.`.slice(0, 160),
-        path: `/icons/${name}`, active: '/icons', styles: ['css/icons.css'], scripts: ['js/icon.js'], jsonLd,
+        path: `/icons/${name}`, active: '/icons', styles: ['css/icons.css', 'css/icon-motion.css'], scripts: ['js/icon.js'], jsonLd,
         image: `${base}/icons/${name}.png?size=512&color=mark&pad=18&ground=squircle&bg=0b1020`, imageAlt: `The ${T.toLowerCase()} icon`,
-        body: `<article class="ic gp">${hero}${maker}${use}${rel}</article>`,
+        body: `<article class="ic gp">${hero}${maker}${use}${moving}${rel}</article>`,
     });
 }
 
