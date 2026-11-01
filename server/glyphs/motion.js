@@ -23,7 +23,7 @@ const PRESETS = Object.freeze([
 ]);
 
 const NUDGE = { 'arrow-right': [2, 0], 'arrow-left': [-2, 0], back: [-2, 0], 'arrow-up': [0, -2], 'arrow-down': [0, 2], down: [0, 2], up: [0, -2],
-    open: [2, -2], send: [2, -2], plane: [2, -2], forward: [2, 0], enter: [2, 0], leave: [2, 0], chevron: [0, 2], 'chevrons-right': [2, 0],
+    open: [2, -2], send: [2, -2], plane: [2, -2], forward: [2, 0], enter: [2, 0], leave: [2, 0], chevron: [2, 0], 'chevrons-right': [2, 0],
     'chevrons-left': [-2, 0], download: [0, 2], upload: [0, -2], reply: [-2, 0], 'fast-forward': [2, 0], rewind: [-2, 0], skip: [2, 0], share: [2, -2] };
 const SUITS = {
     ring: ['bell', 'megaphone', 'phone', 'alert'],
