@@ -239,7 +239,7 @@
             var wildEl = tally.querySelector('[data-mx-wild]'); if (wildEl) wildEl.textContent = String(wild);
             var bothEl = tally.querySelector('[data-mx-both]');
             if (bothEl) { bothEl.hidden = !both; bothEl.textContent = ppl(both) + ' like more than one kind'; }
-            [['[data-mx-tops-l]', (t.top.L || []).slice(0, 4)], ['[data-mx-tops-p]', (t.top.P || []).slice(0, 4)], ['[data-mx-tops-w]', (t.top.W || []).slice(0, 4)], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 3)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 3)]].forEach(function (row) {
+            [['[data-mx-tops-l]', (t.top.L || []).slice(0, 8)], ['[data-mx-tops-p]', (t.top.P || []).slice(0, 8)], ['[data-mx-tops-w]', (t.top.W || []).slice(0, 8)], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 6)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 6)]].forEach(function (row) {
                 var list = tally.querySelector(row[0]);
                 if (!list) return;
                 list.closest('.mx-tops').hidden = !row[1].length;
@@ -266,13 +266,13 @@
             var t = JSON.parse(JSON.stringify(lastTally));
             var had = prev.length > 0, has = picks.length > 0;
             t.people = Math.max(0, t.people + (has && !had ? 1 : !has && had ? -1 : 0));
-            var bump = function (list, c, d) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n += d; else if (d > 0) list.push({ code: c, n: d }); };
+            var bump = function (list, c, d) { var e = list.find(function (x) { return x.code === c; }); if (e) { e.n += d; if (d > 0) e.fresh = true; } else if (d > 0) list.unshift({ code: c, n: d, fresh: true }); };
             t.all = t.all || [];
             ['L', 'P', 'W', 'M', 'F'].forEach(function (k) {
                 var list = t.top[k] || (t.top[k] = []);
                 prev.filter(function (c) { return c[0] === k && picks.indexOf(c) === -1; }).forEach(function (c) { bump(list, c, -1); bump(t.all, c, -1); });
                 picks.filter(function (c) { return c[0] === k && prev.indexOf(c) === -1; }).forEach(function (c) { bump(list, c, 1); bump(t.all, c, 1); });
-                t.top[k] = list.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); });
+                t.top[k] = list.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n || (a.fresh ? -1 : b.fresh ? 1 : 0); });
             });
             t.all = t.all.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); });
             var likes = function (arr, k) { return arr.some(function (c) { return c[0] === k; }) ? 1 : 0; };

@@ -46,7 +46,7 @@ function createBrandPicks({ db, now = () => Date.now() } = {}) {
     }
 
     async function tally() {
-        const counts = await db.many('SELECT code, count(*)::int AS n FROM brand_picks GROUP BY code ORDER BY n DESC, code');
+        const counts = await db.many('SELECT code, count(*)::int AS n, max(created_at) AS last FROM brand_picks GROUP BY code ORDER BY n DESC, max(created_at) DESC, code');
         const voters = await db.many(`SELECT count(*) FILTER (WHERE code LIKE 'L%')::int AS l, count(*) FILTER (WHERE code LIKE 'P%')::int AS p,
                                     count(*) FILTER (WHERE code LIKE 'W%')::int AS w FROM brand_picks GROUP BY voter`);
         const people = voters.length;
@@ -54,7 +54,7 @@ function createBrandPicks({ db, now = () => Date.now() } = {}) {
         for (const v of voters) { if (v.l) loop += 1; if (v.p) pair += 1; if (v.w) wild += 1; if ((v.l ? 1 : 0) + (v.p ? 1 : 0) + (v.w ? 1 : 0) > 1) both += 1; }
         const top = { L: [], P: [], W: [], M: [], F: [] };
         for (const r of counts) { const list = top[r.code[0]]; if (list && list.length < 8) list.push({ code: r.code, n: r.n }); }
-        return { people, lean: { loop, pair, wild, both }, top, all: counts.slice(0, 250).map((r) => ({ code: r.code, n: r.n })) };
+        return { people, lean: { loop, pair, wild, both }, top, all: counts.slice(0, 250).map((r) => ({ code: r.code, n: r.n })) };   // ties: the newest vote first
     }
 
     return { voterOf, save, mine, tally, CODE, COOKIE, MAX };

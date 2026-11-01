@@ -757,11 +757,11 @@ function tallyBlock(t) {
 <div class="mx-tally-h"><b>Votes so far</b><span class="mx-tally-n" data-mx-people>${people ? ppl(people) : 'No votes yet. Tap any logo to vote.'}</span><span class="mx-tally-lead" data-mx-lead>${lead}</span></div>
 <div class="mx-split3" data-mx-split style="--l:${loopPct}%;--p:${pairPct}%"${sum3 ? '' : ' hidden'}><span class="mx-s3 mx-s3-l">${miniArt('L01', 16, 'e')}Loop <b data-mx-loop>${loop}</b></span><span class="mx-s3 mx-s3-p">${miniArt('P01', 16, 'e')}Pair <b data-mx-pair>${pair}</b></span><span class="mx-s3 mx-s3-w">${miniArt('W01', 16, 'e')}Wild <b data-mx-wild>${wild}</b></span></div>
 <p class="mx-both" data-mx-both${both ? '' : ' hidden'}>${ppl(both)} like more than one kind</p>
-${row('Loop', 'data-mx-tops-l', fam('L', 4))}
-${row('Pair', 'data-mx-tops-p', fam('P', 4))}
-${row('Wild', 'data-mx-tops-w', fam('W', 4))}
-${row('Menu', 'data-mx-tops-m', fam('M', 3))}
-${row('Font', 'data-mx-tops-f', fam('F', 3))}
+${row('Loop', 'data-mx-tops-l', fam('L', 8))}
+${row('Pair', 'data-mx-tops-p', fam('P', 8))}
+${row('Wild', 'data-mx-tops-w', fam('W', 8))}
+${row('Menu', 'data-mx-tops-m', fam('M', 6))}
+${row('Font', 'data-mx-tops-f', fam('F', 6))}
 <details class="mx-all" data-mx-all${every.length ? '' : ' hidden'}><summary>Every vote <span data-mx-all-n>${every.length} take${every.length === 1 ? '' : 's'}</span></summary>
 ${allRow('L', 'Loop')}${allRow('P', 'Pair')}${allRow('W', 'Wild')}${allRow('M', 'Menu')}${allRow('F', 'Font')}</details>
 <div class="mx-mine" data-mx-mine hidden><span class="mx-tops-k">Yours</span><b data-mx-picks></b><button type="button" class="mx-btn" data-mx-link>Copy link</button><button type="button" class="mx-btn mx-btn-quiet" data-mx-clear>Clear</button><em class="mx-saved" data-mx-saved>saved</em></div>
