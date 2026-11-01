@@ -16,11 +16,23 @@ const PER_DAY = 12;
 const CANDIDATES = 4;
 const NAME_RE = /^[a-z][a-z0-9-]{1,31}$/;
 
+// The house hand, shown rather than described (plan L49: drafts that look like the set they join). A dozen drawings
+// from openvibe-shared/glyphs, picked for range: a frame, a figure, a symbol, an object, a slash variant.
+const EXAMPLES = ['user', 'camera', 'bell', 'search', 'heart', 'gear', 'calendar', 'megaphone', 'compass', 'mug', 'thumbs-up', 'link-off'];
+function examples() {
+    let glyphs = null;
+    try { glyphs = require('openvibe-shared/glyphs'); } catch { return ''; }
+    const lines = EXAMPLES.map((n) => [n, glyphs.path(n)]).filter(([, d]) => d).map(([n, d]) => `${n}: ${d}`);
+    return lines.length ? `\n\nThe set you are drawing for (match this hand: weights, corner radii, how much of the 24 box it fills, how few lines):\n${lines.join('\n')}` : '';
+}
+
 const SYSTEM = `You draw icons for OpenVibe's glyph set. Every glyph is the inside of an SVG with viewBox "0 0 24 24":
 strokes only (the page draws them 2 units wide, round caps and joins, in the text colour), at most 6 shapes from
 path, circle, ellipse, rect, line and polyline, every coordinate between 1 and 23, nothing filled, no transforms.
-Simple, centred, readable at 16 px, in the hand of a clean line icon set. Answer with JSON only:
-{"candidates": ["<path d=\\"…\\"/>", …]} with ${CANDIDATES} different candidates.`;
+Simple, centred on (12, 12), filling about 3 to 21 of the box, with at least 2.5 units between parallel lines so it
+reads at 16 px, in the hand of a clean line icon set. A dot is a zero-length line ("M12 12h.01"). Each candidate is a
+different idea, not the same drawing moved. Answer with JSON only:
+{"candidates": ["<path d=\\"…\\"/>", …]} with ${CANDIDATES} different candidates.${examples()}`;
 
 function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() } }) {
     const id = () => `gd_${crypto.randomBytes(8).toString('hex')}`;
@@ -34,20 +46,31 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() } }) {
         const today = await db.maybe("SELECT count(*)::int AS n FROM glyph_drafts WHERE subject = $1 AND created_at > now() - interval '1 day'", [subject]);
         if ((today && today.n) >= PER_DAY) throw Object.assign(new Error(`${PER_DAY} drafts a day: more tomorrow`), { status: 429 });
         if (!ai || !ai.enabled) throw Object.assign(new Error('drawing needs OpenVibe.AI, which is not configured here'), { status: 503 });
-        const answer = await ai.text({
-            system: SYSTEM,
-            prompt: `The icon: "${n}".${what ? ` What it stands for: ${what}` : ''}`,
-            maxTokens: 1800,
-            target: { service: 'design', type: 'glyph_draft', id: n },
-            prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },   // Claude first, soft, on the person's key (L37)
-            person: subject,
-        });
-        let list = [];
-        try {
-            const body = String(answer.text || '').replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
-            const j = JSON.parse(body.slice(body.indexOf('{'), body.lastIndexOf('}') + 1));
-            list = Array.isArray(j.candidates) ? j.candidates.slice(0, CANDIDATES) : [];
-        } catch { list = []; }
+        const ask = async (extra = '') => {
+            const answer = await ai.text({
+                system: SYSTEM,
+                prompt: `The icon: "${n}".${what ? ` What it stands for: ${what}` : ''}${extra}`,
+                maxTokens: 1800,
+                target: { service: 'design', type: 'glyph_draft', id: n },
+                prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },   // Claude first, soft, on the person's key (L37)
+                person: subject,
+            });
+            let got = [];
+            try {
+                const body = String(answer.text || '').replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
+                const j = JSON.parse(body.slice(body.indexOf('{'), body.lastIndexOf('}') + 1));
+                got = Array.isArray(j.candidates) ? j.candidates.slice(0, CANDIDATES) : [];
+            } catch { got = []; }
+            return { answer, got };
+        };
+        let { answer, got: list } = await ask();
+        // Fewer than two that pass the checks: ask once more, saying why the last ones failed (more reliable drafts).
+        const passing = list.filter((c) => clean(typeof c === 'string' ? c : '').ok).length;
+        if (passing < 2) {
+            const whys = list.map((c) => clean(typeof c === 'string' ? c : '')).filter((r) => !r.ok).map((r) => r.why).slice(0, 4);
+            const again = await ask(`\nThe last answer ${list.length ? `failed the checks: ${whys.join('; ') || 'too few usable drawings'}` : 'had no candidates'}. Keep strictly to the rules.`).catch(() => null);
+            if (again && again.got.length) { list = list.concat(again.got).slice(0, CANDIDATES * 2); answer = again.answer; }
+        }
         const kept = [], refused = [];
         const seen = new Set();
         for (const c of list) {
