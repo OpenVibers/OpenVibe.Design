@@ -93,13 +93,15 @@
         }
         var saveTimer = 0;
         function toggle(code) {
+            var prev = picks.slice();
             var i = picks.indexOf(code);
             if (i === -1) picks.push(code); else picks.splice(i, 1);
             render();
             var card = document.getElementById(code);
             if (card && i === -1 && !still()) { card.classList.remove('just-picked'); void card.offsetWidth; card.classList.add('just-picked'); setTimeout(function () { card.classList.remove('just-picked'); }, 500); }
             if (i === -1 && typeof offerStep2 === 'function') offerStep2(code);
-            clearTimeout(saveTimer); saveTimer = setTimeout(sync, 700);
+            countLocally(prev);
+            clearTimeout(saveTimer); saveTimer = setTimeout(sync, 250);
         }
         function say(btn, words) { var was = btn.textContent; btn.textContent = words; setTimeout(function () { btn.textContent = was; }, 1400); }
         function copy(text, btn) {
@@ -143,19 +145,45 @@
             if (!items.length) { var em = document.createElement('em'); em.textContent = 'none yet'; list.appendChild(em); return; }
             items.forEach(function (t) { var c = chip(t); if (!before[t.code]) c.classList.add('is-new'); list.appendChild(c); });
         }
+        var lastTally = null;
         function showTally(t) {
             if (!tally || !t) return;
+            lastTally = t;
             var loop = t.lean.loop, pair = t.lean.pair, sum = loop + pair, pct = sum ? Math.round((loop / sum) * 100) : 50;
             tally.classList.toggle('is-empty', !t.people);
-            tally.querySelector('[data-mx-people]').textContent = t.people ? t.people + (t.people === 1 ? ' person' : ' people') : 'No votes yet. Be the first.';
-            tally.querySelector('[data-mx-lead]').textContent = sum ? (loop === pair ? 'Level so far' : loop > pair ? 'The Loop leads' : 'The Pair leads') : 'No picks yet';
-            tally.querySelector('.mx-lean').style.setProperty('--l', pct + '%');
-            tally.querySelector('[data-mx-loop]').textContent = sum ? pct + '%' : '–';
-            tally.querySelector('[data-mx-pair]').textContent = sum ? (100 - pct) + '%' : '–';
-            var marks = (t.top.L || []).concat(t.top.P || []).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); }).slice(0, 6);
-            fill(tally.querySelector('[data-mx-tops]'), marks);
-            fill(tally.querySelector('[data-mx-tops-m]'), (t.top.M || []).slice(0, 4));
-            fill(tally.querySelector('[data-mx-tops-f]'), (t.top.F || []).slice(0, 4));
+            tally.querySelector('[data-mx-people]').textContent = t.people ? t.people + (t.people === 1 ? ' person' : ' people') : 'No votes yet. Tap any logo to vote.';
+            tally.querySelector('[data-mx-lead]').textContent = sum ? (loop === pair ? 'Tied' : loop > pair ? 'The Loop leads' : 'The Pair leads') : '';
+            var split = tally.querySelector('[data-mx-split]');
+            split.hidden = !sum;
+            split.style.setProperty('--l', pct + '%');
+            tally.querySelector('[data-mx-loop]').textContent = pct + '%';
+            tally.querySelector('[data-mx-pair]').textContent = (100 - pct) + '%';
+            var marks = (t.top.L || []).concat(t.top.P || []).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); }).slice(0, 5);
+            [['[data-mx-tops]', marks], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 3)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 3)]].forEach(function (pair2) {
+                var list = tally.querySelector(pair2[0]);
+                if (!list) return;
+                list.closest('.mx-tops').hidden = !pair2[1].length;
+                fill(list, pair2[1]);
+            });
+        }
+        // The tap shows at once: this person's vote is counted into the last tally on the page before the server answers
+        // (then the server's own count replaces it).
+        var before = null;
+        function countLocally(prev) {
+            if (!lastTally) return;
+            var t = JSON.parse(JSON.stringify(lastTally));
+            var had = prev.length > 0, has = picks.length > 0;
+            t.people = Math.max(0, t.people + (has && !had ? 1 : !has && had ? -1 : 0));
+            ['L', 'P', 'M', 'F'].forEach(function (k) {
+                var list = t.top[k] || (t.top[k] = []);
+                prev.filter(function (c) { return c[0] === k && picks.indexOf(c) === -1; }).forEach(function (c) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n -= 1; });
+                picks.filter(function (c) { return c[0] === k && prev.indexOf(c) === -1; }).forEach(function (c) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n += 1; else list.push({ code: c, n: 1 }); });
+                t.top[k] = list.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; });
+            });
+            var lean = function (arr) { var l = arr.filter(function (c) { return c[0] === 'L'; }).length, p = arr.filter(function (c) { return c[0] === 'P'; }).length; return l > p ? [1, 0] : p > l ? [0, 1] : l ? [0.5, 0.5] : [0, 0]; };
+            var a = lean(prev), b = lean(picks);
+            t.lean = { loop: Math.max(0, t.lean.loop - a[0] + b[0]), pair: Math.max(0, t.lean.pair - a[1] + b[1]) };
+            showTally(t);
         }
         var savedNote = root.querySelector('[data-mx-saved]');
         function sync() {
