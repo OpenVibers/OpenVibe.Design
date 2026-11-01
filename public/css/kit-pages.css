@@ -35,7 +35,7 @@
 .kt-grid { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 268px), 1fr)); }
 @media (min-width: 900px) { .kt-tile--wide { grid-column: span 2; } }
 .kt-tile { position: relative; min-width: 0; display: grid; grid-template-rows: auto auto 1fr auto; border: 1px solid var(--border, #26344d); border-radius: 16px; background: var(--bg-card, #0f1729); overflow: hidden;
-    transition: border-color .15s, box-shadow .15s; scroll-margin-top: 72px; }
+    transition: border-color var(--ov-dur-2, .15s), box-shadow var(--ov-dur-2, .15s); scroll-margin-top: 72px; }
 .kt-tile:hover { border-color: color-mix(in srgb, var(--room-strong) 55%, var(--border, #26344d)); box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--room-strong) 60%, transparent); }
 .kt-tile:has(.kt-tile-a:focus-visible) { outline: 2px solid var(--room-strong); outline-offset: 2px; }
 /* The part itself, drawn small: never clickable, fixed children kept inside, a fade where it is cut */

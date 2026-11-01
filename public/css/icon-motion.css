@@ -11,28 +11,28 @@
 .ovm-draw :is(path, circle, rect, ellipse, line, polyline) {
     stroke-dasharray: var(--ovm-len, 160);
     stroke-dashoffset: var(--ovm-len, 160);
-    animation: ovm-draw var(--ovm-draw-time, .9s) cubic-bezier(.65, 0, .35, 1) forwards;
+    animation: ovm-draw var(--ovm-draw-time, .9s) var(--ov-ease-out, cubic-bezier(.65, 0, .35, 1)) forwards;
 }
 .ovm-draw :is(path, circle, rect, ellipse, line, polyline):nth-child(2) { animation-delay: .12s; }
 .ovm-draw :is(path, circle, rect, ellipse, line, polyline):nth-child(3) { animation-delay: .24s; }
 .ovm-draw :is(path, circle, rect, ellipse, line, polyline):nth-child(n+4) { animation-delay: .36s; }
 @keyframes ovm-draw { to { stroke-dashoffset: 0; } }
 
-.ovm-pop { transition: transform .32s cubic-bezier(.34, 1.56, .64, 1); transform-origin: 50% 50%; }
-.ovm-pop:active, :active > .ovm-pop { transform: scale(.82); transition-duration: .08s; transition-timing-function: ease-out; }
+.ovm-pop { transition: transform var(--ov-dur-3, .32s) var(--ov-ease-spring, cubic-bezier(.34, 1.56, .64, 1)); transform-origin: 50% 50%; }
+.ovm-pop:active, :active > .ovm-pop { transform: scale(.82); transition-duration: var(--ov-dur-1, .08s); transition-timing-function: var(--ov-ease-out, ease-out); }
 
-.ovm-nudge { transition: transform .28s cubic-bezier(.34, 1.56, .64, 1); }
+.ovm-nudge { transition: transform var(--ov-dur-3, .28s) var(--ov-ease-spring, cubic-bezier(.34, 1.56, .64, 1)); }
 .ovm-nudge:hover, :hover > .ovm-nudge, :focus-visible > .ovm-nudge { transform: translate(var(--ovm-x, 2px), var(--ovm-y, 0)); }
 
 .ovm-ring { transform-origin: 50% 12%; }
-.ovm-ring:hover, :hover > .ovm-ring, :focus-visible > .ovm-ring { animation: ovm-ring .9s cubic-bezier(.36, .07, .19, .97); }
+.ovm-ring:hover, :hover > .ovm-ring, :focus-visible > .ovm-ring { animation: ovm-ring .9s var(--ov-ease-out, cubic-bezier(.36, .07, .19, .97)); }
 @keyframes ovm-ring { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(14deg); } 32% { transform: rotate(-12deg); } 50% { transform: rotate(8deg); } 68% { transform: rotate(-5deg); } 84% { transform: rotate(2deg); } }
 
 .ovm-beat { transform-origin: 50% 55%; }
-.ovm-beat:hover, :hover > .ovm-beat, :focus-visible > .ovm-beat { animation: ovm-beat .7s ease-out; }
+.ovm-beat:hover, :hover > .ovm-beat, :focus-visible > .ovm-beat { animation: ovm-beat var(--ov-dur-4, .7s) var(--ov-ease-out, ease-out); }
 @keyframes ovm-beat { 0%, 100% { transform: scale(1); } 18% { transform: scale(1.2); } 36% { transform: scale(.96); } 54% { transform: scale(1.1); } 72% { transform: scale(1); } }
 
-.ovm-shake.is-no, .ovm-shake.ovm-demo:hover, :hover > .ovm-shake.ovm-demo { animation: ovm-shake .5s cubic-bezier(.36, .07, .19, .97); }
+.ovm-shake.is-no, .ovm-shake.ovm-demo:hover, :hover > .ovm-shake.ovm-demo { animation: ovm-shake var(--ov-dur-4, .5s) var(--ov-ease-out, cubic-bezier(.36, .07, .19, .97)); }
 @keyframes ovm-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(1px); } }
 
 @media (prefers-reduced-motion: reduce) {
