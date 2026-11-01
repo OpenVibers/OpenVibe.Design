@@ -106,7 +106,7 @@ function kitIndex() {
     const body = `<div class="kt" id="kt-index">
 <header class="kt-hero"><p class="kt-kicker">The OpenVibe Kit${VERSION ? ` · v${esc(VERSION)}` : ''} · MIT</p>
 <h1>Every piece an OpenVibe page is made of</h1>
-<p class="kt-lede">${PARTS.length} parts, each one function call that returns plain HTML: escaped, phone first, on the site's own theme. Pages work without JavaScript; one small file adds the menus, copy buttons and sheets. All of it is ${weight.kb(css)} of CSS.</p></header>
+<p class="kt-lede">${PARTS.length} parts, each one function call that returns plain HTML: escaped, phone first, on the site's own theme. Pages work without JavaScript; one small file adds the menus, copy buttons and sheets. All of it is ${weight.kb(css)} of CSS. How closely each OpenVibe site follows it, read from its code: <a href="https://openvibe.report/design">design health</a>.</p></header>
 ${nav}
 <a class="kt-layout-card" href="/kit/layout"><span class="kt-kicker">New in 4.78</span><b>Layout without breakpoints</b><span>A fluid type and space scale, eight primitives that lay out by their own width, and a classless base. ${weight.kb(require('zlib').brotliCompressSync(Buffer.from(LAYOUT_FILE || ' ')).length)}.</span></a>
 ${useCards()}
