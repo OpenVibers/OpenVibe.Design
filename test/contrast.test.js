@@ -17,10 +17,19 @@ assert.ok(
     css.includes('background: var(--accent-strong, var(--accent)); color: var(--on-accent-strong, var(--on-accent));'),
     'the chat and element submit buttons use the accent strong pair'
 );
+// The /create submit button was white on the plain accent (3.67:1). The accent strong pair is text-safe.
+assert.ok(
+    css.includes('.dv-create form button { display: block; margin: 0 0 2px auto; border: 0; border-radius: 9px; background: var(--accent-strong, var(--accent)); color: var(--on-accent-strong, #fff);'),
+    'the create submit button uses the accent strong pair'
+);
 // The arena's small lines were muted text on a tint (4.1-4.4:1); the secondary text is the readable pair.
 assert.ok(
     css.includes('.ar-kind-t small { font-size: .72rem; line-height: 1.3; color: var(--text-secondary, #96a7c2); }'),
     'the arena kind line uses the secondary text'
+);
+assert.ok(
+    css.includes('.ar-provisional { padding: 0 6px; border-radius: 999px; font-size: .66rem; font-weight: 800; letter-spacing: .04em; vertical-align: 1px; background: color-mix(in srgb, var(--text-muted, #7386a3) 18%, transparent); color: var(--text-secondary, #96a7c2); }'),
+    'the arena new badge uses the secondary text'
 );
 assert.ok(
     !/\.ar-kb-[a-z]+ \{[^\n]*color: var\(--text-muted, #7386a3\)/.test(css),

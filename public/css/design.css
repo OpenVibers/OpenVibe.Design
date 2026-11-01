@@ -258,7 +258,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .dv-create form { border: 1px solid var(--border); background: var(--bg-card); border-radius: 16px; padding: 12px; box-shadow: 0 16px 48px #0001; }
 .dv-create textarea { display: block; width: 100%; min-height: 150px; padding: 16px; resize: vertical; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 1.15rem; }
 .dv-create textarea::placeholder { color: var(--text-muted); }
-.dv-create form button { display: block; margin: 0 0 2px auto; border: 0; border-radius: 9px; background: var(--accent); color: var(--on-accent); padding: 12px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+.dv-create form button { display: block; margin: 0 0 2px auto; border: 0; border-radius: 9px; background: var(--accent-strong, var(--accent)); color: var(--on-accent-strong, #fff); padding: 12px 18px; font: inherit; font-weight: 700; cursor: pointer; }
 /* Who designs it (L37): Claude first, or three providers compared. Plain radios, so it works without JavaScript. */
 .dv-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
 .dv-foot button { margin: 0 !important; }
@@ -645,7 +645,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .ar-kb-empty { margin: 10px 0 0; color: var(--text-secondary, #96a7c2); font-size: .86rem; }
 .ar-kb-links { margin: 10px 0 0; font-size: .78rem; color: var(--text-secondary, #96a7c2); }
 .ar-kb-links a { color: var(--text-secondary, #96a7c2); }
-.ar-provisional { padding: 0 6px; border-radius: 999px; font-size: .66rem; font-weight: 800; letter-spacing: .04em; vertical-align: 1px; background: color-mix(in srgb, var(--text-muted, #7386a3) 18%, transparent); color: var(--text-muted, #7386a3); }
+.ar-provisional { padding: 0 6px; border-radius: 999px; font-size: .66rem; font-weight: 800; letter-spacing: .04em; vertical-align: 1px; background: color-mix(in srgb, var(--text-muted, #7386a3) 18%, transparent); color: var(--text-secondary, #96a7c2); }
 
 .ar-make { display: grid; gap: 12px; margin-top: 30px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
 .ar-make-card { padding: 16px 18px; border: 1px dashed var(--border, #26344d); border-radius: 16px; }
