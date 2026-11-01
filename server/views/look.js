@@ -14,6 +14,29 @@ const { layout, esc } = require('../render/layout');
 // The sites a person can give a look of their own (service ids, as openvibe-shared/shell writes them on <html>).
 const SITES = [['live', 'OpenVibe.Live'], ['chat', 'OpenVibe.Chat'], ['games', 'OpenVibe.Games'], ['community', 'OpenVibe.Community'], ['media', 'OpenVibe.Media'], ['tools', 'OpenVibe.Tools'], ['bot', 'OpenVibe.Bot'], ['actor', 'OpenVibe.Actor'], ['quest', 'OpenVibe.Quest'], ['rent', 'OpenVibe.Rent'], ['deals', 'OpenVibe.Deals'], ['network', 'OpenVibe.Network'], ['design', 'OpenVibe.Design']];
 
+/**
+ * The three icon styles side by side, each a small phone screen drawn with the real glyphs (ov-glyphs.js): a header
+ * with icons above 18 px, rows with small ones and an app bar whose current tab is solid. Line and Solid force their
+ * style on every icon (.ovg-line, .ovg-solid); Auto resets the person's own choice (--ovg-pref) so it shows what
+ * Auto does: solid where an icon is small, lines where it is large. A screen is a button that picks its style
+ * (public/js/look.js), the same as the Icons choice above it.
+ */
+function iconStyles() {
+    const STYLES = [
+        ['auto', 'Auto', 'Solid when small, lines when large. The default.'],
+        ['line', 'Line', 'Outlines at every size.'],
+        ['solid', 'Solid', 'Filled at every size.'],
+    ];
+    const i = (name, force) => `<i class="fa-solid ${name}${force ? ` ovg-${force}` : ''}" aria-hidden="true"></i>`;
+    const screen = (style) => {
+        const force = style === 'auto' ? '' : style;
+        const rows = [['fa-tower-broadcast', 72], ['fa-comments', 54], ['fa-heart', 64]].map(([n, w]) => `<span class="lk-st-row"><span class="lk-st-dot">${i(n, force)}</span><span class="lk-st-lines"><span style="width:${w}%"></span><span></span></span></span>`).join('');
+        const bar = ['fa-house', 'fa-compass', 'fa-bell', 'fa-user'].map((n, k) => `<span class="lk-st-tab"${k === 0 ? ' aria-current="page"' : ''}>${i(n, force)}</span>`).join('');
+        return `<span class="lk-st-screen"${style === 'auto' ? ' style="--ovg-pref:18.4px"' : ''}><span class="lk-st-head"><span class="lk-st-title"></span>${i('fa-magnifying-glass', force)}${i('fa-bell', force)}</span>${rows}<span class="lk-st-bar">${bar}</span></span>`;
+    };
+    return `<div class="lk-styles" role="group" aria-label="The icon styles, side by side">${STYLES.map(([id, name, what]) => `<button type="button" class="lk-style" data-pick-icons="${id}" aria-pressed="${id === 'auto' ? 'true' : 'false'}">${screen(id)}<span class="lk-st-cap"><b>${name}</b><small>${what}</small></span></button>`).join('')}</div>`;
+}
+
 function lookPage({ themes = [], me = {} } = {}) {
     const list = (themes || []).filter((t) => t && t.id).map((t) => ({ id: t.id, name: t.name, mode: t.mode, dots: ['--bg-primary', '--bg-card', '--accent', '--text-primary'].map((k) => String((t.variables || {})[k] || '')).filter((v) => /^#[0-9a-f]{3,8}$/i.test(v)) }));
     const signedIn = !!me.signedIn;
@@ -31,7 +54,7 @@ function lookPage({ themes = [], me = {} } = {}) {
             // configurable for users in most cases"): the sample under it is ordinary page markup, drawn by ov-glyphs.js, so
             // it changes as the choice does.
             + kit.seg({ name: 'icons', label: 'Icons', options: [['auto', 'Auto'], ['line', 'Line'], ['solid', 'Solid']], value: 'auto' })
-            + `<p class="lk-icons" aria-label="A sample of the icons"><span>${['fa-house', 'fa-tower-broadcast', 'fa-comments', 'fa-bell', 'fa-heart', 'fa-user'].map((n) => `<i class="fa-solid ${n}" aria-hidden="true"></i>`).join('')}</span><span class="lk-icons-big">${['fa-house', 'fa-tower-broadcast', 'fa-comments', 'fa-bell'].map((n) => `<i class="fa-solid ${n}" aria-hidden="true"></i>`).join('')}</span><small>Auto: line, solid when small and for the tab you are on.</small></p>`
+            + iconStyles()
             + kit.switchRow({ name: 'seasonal', label: 'The season\'s themes', hint: 'Halloween and winter stand in for the default theme while they last', on: true }),
     });
     // Comfort (openvibe-shared 4.45.0): how any theme reads for this person. The sample under the switches is ordinary page
