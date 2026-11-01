@@ -4,12 +4,12 @@
  * 40 of them… be thoughtful about animations… status icons… how the label could be attached"; then, the same night:
  * "remake all the wildcards… they're not related to OpenVibe or OV… make them specific, branded to our vibe").
  *
- * Every one is the O and the V, forty ways: the letters made new (script, stencil, neon, blocks, graffiti), monograms
- * (woven, linked, a coin, an app tile, a crest), an O standing on a V (a map pin, an ice cream, someone cheering, a
- * microphone, a balloon), the two as a scene (a bird past the sun, a sun in a valley, a cocktail, a ball and a cup, a
- * rocket), signals (a speech bubble, play, a signal, a heartbeat, an equaliser), things that are an O and a V (a bulb, a
- * clock at ten past ten, a target, a record, an orbit), letters built from parts (pixels, stars, halftone dots, tiles,
- * an embroidered patch) and a feel (liquid, glass, a ribbon, a sticker, a face).
+ * Every one is the letters O and V themselves, forty treatments (then, again: "some still feel dumb and unrelated, like
+ * the rocket" — so no object that hides the letters): made new (script, stencil, neon, blocks, a tag), monograms
+ * (woven, linked, a coin, an app tile, a crest), print and paper (riso, cut-out, folded, long shadow, embossed), screen
+ * and light (glitch, chrome, a terminal, seven segments, aurora), signals (a pin, play, a signal, a heartbeat, an
+ * orbit), hand-made (marker, brush, puffy, stripes, elegant), built from parts (pixels, stars, halftone, tiles, a
+ * patch) and a feel (liquid, glass, a ribbon, a sticker, a face).
  *
  * Each drawing says:
  *   - its motion (data-wild-motion on the card's SVG; parts w-a, w-b, w-c move), animated by css/marks.css only while
@@ -102,84 +102,130 @@ const ART = {
                 + `<circle cx="50" cy="35" r="9" fill="none" stroke="#fff" stroke-width="5.5"/><path d="M37 50 L50 75 L63 50" fill="none" stroke="#fff" stroke-width="7" ${R}/>`,
         };
     },
-    // ── An O standing on a V ──
     pin(id) {   // a map pin is an O on a V: you are here
         return {
             defs: lin(`${id}g`, BV, 0, 0, 0, 1),
             body: `<ellipse class="w-b" cx="50" cy="92" rx="13" ry="3.5" fill="#4f7cff" opacity=".3"/><g class="w-a"><circle class="w-k" cx="50" cy="33" r="17" fill="none" stroke="url(#${id}g)" stroke-width="10"/><path d="M36 45 L50 87 L64 45" fill="none" stroke="url(#${id}g)" stroke-width="10" ${R}/></g>`,
         };
     },
-    cone(id) {   // an O scoop on a V cone
+    // ── Print and paper ──
+    riso(id) {   // two inks printed a little out of register; they slide into place
+        const ov = (c) => `<circle cx="31" cy="50" r="17" fill="none" stroke="${c}" stroke-width="12"/><path d="M56 32 L69 70 L82 32" fill="none" stroke="${c}" stroke-width="12" ${R}/>`;
+        return { defs: '', body: `<g class="w-a" opacity=".9" transform="translate(-2.5 -2)">${ov('#f472b6')}</g><g class="w-b w-k" opacity=".85" transform="translate(2.5 2)">${ov('#4f7cff')}</g>` };
+    },
+    papercut(id) {   // OV cut out of a card, a lighter layer showing through
         return {
-            defs: lin(`${id}c`, [['0', '#fbbf24'], ['1', '#b45309']], 0, 0, 0, 1) + rad(`${id}s`, [['0', '#a5b4fc'], ['.55', '#6366f1'], ['1', '#7c3aed']]),
-            body: `<path d="M27 50 H73 L50 93Z" fill="url(#${id}c)"/><path d="M33 56 L58 80 M43 52 L64 72 M67 56 L42 80 M57 52 L36 72" stroke="#92400e" stroke-width="2" opacity=".55"/>`
-                + `<g class="w-a"><circle class="w-k" cx="50" cy="35" r="21" fill="url(#${id}s)"/><path d="M33 47 Q36 56 40 50 Q44 58 48 51 Q52 57 56 50 Q60 56 64 49" fill="none" stroke="#6366f1" stroke-width="4" stroke-linecap="round"/><circle cx="43" cy="27" r="4.5" fill="#fff" opacity=".45"/></g>`,
+            defs: g(id) + `<mask id="${id}m"><rect width="100" height="100" fill="#fff"/><g fill="none" stroke="#000" stroke-width="12" ${R}><circle cx="34" cy="50" r="14"/><path d="M57 34 L69 68 L81 34"/></g></mask>`,
+            body: `<g class="w-a"><rect x="10" y="10" width="80" height="80" rx="20" fill="#c4b5fd"/><g fill="none" stroke="#7c6cf0" stroke-width="12" ${R} transform="translate(2.5 2.5)"><circle cx="34" cy="50" r="14"/><path d="M57 34 L69 68 L81 34"/></g>`
+                + `<rect class="w-k" x="10" y="10" width="80" height="80" rx="20" fill="url(#${id}g)" mask="url(#${id}m)"/></g>`,
         };
     },
-    cheer(id) {   // someone cheering: an O for a head, a V for arms up
+    folded(id) {   // OV folded from paper: a light face and a shadowed one
+        return {
+            defs: lin(`${id}o`, [['0', '#c7d2fe'], ['.5', '#818cf8'], ['.5', '#5b21b6'], ['1', '#7c3aed']], 0, 0, 1, 1),
+            body: `<g class="w-a"><path class="w-k" d="M24 33 H38 L48 43 V57 L38 67 H24 L14 57 V43Z" fill="none" stroke="url(#${id}o)" stroke-width="11" stroke-linejoin="miter"/>`
+                + `<path d="M55 30 L69 72" stroke="#a5b4fc" stroke-width="11" stroke-linecap="butt"/><path d="M83 30 L69 72" stroke="#6d28d9" stroke-width="11" stroke-linecap="butt"/><path d="M64.5 70 L69 74 L73.5 70Z" fill="#4c1d95"/></g>`,
+        };
+    },
+    longshadow(id) {   // white OV casting a long shadow on a disc
+        const ov = (dx, extra) => `<g transform="translate(${dx} ${dx})" ${extra}><circle cx="31" cy="48" r="14" fill="none" stroke-width="10"/><path d="M53 33 L65 65 L77 33" fill="none" stroke-width="10" ${R}/></g>`;
+        let shadow = '';
+        for (let i = 1; i <= 22; i += 1) shadow += ov(i * 1.1, 'stroke="#1e1b4b" opacity=".55"');
+        return {
+            defs: g(id) + `<clipPath id="${id}c"><circle cx="50" cy="50" r="42"/></clipPath>`,
+            body: `<circle class="w-k" cx="50" cy="50" r="42" fill="url(#${id}g)"/><g clip-path="url(#${id}c)">${shadow}</g><g class="w-a">${ov(0, 'stroke="#fff"')}</g>`,
+        };
+    },
+    emboss(id) {   // OV pressed into a plate
+        const ov = (dx, c) => `<g transform="translate(${dx} ${dx})" fill="none" stroke="${c}" stroke-width="9" ${R}><circle cx="34" cy="50" r="13"/><path d="M57 36 L68 66 L79 36"/></g>`;
+        return {
+            defs: g(id) + lin(`${id}s`, [['0', '#fff', 0], ['.5', '#fff', 0.35], ['1', '#fff', 0]], 0, 0, 1, 0) + `<clipPath id="${id}c"><rect x="8" y="16" width="84" height="68" rx="16"/></clipPath>`,
+            body: `<rect class="w-k" x="8" y="16" width="84" height="68" rx="16" fill="url(#${id}g)"/>${ov(-1.2, '#2e1065')}${ov(1.2, '#c7d2fe')}${ov(0, '#6d5ff7')}`
+                + `<g clip-path="url(#${id}c)"><rect class="w-a" x="-40" y="0" width="24" height="100" fill="url(#${id}s)" transform="skewX(-20)"/></g>`,
+        };
+    },
+    // ── Screen and light ──
+    glitch(id) {   // OV on a screen that glitches: the colour channels slip
+        const ov = (c, w) => `<circle cx="31" cy="50" r="17" fill="none" stroke="${c}" stroke-width="${w}"/><path d="M56 32 L69 70 L82 32" fill="none" stroke="${c}" stroke-width="${w}" ${R}/>`;
+        return {
+            defs: `<clipPath id="${id}c"><rect x="0" y="44" width="100" height="7"/></clipPath>`,
+            body: `<g class="w-a" transform="translate(-3 0)" opacity=".85">${ov('#22d3ee', 11)}</g><g class="w-b" transform="translate(3 0)" opacity=".85">${ov('#f0f', 11)}</g><g class="w-k">${ov('#fff', 9)}</g>`
+                + `<g clip-path="url(#${id}c)" transform="translate(6 0)">${ov('#e0e7ff', 9)}</g>`,
+        };
+    },
+    chrome(id) {   // polished chrome letters with a moving shine
+        return {
+            defs: lin(`${id}m`, [['0', '#f8fafc'], ['.42', '#94a3b8'], ['.5', '#334155'], ['.62', '#cbd5e1'], ['1', '#f1f5f9']], 0, 0, 0, 1)
+                + lin(`${id}s`, [['0', '#fff', 0], ['.5', '#fff', 0.8], ['1', '#fff', 0]], 0, 0, 1, 0)
+                + `<mask id="${id}k"><g fill="none" stroke="#fff" stroke-width="13" ${R}><circle cx="31" cy="50" r="17"/><path d="M56 32 L69 70 L82 32"/></g></mask>`,
+            body: `<g fill="none" stroke="#475569" stroke-width="15.5" ${R}><circle cx="31" cy="50" r="17"/><path d="M56 32 L69 70 L82 32"/></g>`
+                + `<g class="w-k" fill="none" stroke="url(#${id}m)" stroke-width="13" ${R}><circle cx="31" cy="50" r="17"/><path d="M56 32 L69 70 L82 32"/></g>`
+                + `<g mask="url(#${id}k)"><rect class="w-a" x="-40" y="0" width="18" height="100" fill="url(#${id}s)" transform="skewX(-20)"/></g>`,
+        };
+    },
+    terminal(id) {   // ov_ in a terminal, the cursor blinking
+        return {
+            defs: '',
+            body: `<rect x="6" y="18" width="88" height="64" rx="12" fill="#0b1020" stroke="#4f7cff" stroke-width="3"/><circle cx="17" cy="28" r="2.6" fill="#f87171"/><circle cx="25" cy="28" r="2.6" fill="#fbbf24"/><circle cx="33" cy="28" r="2.6" fill="#34d399"/>`
+                + `<path d="M15 46 L22 53 L15 60" fill="none" stroke="#8b5cf6" stroke-width="3.5" ${R}/><circle class="w-k" cx="36" cy="57" r="7.5" fill="none" stroke="#e0e7ff" stroke-width="4.5"/><path d="M48 49 L55 66 L62 49" fill="none" stroke="#e0e7ff" stroke-width="4.5" ${R}/>`
+                + `<rect class="w-a" x="67" y="63" width="12" height="4.5" rx="1" fill="#22d3ee"/>`,
+        };
+    },
+    digital(id) {   // OV on a seven-segment display
+        const seg = (d, on) => `<path d="${d}" fill="none" stroke="${on ? '#22d3ee' : '#1e293b'}" stroke-width="6" stroke-linecap="round"${on ? ' class="w-a"' : ''}/>`;
+        const O = [['M20 24 H40', 1], ['M44 28 V46', 1], ['M44 54 V72', 1], ['M20 76 H40', 1], ['M16 54 V72', 1], ['M16 28 V46', 1], ['M20 50 H40', 0]];
+        const V = [['M56 28 V46', 1], ['M84 28 V46', 1], ['M58 54 L68 74', 1], ['M82 54 L72 74', 1], ['M60 24 H80', 0], ['M60 50 H80', 0]];
+        return {
+            defs: `<filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`,
+            body: `<rect class="w-k" x="6" y="14" width="88" height="72" rx="12" fill="#020617"/><g filter="url(#${id}f)">${O.concat(V).map(([d, on]) => seg(d, on)).join('')}</g>`,
+        };
+    },
+    aurora(id) {   // thick OV in an aurora of colour, glowing
+        return {
+            defs: lin(`${id}a`, [['0', '#22d3ee'], ['.35', '#4f7cff'], ['.7', '#a855f7'], ['1', '#f472b6']], 0, 0, 1, 1) + `<filter id="${id}f" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>`,
+            body: `<g class="w-a" filter="url(#${id}f)" opacity=".75" fill="none" stroke="url(#${id}a)" stroke-width="16" ${R}><circle cx="31" cy="50" r="17"/><path d="M56 32 L69 70 L82 32"/></g>`
+                + `<g class="w-k" fill="none" stroke="url(#${id}a)" stroke-width="14" ${R}><circle cx="31" cy="50" r="17"/><path d="M56 32 L69 70 L82 32"/></g>`,
+        };
+    },
+    // ── Hand-made ──
+    marker(id) {   // OV in marker, drawn twice by hand
+        return {
+            defs: '',
+            body: `<g fill="none" stroke="#8b5cf6" stroke-width="7" ${R}><path class="w-a w-k" pathLength="100" d="M33 32 C20 31 13 41 14 52 C15 63 23 69 32 68 C42 67 48 59 47 49 C46 39 40 33 30 34"/><path class="w-a" pathLength="100" d="M57 30 C60 42 64 56 69 70 C73 56 78 43 85 29"/></g>`
+                + `<g fill="none" stroke="#4f7cff" stroke-width="3" ${R} opacity=".7"><path d="M31 36 C22 37 17 45 18 53 C19 61 25 65 32 64"/><path d="M61 33 C63 43 66 54 69 64"/></g>`,
+        };
+    },
+    brush(id) {   // OV with a brush: thick downstrokes, thin upstrokes
         return {
             defs: g(id),
-            body: `<g class="w-a"><path d="M18 18 L50 60 L82 18" fill="none" stroke="url(#${id}g)" stroke-width="10" ${R}/></g><circle class="w-k" cx="50" cy="31" r="11" fill="url(#${id}g)"/>`
-                + `<path d="M50 60 V80 M50 80 L40 94 M50 80 L60 94" fill="none" stroke="url(#${id}g)" stroke-width="9" ${R}/>`,
+            body: `<g class="w-a"><path class="w-k" fill-rule="evenodd" d="M31 29 C44 29 50 39 50 50 C50 62 42 71 31 71 C19 71 12 62 12 50 C12 37 20 29 31 29Z M33 37 C27 36 22 42 22 51 C22 59 26 64 31 64 C37 64 41 58 41 50 C41 42 38 37 33 37Z" fill="url(#${id}g)"/>`
+                + `<path d="M54 28 H66 L72 58 L80 28 H85 L74 74 H67Z" fill="url(#${id}g)"/></g>`,
         };
     },
-    mic(id) {   // a microphone: the O head held in a V
+    puffy(id) {   // OV as puffy bubble letters, squishing
         return {
-            defs: g(id) + `<clipPath id="${id}c"><circle cx="50" cy="32" r="16"/></clipPath>`,
-            body: `<circle class="w-k" cx="50" cy="32" r="16" fill="url(#${id}g)"/><g clip-path="url(#${id}c)" stroke="#fff" stroke-width="2" opacity=".35"><path d="M30 26 H70 M30 32 H70 M30 38 H70"/></g>`
-                + `<path d="M31 30 L50 62 L69 30" fill="none" stroke="#c4b5fd" stroke-width="5" ${R}/><path d="M50 62 V84 M38 86 H62" fill="none" stroke="#8b5cf6" stroke-width="5" ${R}/>`
-                + `<g class="w-b" fill="none" stroke="#8b5cf6" stroke-width="3.5" stroke-linecap="round"><path d="M20 22 q-6 10 0 20"/><path d="M80 22 q6 10 0 20"/></g>`,
+            defs: lin(`${id}p`, [['0', '#a5b4fc'], ['.5', '#6366f1'], ['1', '#7c3aed']], 0, 0, 0, 1),
+            body: `<g class="w-a"><g fill="none" stroke="#1e1b4b" stroke-width="22" ${R}><circle cx="31" cy="50" r="15"/><path d="M57 33 L69 68 L81 33"/></g>`
+                + `<g class="w-k" fill="none" stroke="url(#${id}p)" stroke-width="18" ${R}><circle cx="31" cy="50" r="15"/><path d="M57 33 L69 68 L81 33"/></g>`
+                + `<g fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".75"><path d="M21 42 A12 12 0 0 1 29 37"/><path d="M55 32 L57.5 39"/><path d="M80 31 L82 33"/></g></g>`,
         };
     },
-    balloon(id) {   // an O balloon on a V knot
+    stripes(id) {   // OV in stripes, like a classic letterhead
+        let lines = '';
+        for (let y = 24; y < 80; y += 6) lines += `<rect x="0" y="${y}" width="100" height="3.6" fill="#fff"/>`;
         return {
-            defs: rad(`${id}g`, [['0', '#c7d2fe'], ['.5', '#4f7cff'], ['1', '#7c3aed']]),
-            body: `<g class="w-a"><ellipse class="w-k" cx="50" cy="38" rx="23" ry="27" fill="url(#${id}g)"/><path d="M44 63 L50 72 L56 63" fill="#7c3aed" stroke="#7c3aed" stroke-width="3" stroke-linejoin="round"/>`
-                + `<ellipse cx="41" cy="27" rx="5" ry="8" fill="#fff" opacity=".35" transform="rotate(-25 41 27)"/><path d="M50 72 C46 80 54 84 50 92" fill="none" stroke="#a5b4fc" stroke-width="2.5" stroke-linecap="round"/></g>`,
+            defs: g(id) + `<mask id="${id}m">${lines}</mask>`,
+            body: `<g class="w-k" mask="url(#${id}m)"><g class="w-a" fill="none" stroke="url(#${id}g)" stroke-width="15" ${R}><circle cx="31" cy="50" r="17"/><path d="M56 31 L69 70 L82 31"/></g></g>`,
         };
     },
-    // ── An O and a V in a scene ──
-    bird(id) {   // a V bird gliding past an O sun
+    elegant(id) {   // a refined o and v: thick and thin, with small serifs
         return {
-            defs: lin(`${id}s`, WARM, 0, 0, 0, 1) + g(id),
-            body: `<circle class="w-k" cx="40" cy="46" r="25" fill="url(#${id}s)"/><g class="w-a"><path d="M46 56 Q57 42 67 50 Q74 38 90 34" fill="none" stroke="url(#${id}g)" stroke-width="7" ${R}/></g>`
-                + `<path d="M18 80 H62" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" opacity=".4"/>`,
-        };
-    },
-    valley(id) {   // an O sun rising in a V valley
-        return {
-            defs: lin(`${id}s`, WARM, 0, 0, 0, 1) + lin(`${id}m`, [['0', '#8b5cf6'], ['1', '#3b4cca']], 0, 0, 0, 1),
-            body: `<circle class="w-a w-k" cx="50" cy="48" r="16" fill="url(#${id}s)"/><path d="M4 90 L28 30 L50 72 L72 30 L96 90Z" fill="url(#${id}m)"/><path d="M28 30 L35 47 L31 45 L28 50 L23 43Z M72 30 L79 47 L75 45 L72 50 L67 43Z" fill="#fff" opacity=".7"/>`,
-        };
-    },
-    cocktail(id) {   // a V glass with an O olive
-        return {
-            defs: lin(`${id}g`, [['0', '#4f7cff', 0.55], ['1', '#8b5cf6', 0.9]], 0, 0, 0, 1),
-            body: `<path class="w-k" d="M16 22 H84 L50 60Z" fill="url(#${id}g)" stroke="#c4b5fd" stroke-width="3" stroke-linejoin="round"/><path d="M50 60 V84 M34 86 H66" fill="none" stroke="#c4b5fd" stroke-width="4" ${R}/>`
-                + `<g class="w-a"><path d="M74 8 L54 34" stroke="#fde68a" stroke-width="2.5" stroke-linecap="round"/><circle cx="59" cy="28" r="8" fill="#84cc16"/><circle cx="60.5" cy="26.5" r="3" fill="#ef4444"/></g>`,
-        };
-    },
-    catch(id) {   // an O ball dropping into a V cup
-        return {
-            defs: g(id) + rad(`${id}b`, [['0', '#fde68a'], ['.6', '#f59e0b'], ['1', '#ea580c']]),
-            body: `<path class="w-k" d="M18 44 L50 88 L82 44" fill="none" stroke="url(#${id}g)" stroke-width="11" ${R}/><g class="w-a"><circle cx="50" cy="28" r="12" fill="url(#${id}b)"/></g>`,
-        };
-    },
-    rocket(id) {   // a rocket: an O window, a V flame
-        return {
-            defs: lin(`${id}g`, [['0', '#e0e7ff'], ['1', '#8b5cf6']], 0, 0, 1, 0) + lin(`${id}f`, [['0', '#fde68a'], ['1', '#f97316']], 0, 0, 0, 1),
-            body: `<g class="w-a"><path d="M50 8 C65 20 69 44 64 64 H36 C31 44 35 20 50 8Z" fill="url(#${id}g)"/><path d="M36 50 L24 70 L37 66Z M64 50 L76 70 L63 66Z" fill="#6366f1"/>`
-                + `<circle class="w-k" cx="50" cy="36" r="8.5" fill="#0b1020" stroke="#4f7cff" stroke-width="3.5"/></g><path class="w-b" d="M41 66 L50 92 L59 66Z" fill="url(#${id}f)"/>`,
+            defs: lin(`${id}e`, [['0', '#e0e7ff'], ['1', '#c4b5fd']], 0, 0, 0, 1),
+            body: `<g class="w-a"><path class="w-k" fill-rule="evenodd" d="M32 30 C44 30 51 39 51 50 C51 61 44 70 32 70 C20 70 13 61 13 50 C13 39 20 30 32 30Z M32 33 C27 33 24 40 24 50 C24 60 27 67 32 67 C37 67 40 60 40 50 C40 40 37 33 32 33Z" fill="url(#${id}e)"/>`
+                + `<path d="M55 31 H66 M75 31 H86" stroke="url(#${id}e)" stroke-width="2.4" stroke-linecap="round"/><path d="M58 31 H65 L72 62 L80 31 H82 L72 71 H69Z" fill="url(#${id}e)"/></g>`,
         };
     },
     // ── Signals ──
-    bubble(id) {   // an O speech bubble with a V tail, typing
-        return {
-            defs: g(id),
-            body: `<circle class="w-k" cx="52" cy="44" r="30" fill="url(#${id}g)"/><path d="M30 64 L18 88 L44 72Z" fill="#6d5ff7"/>`
-                + `<g fill="#fff"><circle class="w-a" style="--i:0" cx="40" cy="44" r="4.5"/><circle class="w-a" style="--i:1" cx="52" cy="44" r="4.5"/><circle class="w-a" style="--i:2" cx="64" cy="44" r="4.5"/></g>`,
-        };
-    },
     play(id) {   // an O and a V turned on its side: record and play
         return {
             defs: g(id),
@@ -194,40 +240,6 @@ const ART = {
         return {
             defs: lin(`${id}g`, [['0', '#4f7cff'], ['.6', '#8b5cf6'], ['1', '#ec4899']], 0, 0, 1, 0),
             body: `<path class="w-a w-k" pathLength="100" d="M5 56 H20 C20 43 37 43 37 55 C37 66 22 66 22 55 C22 49 32 48 44 55 L54 77 L64 28 L72 56 H95" fill="none" stroke="url(#${id}g)" stroke-width="7" ${R}/>`,
-        };
-    },
-    eqring(id) {   // an O with an equaliser inside, its bars in a V
-        const xs = [29, 36, 43, 50, 57, 64, 71];
-        const bars = xs.map((x, i) => { const h = 8 + 28 * (Math.abs(x - 50) / 21); return `<rect class="w-a" style="--i:${i}" x="${x - 2.6}" y="${(70 - h).toFixed(1)}" width="5.2" height="${h.toFixed(1)}" rx="2.6"/>`; }).join('');
-        return { defs: g(id), body: `<circle class="w-k" cx="50" cy="50" r="38" fill="none" stroke="url(#${id}g)" stroke-width="6"/><g fill="url(#${id}g)">${bars}</g>` };
-    },
-    // ── Things that are an O and a V ──
-    bulb(id) {   // a bulb with a V filament: ideas
-        return {
-            defs: rad(`${id}l`, [['0', '#fef3c7'], ['.5', '#fde68a', 0.6], ['1', '#fde68a', 0]]) + g(id),
-            body: `<circle class="w-a" cx="50" cy="42" r="34" fill="url(#${id}l)"/><path class="w-k" d="M50 12 C68 12 80 26 80 42 C80 54 72 60 68 68 H32 C28 60 20 54 20 42 C20 26 32 12 50 12Z" fill="#fff" fill-opacity=".08" stroke="url(#${id}g)" stroke-width="5"/>`
-                + `<path d="M40 38 L50 58 L60 38" fill="none" stroke="#f59e0b" stroke-width="5" ${R}/><path d="M34 74 H66 M36 81 H64 M42 88 H58" stroke="#8b5cf6" stroke-width="4.5" stroke-linecap="round"/>`,
-        };
-    },
-    clock(id) {   // an O clock at ten past ten: the hands make a V
-        return {
-            defs: g(id),
-            body: `<circle class="w-k" cx="50" cy="50" r="38" fill="none" stroke="url(#${id}g)" stroke-width="7"/><path d="M50 16 V22 M84 50 H78 M50 84 V78 M16 50 H22" stroke="#8b5cf6" stroke-width="4" stroke-linecap="round"/>`
-                + `<g class="w-a"><path d="M28 36 L50 50 L75 34" fill="none" stroke="#fff" stroke-width="6" ${R}/></g><circle cx="50" cy="50" r="4.5" fill="#fff"/>`,
-        };
-    },
-    target(id) {   // an O target and an arrow with a V tail
-        return {
-            defs: '',
-            body: `<circle class="w-k" cx="42" cy="58" r="32" fill="#4f7cff"/><circle cx="42" cy="58" r="22" fill="#0b1020"/><circle cx="42" cy="58" r="12" fill="#8b5cf6"/>`
-                + `<g class="w-a"><path d="M42 58 L84 16" stroke="#fde68a" stroke-width="4" stroke-linecap="round"/><path d="M78 12 L86 14 L88 22 M74 16 L82 18 L84 26" fill="none" stroke="#f472b6" stroke-width="3.5" ${R}/></g>`,
-        };
-    },
-    vinyl(id) {   // an O record with a V on its label
-        return {
-            defs: g(id),
-            body: `<circle class="w-k" cx="50" cy="50" r="40" fill="#111827"/><g class="w-a" fill="none" stroke="#374151" stroke-width="1.6"><circle cx="50" cy="50" r="34"/><circle cx="50" cy="50" r="28"/><circle cx="50" cy="50" r="22"/></g>`
-                + `<path d="M22 36 A32 32 0 0 1 40 20" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".35"/><circle cx="50" cy="50" r="15" fill="url(#${id}g)"/><path d="M44 45 L50 58 L56 45" fill="none" stroke="#fff" stroke-width="3.5" ${R}/>`,
         };
     },
     orbit(id) {   // a V with an O orbit round it
@@ -344,33 +356,33 @@ const WILD_ROWS = [
         ['App tile', 'ov on an app tile, with a shine', 'tile', 'pill', 'shine'],
         ['Crest', 'an O over a V on a shield', 'crest', 'stack', 'shine'],
     ] },
-    { title: 'An O standing on a V', line: 'put an O on a V and it becomes a thing', items: [
+    { title: 'Print and paper', line: 'OV as if it were made, not drawn', items: [
+        ['Riso', 'two inks a little out of register, sliding into place', 'riso', 'side', 'join'],
+        ['Cut-out', 'OV cut out of a card, a layer showing through', 'papercut', 'stack', 'tilt'],
+        ['Folded', 'OV folded from paper, light and shadow', 'folded', 'side', 'tilt'],
+        ['Long shadow', 'white OV casting a long shadow', 'longshadow', 'pill', 'tilt'],
+        ['Embossed', 'OV pressed into a plate', 'emboss', 'stack', 'shine'],
+    ] },
+    { title: 'Screen and light', line: 'OV glowing, glitching, typed', items: [
+        ['Glitch', 'OV with the colour channels slipping', 'glitch', 'side', 'glitch'],
+        ['Chrome', 'polished chrome letters with a moving shine', 'chrome', 'side', 'shine'],
+        ['Terminal', 'ov_ typed in a terminal, the cursor blinking', 'terminal', 'trail', 'caret'],
+        ['Digital', 'OV on a seven-segment display', 'digital', 'side', 'flicker'],
+        ['Aurora', 'thick OV in an aurora of colour', 'aurora', 'under', 'pulse'],
+    ] },
+    { title: 'Signals', line: 'OV pointing, playing, beating', items: [
         ['Pin', 'a map pin is an O on a V: you are here', 'pin', 'tag', 'drop'],
-        ['Ice cream', 'an O scoop on a V cone', 'cone', 'side', 'wobble'],
-        ['Cheer', 'someone cheering: an O head, V arms up', 'cheer', 'stack', 'wave'],
-        ['Mic', 'a microphone: the O head held in a V', 'mic', 'side', 'pulse'],
-        ['Balloon', 'an O balloon on a V knot, floating', 'balloon', 'trail', 'float'],
-    ] },
-    { title: 'The O and the V in a scene', line: 'two letters, one little picture', items: [
-        ['Bird and sun', 'a V bird gliding past an O sun', 'bird', 'side', 'glide'],
-        ['Valley', 'an O sun rising in a V valley', 'valley', 'stack', 'rise'],
-        ['Cocktail', 'a V glass with an O olive', 'cocktail', 'side', 'float'],
-        ['Catch', 'an O ball dropping into a V cup', 'catch', 'side', 'hop'],
-        ['Rocket', 'an O window, a V flame: launch', 'rocket', 'trail', 'rocket'],
-    ] },
-    { title: 'Signals', line: 'OpenVibe talking, playing, live', items: [
-        ['Speech bubble', 'an O bubble with a V tail, typing', 'bubble', 'bubble', 'cascade'],
         ['Play', 'an O and a V turned on its side: ● ▶', 'play', 'pill', 'press'],
         ['Signal', 'V waves arriving at an O', 'signal', 'stack', 'cascade'],
         ['Heartbeat', 'a heartbeat that writes an o and a v', 'beat', 'under', 'draw'],
-        ['Equaliser', 'an O with bars inside, in a V', 'eqring', 'side', 'bars'],
-    ] },
-    { title: 'Things that are an O and a V', line: 'look twice', items: [
-        ['Bulb', 'a bulb with a V filament: ideas', 'bulb', 'side', 'flicker'],
-        ['Ten past ten', 'an O clock whose hands make a V', 'clock', 'side', 'tilt'],
-        ['Target', 'an O target, an arrow with a V tail', 'target', 'tag', 'land'],
-        ['Record', 'an O record with a V on its label', 'vinyl', 'side', 'pulse'],
         ['Orbit', 'a V with an O orbit round it', 'orbit', 'side', 'tilt'],
+    ] },
+    { title: 'Hand-made', line: 'OV with a person\'s hand in it', items: [
+        ['Marker', 'OV in marker, drawn by hand', 'marker', 'under', 'draw'],
+        ['Brush', 'OV with a brush: thick downstrokes, thin upstrokes', 'brush', 'side', 'tilt'],
+        ['Puffy', 'OV as puffy bubble letters, squishing', 'puffy', 'side', 'wobble'],
+        ['Stripes', 'OV in stripes, like a classic letterhead', 'stripes', 'side', 'pulse'],
+        ['Elegant', 'a refined o and v, thick and thin', 'elegant', 'stack', 'tilt'],
     ] },
     { title: 'Built from parts', line: 'OV made of pieces', items: [
         ['Pixels', 'O and V in big pixels that pop in: play', 'pixel8', 'side', 'pop'],
@@ -388,7 +400,7 @@ const WILD_ROWS = [
     ] },
 ];
 
-const MOTIONS = ['draw', 'join', 'flicker', 'tilt', 'drip', 'wobble', 'shine', 'drop', 'wave', 'pulse', 'float', 'glide', 'rise', 'hop', 'rocket', 'cascade', 'press', 'bars', 'land', 'pop', 'twinkle', 'blink'];
+const MOTIONS = ['draw', 'join', 'flicker', 'tilt', 'drip', 'wobble', 'shine', 'drop', 'pulse', 'glide', 'hop', 'cascade', 'press', 'pop', 'twinkle', 'blink', 'glitch', 'caret'];
 
 /** The drawing for one key: { defs, body }, every id starting with `id`. */
 function wildArt(key, id) {
