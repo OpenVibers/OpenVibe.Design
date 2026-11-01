@@ -85,6 +85,19 @@
 .ic-use>div,.gp-use>div{min-width:0}
 .ic-use pre,.gp-use pre,.fa-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;padding-right:52px}
 .ic-use h3,.gp-use h3{margin-top:0}
+/* L50 step 3: the ways to use a glyph. The rest fold under a count of what is inside, never behind tabs. */
+.gp-note{margin:-4px 0 8px;color:var(--text-secondary);font-size:13px;line-height:1.5}
+.gp-more{margin-top:14px;border-radius:14px;border:1px solid var(--border);background:color-mix(in srgb,var(--bg-secondary) 60%,transparent)}
+.gp-more>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:14px 16px;cursor:pointer;font-weight:750;list-style:none}
+.gp-more>summary::-webkit-details-marker{display:none}
+.gp-more>summary::before{content:'';width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(-45deg);transition:transform .18s ease}
+.gp-more[open]>summary::before{transform:translateY(-4px) rotate(45deg)}
+.gp-more>summary span{min-width:0;color:var(--text-muted);font-weight:500;font-size:13px}
+.gp-more>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
+.gp-more>.gp-use{padding:4px 16px 16px}
+.gp-files{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
+.gp-files>span{color:var(--text-muted);font-size:13px;font-weight:650;margin-right:4px}
+@media (prefers-reduced-motion:reduce){.gp-more>summary::before{transition:none}}
 
 /* Get them all: one card per file. */
 .ic-packs{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}

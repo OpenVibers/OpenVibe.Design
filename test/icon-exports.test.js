@@ -123,6 +123,64 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             const js = fs.readFileSync(path.join(__dirname, '..', 'public/js/icon.js'), 'utf8');
             assert.match(js, /fx: 'flat', style: 'auto' \}/, 'the maker\'s live link leaves a flat finish and the auto style out, as the server does');
         });
+        await check('use it anywhere (L50 steps 2-3): <ov-icon>, the drawings by name, and every copy format', async () => {
+            const formats = require('../server/glyphs/formats');
+            // The web component: a stable address any site can load, open to every origin.
+            const wc = await t.get('/ov-icon.js');
+            assert.equal(wc.status, 200);
+            assert.match(wc.headers.get('content-type'), /javascript/);
+            assert.equal(wc.headers.get('access-control-allow-origin'), '*');
+            assert.match(wc.headers.get('cache-control'), /max-age=86400/);
+            assert.ok(wc.text.includes("customElements.define('ov-icon', OvIcon)") && wc.text.includes('@container (max-width: 18px)'), 'small icons go solid by their real size');
+            assert.equal((await t.get('/icons.js')).text, wc.text, 'the plan\'s address works too');
+            // The drawings by name, as <ov-icon> asks for them: glyphs and Font Awesome names, unknown ones left out.
+            const some = await t.get('/api/v1/glyphs?names=mic,fa-gear,nope-nope,mic,<x>');
+            assert.equal(some.headers.get('access-control-allow-origin'), '*');
+            const j = some.json();
+            assert.deepEqual(j.glyphs.map((g) => [g.asked, g.name]), [['mic', 'mic'], ['fa-gear', 'gear']]);
+            assert.equal(j.glyphs[0].svg, glyphs.path('mic'));
+            assert.equal(j.glyphs[0].solid, glyphs.solid('mic'));
+            assert.ok((await t.get('/api/v1/glyphs')).json().glyphs.find((g) => g.name === 'mic').solid, 'the whole registry carries the solids');
+            // An ES module and an Android VectorDrawable, by URL.
+            const mjs = await t.get('/icons/mic.mjs');
+            assert.match(mjs.headers.get('content-type'), /javascript/);
+            assert.ok(mjs.text.includes(`export const line = ${JSON.stringify(glyphs.path('mic'))};`) && mjs.text.includes('export default { name, line, solid };'));
+            const xml = await t.get('/icons/robot.xml?color=ff0000');
+            assert.match(xml.headers.get('content-type'), /xml/);
+            assert.ok(xml.text.includes('<vector xmlns:android="http://schemas.android.com/apk/res/android"') && xml.text.includes('android:strokeColor="#FFFF0000"'));
+            assert.ok(!/<(rect|circle)/.test(xml.text), 'Android draws paths only: the rect became path data');
+            assert.ok((await t.get('/icons/mic.xml?style=solid')).text.includes('android:fillColor="#FF0F172A"'), 'the solid drawing is filled');
+            // Shapes become path data that draws the same thing.
+            assert.equal(formats.toPath({ tag: 'circle', attrs: { cx: '12', cy: '12', r: '3' } }), 'M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0Z');
+            assert.equal(formats.toPath({ tag: 'rect', attrs: { x: '2', y: '3', width: '4', height: '5' } }), 'M2 3h4v5h-4Z');
+            assert.equal(formats.toPath({ tag: 'line', attrs: { x1: '1', y1: '2', x2: '3', y2: '4' } }), 'M1 2L3 4');
+            // A favicon set: the files and the <head> lines.
+            const fav = await t.get('/icons/heart/favicon.zip');
+            assert.equal(fav.headers.get('content-type'), 'application/zip');
+            // The central directory's entries: a 46-byte header with the name's length at 28, then the name.
+            const names = [];
+            for (let at = fav.buffer.indexOf('PK\x01\x02', 0, 'latin1'); at >= 0; at = fav.buffer.indexOf('PK\x01\x02', at + 46, 'latin1')) {
+                names.push(fav.buffer.toString('utf8', at + 46, at + 46 + fav.buffer.readUInt16LE(at + 28)));
+            }
+            assert.deepEqual(names, ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest', 'head.html']);
+            assert.equal((await t.get('/icons/nope/favicon.zip')).status, 404);
+            // The copy formats are the same drawing in each language's spelling.
+            const o = ex.options({ size: 24 });
+            assert.ok(formats.inlineSvg('mic', o).includes(glyphs.path('mic')) && formats.inlineSvg('mic', o).includes('stroke="currentColor"'));
+            const jsx = formats.jsx('eye-off', o);
+            assert.ok(jsx.startsWith('export function EyeOffIcon(props) {') && jsx.includes('strokeLinecap="round"') && jsx.includes('aria-hidden="true" {...props}>'), 'React: camelCase, aria kept, props spread');
+            assert.ok(!/stroke-|fill-rule|class=/.test(jsx), 'no HTML-only attribute names left');
+            assert.ok(formats.dataUri('heart', o).startsWith("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'") && formats.dataUri('heart', o).includes('%230f172a'), 'a data URI in a fixed colour');
+            assert.ok(formats.cssMask('check', o).includes('background-color: currentColor;') && formats.cssMask('check', o).includes('mask: url("data:image/svg+xml,'));
+            // The page offers them: four in view, the rest in a fold that says what it holds.
+            const page = (await t.get('/icons/mic')).text;
+            ['gp-wc', 'gp-inline', 'gp-jsx', 'gp-url', 'gp-mask', 'gp-data', 'gp-mjs', 'gp-android'].forEach((id) => assert.ok(page.includes(`id="${id}"`), id));
+            assert.match(page, /<details class="gp-more"><summary>\d+ more ways <span>Font Awesome markup · The font · The sprite · CSS, no markup/);
+            assert.ok(page.includes('href="/icons/mic/favicon.zip" data-gp-fav') && page.includes('href="/icons/mic.xml" download="ic_mic.xml"'));
+            assert.ok((await t.get('/icons')).text.includes('&lt;ov-icon name=&quot;heart&quot;&gt;'), '/icons names the component');
+            assert.ok((await t.get('/llms.txt')).text.includes('/ov-icon.js'), 'llms.txt names it for agents');
+        });
+
         await check('the pack: fonts, the sprite, the CSS, the code points and a ZIP of every SVG', async () => {
             const woff = await t.get('/icons/pack/ov-glyphs.woff2');
             assert.equal(woff.status, 200);
