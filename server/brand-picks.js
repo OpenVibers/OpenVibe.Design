@@ -8,11 +8,12 @@
  *   picks.voterOf(req, res)     the voter: the signed-in subject, else 'anon:' + a hash of this browser's key
  *   picks.save(voter, codes, { signedIn })   replace their picks (up to 40 codes); returns the tally
  *   picks.mine(voter)           their codes, sorted
- *   picks.tally()               { people, lean: { loop, pair, both }, top: { L, P, M, F } (at most 8), all: [{ code, n }] }
+ *   picks.tally()               { people, lean: { loop, pair, wild, both }, top: { L, P, W, M, F } (at most 8), all: [{ code, n }] }
+ *                               (both: the people who like more than one kind)
  */
 const crypto = require('crypto');
 
-const CODE = /^[LPMF](0[1-9]|[1-9][0-9])$/;
+const CODE = /^[LPMFW](0[1-9]|[1-9][0-9])$/;
 const COOKIE = 'ov_mx_voter';
 const MAX = 40;
 
@@ -46,14 +47,14 @@ function createBrandPicks({ db, now = () => Date.now() } = {}) {
 
     async function tally() {
         const counts = await db.many('SELECT code, count(*)::int AS n FROM brand_picks GROUP BY code ORDER BY n DESC, code');
-        const voters = await db.many(`SELECT count(*) FILTER (WHERE code LIKE 'L%')::int AS l, count(*) FILTER (WHERE code LIKE 'P%')::int AS p
-                                    FROM brand_picks GROUP BY voter`);
+        const voters = await db.many(`SELECT count(*) FILTER (WHERE code LIKE 'L%')::int AS l, count(*) FILTER (WHERE code LIKE 'P%')::int AS p,
+                                    count(*) FILTER (WHERE code LIKE 'W%')::int AS w FROM brand_picks GROUP BY voter`);
         const people = voters.length;
-        let loop = 0, pair = 0, both = 0;
-        for (const v of voters) { if (v.l) loop += 1; if (v.p) pair += 1; if (v.l && v.p) both += 1; }
-        const top = { L: [], P: [], M: [], F: [] };
+        let loop = 0, pair = 0, wild = 0, both = 0;
+        for (const v of voters) { if (v.l) loop += 1; if (v.p) pair += 1; if (v.w) wild += 1; if ((v.l ? 1 : 0) + (v.p ? 1 : 0) + (v.w ? 1 : 0) > 1) both += 1; }
+        const top = { L: [], P: [], W: [], M: [], F: [] };
         for (const r of counts) { const list = top[r.code[0]]; if (list && list.length < 8) list.push({ code: r.code, n: r.n }); }
-        return { people, lean: { loop, pair, both }, top, all: counts.slice(0, 250).map((r) => ({ code: r.code, n: r.n })) };
+        return { people, lean: { loop, pair, wild, both }, top, all: counts.slice(0, 250).map((r) => ({ code: r.code, n: r.n })) };
     }
 
     return { voterOf, save, mine, tally, CODE, COOKIE, MAX };

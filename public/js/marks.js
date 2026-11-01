@@ -5,8 +5,8 @@
 (function () {
     'use strict';
     var KEY = 'ov_mark_picks', VIEW = 'ov_mark_view', TAB = 'ov_mark_tab';
-    var CODE = /^[LPMF]\d{2}$/;
-    var TABS = { L: 'loop', P: 'pair', M: 'menu', F: 'font' };
+    var CODE = /^[LPMFW]\d{2}$/;
+    var TABS = { L: 'loop', P: 'pair', W: 'wild', M: 'menu', F: 'font' };
     var API = '/api/v1/brand/picks';
     function load(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key) || 'null'); return v == null ? fallback : v; } catch (e) { return fallback; } }
     function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* a private window keeps it for the page only */ } }
@@ -33,7 +33,7 @@
             var box = document.createElement('span');
             box.innerHTML = src.outerHTML.replace(/ id="([^"]+)"/g, ' id="$1' + tag + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + tag + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + tag + '"');
             var svg = box.firstChild;
-            ['width', 'height', 'role', 'aria-label', 'data-idle'].forEach(function (a) { svg.removeAttribute(a); });
+            ['width', 'height', 'role', 'aria-label', 'data-idle'].forEach(function (a) { svg.removeAttribute(a); });   // data-wild stays: a copy moves like its card
             svg.setAttribute('aria-hidden', 'true');
             if (size) { svg.setAttribute('width', size); svg.setAttribute('height', size); }
             if (code[0] === 'M') box.className = 'mb-btn';
@@ -69,7 +69,7 @@
         // defs, so it paints whichever tab is open.
         var shownMark = null;
         function syncMenuMark() {
-            var marks = picks.filter(function (c) { return c[0] === 'L' || c[0] === 'P'; });
+            var marks = picks.filter(function (c) { return c[0] === 'L' || c[0] === 'P' || c[0] === 'W'; });
             var code = marks.length ? marks[marks.length - 1] : null;
             all('.mx-tab-side, .mx-step-2, .mx-step-3', root).forEach(function (el) { el.classList.toggle('is-later', !code); });
             syncPickFont();
@@ -222,19 +222,24 @@
         function showTally(t) {
             if (!tally || !t) return;
             lastTally = t;
-            var loop = t.lean.loop, pair = t.lean.pair, both = t.lean.both || 0, sum = loop + pair, pct = sum ? Math.round((loop / sum) * 100) : 50;
+            var loop = t.lean.loop, pair = t.lean.pair, wild = t.lean.wild || 0, both = t.lean.both || 0, sum = loop + pair + wild;
+            var pct = sum ? Math.round((loop / sum) * 100) : 34, ppct = sum ? Math.round((pair / sum) * 100) : 33;
             var ppl = function (n) { return n + (n === 1 ? ' person' : ' people'); };
             tally.classList.toggle('is-empty', !t.people);
             tally.querySelector('[data-mx-people]').textContent = t.people ? ppl(t.people) : 'No votes yet. Tap any logo to vote.';
-            tally.querySelector('[data-mx-lead]').textContent = sum ? (loop === pair ? 'Even so far' : loop > pair ? 'More people like the Loop' : 'More people like the Pair') : '';
+            var top3 = Math.max(loop, pair, wild);
+            var leaders = [['the Loop', loop], ['the Pair', pair], ['the Wildcards', wild]].filter(function (x) { return x[1] === top3; });
+            tally.querySelector('[data-mx-lead]').textContent = sum ? (leaders.length > 1 ? 'Even so far' : 'More people like ' + leaders[0][0]) : '';
             var split = tally.querySelector('[data-mx-split]');
             split.hidden = !sum;
             split.style.setProperty('--l', pct + '%');
+            split.style.setProperty('--p', ppct + '%');
             tally.querySelector('[data-mx-loop]').textContent = String(loop);
             tally.querySelector('[data-mx-pair]').textContent = String(pair);
+            var wildEl = tally.querySelector('[data-mx-wild]'); if (wildEl) wildEl.textContent = String(wild);
             var bothEl = tally.querySelector('[data-mx-both]');
-            if (bothEl) { bothEl.hidden = !both; bothEl.textContent = ppl(both) + ' like both'; }
-            [['[data-mx-tops-l]', (t.top.L || []).slice(0, 4)], ['[data-mx-tops-p]', (t.top.P || []).slice(0, 4)], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 3)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 3)]].forEach(function (row) {
+            if (bothEl) { bothEl.hidden = !both; bothEl.textContent = ppl(both) + ' like more than one kind'; }
+            [['[data-mx-tops-l]', (t.top.L || []).slice(0, 4)], ['[data-mx-tops-p]', (t.top.P || []).slice(0, 4)], ['[data-mx-tops-w]', (t.top.W || []).slice(0, 4)], ['[data-mx-tops-m]', (t.top.M || []).slice(0, 3)], ['[data-mx-tops-f]', (t.top.F || []).slice(0, 3)]].forEach(function (row) {
                 var list = tally.querySelector(row[0]);
                 if (!list) return;
                 list.closest('.mx-tops').hidden = !row[1].length;
@@ -245,7 +250,7 @@
             if (box) {
                 box.hidden = !every.length;
                 box.querySelector('[data-mx-all-n]').textContent = every.length + (every.length === 1 ? ' take' : ' takes');
-                ['L', 'P', 'M', 'F'].forEach(function (k) {
+                ['L', 'P', 'W', 'M', 'F'].forEach(function (k) {
                     var list = box.querySelector('[data-mx-all-' + k.toLowerCase() + ']');
                     if (!list) return;
                     var mine = every.filter(function (x) { return x.code[0] === k; });
@@ -263,7 +268,7 @@
             t.people = Math.max(0, t.people + (has && !had ? 1 : !has && had ? -1 : 0));
             var bump = function (list, c, d) { var e = list.find(function (x) { return x.code === c; }); if (e) e.n += d; else if (d > 0) list.push({ code: c, n: d }); };
             t.all = t.all || [];
-            ['L', 'P', 'M', 'F'].forEach(function (k) {
+            ['L', 'P', 'W', 'M', 'F'].forEach(function (k) {
                 var list = t.top[k] || (t.top[k] = []);
                 prev.filter(function (c) { return c[0] === k && picks.indexOf(c) === -1; }).forEach(function (c) { bump(list, c, -1); bump(t.all, c, -1); });
                 picks.filter(function (c) { return c[0] === k && prev.indexOf(c) === -1; }).forEach(function (c) { bump(list, c, 1); bump(t.all, c, 1); });
@@ -271,11 +276,12 @@
             });
             t.all = t.all.filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n || (a.code < b.code ? -1 : 1); });
             var likes = function (arr, k) { return arr.some(function (c) { return c[0] === k; }) ? 1 : 0; };
-            var l0 = likes(prev, 'L'), p0 = likes(prev, 'P'), l1 = likes(picks, 'L'), p1 = likes(picks, 'P');
+            var l0 = likes(prev, 'L'), p0 = likes(prev, 'P'), w0 = likes(prev, 'W'), l1 = likes(picks, 'L'), p1 = likes(picks, 'P'), w1 = likes(picks, 'W');
             t.lean = {
                 loop: Math.max(0, t.lean.loop - l0 + l1),
                 pair: Math.max(0, t.lean.pair - p0 + p1),
-                both: Math.max(0, (t.lean.both || 0) - (l0 && p0 ? 1 : 0) + (l1 && p1 ? 1 : 0)),
+                wild: Math.max(0, (t.lean.wild || 0) - w0 + w1),
+                both: Math.max(0, (t.lean.both || 0) - (l0 + p0 + w0 > 1 ? 1 : 0) + (l1 + p1 + w1 > 1 ? 1 : 0)),
             };
             showTally(t);
         }
@@ -352,8 +358,8 @@
             if ('IntersectionObserver' in window && choose) new IntersectionObserver(function (en) { steps.classList.toggle('is-on', !en[0].isIntersecting && en[0].boundingClientRect.top < 0); }).observe(choose);
         }
         var h = (location.hash || '').slice(1);
-        var start = /^(loop|pair|menu|font)$/.test(h) ? h : CODE.test(h) ? TABS[h[0]] : picks.length ? TABS[order(picks)[0][0]] : load(TAB, 'loop');
-        show(/^(loop|pair|menu|font)$/.test(start) ? start : 'loop');
+        var start = /^(loop|pair|wild|menu|font)$/.test(h) ? h : CODE.test(h) ? TABS[h[0]] : picks.length ? TABS[order(picks)[0][0]] : load(TAB, 'loop');
+        show(/^(loop|pair|wild|menu|font)$/.test(start) ? start : 'loop');
 
         // ── Each tab's example walks through all fifty, so it is plain there are fifty ──
         (function cycle() {
@@ -428,9 +434,9 @@
             if (!nudge) return;
             var has = function (k) { return picks.some(function (c) { return c[0] === k; }); };
             var key, text, to, label;
-            if ((code[0] === 'L' || code[0] === 'P') && !has('M')) { key = '2'; text = code + ' voted. Next: pick a menu button.'; to = 'menu'; label = 'Step 2 \u2192'; }
+            if ((code[0] === 'L' || code[0] === 'P' || code[0] === 'W') && !has('M')) { key = '2'; text = code + ' voted. Next: pick a menu button.'; to = 'menu'; label = 'Step 2 \u2192'; }
             else if (code[0] === 'M' && !has('F')) { key = '3'; text = code + ' voted. Last: pick a font.'; to = 'font'; label = 'Step 3 \u2192'; }
-            else if (code[0] === 'F' && (has('L') || has('P')) && has('M')) { key = 'done'; text = 'All three done. Thank you!'; to = null; label = 'Share'; }
+            else if (code[0] === 'F' && (has('L') || has('P') || has('W')) && has('M')) { key = 'done'; text = 'All three done. Thank you!'; to = null; label = 'Share'; }
             else return;
             var seen = {};
             try { seen = JSON.parse(sessionStorage.getItem('ov_mark_nudged') || '{}') || {}; } catch (e) { seen = {}; }
@@ -486,9 +492,23 @@
             if (card && root.contains(card) && !e.target.closest('button, a, input')) toggle(card.getAttribute('data-code'));
         });
 
+        // A wild mark as a status (the owner, 11-01: "status icons"): live (its key part turns red and pulses, with a red
+        // dot) and new (a count on its corner). Copies of the card's own drawing, so they move like it.
+        function statuses(card) {
+            all('.st[data-st]', card).forEach(function (slot) {
+                if (slot.firstChild) return;
+                var art = artOf(card.getAttribute('data-code'), 28);
+                if (!art) return;
+                slot.appendChild(art);
+                var label = document.createElement('small');
+                label.textContent = slot.getAttribute('data-st') === 'live' ? 'Live' : '3 new';
+                slot.appendChild(label);
+            });
+        }
+
         // ── Arrival and idle: a card is "in" once it has been seen, and "on" (idling) while it is on screen ──
         var cards = all('.mx-card', root);
-        if (!('IntersectionObserver' in window)) cards.forEach(function (c) { c.classList.add('is-in'); });
+        if (!('IntersectionObserver' in window)) cards.forEach(function (c) { c.classList.add('is-in'); if (c.classList.contains('mx-wild')) statuses(c); });
         else {
             var io = new IntersectionObserver(function (entries) {
                 entries.forEach(function (en) {
@@ -496,6 +516,7 @@
                     if (en.isIntersecting) {
                         if (!c.classList.contains('is-in')) {
                             c.classList.add('is-in');
+                            if (c.classList.contains('mx-wild')) statuses(c);
                             if (c.classList.contains('mb-card')) { var big = c.querySelector('.mb-big'); setTimeout(function () { play(big); }, 350); }
                         }
                         c.classList.add('is-on');
