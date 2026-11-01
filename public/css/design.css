@@ -571,3 +571,9 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 @supports selector(:has(*)) { @media (max-width: 640px) {
   .pick .sc-scene-text > h2 { display: none; }
 } }
+
+/* The icons sample under the Icons choice: small and large, so Auto's switch shows (plan L56). */
+.lk-icons{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:4px 0 14px;padding:10px 14px;border-radius:12px;background:var(--bg-tertiary,rgba(255,255,255,.04));color:var(--text-primary,#e6edf7)}
+.lk-icons>span{display:inline-flex;gap:12px;font-size:15px}
+.lk-icons .lk-icons-big{font-size:26px;gap:16px}
+.lk-icons small{flex-basis:100%;color:var(--text-muted,#8a96a8);font-size:12.5px}
