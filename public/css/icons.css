@@ -244,3 +244,27 @@
 .mv-tile i{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-style:normal;font-size:11px;font-weight:750}
 .mv-tile.is-suits{border-color:color-mix(in srgb,var(--accent) 50%,var(--border))}
 .mv-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* /icons: the most used in view, the rest in a counted fold (the owner, 10-31: short pages, never by hiding). */
+.ic-grid-cap{margin:0 0 8px;color:var(--text-muted);font-size:12px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}
+.ic-fold{margin-top:12px;border-radius:14px;border:1px solid var(--border);background:color-mix(in srgb,var(--bg-secondary) 60%,transparent)}
+.ic-fold>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:14px 16px;cursor:pointer;font-weight:750;list-style:none}
+.ic-fold>summary::-webkit-details-marker{display:none}
+.ic-fold>summary::before{content:'';width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(-45deg);transition:transform .18s ease}
+.ic-fold[open]>summary::before{transform:translateY(-4px) rotate(45deg)}
+.ic-fold>summary span{color:var(--text-muted);font-weight:500;font-size:13px}
+.ic-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
+.ic-fold>.ic-grid{padding:4px 12px 12px}
+@media (prefers-reduced-motion:reduce){.ic-fold>summary::before{transition:none}}
+/* A phone: denser tiles, so a screen holds five rows of four. */
+@media (max-width:520px){
+  .ic .ic-grid{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+  .ic .ic-tile{min-height:80px;padding:12px 4px 8px;gap:7px;border-radius:12px}
+  .ic .ic-tile span{font-size:11px}
+}
+.ic-left-fold>.ic-left{padding:4px 14px 14px}
+/* A phone: the downloads are a sideways rail, not seven stacked cards. */
+@media (max-width:520px){
+  .ic-packs{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:6px;margin-right:-16px;padding-right:16px}
+  .ic-packs li{flex:0 0 min(72%,240px);scroll-snap-align:start}
+}

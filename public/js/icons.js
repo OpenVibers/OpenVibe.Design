@@ -6,8 +6,15 @@
 (function () {
     'use strict';
     const $ = (s, el = document) => el.querySelector(s);
-    const grid = $('[data-ic-grid]');
-    if (!grid) return;
+    const first = $('[data-ic-grid]');
+    if (!first) return;
+    // Two grids: the most used, and the rest in a counted fold (data-ic-more). One section holds both.
+    const grid = first.closest('section') || first;
+    const grids = Array.prototype.slice.call(grid.querySelectorAll('[data-ic-grid]'));
+    const more = $('[data-ic-more]');
+    // Wide screens have the room: the fold opens there. A phone keeps it closed until asked.
+    if (more && window.matchMedia && window.matchMedia('(min-width: 900px)').matches) more.open = true;
+    let foldWas = more ? more.open : false;
     const tools = $('[data-ic-tools]');
     if (tools) tools.hidden = false;
 
@@ -25,12 +32,18 @@
             t.hidden = !hit; if (hit) shown++;
         });
         if (none) none.hidden = shown > 0;
+        // A search looks at every glyph: the fold opens while a search is on, and goes back as it was after.
+        if (more) {
+            if (q && !more.hasAttribute('data-searching')) { foldWas = more.open; more.setAttribute('data-searching', ''); }
+            if (q) more.open = !!more.querySelector('.ic-tile:not([hidden])');
+            else if (more.hasAttribute('data-searching')) { more.removeAttribute('data-searching'); more.open = foldWas; }
+        }
         if (drawLink && /^[a-z][a-z0-9-]{1,31}$/.test(q)) drawLink.href = `/icons?draw=${encodeURIComponent(q)}#draw`;
     });
 
     // Sizes.
     document.querySelectorAll('[data-ic-size]').forEach((b) => b.addEventListener('click', () => {
-        grid.style.setProperty('--ic-size', `${b.dataset.icSize}px`);
+        grids.forEach((g) => g.style.setProperty('--ic-size', `${b.dataset.icSize}px`));
         document.querySelectorAll('[data-ic-size]').forEach((x) => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
     }));
 
