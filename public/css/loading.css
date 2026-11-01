@@ -28,7 +28,7 @@
 .ld-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; font-size: 12px; color: var(--text-muted); }
 .ld-foot code { font-size: 12px; }
 .ld-foot output { font-weight: 750; font-variant-numeric: tabular-nums; }
-.ld-foot output.is-zero { color: #22c55e; }
+.ld-foot output.is-zero { color: var(--success-text, #22c55e); }
 
 /* The real content, at the placeholders' exact sizes (kit.css .ovk-skel-*): filling in moves nothing. */
 .ld-thumb, .ld-tile, .ld-avatar, .ld-dot { display: block; background: linear-gradient(135deg, hsl(var(--h, 220) 70% 55%), hsl(calc(var(--h, 220) + 40) 70% 40%)); }
