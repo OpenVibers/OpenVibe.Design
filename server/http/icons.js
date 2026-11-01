@@ -148,6 +148,13 @@ function createIconRoutes(ctx) {
         res.type(p.type).attachment(file).sendFile(p.path, (err) => { if (err && !res.headersSent) next(); });
     });
 
+    // The glyphs as npm packages (server/glyphs/npm.js): npm i https://openvibe.design/icons/npm/openvibe-icons-react.tgz
+    r.get('/icons/npm/:file', (req, res, next) => {
+        const body = require('../glyphs/npm').tarball(String(req.params.file || ''));
+        if (!body) return next();
+        res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*').attachment(req.params.file).type('application/gzip').send(body);   // attachment() would type it by extension
+    });
+
     r.get(['/ov-icon.js', '/icons.js'], (_req, res) => {
         res.set(OPEN).set('Cache-Control', 'public, max-age=86400').type('application/javascript').send(ovIcon());
     });
