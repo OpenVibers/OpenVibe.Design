@@ -27,8 +27,12 @@ function faByGlyph() {
 }
 
 /** The names the network asks Font Awesome for that no glyph covers yet, brand logos aside; most used first. */
+// Brand logos are drawn too since Shared 4.72.0 (Simple Icons, CC0): a name the brands draw is not still Font Awesome's.
+let brands = null;
+try { brands = require('openvibe-shared/brands'); } catch { brands = null; }
+const brandDrawn = (name) => !!(brands && brands.fromFa && brands.fromFa(name));
 function stillFontAwesome() {
-    return usage.names.filter((n) => !glyphs.fromFa(n.name) && !BRANDS.has(n.name));
+    return usage.names.filter((n) => !glyphs.fromFa(n.name) && !BRANDS.has(n.name) && !brandDrawn(n.name));
 }
 
 const inner = (name) => glyphs.path(name);
@@ -52,13 +56,24 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   <div class="ic-acts">${kit.button({ href: '#get', label: 'Get them all', icon: 'download' })}${kit.button({ href: '#draw', label: 'Draw an icon', kind: 'quiet', icon: 'spark' })}${kit.button({ href: '/icons/font-awesome-alternative', label: 'Switch from Font Awesome', kind: 'quiet', icon: 'code' })}</div>
 </header>`;
 
+    // The most used first, in view; the rest in a fold that says how many it holds (the owner, 10-31: short pages by
+    // counted folds, never by hiding). Wide screens open it (icons.js); the finder searches inside it and opens it.
+    const used = new Map();
+    for (const n of usage.names) { const g = glyphs.fromFa(n.name); if (g) used.set(g, (used.get(g) || 0) + n.uses); }
+    const ranked = [...glyphs.NAMES].sort((a, b) => (used.get(b) || 0) - (used.get(a) || 0) || (a < b ? -1 : 1));
+    const FIRST = 48;
+    const first = ranked.slice(0, FIRST);
+    const rest = glyphs.NAMES.filter((n) => !first.includes(n));
     const browse = `<section class="ic-sec" aria-labelledby="ic-all">
   <h2 id="ic-all" class="ovk-sr">Every glyph</h2>
   <div class="ic-tools" data-ic-tools hidden>
     <label class="ic-find">${kit.icon('search')}<span class="ovk-sr">Find a glyph</span><input type="search" placeholder="Find: a name, or a Font Awesome name" autocomplete="off" data-ic-find></label>
     <div class="ic-sizes" role="group" aria-label="Size">${[16, 20, 24, 32].map((n) => `<button type="button" class="ic-size" data-ic-size="${n}" aria-pressed="${n === 24 ? 'true' : 'false'}">${n}</button>`).join('')}</div>
   </div>
-  <div class="ic-grid" data-ic-grid style="--ic-size:24px">${glyphs.NAMES.map(tile).join('')}</div>
+  <p class="ic-grid-cap">The ${FIRST} the network uses most</p>
+  <div class="ic-grid" data-ic-grid style="--ic-size:24px">${first.map(tile).join('')}</div>
+  <details class="ic-fold" data-ic-more><summary>All ${glyphs.NAMES.length} glyphs <span>${rest.length} more, A to Z</span></summary>
+  <div class="ic-grid" data-ic-grid style="--ic-size:24px">${rest.map(tile).join('')}</div></details>
   <p class="ic-none" data-ic-none hidden>No glyph has that name yet. <a href="#draw" data-ic-draw-link>Draw it</a>.</p>
 </section>
 <dialog class="ic-sheet" data-ic-sheet aria-labelledby="ic-sheet-h"><div class="ic-sheet-in">
@@ -69,9 +84,9 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
 </div></dialog>`;
 
     const leftHtml = left.length ? `<section class="ic-sec" aria-labelledby="ic-left">
-  <div class="ic-sec-head"><h2 id="ic-left">Still Font Awesome</h2><p>The names the network&rsquo;s pages still ask Font Awesome for, most used first (counted ${esc(usage.counted)}). Each one drawn moves a site closer to dropping it. Brand logos stay theirs.</p></div>
-  <ul class="ic-left">${left.slice(0, 48).map((n) => `<li><a href="/icons?draw=${encodeURIComponent(n.name)}#draw">${esc(n.name)}</a><small>${n.uses}</small></li>`).join('')}</ul>
-  ${left.length > 48 ? `<p class="ic-more">And ${left.length - 48} more, each used once or twice.</p>` : ''}
+  <div class="ic-sec-head"><h2 id="ic-left">Still Font Awesome</h2><p>The names the network&rsquo;s pages asked Font Awesome for that no glyph draws yet, most used first (counted ${esc(usage.counted)}). Brand logos are drawn too now. Tap one to draw it.</p></div>
+  <ul class="ic-left">${left.slice(0, 24).map((n) => `<li><a href="/icons?draw=${encodeURIComponent(n.name)}#draw">${esc(n.name)}</a><small>${n.uses}</small></li>`).join('')}</ul>
+  ${left.length > 24 ? `<details class="ic-fold ic-left-fold"><summary>${left.length - 24} more <span>each used a few times</span></summary><ul class="ic-left">${left.slice(24).map((n) => `<li><a href="/icons?draw=${encodeURIComponent(n.name)}#draw">${esc(n.name)}</a><small>${n.uses}</small></li>`).join('')}</ul></details>` : ''}
 </section>` : '';
 
     const draftCard = (d, actions = '') => `<li class="ic-draft is-${esc(d.status)}"><div class="ic-draft-art">${svg(d.svg, 40)}${svg(d.svg, 20)}</div><div class="ic-draft-t"><b>${esc(d.name)}</b>${actions && d.sentence ? `<span>${esc(d.sentence)}</span>` : ''}<small>${esc(d.status === 'draft' ? 'waiting for review' : d.status)}${d.model ? ` · ${esc(d.model)}` : ''}</small></div>${actions}</li>`;

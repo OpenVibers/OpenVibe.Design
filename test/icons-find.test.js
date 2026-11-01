@@ -83,6 +83,21 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlined";`;
             assert.deepEqual(names.glyphs.map((g) => [g.asked, g.name]), [['lucide:settings', 'gear'], ['material:delete', 'trash'], ['settings', 'gear'], ['fa-gear', 'gear']]);
         });
 
+        await check('/icons on a phone: the 48 most used in view, the rest in a counted fold the finder opens', async () => {
+            const html = (await t.get('/icons')).text;
+            assert.ok(html.includes('<p class="ic-grid-cap">The 48 the network uses most</p>'));
+            const [inView, folded] = html.split('<details class="ic-fold" data-ic-more>');
+            assert.ok(folded, 'the fold is there');
+            assert.equal((inView.match(/class="ic-tile"/g) || []).length, 48, '48 in view');
+            assert.equal((html.match(/class="ic-tile"/g) || []).length, glyphs.NAMES.length, 'every glyph is on the page, none left out');
+            assert.match(folded, new RegExp(`^<summary>All ${glyphs.NAMES.length} glyphs <span>${glyphs.NAMES.length - 48} more, A to Z</span></summary>`), 'the fold says what it holds');
+            assert.ok(inView.includes('data-name="eye"') && inView.includes('data-name="live"'), 'the most used are the ones in view');
+            const js = require('fs').readFileSync(require('path').join(__dirname, '..', 'public', 'js', 'icons.js'), 'utf8');
+            assert.match(js, /if \(q\) more\.open = !!more\.querySelector\('\.ic-tile:not\(\[hidden\]\)'\);/, 'a search opens the fold when a match is inside');
+            assert.match(js, /matchMedia\('\(min-width: 900px\)'\)\.matches\) more\.open = true/, 'wide screens open it');
+            assert.ok(!/reddit-alien|kickstarter-k/.test(html.split('id="ic-left"')[1] || ''), 'brands are drawn now: not "still Font Awesome"');
+        });
+
         await check('the finder searches the words; /icons, the Font Awesome page, the sitemap and llms.txt lead to the page', async () => {
             const icons = (await t.get('/icons')).text;
             assert.match(icons, /data-name="gear" data-fa="[^"]*" data-words="[^"]*settings[^"]*"/);
