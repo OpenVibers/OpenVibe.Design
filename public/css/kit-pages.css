@@ -104,3 +104,47 @@
   .kt-pn .kt-pn-all { grid-column: 1 / -1; grid-row: 2; }
 }
 @media (prefers-reduced-motion: reduce) { .kt-tile { transition: none; } }
+
+/* ── /kit/layout: the fluid scale, the eight primitives (each in a box the reader can drag narrower) and the base ── */
+.kt-layout-card { display: grid; gap: 4px; margin: 18px 0 0; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--room-strong) 45%, var(--border, #26344d)); border-radius: 16px;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--room-strong) 14%, var(--bg-card, #0f1729)), var(--bg-card, #0f1729)); color: var(--text-primary, #e6edf7); text-decoration: none; max-width: 760px; }
+.kt-layout-card .kt-kicker { margin: 0; }
+.kt-layout-card b { font-size: 1.1rem; }
+.kt-layout-card span:last-child { color: var(--text-secondary, #96a7c2); font-size: .9rem; line-height: 1.5; }
+.kt-layout-card:hover { border-color: var(--room-strong); }
+.kt-layout-card:focus-visible { outline: 2px solid var(--room-strong); outline-offset: 2px; }
+.kt-sub { margin: 6px 0 0; max-width: 70ch; color: var(--text-secondary, #96a7c2); line-height: 1.55; }
+.kt-scale, .kt-prims, .kt-basesec { margin-top: 34px; }
+.kt-scale > h2, .kt-prims > h2, .kt-basesec > h2 { margin: 0; font-size: clamp(1.15rem, 2.4vw, 1.45rem); }
+.kt-steps { display: grid; gap: 2px; margin-top: 14px; }
+.kt-step { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: baseline; gap: 14px; padding: 8px 12px; border-radius: 10px; }
+.kt-step:nth-child(odd) { background: color-mix(in srgb, var(--text-primary, #e6edf7) 3%, transparent); }
+.kt-step-aa { font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: var(--text-primary, #e6edf7); }
+.kt-step code, .kt-space code { color: var(--room-strong); font-size: .8rem; }
+.kt-step small, .kt-space small { color: var(--text-muted, #7386a3); font-size: .78rem; font-variant-numeric: tabular-nums; min-width: 7.5em; text-align: right; }
+.kt-spaces { display: grid; gap: 6px; margin-top: 18px; }
+.kt-space { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.kt-space i { display: block; height: 12px; border-radius: 4px; background: color-mix(in srgb, var(--room-strong) 70%, transparent); }
+.kt-prim { margin-top: 26px; }
+.kt .kt-prim h3 { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; font-size: 1.05rem; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--text-primary, #e6edf7); }
+.kt-prim h3 code { color: var(--room-strong); font-size: .82rem; font-weight: 700; }
+.kt-prim-h p { margin: 4px 0 0; color: var(--text-secondary, #96a7c2); font-size: .9rem; }
+/* The box a reader can drag narrower; its corner says so */
+.kt-resize { position: relative; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 200px; margin: 12px 0 10px; padding: 14px; overflow: auto; resize: horizontal;
+    border: 1px dashed color-mix(in srgb, var(--room-strong) 45%, var(--border, #26344d)); border-radius: 14px; background: var(--bg-primary, #0a0f1c); }
+.kt-resize > * > *:not(img) { box-sizing: border-box; min-height: 44px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--room-strong) 14%, var(--bg-card, #0f1729));
+    border: 1px solid color-mix(in srgb, var(--room-strong) 30%, transparent); color: var(--text-primary, #e6edf7); font-weight: 700; font-size: .9rem; margin: 0; }
+.kt-resize > .ov-cluster > * { min-height: 0; padding: 5px 12px; border-radius: 999px; font-size: .84rem; }
+.kt-resize > .ov-cover { border-radius: 10px; background: linear-gradient(160deg, color-mix(in srgb, var(--room-strong) 18%, transparent), transparent); }
+.kt-resize > .ov-cover > * { background: none; border: 0; min-height: 0; padding: 0; }
+.kt-resize > .ov-cover > h2 { font-size: var(--step-3); text-align: center; }
+.kt-resize > .ov-frame { border-radius: 12px; background: var(--bg-card, #0f1729); }
+@media (hover: hover) and (pointer: fine) { .kt-resize::after { content: '↘ drag to narrow'; position: absolute; right: 18px; bottom: 2px; font-size: .68rem; color: var(--text-muted, #7386a3); pointer-events: none; } }
+.kt-base-demo { margin: 14px 0 10px; padding: clamp(16px, 3vw, 26px); border: 1px solid var(--border, #26344d); border-radius: 16px; background: var(--bg-primary, #0a0f1c); }
+.kt-base-demo > :first-child { margin-top: 0; }
+@media (max-width: 759px) { .kt-step { grid-template-columns: minmax(0, 1fr) auto; } .kt-step small { grid-column: 2; } .kt-space { grid-template-columns: 6.5em minmax(0, 1fr) auto; gap: 8px; } .kt-space small { min-width: 0; font-size: .7rem; } }
+.kt-resize > .ov-frame { max-width: 560px; }
+/* This page's own heading rules (.ds h2, .ds h3) would outweigh the base's :where() — which is the point of it — so
+   the demo states the base's own sizes, to show what a page without such rules gets. */
+.kt .kt-base-demo h2 { margin: 0 0 .5em; font-size: var(--step-3); font-weight: 700; line-height: 1.15; letter-spacing: -.015em; text-transform: none; color: var(--ovk-text, #e6edf7); }
+.kt .kt-base-demo p { font-size: var(--step-0); }

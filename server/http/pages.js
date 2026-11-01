@@ -214,6 +214,7 @@ function createPageRoutes(ctx) {
     // ── Components: the design system's components for web, Android and iOS (views/components.js) ──
     // The OpenVibe Kit, part by part (plan L54 K3).
     r.get('/kit', (req, res) => page(res, 200, kitView.kitIndex(), req.viewer));
+    r.get('/kit/layout', (req, res) => page(res, 200, kitView.kitLayout(), req.viewer));
     r.get('/kit/:id', (req, res) => {
         const html = kitView.kitPart(String(req.params.id || ''));
         return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);

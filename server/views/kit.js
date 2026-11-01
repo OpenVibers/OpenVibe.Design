@@ -108,6 +108,7 @@ function kitIndex() {
 <h1>Every piece an OpenVibe page is made of</h1>
 <p class="kt-lede">${PARTS.length} parts, each one function call that returns plain HTML: escaped, phone first, on the site's own theme. Pages work without JavaScript; one small file adds the menus, copy buttons and sheets. All of it is ${weight.kb(css)} of CSS.</p></header>
 ${nav}
+<a class="kt-layout-card" href="/kit/layout"><span class="kt-kicker">New in 4.78</span><b>Layout without breakpoints</b><span>A fluid type and space scale, eight primitives that lay out by their own width, and a classless base. ${weight.kb(require('zlib').brotliCompressSync(Buffer.from(LAYOUT_FILE || ' ')).length)}.</span></a>
 ${useCards()}
 ${groups}
 ${helpers}
@@ -163,4 +164,67 @@ ${native ? `<p>It is also drawn natively: <a href="/components?c=${esc(part.id)}
     });
 }
 
-module.exports = { kitIndex, kitPart, pretty, still };
+// ── /kit/layout: kit-layout.css (Shared 4.78.0, plan L54 K1/K2) ──
+const LAYOUT_FILE = (() => { try { return require('fs').readFileSync(require('path').join(require('path').dirname(require.resolve('openvibe-shared/kit')), 'kit-layout.css'), 'utf8'); } catch { return ''; } })();
+/** A token's clamp() read from the release's own file: its smallest and largest size in px. */
+function clampOf(name) {
+    const m = new RegExp(`${name.replace(/[-]/g, '\\-')}:\\s*clamp\\(([\\d.]+)rem,[^,]+,\\s*([\\d.]+)rem\\)`).exec(LAYOUT_FILE);
+    return m ? [Math.round(Number(m[1]) * 160) / 10, Math.round(Number(m[2]) * 160) / 10] : null;
+}
+const box = (text, extra = '') => `<div class="kt-db"${extra}>${esc(text)}</div>`;
+const PRIMITIVES = [
+    ['stack', 'Stack', 'One under another, --gap apart. The rhythm of a column.', `<div class="ov-stack" style="--gap: var(--space-xs)">\n  ${['Title', 'One line about it', 'The action'].map((t) => `<div>${t}</div>`).join('\n  ')}\n</div>`],
+    ['cluster', 'Cluster', 'A wrapping row: tags, buttons, a toolbar. It never overflows; it wraps.', `<div class="ov-cluster">\n  ${['IRL', 'Seattle', 'Night', 'Music', 'Chat picks', 'Walking'].map((t) => `<span>${t}</span>`).join('\n  ')}\n</div>`],
+    ['sidebar', 'Sidebar', 'A side part --side wide beside the rest; it goes under once the rest would be narrower than --min.', `<div class="ov-sidebar" style="--side: 12rem; --min: 60%">\n  <aside>The side, 12rem</aside>\n  <div>The rest of the page</div>\n</div>`],
+    ['switcher', 'Switcher', 'All side by side, or all stacked once the box is narrower than --min: never two and one.', `<div class="ov-switcher" style="--min: 36rem">\n  <div>Free</div>\n  <div>Creator</div>\n  <div>Studio</div>\n</div>`],
+    ['grid', 'Grid', 'As many columns of at least --min as fit, and one on a phone.', `<div class="ov-grid" style="--min: 9rem">\n  ${[1, 2, 3, 4, 5, 6].map((n) => `<div>Card ${n}</div>`).join('\n  ')}\n</div>`],
+    ['rail', 'Rail', 'One row that scrolls sideways and snaps: a long list that never makes a long page.', `<div class="ov-rail" style="--item: 10rem">\n  ${[1, 2, 3, 4, 5, 6, 7].map((n) => `<div>Clip ${n}</div>`).join('\n  ')}\n</div>`],
+    ['cover', 'Cover', 'A box at least --min tall, its .is-centre child in the middle: a hero, an empty page.', `<section class="ov-cover" style="--min: 15rem">\n  <p>Above</p>\n  <h2 class="is-centre">In the middle</h2>\n  <p>Below</p>\n</section>`],
+    ['frame', 'Frame', 'A box of --ratio that crops a picture or a video to fill it.', `<div class="ov-frame" style="--ratio: 21 / 9">\n  <img src="/brand/openvibe-mark-wide.svg" alt="">\n</div>`],
+];
+
+function kitLayout() {
+    const kb = weight.kb;
+    const zlib = require('zlib');
+    const size = LAYOUT_FILE ? zlib.brotliCompressSync(Buffer.from(LAYOUT_FILE)).length : 0;
+    const steps = [-2, -1, 0, 1, 2, 3, 4, 5].map((n) => [n, clampOf(`--step-${n < 0 ? `-${-n}` : n}`)]).filter(([, v]) => v);
+    const spaces = ['3xs', '2xs', 'xs', 's', 'm', 'l', 'xl', '2xl', '3xl'].map((k) => [k, clampOf(`--space-${k}`)]).filter(([, v]) => v);
+    const scale = `<div class="kt-steps">${steps.map(([n, [a, b]]) => `<div class="kt-step"><span class="kt-step-aa" style="font-size:var(--step-${n < 0 ? `-${-n}` : n})">Aa</span><code>--step-${n < 0 ? `-${-n}` : n}</code><small>${a}–${b} px</small></div>`).join('')}</div>
+<div class="kt-spaces">${spaces.map(([k, [a, b]]) => `<div class="kt-space"><code>--space-${esc(k)}</code><i style="width:var(--space-${esc(k)})"></i><small>${a}–${b} px</small></div>`).join('')}</div>`;
+    const demo = ([id, name, line, code]) => `<section class="kt-prim" id="kt-l-${esc(id)}" aria-labelledby="kt-l-${esc(id)}-h">
+<div class="kt-prim-h"><h3 id="kt-l-${esc(id)}-h">${esc(name)} <code>.ov-${esc(id)}</code></h3><p>${esc(line)}</p></div>
+<div class="kt-resize" data-prim="${esc(id)}">${code}</div>
+${kit.fold({ title: 'The HTML', meta: `${code.split('\n').length} lines`, body: kit.snippet({ id: `kt-l-${id}-code`, code }) })}</section>`;
+    const baseDemo = `<h2>A plain heading</h2>
+<p>Plain text keeps to a readable measure, with <a href="/kit/layout">a link</a>, some <code>code</code> and <mark>a mark</mark>.</p>
+<ul><li>A list, spaced to breathe</li><li>On the site's own theme</li></ul>
+<blockquote>A quote stands apart.</blockquote>
+<table><tr><th>Plan</th><th>Price</th></tr><tr><td>Creator</td><td>$6</td></tr></table>
+<label for="kt-base-name">Your name</label><input id="kt-base-name" placeholder="Ana">
+<button type="button">Save</button>`;
+    const body = `<div class="kt kt-part kt-layout" id="kt-layout">
+<nav class="kt-crumb" aria-label="Breadcrumb"><a href="/kit">The Kit</a><span aria-hidden="true">/</span><span>Layout</span></nav>
+<header class="kt-part-h"><h1>Layout without breakpoints</h1>
+<p class="kt-lede">A fluid scale for type and space, eight primitives that lay out by their own width (so they behave the same in a sidebar, a card or a whole page), and an opt-in base that finishes plain HTML.</p>
+<ul class="kt-facts"><li><code>kit-layout.css</code></li><li>${size ? `${kb(size)} brotli` : 'not in this release'}</li><li>after kit.css</li><li>No script needed</li></ul></header>
+<section class="kt-code" aria-labelledby="kt-l-use-h"><h2 id="kt-l-use-h">Use it</h2>${kit.snippet({ id: 'kt-l-use', code: `<link rel="stylesheet" href="${CDN}/kit.css">\n<link rel="stylesheet" href="${CDN}/kit-layout.css">` })}</section>
+<section class="kt-scale" aria-labelledby="kt-l-scale-h"><h2 id="kt-l-scale-h">The fluid scale</h2>
+<p class="kt-sub">Every step grows with the screen from 320 to 1240 px by <code>clamp()</code>: 16 px text on a phone, 18 px on a wide screen, and the headings more. Resize the window and watch it move.</p>${scale}</section>
+<section class="kt-prims" aria-labelledby="kt-l-prims-h"><h2 id="kt-l-prims-h">Eight primitives</h2>
+<p class="kt-sub">Each box below is the real thing. On a computer, drag its corner to make it narrower: the switcher stacks, the sidebar goes under, the grid drops a column.</p>
+${PRIMITIVES.map(demo).join('')}</section>
+<section class="kt-basesec" aria-labelledby="kt-l-base-h"><h2 id="kt-l-base-h">The classless base</h2>
+<p class="kt-sub">Put <code>.ov-base</code> on <code>&lt;body&gt;</code> or <code>&lt;main&gt;</code>, and plain HTML looks finished. Every rule is inside <code>:where()</code>, so your own rules always win.</p>
+<div class="ov-base kt-base-demo">${baseDemo}</div>
+${kit.fold({ title: 'The HTML', meta: `${baseDemo.split('\n').length + 2} lines`, body: kit.snippet({ id: 'kt-l-base-code', code: `<main class="ov-base">\n  ${baseDemo.split('\n').join('\n  ')}\n</main>` }) })}</section>
+<nav class="kt-pn" aria-label="More of the kit"><a href="/kit" class="kt-pn-all">All of the Kit</a></nav>
+</div>`;
+    return layout({
+        title: 'Layout · The OpenVibe Kit',
+        description: 'A fluid type and space scale, eight layout primitives that need no breakpoints, and an opt-in classless base: kit-layout.css, about 2.5 KB.',
+        path: '/kit/layout', active: '/kit', body: `<div class="ds-wrap">${body}</div>`,
+        styles: ['css/kit-pages.css'], sharedStyles: ['kit-layout.css'],
+    });
+}
+
+module.exports = { kitIndex, kitPart, kitLayout, pretty, still, PRIMITIVES };
