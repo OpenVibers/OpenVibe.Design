@@ -98,6 +98,11 @@ const { boot, check, done } = require('./helpers/boot');
         assert.match(r.text, /Your look, everywhere/);
         for (const name of ['scheme', 'text', 'motion']) assert.match(r.text, new RegExp(`role="radiogroup"[^>]*>(<label><input type="radio" name="${name}"[^<]*<span>[^<]+</span></label>)+`), name);
         assert.match(r.text, /name="seasonal"/);
+        // The icon styles side by side (plan L56): three screens drawn with the real glyphs, each a button for its style.
+        for (const id of ['auto', 'line', 'solid']) assert.match(r.text, new RegExp(`<button type="button" class="lk-style" data-pick-icons="${id}" aria-pressed="(true|false)">`), id);
+        assert.match(r.text, /<span class="lk-st-screen" style="--ovg-pref:18\.4px">/, 'Auto shows Auto whatever the person chose');
+        assert.match(r.text, /class="fa-solid fa-bell ovg-line"/, 'Line forces lines');
+        assert.match(r.text, /class="fa-solid fa-bell ovg-solid"/, 'Solid forces solids');
         assert.match(r.text, /\/js\/look\.js\?v=[0-9a-f]{10}/);
         assert.match(r.text, /<script type="application\/json" id="lk-themes">\[\{"id":"vibe"/);
         assert.match(r.text, /Sign in so it follows you/);
