@@ -6,7 +6,7 @@
 const assert = require('node:assert/strict');
 const { boot, check, done } = require('./helpers/boot');
 const glyphs = require('openvibe-shared/glyphs');
-const { clean } = require('../server/glyphs/validate');
+const { clean, cleanSolid } = require('../server/glyphs/validate');
 const { stillFontAwesome } = require('../server/views/icons');
 
 const ORIGIN = 'https://openvibe.design';
@@ -88,6 +88,20 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             ]) assert.equal(clean(bad).ok, false, what);
         });
 
+        await check('a solid twin: filled shapes, evenodd holes and class="ln" lines, nothing else', async () => {
+            const ok = cleanSolid('<path fill-rule="evenodd" d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM11 10h2v7h-2Z"/><path class="ln" d="M8 21h8"/>');
+            assert.ok(ok.ok, ok.why);
+            assert.equal(ok.svg, '<path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM11 10h2v7h-2Z" fill-rule="evenodd"/><path d="M8 21h8" class="ln"/>');
+            for (const [bad, what] of [
+                ['<path class="ln" d="M8 20h8"/>', 'lines only: nothing filled'],
+                ['<path d="M4 4h4v4H4Z" fill="red"/>', 'a colour'],
+                ['<path d="M4 4h4v4H4Z" class="x"/>', 'another class'],
+                ['<circle cx="12" cy="12" r="8" fill-rule="evenodd"/>', 'evenodd on a circle'],
+                ['<path d="M4 4h4v4H4Z" style="opacity:.5"/>', 'a style'],
+            ]) assert.equal(cleanSolid(bad).ok, false, what);
+            assert.equal(clean('<path fill-rule="evenodd" d="M4 4h4"/>').ok, false, 'a line drawing takes no fill rule');
+        });
+
         await check('drawing takes this site\'s own form, signed in or not', async () => {
             const cross = await t.get('/icons/draft', { method: 'POST', as: ana, ...form({ name: 'hot-tub' }), origin: 'https://evil.test' });
             assert.equal(cross.status, 403);
@@ -137,8 +151,8 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
 
         await check('OpenVibe.AI drafts candidates; the checked ones are kept, the rest refused', async () => {
             answer = '```json\n' + JSON.stringify({ candidates: [
-                '<path d="M5 10h14v8H5z"/><path d="M9 6c0-1 1-1 1-2M14 6c0-1 1-1 1-2"/>',
-                '<rect x="4" y="10" width="16" height="8" rx="2"/><line x1="8" y1="4" x2="8" y2="7"/>',
+                { line: '<path d="M5 10h14v8H5z"/><path d="M9 6c0-1 1-1 1-2M14 6c0-1 1-1 1-2"/>', solid: '<path d="M4.5 9.5h15v9h-15Z"/><path class="ln" d="M9 6c0-1 1-1 1-2M14 6c0-1 1-1 1-2"/>' },
+                { line: '<rect x="4" y="10" width="16" height="8" rx="2"/><line x1="8" y1="4" x2="8" y2="7"/>', solid: '<rect x="4" y="10" width="16" height="8" rx="2" fill="red"/>' },
                 '<path d="M5 10h14v8H5z" onclick="steal()"/>',
                 '<rect x="4" y="10" width="16" height="8" rx="2"/><line x1="8" y1="4" x2="8" y2="7"/>',
             ] }) + '\n```';
@@ -155,6 +169,10 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             assert.ok(page.text.includes('value="hot-tub"'), 'the form keeps the name');
             assert.ok(!page.text.includes('onclick="steal()"'), 'the refused one is nowhere');
             assert.ok(!page.text.includes('Waiting for review'), 'not a reviewer');
+            // Each kept drawing has its solid twin when that passed its own checks; a failing twin costs the drawing nothing.
+            assert.ok(page.text.includes('<svg class="is-solid" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4.5 9.5h15v9h-15Z"/><path d="M9 6c0-1 1-1 1-2M14 6c0-1 1-1 1-2" class="ln"/></svg>'), 'the solid twin is drawn beside its line drawing');
+            assert.ok(!page.text.includes('fill="red"'), 'a twin that failed its checks is not kept');
+            assert.ok(asked[0].system.includes('solid twin'), 'the model is asked for the twins');
         });
 
         await check('a bad name or an empty answer says so, without a stored draft', async () => {

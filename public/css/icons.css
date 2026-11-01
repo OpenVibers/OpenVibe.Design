@@ -71,6 +71,8 @@
 .ic-draft{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary)}
 .ic-draft-art{display:flex;align-items:flex-end;gap:10px;padding:8px;border-radius:10px;background:var(--bg-primary)}
 .ic-draft-art svg:first-child{width:40px;height:40px}.ic-draft-art svg:last-child{width:20px;height:20px}
+/* A draft's solid twin, as the sites draw small icons: filled, its class="ln" parts as lines (L50). */
+.ic .ic-draft-art svg.is-solid{fill:currentColor;stroke:none}.ic .ic-draft-art svg.is-solid .ln{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .ic-draft-t{flex:1;min-width:0;display:grid}
 .ic-draft-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ic-draft-t small{color:var(--text-muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

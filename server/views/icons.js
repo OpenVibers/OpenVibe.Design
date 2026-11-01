@@ -37,6 +37,8 @@ function stillFontAwesome() {
 
 const inner = (name) => glyphs.path(name);
 const svg = (d, size = 24) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${d}</svg>`;
+// A draft's solid twin (L50): filled, its class="ln" parts drawn as lines (icons.css .is-solid).
+const solidSvg = (d, size = 24) => `<svg class="is-solid" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${d}</svg>`;
 
 function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '', guest = null } = {}) {
     const fa = faByGlyph();
@@ -89,7 +91,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   ${left.length > 24 ? `<details class="ic-fold ic-left-fold"><summary>${left.length - 24} more <span>each used a few times</span></summary><ul class="ic-left">${left.slice(24).map((n) => `<li><a href="/icons?draw=${encodeURIComponent(n.name)}#draw">${esc(n.name)}</a><small>${n.uses}</small></li>`).join('')}</ul></details>` : ''}
 </section>` : '';
 
-    const draftCard = (d, actions = '') => `<li class="ic-draft is-${esc(d.status)}"><div class="ic-draft-art">${svg(d.svg, 40)}${svg(d.svg, 20)}</div><div class="ic-draft-t"><b>${esc(d.name)}</b>${actions && d.sentence ? `<span>${esc(d.sentence)}</span>` : ''}<small>${esc(d.status === 'draft' ? 'waiting for review' : d.status)}${d.model ? ` · ${esc(d.model)}` : ''}</small></div>${actions}</li>`;
+    const draftCard = (d, actions = '') => `<li class="ic-draft is-${esc(d.status)}"><div class="ic-draft-art"${d.solid_svg ? ' title="The line drawing, and its solid twin as the sites show it at 18 px and under"' : ''}>${svg(d.svg, 40)}${d.solid_svg ? solidSvg(d.solid_svg, 20) : svg(d.svg, 20)}</div><div class="ic-draft-t"><b>${esc(d.name)}</b>${actions && d.sentence ? `<span>${esc(d.sentence)}</span>` : ''}<small>${esc(d.status === 'draft' ? 'waiting for review' : d.status)}${d.model ? ` · ${esc(d.model)}` : ''}</small></div>${actions}</li>`;
     const reviewForm = (d) => `<div class="ic-draft-acts">${['approve', 'reject'].map((a) => `<form method="post" action="/icons/drafts/${esc(d.id)}/review"><input type="hidden" name="action" value="${a}"><button type="submit" class="ic-btn${a === 'approve' ? ' is-go' : ''}">${a === 'approve' ? 'Approve' : 'Reject'}</button></form>`).join('')}</div>`;
     const drawSec = `<section class="ic-sec" id="draw" aria-labelledby="ic-draw">
   <div class="ic-sec-head"><h2 id="ic-draw">Draw an icon</h2><p>Name it and say what it stands for. OpenVibe.AI draws a few candidates in this hand; each is checked (strokes only, on the grid, a few shapes) before it is kept, and an admin reviews it before it joins the set.</p></div>
