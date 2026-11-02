@@ -116,7 +116,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
         fa.length ? way('Font Awesome markup', `<script src="${base}/shared/ov-glyphs.js" defer></script>\n${faTag}`, 'gp-fa', 'Keep your markup; the drop-in draws ours.') : '',
         cp ? way('The font', `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-${name}"></i>`, 'gp-font') : '',
         way('The sprite', `<svg width="24" height="24"><use href="${base}/shared/ov-glyphs.svg#ovg-${name}"/></svg>`, 'gp-sprite'),
-        way('CSS, no markup', formats.cssMask(name, at24), 'gp-mask', 'A mask painted in the text&rsquo;s colour: <code>&lt;span class="icon-${esc(name)}"&gt;&lt;/span&gt;</code>.'),
+        way('CSS, no markup', formats.cssMask(name, at24), 'gp-mask', `A mask painted in the text&rsquo;s colour: <code>&lt;span class="icon-${esc(name)}"&gt;&lt;/span&gt;</code>. Or link it, with any others: <code>&lt;link rel="stylesheet" href="${esc(base)}/icons.css?names=${esc(name)}"&gt;</code>; add <code>is-solid</code> for the solid drawing.`),
         way('Data URI', formats.dataUri(name, at24), 'gp-data', 'For an <code>&lt;img&gt;</code> or a CSS <code>url()</code>, in a fixed colour.'),
         way('ES module', `import ${name.replace(/-([a-z])/g, (_, c) => c.toUpperCase())} from '${base}/icons/${name}.mjs';\n// { name, line, solid }: the drawings, for a component of your own`, 'gp-mjs'),
         way('Node', `require('openvibe-shared/glyphs').svg('${name}', { size: 24 })`, 'gp-node'),

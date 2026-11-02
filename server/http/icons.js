@@ -10,6 +10,7 @@
  *   GET  /icons/<name>.xml              an Android VectorDrawable, with the maker's colour and style
  *   GET  /icons/<name>/favicon.zip      a favicon set from the maker's choices: SVG, PNGs, manifest, the <head> lines
  *   GET  /ov-icon.js (also /icons.js)   the <ov-icon name="…"> web component: any page, no sign-in (L50 step 2)
+ *   GET  /icons.css[?names=a,b]        every glyph as a CSS class (icon-<name>, is-solid for the solid), through a mask
  *   GET  /icons/pack/<file>             the fonts (WOFF2, TTF, OTF), the sprite, the CSS, the code points, and
  *                                       ov-glyphs-svg.zip with every glyph
  *   GET  /icons/font-awesome-alternative  how to switch, and what keeps working
@@ -153,6 +154,38 @@ function createIconRoutes(ctx) {
         const body = require('../glyphs/npm').tarball(String(req.params.file || ''));
         if (!body) return next();
         res.set('Cache-Control', 'public, max-age=86400').set('Access-Control-Allow-Origin', '*').attachment(req.params.file).type('application/gzip').send(body);   // attachment() would type it by extension
+    });
+
+    // Every glyph as a CSS class (L50: "a CSS file of every mask class"): <i class="icon-search"></i> paints the glyph in
+    // the text's colour through a mask, with no markup and no script; add "is-solid" for the solid drawing where there is
+    // one. ?names=search,heart keeps the file to those. One rule carries the shape; each glyph only sets its picture.
+    let iconsCss = null;
+    function cssFor(names) {
+        const enc = (svg) => `data:image/svg+xml,${svg.replace(/"/g, "'").replace(/[<>#%{}\n]/g, (c) => encodeURIComponent(c))}`;
+        const pic = (name, style) => {
+            const svg = formats.inlineSvg(name, ex.options({ size: 24, style }));
+            return svg ? enc(svg.replace(/currentColor/g, '#000').replace(' aria-hidden="true"', '')) : '';
+        };
+        const out = [
+            '/* OpenVibe glyphs as CSS classes (openvibe.design/icons.css). <i class="icon-search"></i>; add is-solid for the solid',
+            '   drawing. Painted in currentColor through a mask, so the text colour is the icon colour. Free to use (see /icons). */',
+            // A name that is not a glyph draws nothing (a transparent picture), never a filled square.
+            '[class^="icon-"],[class*=" icon-"]{--ovi:linear-gradient(transparent,transparent);display:inline-block;width:1em;height:1em;vertical-align:-.125em;background-color:currentColor;'
+                + '-webkit-mask:var(--ovi) center/contain no-repeat;mask:var(--ovi) center/contain no-repeat}',
+        ];
+        for (const name of names) {
+            const line = pic(name, 'line');
+            if (!line) continue;
+            out.push(`.icon-${name}{--ovi:url("${line}")}`);
+            const solid = pic(name, 'solid');
+            if (solid && solid !== line) out.push(`.icon-${name}.is-solid{--ovi:url("${solid}")}`);
+        }
+        return `${out.join('\n')}\n`;
+    }
+    r.get('/icons.css', (req, res) => {
+        const want = String(req.query.names || '').split(',').map((x) => x.trim()).filter((x) => /^[a-z][a-z0-9-]{0,40}$/.test(x) && glyphs.path(x));
+        const body = want.length ? cssFor([...new Set(want)]) : (iconsCss = iconsCss || cssFor(glyphs.NAMES));
+        res.set(OPEN).set('Cache-Control', 'public, max-age=86400').type('text/css').send(body);
     });
 
     r.get(['/ov-icon.js', '/icons.js'], (_req, res) => {
