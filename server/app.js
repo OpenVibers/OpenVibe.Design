@@ -32,6 +32,7 @@ const { openStore } = require('./db');
 const { createKeyStore } = require('./auth/keys');
 const { createSso } = require('./auth/sso');
 const { createThemeCatalog } = require('./themes');
+const { createSearchIndex } = require('./search-index');
 const { createApi } = require('./http/api');
 const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
@@ -65,6 +66,8 @@ async function createApp(opts = {}) {
     const keys = createKeyStore({ config, fetchImpl, log });
     const sso = createSso({ config, keys, fetchImpl, log, now });
     const catalog = opts.catalog || createThemeCatalog({ config, fetchImpl, log, now });
+    // The icon and theme pages in OpenVibe.Search (started by server/index.js, never under DESIGN_DRILL).
+    const searchIndex = opts.searchIndex || createSearchIndex({ config, s, catalog, log });
     const bench = opts.bench || createBenchClient({ config, fetchImpl, log });
     const arena = opts.arena || createArenaStore({ s, config, bench, log });
     const ai = opts.arenaAi || opts.ai || createArenaAi({ config, fetchImpl, log });
@@ -78,7 +81,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, catalog, arena, bench, ai, jobs, designs, accountData, accountSend, log, picks,
+        config, s, store: s, keys, sso, catalog, searchIndex, arena, bench, ai, jobs, designs, accountData, accountSend, log, picks,
         random: opts.random || Math.random,
     };
 

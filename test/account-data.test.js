@@ -16,6 +16,7 @@ const { testDb } = require('./helpers/db');
             taskKeyed: ['design_versions'], // versions belong to the design and cascade with it
             exempt: {
                 account_data_events: 'the ledger of requests itself: which export and deletion design applied',
+                design_index_revisions: 'the Search index sequencer: owner is the service (design), the rows are icon and theme pages, never a person',
 
             },
         });
