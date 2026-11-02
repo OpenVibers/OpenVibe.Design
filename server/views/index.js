@@ -15,7 +15,7 @@ const layoutLib = require('../render/layout');
 const kit = require('openvibe-shared/kit');
 const seo = require('openvibe-shared/seo');
 // The short home (the owner's rule, 2026-10-30): pick blocks and folds.
-const { pickBlock, pickRules, foldAround } = require('../render/short');
+const { pickBlock, foldAround } = require('../render/short');
 const sc = require('openvibe-shared/showcase');
 const rooms = require('openvibe-shared/rooms');
 const { iframeHtml } = require('../arena/sanitize');
@@ -164,7 +164,6 @@ function home({ themes } = {}) {
         path: '/', body: `<div class="ds-wrap">${body}</div>`, active: '/',
         jsonLd: [seo.jsonLd.website({ name: 'OpenVibe.Design', url: 'https://openvibe.design/', description: 'Your look, everywhere: one theme across every OpenVibe site, the same theme as code for the web, Android and iOS, and AI design on it, ranked honestly by the Design Arena.' }), seo.jsonLd.organization()],
         // The rule that shows the picked scene of the pick block: one per scene, written for this page.
-        inlineStyles: [`@supports selector(:has(*)){@media (max-width:640px){${pickRules('scenes', arts.map((_, i) => `ds-scene-${i}`))}}}`],
     });
 }
 
