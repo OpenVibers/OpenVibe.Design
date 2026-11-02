@@ -98,7 +98,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
     const publicRow = d => ({ id: d.id, prompt: d.prompt, kind: d.kind, themeId: d.theme_id,
         status: d.variants.every(v => v.status === 'done' || v.status === 'failed')
             ? d.variants.some(v => v.status === 'done') ? 'done' : 'failed' : 'running',
-        createdAt: d.created_at, updatedAt: d.updated_at });
+        createdAt: d.created_at, updatedAt: d.updated_at,
+        published: d.space_url ? { url: d.space_url, at: d.published_at || null } : null });
     function allowed(d, owner, key) {
         if (d.owner && owner === d.owner) return true;
         if (!d.guest_hash || !key) return false;
@@ -469,7 +470,23 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const pending = await db.many("SELECT id FROM designs WHERE variants @> '[{\"status\":\"pending\"}]'::jsonb OR variants @> '[{\"status\":\"running\"}]'::jsonb ORDER BY created_at LIMIT 20");
         for (const d of pending) run(d.id).catch(err => log.warn('[OpenVibe.Design] resume:', err.message));
     }
-    return { create, read, setTheme, recent, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit };
+    /**
+     * Publish the working frame on openvibe.space (publish.js): its owner only (a guest's private link cannot), and
+     * only once a frame is picked. The site is remembered, so publishing again updates the same address.
+     */
+    async function publish({ id, owner, name = '', publisher }) {
+        if (!owner) throw fail(401, 'auth.required', 'Sign in to publish a design on openvibe.space.');
+        const d = await row(id, owner, null);
+        if (d.owner !== owner) throw fail(403, 'design.forbidden', 'Only the person who made this design can publish it.');
+        const data = await read(id, owner, null);
+        const index = data.pick ? Number(data.pick.variantIndex) : -1;
+        const variant = index >= 0 ? data.variants[index] : null;
+        const out = await publisher.publish({ design: d, html: variant && variant.html, subject: owner, name });
+        await db.exec('UPDATE designs SET space_site_id = $2, space_url = $3, published_at = now(), updated_at = now() WHERE id = $1', [id, out.siteId, out.url]);
+        return out;
+    }
+
+    return { create, read, setTheme, recent, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit, publish };
 }
 
 module.exports = { createDesigns, wrap, tokenCss, themeCss, themePrompt, editPrompt };

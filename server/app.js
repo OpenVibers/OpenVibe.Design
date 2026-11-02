@@ -74,6 +74,8 @@ async function createApp(opts = {}) {
     // The Arena generation job now lives on Bench; Design keeps a no-op loop for test compatibility.
     const jobs = opts.jobs || { tick: async () => null, start: () => null, stop: () => null, get running() { return false; } };
     const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now });
+    // Publishing a design on openvibe.space (open item D8).
+    const publisher = opts.publisher || require('./publish').createPublisher({ config, fetchImpl, log });
     const accountData = accountDataLib.create({ db: s.db, log });
     const picks = opts.picks || require('./brand-picks').createBrandPicks({ db: s.db, now });
     const accountSend = opts.accountSend || (config.oauth.clientSecret
@@ -81,7 +83,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, catalog, searchIndex, arena, bench, ai, jobs, designs, accountData, accountSend, log, picks,
+        config, s, store: s, keys, sso, catalog, searchIndex, arena, bench, ai, jobs, designs, publisher, accountData, accountSend, log, picks,
         random: opts.random || Math.random,
     };
 

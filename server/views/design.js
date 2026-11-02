@@ -66,7 +66,30 @@ const versionDetail = (v) => v.kind === 'chat' && v.instruction
         ? `<span class="dv-fine">${esc((v.change.path || '').replace(/^body > /, ''))}${v.change.text !== undefined ? ' · text' : ''}${v.change.color ? ' · colour' : ''}${v.change.spacing ? ' · spacing' : ''}${v.change.align ? ' · alignment' : ''}</span>`
         : '';
 
-function canvas({ data, themes = [], editKey = '' }) {
+/**
+ * Publish on openvibe.space (open item D8): the working frame as a site at <name>.openvibe.space, in the person's own
+ * Space project. Only the owner, signed in, sees the form; a guest's private link is told to sign in.
+ */
+function publishPanel({ design, pick, viewer, editKey, publishing = {} }) {
+    const published = design.published;
+    const mine = Boolean(viewer) && !editKey;
+    const head = `<summary>Publish <span>${published ? 'live' : 'on openvibe.space'}</span></summary>`;
+    const note = publishing.notice ? `<p class="dv-ok" role="status">${esc(publishing.notice)} <a href="${esc(published ? published.url : '#')}" target="_blank" rel="noopener">${esc(published ? published.url.replace(/^https:\/\//, '') : '')}</a></p>` : '';
+    const err = publishing.error ? `<p class="dv-err" role="alert">${esc(publishing.error)}</p>` : '';
+    let inner;
+    if (!publishing.enabled) inner = '<p class="dv-fine">Publishing is not set up on this server.</p>';
+    else if (!mine) inner = '<p class="dv-fine">Sign in as the person who made this design to publish it as a site on openvibe.space.</p>';
+    else if (!pick) inner = '<p class="dv-fine">Pick a frame first: the working frame is what gets published.</p>';
+    else inner = `${published ? `<p class="dv-live">Live at <a href="${esc(published.url)}" target="_blank" rel="noopener">${esc(published.url.replace(/^https:\/\//, ''))}</a></p>` : ''}
+<form method="post" action="/d/${encodeURIComponent(design.id)}/publish" class="dv-publish-form">
+${published ? '' : '<label class="dv-publish-name"><span>Site name <small>(optional; a–z, 0–9 and hyphens)</small></span><span class="dv-publish-addr"><input name="name" maxlength="40" pattern="[a-z0-9]([a-z0-9]|-(?=[a-z0-9])){2,39}" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="my-landing-page"><span>.openvibe.space</span></span></label>'}
+<button type="submit">${published ? 'Publish this version' : 'Publish on openvibe.space'}</button>
+</form>
+<p class="dv-fine">The working frame becomes the site's page, in a project called Designs on your Space account. Publishing again updates the same address; Space keeps the earlier versions for a rollback.</p>`;
+    return `<details class="dv-publish" id="dv-publish"${publishing.notice || publishing.error || published ? ' open' : ''}>${head}${note}${err}${inner}</details>`;
+}
+
+function canvas({ data, themes = [], editKey = '', viewer = null, publishing = { enabled: false } }) {
     const { design, variants, pick, versions = [] } = data;
     const selectedTheme = themes.find(t => t.id === design.themeId) || themes[0] || { variables: {} };
     const variables = selectedTheme.variables || {};
@@ -125,6 +148,7 @@ ${keyInput}
 <p class="dv-fine">${pick ? `${chatLeft} of ${pick.chatEditLimit} AI edits left on this design. Click edits and undo are free.` : 'Chat edits work on the picked frame.'}</p>
 </form>
 <div class="dv-rail" id="dv-rail">${cards}</div>
+${publishPanel({ design, pick, viewer, editKey, publishing })}
 <details class="dv-versions" id="dv-versions" open>
 <summary>Versions <span>${versions.length}</span></summary>
 <div class="dv-vcontrols">

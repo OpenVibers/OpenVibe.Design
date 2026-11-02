@@ -126,7 +126,7 @@ function createPageRoutes(ctx) {
         try {
             const data = await ctx.designs.read(req.params.id, subjectOf(req), req.query.key);
             const themes = (await catalog.list()).themes;
-            return page(res, 200, designView.canvas({ data, themes, editKey: req.query.key || '' }), req.viewer,
+            return page(res, 200, designView.canvas({ data, themes, editKey: req.query.key || '', viewer: subjectOf(req), publishing: { enabled: Boolean(ctx.publisher && ctx.publisher.enabled), notice: req.query.published ? 'Published.' : null, error: req.query.publish_error ? String(req.query.publish_error).slice(0, 300) : null } }), req.viewer,
                 { cacheControl: 'private, no-store' });
         } catch (err) {
             return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not read the design.');
@@ -163,6 +163,18 @@ function createPageRoutes(ctx) {
             return backToCanvas(req, res, key);
         } catch (err) {
             return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not edit that frame.');
+        }
+    });
+    // Publish the working frame on openvibe.space (open item D8): the owner, signed in, from openvibe.design itself.
+    r.post('/d/:id/publish', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const back = (q) => res.redirect(303, `/d/${encodeURIComponent(req.params.id)}?${q}#dv-publish`);
+        try {
+            await ctx.designs.publish({ id: req.params.id, owner: subjectOf(req), name: req.body.name || '', publisher: ctx.publisher });
+            return back('published=1');
+        } catch (err) {
+            if (!err.status) throw err;
+            return back(`publish_error=${encodeURIComponent(err.detail || 'That did not publish.')}`);
         }
     });
     for (const action of ['undo', 'redo']) {

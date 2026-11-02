@@ -53,6 +53,9 @@ function createDesignApi(ctx) {
         await ctx.designs.read(req.params.id, owner(req), keyOf(req)))));
     routes.post('/:id/theme', sameOrigin, safe(async (req, res) => priv(res, 200,
         await ctx.designs.setTheme(req.params.id, (req.body || {}).themeId, owner(req), keyOf(req)))));
+    // Publish the working frame on openvibe.space (open item D8): the owner only; { name? } for a new site.
+    routes.post('/:id/publish', sameOrigin, safe(async (req, res) => priv(res, 200,
+        await ctx.designs.publish({ id: req.params.id, owner: owner(req), name: (req.body || {}).name || '', publisher: ctx.publisher }))));
     routes.post('/:id/pick', sameOrigin, safe(async (req, res) => {
         const body = req.body || {};
         const result = await ctx.designs.pick({ id: req.params.id, variantIndex: body.variantIndex,

@@ -64,6 +64,15 @@ function load(env = process.env) {
             maxHtmlBytes: 200 * 1024,
         },
 
+        // OpenVibe.Space (open item D8): a design is published as a static site, with Design's service token acting for
+        // the person (X-OV-Subject); Network grants space.site.manage and space.deploy.create.
+        space: {
+            url: trim(env.OV_SPACE_INTERNAL_URL || 'http://127.0.0.1:4940'),
+            audience: env.DESIGN_SPACE_AUDIENCE || 'openvibe.space',
+            scope: env.DESIGN_SPACE_SCOPE || 'space.site.manage space.deploy.create',
+            timeoutMs: 30_000,
+        },
+
         // OpenVibe.Bench: Design creates tasks with its service token. A round uses its creator's Network token
         // so Bench can enforce personal budgets and prevent voting on one's own round.
         bench: {
