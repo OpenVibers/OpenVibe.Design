@@ -93,6 +93,8 @@ const PARTS = [
         code: `kit.drop({ name: 'photo', accept: 'image/*', label: 'Choose a photo', hint: 'JPEG, PNG or WebP, up to 20 MB', camera: true, id: 'kit-demo-drop' })` },
 
     // ── Data ──
+    { id: 'labels', fn: 'labels', group: 'data', name: 'Labels', line: 'What a stream, recording, picture or post carries (nudity, strong language, graphic, 18+, flashing lights, spoilers), in words. Only the labels in force: a suggestion is the creator\'s to confirm. The page marks the thing itself with kit.labelsAttr so each viewer\'s own choice (show, blur, hide) applies.',
+        code: `kit.labels(['language', '18+'])` },
     { id: 'stats', fn: 'stats', group: 'data', name: 'Numbers', line: 'A strip of numbers that matter. Zero and unknown are left out; it scrolls sideways on a phone.',
         code: `kit.stats([[1204, 'watching now'], [48, 'people chatting'], [12, 'streams live', '/live']])` },
     { id: 'num', fn: 'num', group: 'data', name: 'Number', line: 'A number the way a reader wants it: money, compact, percent, time. Missing is "–", never 0.',
@@ -133,6 +135,8 @@ const PARTS = [
 
 const HELPERS = [
     ['kit.esc(text)', 'Escapes text for HTML. Every builder already does it for its text arguments.'],
+    ['kit.labelsAttr(labels)', 'The data-ov-labels attribute for the labelled thing, so ov-labels.js (loaded by the navbar) applies each viewer\'s show, blur or hide.'],
+    ['kit.LABEL_NAMES', 'The six content labels and their names in words.'],
     ['kit.url(href)', 'Keeps http(s) and same-site links; anything else becomes #.'],
     ['kit.mediaW(url, width)', 'A Media picture at a width from its resize ladder (64, 96, 160, 320, 480, 640), so an avatar is not its full upload; any other URL as kit.url gives it.'],
     ['kit.icon(name)', 'One of kit.ICONS as inline SVG, in the text\'s colour. The full set is at /icons.'],
