@@ -693,3 +693,18 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .lk-style[aria-pressed="true"] .lk-st-cap b{color:var(--accent)}
 @media (max-width:480px){.lk-styles{gap:8px}.lk-st-screen{padding:8px 7px 0;border-radius:14px}.lk-st-head{font-size:19px;gap:6px}.lk-st-lines>span+span{display:none}.lk-st-bar{margin:4px -7px 0;font-size:15px}.lk-st-tab{width:26px}.lk-st-cap small{font-size:11px}}
 @media (prefers-reduced-motion:reduce){.lk-st-screen{transition:none}.lk-style:active .lk-st-screen{transform:none}}
+
+/* Publish on openvibe.space (open item D8), drawn like the Versions panel. */
+.dv-publish { max-width: 1320px; margin: 0 auto 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); }
+.dv-publish summary { display: flex; align-items: center; gap: 8px; min-height: 34px; cursor: pointer; font-weight: 800; font-size: .92rem; }
+.dv-publish summary span { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 8px; border-radius: 99px; background: var(--bg-secondary); color: var(--text-muted); font-size: .74rem; }
+.dv-publish-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 8px 0 4px; }
+.dv-publish-name { display: grid; gap: 4px; flex: 1 1 260px; min-width: 0; font-size: .86rem; }
+.dv-publish-name small { color: var(--text-muted); }
+.dv-publish-addr { display: flex; align-items: center; min-height: 42px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary); overflow: hidden; }
+.dv-publish-addr input { flex: 1; min-width: 0; height: 40px; padding: 0 10px; border: 0; background: transparent; color: inherit; font: inherit; font-size: 16px; }
+.dv-publish-addr span { padding: 0 10px; color: var(--text-muted); white-space: nowrap; font-size: .86rem; }
+.dv-publish-form button { min-height: 42px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent, #fff); font: inherit; font-weight: 800; cursor: pointer; }
+.dv-live, .dv-ok, .dv-err { margin: 8px 0; font-size: .9rem; overflow-wrap: anywhere; }
+.dv-ok { padding: 8px 12px; border-radius: 10px; background: color-mix(in srgb, #22c55e 14%, transparent); }
+.dv-err { padding: 8px 12px; border-radius: 10px; background: color-mix(in srgb, #ef4444 14%, transparent); }
