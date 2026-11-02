@@ -116,7 +116,7 @@ const PARTS = [
     { id: 'tool-input', fn: 'toolInput', group: 'tools', name: 'Tool input', line: 'The one field a tool needs, its button, and examples to try.',
         code: `kit.toolInput({ name: 'domain', label: 'A domain', placeholder: 'openvibe.live', button: 'Look it up', icon: 'search', tries: { items: [{ value: 'openvibe.live' }, { value: 'example.com' }] } })` },
     { id: 'answer', fn: 'answer', group: 'tools', name: 'Answer', line: 'The answer first, then its rows, then what to do next.',
-        code: `kit.answer({ title: 'openvibe.live is reachable', badge: kit.badge('ok', 'ok'), rows: [['Address', '104.21.32.1'], ['Answered in', '38 ms'], ['Certificate', 'Valid until Jan 30, 2027']], next: [{ href: '/tools/dns', label: 'See every DNS record' }] })` },
+        code: `kit.answer({ title: 'openvibe.live is reachable', badge: { text: 'Up', tone: 'ok' }, rows: [['Address', '104.21.32.1'], ['Answered in', '38 ms', { text: 'fast', tone: 'ok' }], ['Certificate', 'Valid until Jan 30, 2027']], next: [kit.button({ href: '/tools/dns', label: 'See every DNS record', kind: 'quiet', small: true })] })` },
     { id: 'family', fn: 'family', group: 'tools', name: 'Family', line: 'The tools next to this one.',
         code: `kit.family({ title: 'More image tools', more: { href: '/tools/images', label: 'All 14' }, items: [{ href: '/tools/crop', label: 'Crop', icon: 'image' }, { href: '/tools/convert', label: 'Convert', icon: 'swap' }, { href: '/tools/remove-bg', label: 'Remove the background', icon: 'spark' }] })` },
     { id: 'tool', fn: 'tool', group: 'tools', name: 'Tool frame', line: 'One order for every tool page: head, input, answer, family, folds, related.', wide: true,

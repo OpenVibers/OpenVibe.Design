@@ -17,6 +17,9 @@ const { boot, check, done } = require('./helpers/boot');
         const missing = Object.keys(kit).filter((k) => typeof kit[k] === 'function' && !named.has(k));
         assert.deepStrictEqual(missing, [], 'a new builder in openvibe-shared needs a part on /kit');
         PARTS.forEach((p) => { assert.ok(render(p).length > 20, `${p.id} draws`); assert.ok(!p.error, `${p.id}: ${p.error}`); });
+        // A sample that passes a builder the wrong shape draws "[object Object]" or "undefined" (the Answer tile's next
+        // step, 2026-11-02): the examples are the code people copy, so each must draw clean.
+        PARTS.forEach((p) => { const h = render(p); assert.ok(!/\[object Object\]|>undefined<|="undefined"/.test(h), `${p.id} draws a wrong-shaped argument: ${h.slice(0, 200)}`); });
         assert.ok(PARTS.every((p) => GROUPS.some(([g]) => g === p.group)), 'every part is in a group');
         assert.strictEqual(new Set(PARTS.map((p) => p.id)).size, PARTS.length, 'ids are unique');
     });
