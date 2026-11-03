@@ -140,7 +140,7 @@ async function createApp(opts = {}) {
     const agentLayer = express();
     const agentDescriptor = {
         id: 'design', name: 'OpenVibe.Design', purpose: 'Public theme tokens and component specifications.',
-        home: config.baseUrl, api: '/api/v1', docs: '/developers', mcp: { url: '/mcp' },
+        home: config.baseUrl, api: '/api/v1', docs: '/developers', mcp: { url: '/mcp' }, openapi: '/openapi.json',
         policy: { auth: ['none'] },
     };
     require('openvibe-shared/agent-layer').mount(agentLayer, { descriptor: agentDescriptor });
@@ -203,6 +203,18 @@ async function createApp(opts = {}) {
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
     app.use(createIconRoutes(ctx));
     app.use('/api', createApi(ctx));
+    // GET /openapi.json (SEO-3): the API as OpenAPI 3.1. It is not in openvibe-contracts, so the document is read from
+    // the routes this app mounts under /api/, with the summaries the API files' header comments give them
+    // (server/http/openapi-routes.js).
+    {
+        const d = agentDescriptor;
+        const site = String(config.baseUrl).replace(/\/+$/, '');
+        app.get('/openapi.json', require('./http/openapi-routes').openapiRoute(app, {
+            title: `${d.name} API`, description: d.purpose, version: require('../package.json').version, baseUrl: site,
+            docs: `${site}/developers`,
+            files: ['http/api.js', 'http/arena-api.js', 'http/brand-api.js', 'http/design-api.js'].map((f) => require('path').join(__dirname, f)),
+        }));
+    }
     app.use('/api', (req, res) => contracts.http.sendProblem(res, 404, 'route.not_found', {
         detail: 'No such API route.',
         ctx: req.ov,
