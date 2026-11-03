@@ -168,6 +168,22 @@ async function createApp(opts = {}) {
 
     // ── Static assets (content-hashed ?v= → immutable) ──────
     app.use('/shared', serve.handler());
+    // Terms, Privacy and DMCA in this site's own words (openvibe-shared/legal, profile 'service'; 11-03: the footer's
+    // legal links answered 404 here). The facts must match the code: change both together.
+    const legal = require('openvibe-shared/legal');
+    app.get(legal.PATHS, legal.handler({
+        "host": "openvibe.design",
+        "name": "OpenVibe.Design",
+        "id": "design",
+        "service": "design",
+        "profile": "service",
+        "what": "Try any OpenVibe theme on a Live channel, a Chat room and a shop at once, change its colours with contrast checks that must pass, use it on every site, and step back to any earlier look.",
+        "makes": [
+                "your themes and designs, with each earlier version",
+                "the designs you publish, which are public"
+        ],
+        "ai": true
+    }));
     const setAssetHeaders = (res, filePath) => {
         const rel = path.relative(PUBLIC_DIR, filePath).split(path.sep).join('/');
         const v = res.req && res.req.query && res.req.query.v;
