@@ -75,9 +75,8 @@ function createDiscoveryRoutes(ctx) {
             + seo.robotsTxt({ sitemaps: [abs('/sitemap.xml')], disallow: DISALLOW }));
     });
 
-    r.get('/llms.txt', async (_req, res) => {
-        const list = await themes();
-        res.type('text/plain').set('Cache-Control', TEXT).send(seo.llmsTxt({
+    // The site as llms.txt describes it, shared by /llms.txt and /llms-full.txt (SEO-33).
+    const llmsSite = (list) => ({
             name: SITE_NAME,
             summary: DESCRIPTION,
             details: 'Theme selection stays in OpenVibe.Network (its theme API); this service signs the person in and proxies their calls. The pages here are server-rendered and readable without JavaScript, and the theme catalogue is public.',
@@ -105,6 +104,20 @@ function createDiscoveryRoutes(ctx) {
                 { title: 'Elsewhere', links: [
                     { title: 'OpenVibe.Network', url: 'https://openvibe.network', note: 'accounts and the theme API this service proxies' },
                 ] },
+            ],
+        });
+    r.get('/llms.txt', async (_req, res) => {
+        const list = await themes();
+        res.type('text/plain').set('Cache-Control', TEXT).send(seo.llmsTxt(llmsSite(list)));
+    });
+    // The same, in full (SEO-33): what the site is, then every page llms.txt lists with what it holds.
+    r.get('/llms-full.txt', async (_req, res) => {
+        const d = llmsSite(await themes());
+        res.type('text/plain').set('Cache-Control', TEXT).send(seo.llmsFull({
+            site: d.name, summary: d.summary, base: abs('/'),
+            sections: [
+                { title: 'About', pages: [{ title: d.name, url: abs('/'), text: [d.summary, d.details].filter(Boolean).join('\n\n') }] },
+                ...(d.sections || []).map((x) => ({ title: x.title, pages: (x.links || []).map((l) => ({ title: l.title, url: l.url, text: l.note || '' })) })),
             ],
         }));
     });

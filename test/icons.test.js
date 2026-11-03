@@ -225,6 +225,15 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             assert.equal((await t.get('/api/v1/glyphs/drafts?status=nope', { as: boss })).status, 422);
         });
 
+        await check('llms-full.txt (SEO-33): the site in full, from the same descriptor as llms.txt', async () => {
+            const r = await t.get('/llms-full.txt');
+            assert.strictEqual(r.status, 200);
+            assert.match(r.headers.get('content-type') || '', /^text\/plain/);
+            assert.ok(r.text.startsWith('# OpenVibe.Design'), r.text.slice(0, 60));
+            assert.ok(r.text.length > 500, `${r.text.length} characters`);
+            assert.match(r.text, /## About\n\n### /);
+        });
+
         await check('it is in the navbar, the sitemap and llms.txt', async () => {
             assert.ok((await t.get('/sitemap.xml')).text.includes('/icons</loc>'), 'sitemap');
             assert.ok((await t.get('/llms.txt')).text.includes('/icons'), 'llms.txt');
