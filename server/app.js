@@ -138,11 +138,12 @@ async function createApp(opts = {}) {
     app.use(cookieParser());
     app.use(createMcpRoutes(ctx));
     const agentLayer = express();
-    require('openvibe-shared/agent-layer').mount(agentLayer, { descriptor: {
+    const agentDescriptor = {
         id: 'design', name: 'OpenVibe.Design', purpose: 'Public theme tokens and component specifications.',
         home: config.baseUrl, api: '/api/v1', docs: '/developers', mcp: { url: '/mcp' },
         policy: { auth: ['none'] },
-    } });
+    };
+    require('openvibe-shared/agent-layer').mount(agentLayer, { descriptor: agentDescriptor });
     app.use((req, res, next) => req.path === '/.well-known/agent.json' ? agentLayer(req, res, next) : next());
 
     // ── Per-IP budget for the API and sign-in (120 a minute) ─
@@ -214,7 +215,11 @@ async function createApp(opts = {}) {
     app.use('/tokens', createTokenFileRoutes(ctx));
 
     // ── Pages ───────────────────────────────────────────────
-    app.use(createPageRoutes(ctx));
+    const pageRoutes = createPageRoutes(ctx);
+    // The Markdown twins of the public pages, and the head link and Link: header that name them (SEO-1,
+    // server/agent-twins.js): a twin is the page rendered signed out.
+    require('./agent-twins').mountTwins(app, { router: pageRoutes, descriptor: agentDescriptor, baseUrl: ctx.config.baseUrl });
+    app.use(pageRoutes);
 
     // eslint-disable-next-line no-unused-vars
     app.use((err, req, res, _next) => {
