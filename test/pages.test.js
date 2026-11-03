@@ -70,6 +70,8 @@ const { assetVersion } = require('../server/assets');
         assert.strictEqual(llms.status, 200);
         assert.match(llms.text, /OpenVibe\.Design/);
         assert.match(llms.text, /https:\/\/openvibe\.design\/api\/themes/);
+        assert.match(llms.text, /\n## Optional\n/);
+        assert.match(llms.text, /\(https:\/\/openvibe\.design\/index\.md\)/);
     });
 
     await check('health and readiness are honest; a Network outage is degraded, not down', async () => {
