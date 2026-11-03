@@ -229,6 +229,6 @@ Part of the [OpenVibe network](https://openvibe.network). Built in the open by
 <!-- versions:start -->
 - openvibe-contracts: v0.275.0
 - openvibe-sdk: v0.82.0
-- openvibe-shared: v4.109.1
+- openvibe-shared: v4.109.2
 - openvibe-publishing: v1.5.0
 <!-- versions:end -->
