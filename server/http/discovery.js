@@ -95,11 +95,14 @@ function createDiscoveryRoutes(ctx) {
                     { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy', html: true },
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
+                // The data an agent came for is a main section, not something to skip.
+                { title: 'Machine-readable', links: [
+                    { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
+                    { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
+                    { title: 'Agent manifest', url: abs('/.well-known/agent.json') },
+                ] },
             ],
             optional: [
-                { title: 'Agent manifest', url: abs('/.well-known/agent.json') },
-                { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
-                { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
                 { title: 'Sitemap', url: abs('/sitemap.xml') },
                 { title: 'Release metadata (JSON)', url: abs('/release.json') },
                 { title: 'OpenVibe.Network', url: 'https://openvibe.network', note: 'accounts and the theme API this service proxies' },
