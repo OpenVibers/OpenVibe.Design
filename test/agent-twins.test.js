@@ -8,7 +8,7 @@ const { boot } = require('./helpers/boot');
 const { TWIN_PATH_RE } = require('../server/agent-twins');
 
 // Public pages from the sitemap that render without data.
-const PAGES = ['/', '/brand', '/components', '/tokens', '/motion', '/kit'];
+const PAGES = ['/', '/brand', '/components', '/tokens', '/motion', '/kit', '/developers'];
 
 (async () => {
     const t = await boot();
