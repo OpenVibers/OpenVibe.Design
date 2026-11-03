@@ -92,7 +92,7 @@ function createDiscoveryRoutes(ctx) {
                     { title: 'Loading', url: abs('/loading'), note: 'how OpenVibe waits: placeholders shaped like the content (kit.skeleton: card, row, tile, chip, line, chat, stat), the mark at work instead of a spinner (OpenVibeLoading), the navbar while a page moves (OpenVibeNavbar.busy), and the rules' },
                     { title: 'The OpenVibe mark', url: abs('/brand'), note: 'the logo, its states and motion, colours, the brand face, SVG files and code (openvibe-shared/mark, ov-mark.js)' },
                     { title: 'The Design Arena', url: abs('/arena'), note: 'one prompt, three AI designers, blind votes and an Elo leaderboard' },
-                    { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy', html: true },
+                    { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy' },
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
                 // The data an agent came for is a main section, not something to skip.
