@@ -417,7 +417,7 @@ ${rest.length ? `<details class="ar-kb-more"><summary>${rest.length} more</summa
     const body = `<div class="ar-page ar-arena" id="ar-home" data-kind="${esc(kind.id)}">
 <header class="ar-hero ar-hero--arena"><p class="ar-kicker">Design Arena · judged on OpenVibe.Bench</p><h1>Which AI designs it best?</h1>
 <p class="ar-lede">Two designs from the same brief, the models hidden. Pick the better one and that kind's board moves. ${signedIn ? '' : 'No account needed.'}</p>
-<p class="ar-fine" id="ar-total">${total ? `${total.toLocaleString('en-US')} votes so far across ${DESIGN_KINDS.length} kinds.` : `${DESIGN_KINDS.length} kinds of design, judged blind.`}</p></header>
+<p class="ar-fine" id="ar-total">${total ? `${total.toLocaleString('en-US')} ${total === 1 ? 'vote' : 'votes'} so far across ${DESIGN_KINDS.length} kinds.` : `${DESIGN_KINDS.length} kinds of design, judged blind.`}</p></header>
 ${rail}
 <section class="ar-judge" id="ar-pair" aria-labelledby="ar-pair-h">${alert}${judge}</section>
 <section class="ar-boards ar-boards--kinds" id="ar-boards" aria-labelledby="ar-boards-h"><div class="ar-lb-head"><h2 id="ar-boards-h">The boards</h2><nav class="ar-voters" aria-label="Whose votes count">${filter}</nav></div>
