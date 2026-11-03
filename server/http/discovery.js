@@ -79,31 +79,30 @@ function createDiscoveryRoutes(ctx) {
     const llmsSite = (list) => ({
             name: SITE_NAME,
             summary: DESCRIPTION,
-            details: 'Theme selection stays in OpenVibe.Network (its theme API); this service signs the person in and proxies their calls. The pages here are server-rendered and readable without JavaScript, and the theme catalogue is public.',
+            details: 'Theme selection stays in OpenVibe.Network (its theme API); this service signs the person in and proxies their calls. The pages here are server-rendered and readable without JavaScript, and the theme catalogue is public. MCP server: POST https://openvibe.design/mcp (Streamable HTTP); public themes, tokens, components and the icons (search, SVG, code in any format, a migration from Font Awesome, Lucide or Material).',
+            markdown: true,
+            base: config.baseUrl,
             sections: [
                 { title: 'Start here', links: [
                     { title: 'OpenVibe.Design', url: abs('/'), note: 'the theme catalogue' },
                     { title: 'The studio', url: abs('/studio'), note: 'try, edit, use, submit and roll back a theme' },
                     { title: 'Tokens', url: abs('/tokens'), note: 'any theme as CSS, Tailwind, Compose (Android), SwiftUI (iOS), Flutter, Figma or DTCG JSON; the API is GET /api/v1/tokens/:theme?format=' },
-                    { title: 'The OpenVibe glyphs', url: abs('/icons'), note: 'every icon in one hand, each with its own page (/icons/<name>): SVG, PNG at any size and colour (/icons/<name>.png?size=&color=&stroke=&pad=&ground=&bg=), the WOFF2/TTF/OTF fonts and the sprite (/icons/pack/<file>); style=auto|line|solid (auto: the solid drawing at 18 px and under); /icons/<name>.mjs (ES module), .xml (Android VectorDrawable), /icons/<name>/favicon.zip; the <ov-icon name=\"…\"> web component at /ov-icon.js; the registry as data at GET /api/v1/glyphs (?names=a,fa-b,lucide:c,material:d for just those); POST /api/v1/glyphs/migrate {text} lists every Font Awesome, Lucide, Material or MUI icon in a page or code with its OpenVibe twin (/icons/migrate is the page). All open, no sign-in, CORS *' },
-                    { title: 'A free Font Awesome alternative', url: abs('/icons/font-awesome-alternative'), note: 'one script keeps Font Awesome markup, classes, animations and data-fa-transform, and shows the OpenVibe glyphs' },
+                    { title: 'The OpenVibe glyphs', url: abs('/icons'), note: 'every icon in one hand, each with its own page (/icons/<name>): SVG, PNG at any size and colour (/icons/<name>.png?size=&color=&stroke=&pad=&ground=&bg=), the WOFF2/TTF/OTF fonts and the sprite (/icons/pack/<file>); style=auto|line|solid (auto: the solid drawing at 18 px and under); /icons/<name>.mjs (ES module), .xml (Android VectorDrawable), /icons/<name>/favicon.zip; the <ov-icon name=\"…\"> web component at /ov-icon.js; the registry as data at GET /api/v1/glyphs (?names=a,fa-b,lucide:c,material:d for just those); POST /api/v1/glyphs/migrate {text} lists every Font Awesome, Lucide, Material or MUI icon in a page or code with its OpenVibe twin (/icons/migrate is the page). All open, no sign-in, CORS *', html: true },
+                    { title: 'A free Font Awesome alternative', url: abs('/icons/font-awesome-alternative'), note: 'one script keeps Font Awesome markup, classes, animations and data-fa-transform, and shows the OpenVibe glyphs', html: true },
                     { title: 'Loading', url: abs('/loading'), note: 'how OpenVibe waits: placeholders shaped like the content (kit.skeleton: card, row, tile, chip, line, chat, stat), the mark at work instead of a spinner (OpenVibeLoading), the navbar while a page moves (OpenVibeNavbar.busy), and the rules' },
                     { title: 'The OpenVibe mark', url: abs('/brand'), note: 'the logo, its states and motion, colours, the brand face, SVG files and code (openvibe-shared/mark, ov-mark.js)' },
                     { title: 'The Design Arena', url: abs('/arena'), note: 'one prompt, three AI designers, blind votes and an Elo leaderboard' },
-                    { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy' },
+                    { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy', html: true },
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
-                { title: 'Machine-readable', links: [
-                    { title: 'MCP tools', url: abs('/mcp'), note: 'POST, Streamable HTTP; public themes, tokens, components and the icons (search, SVG, code in any format, a migration from Font Awesome, Lucide or Material)' },
-                    { title: 'Agent manifest', url: abs('/.well-known/agent.json') },
-                    { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
-                    { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
-                    { title: 'Sitemap', url: abs('/sitemap.xml') },
-                    { title: 'Release metadata (JSON)', url: abs('/release.json') },
-                ] },
-                { title: 'Elsewhere', links: [
-                    { title: 'OpenVibe.Network', url: 'https://openvibe.network', note: 'accounts and the theme API this service proxies' },
-                ] },
+            ],
+            optional: [
+                { title: 'Agent manifest', url: abs('/.well-known/agent.json') },
+                { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
+                { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
+                { title: 'Sitemap', url: abs('/sitemap.xml') },
+                { title: 'Release metadata (JSON)', url: abs('/release.json') },
+                { title: 'OpenVibe.Network', url: 'https://openvibe.network', note: 'accounts and the theme API this service proxies' },
             ],
         });
     r.get('/llms.txt', async (_req, res) => {
