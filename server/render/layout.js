@@ -31,6 +31,7 @@ const NAV = [
     { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
     { label: 'Motion', href: '/motion', icon: 'fa-wand-magic-sparkles', more: true },
     { label: 'Loading', href: '/loading', icon: 'fa-hourglass-half', more: true },
+    { label: 'Forms', href: '/forms', icon: 'fa-list-check', more: true },
     { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Kit', href: '/kit', icon: 'fa-cubes', more: true },
