@@ -35,6 +35,8 @@ const PARTS = [
         code: `kit.action({ action: '/s/night-owls/leave', icon: 'leave', label: 'Leave', kind: 'quiet', confirm: 'Leave Night owls?' })` },
     { id: 'more', fn: 'more', group: 'actions', name: 'More menu', line: 'The rest of a row\'s actions, behind one button. Dangerous ones confirm.', web: true,
         code: `kit.more({ label: 'More', items: [{ href: '/r/night-owls/edit', label: 'Edit the room', icon: 'pencil' }, { href: '/r/night-owls/invite', label: 'Invite', icon: 'invite' }, { action: '/r/night-owls/delete', label: 'Delete the room', icon: 'trash', danger: true, confirm: 'Delete Night owls for everyone?' }] })` },
+    { id: 'share', fn: 'share', group: 'actions', name: 'Share', line: 'The one Share button: it opens the network\'s Share sheet, or copies the link where there is no sheet.', web: true,
+        code: `kit.share({ title: 'Night owls', url: '/r/night-owls' }) + kit.share({ title: 'Goosely is live', url: '/goosely', text: 'Come watch', small: true })` },
     { id: 'badge', fn: 'badge', group: 'actions', name: 'Badge', line: 'A word beside a title: live, new, a state. Five tones.',
         code: `kit.badge('live', 'live') + kit.badge('new', 'accent') + kit.badge('paid', 'ok') + kit.badge('expiring', 'warn') + kit.badge('failed', 'bad')` },
     { id: 'dot', fn: 'dot', group: 'actions', name: 'Unread dot', line: 'How many are new. Nothing at zero; 9+ past nine.',
