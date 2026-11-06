@@ -30,7 +30,7 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds-dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--bg-card, #0f1729); margin-left: -5px; }
 .ds-dots i:first-child { margin-left: 0; }
 .ds-swatch-name { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ds-swatch-mode { font-size: .72rem; color: var(--text-muted, #7386a3); }
+.ds-swatch-mode { font-size: .75rem; color: var(--text-muted, #7386a3); }
 .ds-strip { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
 
 /* The studio. */
@@ -372,7 +372,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .tk-file-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .tk-file { display: grid; gap: 2px; min-height: 44px; align-content: center; padding: 6px 12px; border: 1px solid var(--ovk-line); border-radius: 12px; color: inherit; text-decoration: none; }
 .tk-file b { font-size: 13.5px; }
-.tk-file code { font-size: 11.5px; color: var(--ovk-muted); background: none; padding: 0; }
+.tk-file code { font-size: .75rem; color: var(--ovk-muted); background: none; padding: 0; }
 .tk-file:hover { border-color: color-mix(in srgb, var(--room-accent, var(--ovk-accent)) 55%, var(--ovk-line)); }
 .tk-file:focus-visible { outline: 2px solid var(--room-accent, var(--ovk-accent)); outline-offset: 2px; }
 .tk-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 18px 0 12px; }
@@ -393,11 +393,14 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .tk-out-head h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
 .tk-how { margin: 8px 0 12px; color: var(--ovk-muted); line-height: 1.55; }
 .tk-how code, .tk .ovk-fold-body code { padding: 1px 5px; border-radius: 6px; background: var(--ovk-panel-2); color: var(--ovk-text); font-size: .86em; overflow-wrap: anywhere; }
+.tk .ovk-fold-body .ds-fine code { font-size: .75rem; }
 .tk .ovk-snip pre { max-height: min(56vh, 520px); }
 .tk .ovk-fold { margin-top: 12px; }
 .tk-table { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .tk-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px 14px; padding: 8px 0; border-bottom: 1px solid var(--ovk-line); }
-.tk-row > code { font-weight: 700; overflow-wrap: anywhere; }
+.tk-row > code { font-weight: 700; overflow-wrap: anywhere; font-size: .75rem; }
+/* The token rows sit inside the exported-code fold, where ".tk .ovk-fold-body code" (0.86em) is more specific. */
+.tk .ovk-fold-body .tk-row > code { font-size: .75rem; }
 .tk-vals { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .tk-vals code { margin-right: 8px; color: var(--ovk-muted); font-size: .85rem; }
 .tk-row small { color: var(--ovk-muted); }
