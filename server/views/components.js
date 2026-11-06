@@ -27,6 +27,7 @@ const SAMPLES = {
     tabs: { type: 'tabs', props: { base: '/components?c=tabs', param: 'tab', active: 'live', items: [{ key: 'live', label: 'Live', count: 12 }, { key: 'clips', label: 'Clips' }, { key: 'about', label: 'About' }] } },
     stats: { type: 'stats', props: { items: [[1204, 'watching now'], [48, 'people chatting'], [12, 'streams live', '/components?c=stats']] } },
     notice: { type: 'section', props: { title: 'Notices' }, children: [{ type: 'notice', props: { kind: 'ok', text: 'Saved. Every OpenVibe site follows.' } }, { type: 'notice', props: { kind: 'error', text: 'That name is taken. Try another.' } }] },
+    share: { type: 'share', props: { title: 'Seattle at night, chat picks the route', url: 'https://openvibe.live/goosely', text: 'IRL stream: chat picks where we walk next.' } },
     empty: { type: 'empty', props: { title: 'No public rooms yet', text: 'Start the first one: public, or private to the people you invite.', icon: 'chat', action: { href: '/components?c=empty', label: 'Start a room' } } },
 };
 
