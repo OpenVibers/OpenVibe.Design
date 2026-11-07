@@ -727,3 +727,20 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
   .ds-fold-block > summary + * { margin-top: 0 !important; padding-top: 4px !important; }
   .ds-fold-block[open] { padding-bottom: 12px; }
 }
+
+/* The whole system on the home (11-07): every part with its real count, one tap each. */
+.ds-system { margin: 8px 0 28px; }
+.ds-system-lede { margin: 0 0 12px; }
+.ds-system-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ds-sys { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: start; column-gap: 12px; row-gap: 4px; height: 100%; padding: 16px; border-radius: 18px;
+  border: 1px solid var(--border, #1f2d47); background: var(--bg-card, var(--bg-secondary, #101828)); color: var(--text-secondary, #96a7c2); text-decoration: none; transition: border-color .2s, transform .2s; }
+.ds-sys:hover { border-color: color-mix(in srgb, var(--room-strong, var(--accent, #3b82f6)) 55%, var(--border, #1f2d47)); transform: translateY(-2px); }
+.ds-sys-ic { grid-row: span 2; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--room-strong, var(--accent, #3b82f6)); background: color-mix(in srgb, var(--room-strong, var(--accent, #3b82f6)) 14%, transparent); }
+.ds-sys-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ds-sys-t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.ds-sys-t b { font-size: 16px; color: var(--text-primary, #e6edf7); }
+.ds-sys-t em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--room-strong, var(--accent, #3b82f6)); }
+.ds-sys small { font-size: 13px; line-height: 1.45; }
+@media (max-width: 1000px) { .ds-system-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .ds-system-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .ds-sys { transition: none; } .ds-sys:hover { transform: none; } }

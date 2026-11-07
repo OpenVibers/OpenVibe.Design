@@ -94,6 +94,33 @@ function home({ themes } = {}) {
     const make = `<ol class="ds-flow" aria-label="How Create works"><li><b>Describe it</b><span>A page, an app screen or a component, in a sentence.</span></li><li><b>Three models draft it</b><span>At once, on your theme, at phone and desktop sizes.</span></li><li><b>Make it yours</b><span>Pick one, click any part to change it or ask for a change, and keep every version.</span></li></ol>`;
     const draft = (side) => `<figure class="ds-vs-card"><span class="ds-vs-bar"></span><span class="ds-vs-hero"></span><span class="ds-vs-row"><i></i><i></i><i></i></span><figcaption>${side}</figcaption></figure>`;
     const vs = `<div class="ds-vs" role="img" aria-label="Two drafts side by side, their models hidden">${draft('Left')}<span class="ds-vs-or">or</span>${draft('Right')}</div><p class="ds-fine ds-vs-note">The models' names stay hidden until you vote.</p>`;
+    const { patterns } = require('../patterns/catalog');
+    const glyphNames = (() => { try { return require('openvibe-shared/glyphs').NAMES.length; } catch { return 0; } })();
+    const componentCount = (() => { try { return Object.keys(require('./components').SAMPLES).length; } catch { return 0; } })();
+    const SYSTEM = [
+        { href: '/studio', name: 'Themes', count: all.length, unit: 'themes', text: 'Colour, type and shape for every site at once, each checked for contrast.', glyph: 'palette' },
+        { href: '/icons', name: 'Icons', count: glyphNames, unit: 'icons', text: 'One line, one grid, in the text’s colour; draw new ones with AI.', glyph: 'shapes' },
+        { href: '/components', name: 'Components', count: componentCount, unit: 'parts', text: 'Each drawn for the web, Jetpack Compose and SwiftUI from the same spec.', glyph: 'puzzle' },
+        { href: '/patterns', name: 'Patterns', count: patterns.length, unit: 'rules', text: 'What production taught, each with its bug, a live demo and native code.', glyph: 'rules' },
+        { href: '/motion', name: 'Motion', count: 3, unit: 'timings', text: 'Glint, glow, lift, press, ripple: one kit of effects and one set of curves.', glyph: 'motion' },
+        { href: '/forms', name: 'Forms', count: 0, unit: '', text: 'Fields, choices and errors that read the same on every site.', glyph: 'forms' },
+        { href: '/tokens', name: 'Tokens', count: 7, unit: 'formats', text: 'Any theme as CSS, Tailwind, Compose, SwiftUI, Flutter, Figma or DTCG.', glyph: 'code' },
+        { href: '/native', name: 'Apps', count: 3, unit: 'platforms', text: 'From the web to Android and iOS, without a frame: the road and the rules.', glyph: 'apps' },
+    ];
+    const GLYPH = {
+        palette: 'M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4.1-4-7.6-9-7.6ZM7.5 12.5h.01M9.5 8h.01M14.5 8h.01M17 11.5h.01',
+        shapes: 'M4 4h7v7H4zM17.5 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zM14 20l3.5-6 3.5 6zM4 14h7v7H4z',
+        puzzle: 'M9 4h4v2.5a1.5 1.5 0 0 0 3 0V4h4v5h-2.5a1.5 1.5 0 0 0 0 3H20v8h-5v-2.5a1.5 1.5 0 0 0-3 0V20H4v-5h2.5a1.5 1.5 0 0 0 0-3H4V4z',
+        rules: 'M5 5h14M5 12h14M5 19h9M17 17l2 2 3-4',
+        motion: 'M4 18c4 0 5-12 9-12s4 6 7 6M4 6h.01M20 18h.01',
+        forms: 'M4 5h16v5H4zM4 14h16v5H4zM7 7.5h5M7 16.5h8',
+        code: 'M8.5 8 4.5 12l4 4M15.5 8l4 4-4 4M13.5 5.5l-3 13',
+        apps: 'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10.5 18h3',
+    };
+    const glyphSvg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${GLYPH[k]}"/></svg>`;
+    const system = `<section class="ds-system" aria-labelledby="ds-system-h"><div class="ds-head-row"><h2 id="ds-system-h">The whole system</h2><a class="ds-more" href="/kit">The kit${kit.icon('chevron')}</a></div>
+<p class="ds-fine ds-system-lede">Everything an OpenVibe interface is made of, in one place: the same parts on every site, and in the apps.</p>
+<ul class="ds-system-grid">${SYSTEM.map((x) => `<li><a class="ds-sys" href="${esc(x.href)}"><span class="ds-sys-ic">${glyphSvg(x.glyph)}</span><span class="ds-sys-t"><b>${esc(x.name)}</b>${x.count ? `<em>${esc(String(x.count))} ${esc(x.unit)}</em>` : ''}</span><small>${esc(x.text)}</small></a></li>`).join('')}</ul></section>`;
     const room = sc.room({
         room: 'design',
         hero: {
@@ -128,7 +155,7 @@ function home({ themes } = {}) {
             { title: 'Create', text: 'Three AI drafts on your theme', href: '/create', icon: 'ov:ai' },
             { title: 'Your look', text: 'Light or dark, text size, motion, seasons and comfort settings, for every site', href: '/look', icon: 'ov:account' },
         ] },
-        html: strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/studio">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : '',
+        html: system + (strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/studio">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : ''),
         faq: { items: [
             ['Where does my theme apply?', 'Everywhere you are signed in to OpenVibe: the theme lives on your account, and every site picks it up on its next page.'],
             ['Can I use it in my own app?', 'Yes. Tokens gives any theme as CSS variables, a Tailwind config, a Jetpack Compose colour scheme, SwiftUI colours, a Flutter colour scheme, Figma variables or W3C design-token JSON, with its light and dark halves together. The API is open.'],
