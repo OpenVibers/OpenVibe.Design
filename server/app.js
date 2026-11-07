@@ -140,7 +140,7 @@ async function createApp(opts = {}) {
                 // Theme previews may carry inline data: images and any https image the catalogue references.
                 imgSrc: ["'self'", 'data:', 'https:'],
                 // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
-                connectSrc: ["'self'", 'https://openvibe.network', 'https://cloudflareinsights.com', 'https://openvibe.events'],
+                connectSrc: ["'self'", 'https://openvibe.network', 'https://openvibe.chat', 'https://cloudflareinsights.com', 'https://openvibe.events'],
                 // 'self' covers the Arena's about:srcdoc iframes; generated pages cannot navigate the top window.
                 frameSrc: ["'self'", 'https://openvibe.network', ...turnstileSrc, ...benchRender],
                 frameAncestors: ["'none'"],
