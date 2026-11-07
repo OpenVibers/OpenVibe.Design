@@ -126,11 +126,24 @@ function createPageRoutes(ctx) {
         res.set('Cache-Control', 'private, no-store');
         res.set('Referrer-Policy', 'no-referrer');
         try {
-            const data = await ctx.designs.read(req.params.id, subjectOf(req), req.query.key);
+            const data = await ctx.designs.read(req.params.id, subjectOf(req), req.query.key, req.viewer);
             const themes = (await catalog.list()).themes;
             return page(res, 200, designView.canvas({ data, themes, editKey: req.query.key || '', viewer: subjectOf(req), publishing: { enabled: Boolean(ctx.publisher && ctx.publisher.enabled), notice: req.query.published ? 'Published.' : null, error: req.query.publish_error ? String(req.query.publish_error).slice(0, 300) : null } }), req.viewer,
                 { cacheControl: 'private, no-store' });
         } catch (err) {
+            if (err && (err.status === 403 || err.status === 404) && ctx.sharing) {
+                const share = await ctx.sharing.shareOf(req.params.id).catch(() => null);
+                if (share && (share.audience === 'people' || share.audience === 'private')) {
+                    res.set('Cache-Control', 'private, no-store');
+                    res.set('Referrer-Policy', 'no-referrer');
+                    const body = share.audience === 'people'
+                        ? designView.gate({ id: req.params.id,
+                            signedInAs: req.viewer && req.viewer.kind === 'user' && req.viewer.username ? String(req.viewer.username) : null,
+                            signInUrl: `/auth/login?next=${encodeURIComponent(req.originalUrl || '')}` })
+                        : views.notFound();
+                    return page(res, 404, body, req.viewer, { cacheControl: 'private, no-store' });
+                }
+            }
             return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not read the design.');
         }
     });

@@ -17,6 +17,12 @@ const { testDb } = require('./helpers/db');
             exempt: {
                 account_data_events: 'the ledger of requests itself: which export and deletion design applied',
                 design_index_revisions: 'the Search index sequencer: owner is the service (design), the rows are icon and theme pages, never a person',
+                share_members: 'who a design is shared with: exported as shared_with_me.json, and erased by extraErase',
+                share_access_requests: 'pending access requests: transient, erased by extraErase',
+                share_transfers: 'pending ownership transfers: transient, erased by extraErase',
+                share_deliveries: 'the delivery queue for share events/notifications; rows carry ids and are delivered once',
+                share_log: 'the append-only sharing audit trail; rows carry subject ids, never titles or content',
+                shares: 'the share.v1 row of a design: exported as shares.json (owned) or shared_with_me.json, erased by extraErase',
 
             },
         });

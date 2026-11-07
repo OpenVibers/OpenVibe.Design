@@ -92,7 +92,7 @@ function editPrompt(instruction, html, names) {
     ].join('\n\n');
 }
 
-function createDesigns({ s, ai, bench = null, catalog, config = {}, log = console, now = () => Date.now() }) {
+function createDesigns({ s, ai, bench = null, catalog, config = {}, log = console, now = () => Date.now(), sharing = null }) {
     const db = s.db;
     const chatEditLimit = Math.max(1, Number(config.studio && config.studio.chatEditsPerDesign) || CHAT_EDITS_DEFAULT);
     const publicRow = d => ({ id: d.id, prompt: d.prompt, kind: d.kind, themeId: d.theme_id,
@@ -105,11 +105,27 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         if (!d.guest_hash || !key) return false;
         return crypto.timingSafeEqual(Buffer.from(d.guest_hash, 'hex'), hash(String(key)));
     }
-    async function row(id, owner, key) {
+    /**
+     * A design the viewer may open: its owner, a guest with the secret edit key, or somebody the share
+     * row names (Everyone, Anyone with the link, Specific people). The guest link keeps working exactly
+     * as before; a share row never widens its own guest key.
+     */
+    async function row(id, owner, key, viewer = null, edit = false) {
         const d = await db.maybe('SELECT * FROM designs WHERE id=$1', [id]);
         if (!d) throw fail(404, 'design.not_found', 'Design not found.');
-        if (!allowed(d, owner, key)) throw fail(403, 'design.forbidden', 'Use the private link for this design.');
-        return d;
+        if (allowed(d, owner, key)) return d;
+        if (sharing) {
+            const share = await sharing.shareOf(id).catch(() => null);
+            if (share) {
+                if (!edit && ['public', 'link'].includes(share.audience)) return d;
+                if (await (edit ? sharing.canEdit(viewer, id) : sharing.canView(viewer, id)).catch(() => false)) return d;
+                // A shares row is the authority: a person not on it is refused before the prompt, a
+                // variant or a version is read. The page turns this into the gate; the API keeps its
+                // long-standing 403 shape ("use the private link").
+                throw fail(403, 'design.forbidden', 'Use the private link for this design.');
+            }
+        }
+        throw fail(403, 'design.forbidden', 'Use the private link for this design.');
     }
     async function theme(id) {
         const list = await catalog.list();
@@ -136,6 +152,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const id = s.newId('dsn'), editKey = owner ? null : random();
         await db.exec('INSERT INTO designs(id,prompt,kind,theme_id,variants,owner,guest_hash,guest_ip,created_at,updated_at) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9::timestamptz,$9::timestamptz)',
             [id, prompt, kind, selected.id, JSON.stringify(variants), owner, editKey ? hash(editKey).toString('hex') : null, owner ? null : ip, s.iso()]);
+        // A signed-in maker's new design is Only me until its Share sheet says otherwise (a guest's is its key).
+        if (sharing && owner) await sharing.register(id, owner).catch((err) => log.warn('[OpenVibe.Design] share row not registered:', err.message));
         run(id).catch(err => log.warn('[OpenVibe.Design] generation:', err.message));
         return { design: publicRow({ id, prompt, kind, theme_id: selected.id, variants, created_at: s.iso(), updated_at: s.iso() }),
             editKey, editUrl: editKey ? `/d/${id}?key=${encodeURIComponent(editKey)}` : null };
@@ -295,8 +313,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         return row;
     }
 
-    async function read(id, owner, key) {
-        const d = await row(id, owner, key), selected = await theme(d.theme_id);
+    async function read(id, owner, key, viewer = null) {
+        const d = await row(id, owner, key, viewer), selected = await theme(d.theme_id);
         const p = await pickRow(id);
         const versions = p ? await db.many('SELECT * FROM design_versions WHERE design_id=$1 ORDER BY seq', [id]) : [];
         const current = p ? versions.find(v => Number(v.seq) === Number(p.current_seq)) : null;
@@ -312,8 +330,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         return { design: publicRow(d), variants, pick: pickPublic(p, current), versions: versions.map(v => versionPublic(v, p ? p.current_seq : 1)) };
     }
 
-    async function pick({ id, variantIndex, variantId, owner, key, subject = null, token = null }) {
-        const d = await row(id, owner, key);
+    async function pick({ id, variantIndex, variantId, owner, key, subject = null, token = null, viewer = null }) {
+        const d = await row(id, owner, key, viewer, true);
         let index = variantIndex == null || variantIndex === '' ? null : Number(variantIndex);
         if (variantId) {
             const found = d.variants.findIndex(v => String(v.id) === String(variantId));
@@ -329,7 +347,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         if (existing) {
             if (Number(existing.variant_index) !== index) throw fail(409, 'design.already_picked', 'This design already has a working frame.');
             const vote = await recordPickVote(d, subject, token);
-            const data = await read(id, owner, key);
+            const data = await read(id, owner, key, viewer);
             return { ...data, vote, idempotent: true };
         }
         const inserted = await db.maybe(`INSERT INTO design_picks(design_id,variant_index,variant_id,voter_subject,created_at,updated_at)
@@ -339,12 +357,12 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         if (!p || Number(p.variant_index) !== index) throw fail(409, 'design.already_picked', 'This design already has a working frame.');
         await ensureBaseVersion(d, p, variant);
         const vote = await recordPickVote(d, subject, token);
-        const data = await read(id, owner, key);
+        const data = await read(id, owner, key, viewer);
         return { ...data, vote, idempotent: !inserted };
     }
 
-    async function currentForEdit(id, owner, key) {
-        const d = await row(id, owner, key);
+    async function currentForEdit(id, owner, key, viewer = null) {
+        const d = await row(id, owner, key, viewer, true);
         const p = await pickRow(id);
         if (!p) throw fail(409, 'design.no_pick', 'Pick a working frame before editing it.');
         const selected = await theme(d.theme_id);
@@ -358,11 +376,11 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         return { d, p, selected, variant, current };
     }
 
-    async function chatEdit({ id, instruction, owner, key, subject = null }) {
+    async function chatEdit({ id, instruction, owner, key, subject = null, viewer = null }) {
         instruction = String(instruction == null ? '' : instruction).trim();
         if (!instruction || instruction.length > CHAT_INSTRUCTION_MAX)
             throw fail(422, 'design.invalid_instruction', `Write an instruction up to ${CHAT_INSTRUCTION_MAX} characters.`);
-        const { d, p, selected, variant } = await currentForEdit(id, owner, key);
+        const { d, p, selected, variant } = await currentForEdit(id, owner, key, viewer);
         const used = await db.maybe('UPDATE design_picks SET chat_edits=chat_edits+1, updated_at=$2 WHERE design_id=$1 AND chat_edits < $3 RETURNING chat_edits',
             [d.id, s.iso(), chatEditLimit]);
         if (!used) throw fail(429, 'design.edit_limit', `This design has used its ${chatEditLimit} AI edits. Click edits and undo still work.`);
@@ -382,12 +400,12 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const version = await addVersion(d, p, { kind: 'chat', html, instruction, model: out.model || variant.model,
             provider: out.provider || variant.provider, costUsd: out.cost_usd, ms: out.ms, createdBy: subject || (d.owner ? 'owner' : 'guest') });
         const fresh = await pickRow(id);
-        const data = await read(id, owner, key);
+        const data = await read(id, owner, key, viewer);
         return { version: versionPublic(version, fresh.current_seq), html, pick: data.pick, versions: data.versions };
     }
 
-    async function clickEdit({ id, path, text, color, spacing, align, owner, key, subject = null }) {
-        const { d, p, selected, variant } = await currentForEdit(id, owner, key);
+    async function clickEdit({ id, path, text, color, spacing, align, owner, key, subject = null, viewer = null }) {
+        const { d, p, selected, variant } = await currentForEdit(id, owner, key, viewer);
         const current = await versionRow(id, p.current_seq);
         let change;
         try {
@@ -411,48 +429,48 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const version = await addVersion(d, p, { kind: 'click', html, change: record, model: variant.model,
             provider: variant.provider, costUsd: 0, ms: 0, createdBy: subject || (d.owner ? 'owner' : 'guest') });
         const fresh = await pickRow(id);
-        const data = await read(id, owner, key);
+        const data = await read(id, owner, key, viewer);
         return { version: versionPublic(version, fresh.current_seq), html, pick: data.pick, versions: data.versions };
     }
 
-    async function versions(id, owner, key) {
-        const d = await row(id, owner, key);
+    async function versions(id, owner, key, viewer = null) {
+        const d = await row(id, owner, key, viewer);
         const p = await pickRow(id);
         const list = p ? await db.many('SELECT * FROM design_versions WHERE design_id=$1 ORDER BY seq', [id]) : [];
         return { designId: d.id, currentSeq: p ? Number(p.current_seq) : null, versions: list.map(v => versionPublic(v, p ? p.current_seq : 1)) };
     }
 
-    async function undo(id, owner, key) {
-        const d = await row(id, owner, key);
+    async function undo(id, owner, key, viewer = null) {
+        const d = await row(id, owner, key, viewer, true);
         const p = await pickRow(id);
         if (!p) throw fail(409, 'design.no_pick', 'Pick a working frame before undoing an edit.');
         const current = await versionRow(id, p.current_seq);
         if (!current || current.parent_seq == null) {
-            return { changed: false, ...(await read(id, owner, key)) };
+            return { changed: false, ...(await read(id, owner, key, viewer)) };
         }
         const stack = Array.isArray(p.redo_stack) ? p.redo_stack.slice() : [];
         stack.push(Number(current.seq));
         await db.exec('UPDATE design_picks SET current_seq=$2, redo_stack=$3::jsonb, updated_at=$4 WHERE design_id=$1',
             [d.id, Number(current.parent_seq), JSON.stringify(stack.slice(-100)), s.iso()]);
-        return { changed: true, ...(await read(id, owner, key)) };
+        return { changed: true, ...(await read(id, owner, key, viewer)) };
     }
 
-    async function redo(id, owner, key) {
-        const d = await row(id, owner, key);
+    async function redo(id, owner, key, viewer = null) {
+        const d = await row(id, owner, key, viewer, true);
         const p = await pickRow(id);
         if (!p) throw fail(409, 'design.no_pick', 'Pick a working frame before redoing an edit.');
         const stack = Array.isArray(p.redo_stack) ? p.redo_stack.slice() : [];
-        if (!stack.length) return { changed: false, ...(await read(id, owner, key)) };
+        if (!stack.length) return { changed: false, ...(await read(id, owner, key, viewer)) };
         const seq = Number(stack.pop());
         const target = await versionRow(id, seq);
-        if (!target) return { changed: false, ...(await read(id, owner, key)) };
+        if (!target) return { changed: false, ...(await read(id, owner, key, viewer)) };
         await db.exec('UPDATE design_picks SET current_seq=$2, redo_stack=$3::jsonb, updated_at=$4 WHERE design_id=$1',
             [d.id, seq, JSON.stringify(stack), s.iso()]);
-        return { changed: true, ...(await read(id, owner, key)) };
+        return { changed: true, ...(await read(id, owner, key, viewer)) };
     }
 
-    async function setTheme(id, themeId, owner, key) {
-        await row(id, owner, key);
+    async function setTheme(id, themeId, owner, key, viewer = null) {
+        await row(id, owner, key, viewer, true);
         const selected = await theme(themeId);
         await db.exec('UPDATE designs SET theme_id=$1,updated_at=$2::timestamptz WHERE id=$3', [selected.id, s.iso(), id]);
         return { themeId: selected.id, variables: selected.variables || {} };
@@ -474,9 +492,9 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
      * Publish the working frame on openvibe.space (publish.js): its owner only (a guest's private link cannot), and
      * only once a frame is picked. The site is remembered, so publishing again updates the same address.
      */
-    async function publish({ id, owner, name = '', publisher }) {
+    async function publish({ id, owner, name = '', publisher, viewer = null }) {
         if (!owner) throw fail(401, 'auth.required', 'Sign in to publish a design on openvibe.space.');
-        const d = await row(id, owner, null);
+        const d = await row(id, owner, null, viewer, true);
         if (d.owner !== owner) throw fail(403, 'design.forbidden', 'Only the person who made this design can publish it.');
         const data = await read(id, owner, null);
         const index = data.pick ? Number(data.pick.variantIndex) : -1;
