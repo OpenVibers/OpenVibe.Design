@@ -15,6 +15,7 @@ const { testDb } = require('./helpers/db');
             tables: TABLES,
             taskKeyed: ['design_versions'], // versions belong to the design and cascade with it
             exempt: {
+                config_snapshots: 'D11 owner settings: created_by/activated_by is the acting administrator (usr_...) for the config audit trail; the values are network configuration, not the person\'s account data, and are kept for rollback/history',
                 account_data_events: 'the ledger of requests itself: which export and deletion design applied',
                 design_index_revisions: 'the Search index sequencer: owner is the service (design), the rows are icon and theme pages, never a person',
                 share_members: 'who a design is shared with: exported as shared_with_me.json, and erased by extraErase',
