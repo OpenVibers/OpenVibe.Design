@@ -211,6 +211,26 @@
       const draw = (k) => { bar.replaceChildren(node('strong', '', 'OpenVibe.Exchange'), ...all.slice(0, k).map((t) => node('span', '', t)), ...(k < all.length ? [node('span', 'six-more', `More (${all.length - k})`)] : [])); };
       draw(all.length); widget.append(bar); say('Thirteen links wrap and cut the name.');
       control('Six, the rest under More', () => { draw(6); say('Six places, one line, the name whole.'); }, true); control('The bug', () => { draw(all.length); say('Thirteen links wrap and cut the name.'); });
+    } else if (id === 'ask-your-agent') {
+      const row = node('div', 'ask-demo'); const share = node('span', 'ask-share', 'Share'); const chip = button('\u2726 Ask your agent', () => { box.value = 'About the video \u201cThe Workshop tour\u201d on OpenVibe.Video: '; dock.classList.add('open'); box.focus(); say('Vibe opened with the question waiting. Nothing was sent.'); });
+      chip.className = 'ask-chip'; row.append(share, chip);
+      const dock = node('div', 'ask-dock'); const box = node('textarea', 'ask-box'); box.rows = 2; box.setAttribute('aria-label', 'Your agent\u2019s box'); const send = button('Send', () => { say(box.value.trim() ? 'The person pressed Send: only now does it go.' : 'Nothing to send.'); }, true); dock.append(node('b', '', 'Vibe'), box, send);
+      widget.append(row, dock); say('One quiet chip beside Share.');
+      control('The bug', () => { dock.classList.add('open'); box.value = ''; say('A blank box on another page: the person retypes what they were looking at.'); });
+    } else if (id === 'levels-with-a-floor') {
+      const lv = [['Asks first', 'It asks you before it does anything outside its own work.'], ['Edits on its own', 'It changes your files and drafts without asking. Anything else asks.'], ['A second model checks', 'Another model reviews each step. When it says no, you decide.'], ['Full trust', 'It acts without asking.']];
+      const list = node('div', 'lv-demo'); lv.forEach(([title, line], i) => { const l = node('label', 'lv-card'); const r = node('input'); r.type = 'radio'; r.name = 'lv'; if (!i) r.checked = true; r.addEventListener('change', () => say(i === 3 ? 'Full trust: still asks before money, passwords, deleting and someone new.' : `${title}.`)); l.append(r, node('b', '', title), node('span', '', line)); list.append(l); });
+      const floor = node('p', 'lv-floor', 'Always asks, at every level: spending money \u00b7 a password or key \u00b7 deleting something \u00b7 messaging someone new.');
+      widget.append(list, floor); say('Four levels in words, and the floor in view.');
+      control('The bug', () => { floor.classList.toggle('gone'); say(floor.classList.contains('gone') ? 'No floor on the page: full trust reads as \u201canything\u201d.' : 'The floor is back in view.'); });
+    } else if (id === 'agent-line') {
+      const states = [['running', 'Your agent is building this', 'Watch in your Dock'], ['waiting', 'Your agent asks to publish this', 'Answer in your Dock'], ['done', 'Your agent is done', 'See its steps'], ['failed', 'Your agent couldn\u2019t finish', 'See what happened']];
+      const bar = node('div', 'line-demo'); const dot = node('i', ''); const words = node('span', ''); const act = node('span', 'line-act'); bar.append(dot, words, act);
+      const work = node('div', 'line-work', 'The space, changing as the agent writes it'); let k = 0;
+      const draw = () => { const [st, w, a] = states[k]; bar.dataset.state = st; words.textContent = w; act.textContent = a; work.classList.remove('covered'); say(w + '.'); };
+      draw(); widget.append(bar, work);
+      control('Next state', () => { k = (k + 1) % states.length; draw(); }, true);
+      control('The bug', () => { work.classList.add('covered'); say('A blurred cover over the work: nobody can watch it being made.'); });
     } else if (id === 'mark-system') {
       const row=node('div','mark-demo'),mark=node('span','ov-mark','ov');row.append(mark,node('span','','OpenVibe'));widget.append(row);control('Loading state',()=>{mark.classList.toggle('loading');say(mark.classList.contains('loading')?'Loading state active.':'Loading state stopped.');});control('Change site',()=>{mark.textContent=mark.textContent==='ov'?'lv':'ov';mark.style.borderRadius=mark.textContent==='lv'?'50%':'16px';say('The mark morphs for the active site.');});control('Open five studies',()=>{window.location.href='/patterns/mark/studies';});
     }
