@@ -35,7 +35,7 @@ const TOKEN = 'figma-owner-token-sentinel';
         assert.ok(f);
         assert.ok(f.title && f.title.length >= 3);
         assert.ok(f.description && f.description.length >= 30);
-        assert.strictEqual(f['x-owner-input'].group, 'Design and publishing');
+        assert.strictEqual(f['x-owner-input'].group, 'design-publishing');
         assert.ok(f['x-owner-input'].unlocks.length > 20);
         assert.strictEqual(f['x-owner-input'].get_it_at, 'https://www.figma.com/settings');
         assert.strictEqual(f['x-owner-input'].test, true);

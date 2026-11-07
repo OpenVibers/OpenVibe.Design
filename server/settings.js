@@ -29,7 +29,7 @@ const SCHEMA = Object.freeze({
             type: 'string', title: 'Figma personal access token', 'x-group': GROUP,
             description: 'A Figma personal access token with read access to the files Design imports. It lets a person bring a Figma design into Design; without it the Figma import stays hidden.',
             'x-owner-input': {
-                group: GROUP,
+                group: 'design-publishing',
                 unlocks: 'Figma files can be imported into Design and their components and tokens read.',
                 get_it_at: 'https://www.figma.com/settings',
                 get_it_how: 'Open Settings, Security, Personal access tokens, create a token with read access to the files, then paste it here.',
