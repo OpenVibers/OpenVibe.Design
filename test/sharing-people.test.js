@@ -45,11 +45,15 @@ const { boot, check, done } = require('./helpers/boot');
         const member = await t.get(`/d/${d.id}`, { as: maticus });
         assert.strictEqual(member.status, 200);
         assert.ok(member.text.includes('SECRET-CANARY robot café'), 'the person on the list reads the design');
-        assert.strictEqual((await t.get(`/api/v1/designs/${d.id}`, { as: maticus })).status, 200);
+        assert.match(member.headers.get('cache-control') || '', /private, no-store/);
+        const memberApi = await t.get(`/api/v1/designs/${d.id}`, { as: maticus });
+        assert.strictEqual(memberApi.status, 200);
+        assert.match(memberApi.headers.get('cache-control') || '', /private, no-store/);
 
         const stranger = await t.get(`/d/${d.id}`, { as: sam });
         assert.strictEqual(stranger.status, 404);
-        assert.ok(stranger.text.includes('shared with specific people') && stranger.text.includes('OVShare.gate'));
+        assert.ok(stranger.text.includes('shared with specific people') && stranger.text.includes('data-ov-share-gate'));
+        assert.ok(stranger.text.includes(`data-id="${d.id}"`) && !stranger.text.includes('OVShare.gate('), 'markup gate, no inline script');
         assert.ok(!stranger.text.includes('SECRET-CANARY'), 'never the prompt');
         assert.strictEqual((await t.get(`/api/v1/designs/${d.id}`, { as: sam })).status, 403, 'the API refuses it too');
         assert.strictEqual((await t.get(`/api/v1/designs/${d.id}`)).status, 403);

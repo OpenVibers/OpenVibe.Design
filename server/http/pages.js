@@ -138,7 +138,7 @@ function createPageRoutes(ctx) {
                     res.set('Referrer-Policy', 'no-referrer');
                     const body = share.audience === 'people'
                         ? designView.gate({ id: req.params.id,
-                            signedInAs: req.viewer && req.viewer.kind === 'user' && req.viewer.username ? `@${req.viewer.username}` : null,
+                            signedInAs: req.viewer && req.viewer.kind === 'user' && req.viewer.username ? String(req.viewer.username) : null,
                             signInUrl: `/auth/login?next=${encodeURIComponent(req.originalUrl || '')}` })
                         : views.notFound();
                     return page(res, 404, body, req.viewer, { cacheControl: 'private, no-store' });

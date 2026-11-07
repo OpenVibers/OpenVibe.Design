@@ -15,17 +15,9 @@ const examples = ['Landing page for a coffee roaster', 'Dashboard for a fitness 
 function gate({ id, signedInAs = null, signInUrl = '/auth/login' }) {
     const body = `<section class="dv-gate"><h1>A design on OpenVibe.Design</h1>
 <p>This is shared with specific people.</p>
-<div id="design-share-gate"><p>This design is shared with specific people on OpenVibe.Design.</p>
-<p><a class="btn" href="${esc(signInUrl)}">Sign in</a></p></div>
+<div data-ov-share-gate data-kind="design" data-id="${esc(id)}"${signedInAs ? ` data-signed-in-as="${esc(signedInAs)}"` : ''} data-sign-in-url="${esc(signInUrl)}">This design is shared with specific people on OpenVibe.Design.</div>
 </section>
-<script src="${ovServe.url('ov-share.js')}" defer></script>
-<script>
-window.addEventListener('DOMContentLoaded', function () {
-  var el = document.getElementById('design-share-gate');
-  if (el && window.OVShare) OVShare.gate(el, { kind: 'design', id: ${JSON.stringify(String(id))},
-    signedInAs: ${JSON.stringify(signedInAs || '')}, signInUrl: ${JSON.stringify(signInUrl)} });
-});
-</script>`;
+<script src="${ovServe.url('ov-share.js')}" defer></script>`;
     return layout({ title: 'A design on OpenVibe.Design', path: '/d', robots: 'noindex, nofollow', body, scripts: [] });
 }
 
