@@ -41,6 +41,8 @@ const PARTS = [
         code: `kit.badge('live', 'live') + kit.badge('new', 'accent') + kit.badge('paid', 'ok') + kit.badge('expiring', 'warn') + kit.badge('failed', 'bad')` },
     { id: 'dot', fn: 'dot', group: 'actions', name: 'Unread dot', line: 'How many are new. Nothing at zero; 9+ past nine.',
         code: `kit.dot(3) + kit.dot(42)` },
+    { id: 'ask-agent', fn: 'askAgent', group: 'actions', name: 'Ask your agent', line: 'The chip that asks: a tap hands the question to your own agent in the Dock, with this page\'s context, and it never sends for you.', needs: 'the shared navbar',
+        code: `kit.askAgent({ text: 'About this stream: Seattle at night' }) + kit.askAgent({ text: 'What is in this clip?', label: 'Ask about this clip' })` },
 
     // ── Content ──
     { id: 'card', fn: 'card', group: 'content', name: 'Card', line: 'A stream, a clip, a room or a place: picture first, the title, who, and one line.',
