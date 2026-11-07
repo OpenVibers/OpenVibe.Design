@@ -167,6 +167,50 @@
       widget.append(row);
       control('Mixed with the text', () => { row.classList.remove('broken'); say('Half the hue, half the text: readable on both.'); }, true);
       control('The bug', () => { row.classList.add('broken'); say('The pure hue: fine on dark, 1.7:1 for gold on white.'); });
+    } else if (id === 'one-menu') {
+      const box = node('div', 'menu-demo'); const bar = node('div', 'menu-bar'); const orb = button('✦', () => open('orb')); orb.setAttribute('aria-label', 'Open from the orb'); const burger = button('☰', () => open('burger')); burger.setAttribute('aria-label', 'Open from the burger');
+      bar.append(orb, node('strong', '', 'OpenVibe.Live'), node('span', 'menu-gap'), burger); const panel = node('ol', 'menu-panel'); box.append(bar, panel); widget.append(box);
+      const order = { burger: ['This site’s pages', 'Live now', 'Your places', 'Your workspace', 'From the sites', 'What’s new', 'Every site (54)', 'Jump back in'], orb: ['Your places', 'Live now', 'Your workspace', 'From the sites', 'What’s new', 'This site’s pages', 'Every site (54)', 'Jump back in'] };
+      function open(from) { panel.replaceChildren(...order[from].map((t) => node('li', '', t))); box.classList.add('open'); say(from === 'burger' ? 'From the burger: this site’s pages first.' : 'From the orb: your places first.'); }
+      control('Open from the burger', () => open('burger'), true); control('Back', () => { box.classList.remove('open'); say('Back closed the menu; the page stayed.'); });
+    } else if (id === 'site-cards') {
+      const card = node('div', 'card-demo'); const head = node('div', 'card-head'); head.append(node('strong', '', 'Trending'), node('span', 'pmeta', 'Video')); const list = node('ol', 'card-rows'); card.append(head, list); widget.append(card);
+      const add = (title, meta, ok) => { if (!ok) { say('Dropped: the entry’s link is not https on an OpenVibe host.'); return; } const li = node('li', ''); li.append(node('b', '', title), node('small', '', meta)); list.append(li); card.hidden = false; say(`${list.children.length} real entr${list.children.length === 1 ? 'y' : 'ies'}.`); };
+      card.hidden = true; say('No entries yet: the card is not shown.');
+      control('Publish an entry', () => add(['A rainy night walk', 'Speedrun practice', 'Cozy build stream'][list.children.length % 3], `${20 - list.children.length} views this week`, true), true);
+      control('A bad link', () => add('Example', 'javascript:', false));
+    } else if (id === 'your-things') {
+      const bar = node('div', 'things-bar'); const coins = node('span', 'meta-chip', '● 1,240'); const vibes = node('span', 'meta-chip', '● 30'); const msgs = node('span', 'things-msgs', '✉'); const n = node('b', '', ''); msgs.append(n); const face = node('span', 'things-face', 'A'); const dot = node('i', 'dot-demo'); dot.dataset.state = 'online'; face.append(dot);
+      bar.append(node('strong', '', 'Any site'), node('span', 'menu-gap'), coins, vibes, msgs, face); widget.append(bar); let count = 0;
+      control('A new message', () => { count += 1; n.textContent = String(count); say(`${count} unread: the same count on every site.`); }, true);
+      control('Sign out', () => { bar.classList.toggle('out'); say(bar.classList.contains('out') ? 'Signed out: none of it shows, nothing is asked.' : 'Signed in again.'); });
+    } else if (id === 'status-dot') {
+      const row = node('div', 'demo-row'); const face = node('span', 'things-face big', 'K'); const dot = node('i', 'dot-demo'); face.append(dot); const word = node('span', 'status-word', ''); row.append(face, word); widget.append(row);
+      const set = (state, label, others) => { dot.dataset.state = state; word.textContent = label; say(others); };
+      set('online', 'Online', 'Others see a green dot and the word Online.');
+      [['online', 'Online', 'Others see a green dot and the word Online.'], ['away', 'Away', 'A crescent after ten minutes without input.'], ['dnd', 'Do not disturb', 'A bar across the dot; pings stay quiet.'], ['live', 'Live now', 'Live outranks the rest while streaming.'], ['none', 'Invisible', 'Others see no dot at all, and never “last seen”.']].forEach(([s2, l, o], i) => control(l, () => set(s2, l, o), i === 0));
+    } else if (id === 'fab-sheet') {
+      const phone = node('div', 'phone-demo'); phone.append(node('p', '', 'My files'), node('p', 'pmeta', '24 files')); const fab = button('+  New', () => { phone.classList.add('open'); say('The sheet opens from the bottom.'); }, true); fab.className += ' fab-demo';
+      const sheet = node('div', 'sheet-demo'); ['Upload files', 'New folder', 'Back up a folder'].forEach((t) => sheet.append(node('div', 'sheet-row', t))); phone.append(fab, sheet); widget.append(phone);
+      control('Back', () => { phone.classList.remove('open'); say('Back closed the sheet first.'); });
+      control('The bug', () => { phone.classList.toggle('broken'); say(phone.classList.contains('broken') ? 'Three forms above the list: the files start a screen down.' : 'One button; the files start at the top.'); });
+    } else if (id === 'drop-anywhere') {
+      const zone = node('div', 'drop-demo', 'Drop files anywhere here'); const tray = node('ul', 'tray-demo'); widget.append(zone, tray); let n = 0;
+      const drop = () => { n += 1; const li = node('li', ''); const bar = node('i', ''); li.append(node('span', '', `photo-${n}.jpg`), bar); tray.append(li); let pct = 0; const tick = setInterval(() => { pct = Math.min(100, pct + 25); bar.style.width = `${pct}%`; if (pct === 100) { clearInterval(tick); li.classList.add('done'); say('In: the list updates in place.'); } }, 220); say('Uploading into the folder on screen.'); };
+      zone.addEventListener('dragover', (e) => e.preventDefault()); zone.addEventListener('drop', (e) => { e.preventDefault(); drop(); });
+      control('Drop a file', drop, true);
+    } else if (id === 'card-or-row') {
+      const list = node('ul', 'cr-demo'); ['Report.pdf', 'Budget.xlsx', 'Trailer.mp4', 'Notes.md'].forEach((t) => { const li = node('li', ''); li.append(node('span', 'cr-thumb', t.split('.').pop().toUpperCase()), node('span', '', t)); list.append(li); }); widget.append(list);
+      control('Grid', () => { list.classList.remove('rows'); say('The same items as cards.'); }, true); control('List', () => { list.classList.add('rows'); say('The same items as rows: nothing re-rendered.'); });
+    } else if (id === 'even-grid') {
+      const grid = node('div', 'even-demo'); const fill = (k) => grid.replaceChildren(...Array.from({ length: k }, (_, i) => node('span', '', String(i + 1)))); fill(7); grid.style.setProperty('--cols', 3); widget.append(grid); say('Seven in three columns: one alone.');
+      control('Eight in four', () => { fill(8); grid.style.setProperty('--cols', 4); say('Eight in four: two even rows.'); }, true);
+      control('The bug', () => { fill(7); grid.style.setProperty('--cols', 3); say('Seven in three columns: one alone.'); });
+    } else if (id === 'six-places') {
+      const bar = node('div', 'six-demo'); const all = ['Models', 'Chat', 'Arena', 'Rankings', 'Start', 'API', 'Why this model', 'Sell compute', 'Your endpoint', 'Uncensored', 'AI in OpenVibe', 'Questions', 'Status'];
+      const draw = (k) => { bar.replaceChildren(node('strong', '', 'OpenVibe.Exchange'), ...all.slice(0, k).map((t) => node('span', '', t)), ...(k < all.length ? [node('span', 'six-more', `More (${all.length - k})`)] : [])); };
+      draw(all.length); widget.append(bar); say('Thirteen links wrap and cut the name.');
+      control('Six, the rest under More', () => { draw(6); say('Six places, one line, the name whole.'); }, true); control('The bug', () => { draw(all.length); say('Thirteen links wrap and cut the name.'); });
     } else if (id === 'mark-system') {
       const row=node('div','mark-demo'),mark=node('span','ov-mark','ov');row.append(mark,node('span','','OpenVibe'));widget.append(row);control('Loading state',()=>{mark.classList.toggle('loading');say(mark.classList.contains('loading')?'Loading state active.':'Loading state stopped.');});control('Change site',()=>{mark.textContent=mark.textContent==='ov'?'lv':'ov';mark.style.borderRadius=mark.textContent==='lv'?'50%':'16px';say('The mark morphs for the active site.');});control('Open five studies',()=>{window.location.href='/patterns/mark/studies';});
     }
