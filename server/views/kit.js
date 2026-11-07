@@ -92,7 +92,7 @@ function kitIndex() {
 <div class="kt-thumb" aria-hidden="true" inert>${still(html)}</div>
 <div class="kt-tile-t"><a class="kt-tile-a" href="/kit/${esc(p.id)}">${esc(p.name)}</a><code>kit.${esc(p.fn)}()</code></div>
 <p class="kt-tile-l">${esc(p.line)}</p>
-<p class="kt-tile-w">${w.bytes ? `${weight.kb(w.brotli)} of CSS` : 'No CSS of its own'}${p.web ? ' · uses kit-web.js' : ''}</p></li>`;
+<p class="kt-tile-w">${w.bytes ? `${weight.kb(w.brotli)} of CSS` : 'No CSS of its own'}${p.web ? ' · uses kit-web.js' : ''}${p.needs ? ` · needs ${esc(p.needs)}` : ''}</p></li>`;
     };
     const groups = GROUPS.map(([id, name, line]) => {
         const parts = PARTS.filter((p) => p.group === id);
@@ -143,7 +143,7 @@ function kitPart(id) {
     const body = `<div class="kt kt-part" id="kt-part" data-part="${esc(part.id)}">
 <nav class="kt-crumb" aria-label="Breadcrumb"><a href="/kit">The Kit</a><span aria-hidden="true">/</span><a href="/kit#kt-g-${esc(group[0])}">${esc(group[1])}</a></nav>
 <header class="kt-part-h"><h1>${esc(part.name)}</h1><p class="kt-lede">${esc(part.line)}</p>
-<ul class="kt-facts"><li><code>kit.${esc(part.fn)}()</code></li><li>${w.bytes ? `${weight.kb(w.brotli)} of CSS · ${w.rules} rule${w.rules === 1 ? '' : 's'}` : 'No CSS of its own'}</li>${w.files.map((f) => `<li>${esc(f)}</li>`).join('')}${part.web ? '<li>kit-web.js for its behaviour</li>' : '<li>No script needed</li>'}</ul></header>
+<ul class="kt-facts"><li><code>kit.${esc(part.fn)}()</code></li><li>${w.bytes ? `${weight.kb(w.brotli)} of CSS · ${w.rules} rule${w.rules === 1 ? '' : 's'}` : 'No CSS of its own'}</li>${w.files.map((f) => `<li>${esc(f)}</li>`).join('')}${part.web ? '<li>kit-web.js for its behaviour</li>' : part.needs ? `<li>${esc(part.needs)} for its behaviour</li>` : '<li>No script needed</li>'}</ul></header>
 <section class="kt-stage${part.wide ? ' kt-stage--wide' : ''}" aria-label="${esc(part.name)}, drawn by this release">${part.error ? `<p class="kt-err">This release cannot draw the sample: ${esc(part.error)}</p>` : staged(part, html)}</section>
 <section class="kt-code" aria-labelledby="kt-code-h"><h2 id="kt-code-h">Use it</h2>
 <h3>On your server</h3>${kit.snippet({ id: 'kt-server', code: onServer })}
