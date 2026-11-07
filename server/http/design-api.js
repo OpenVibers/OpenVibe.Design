@@ -20,6 +20,8 @@ const { asyncRouter } = require('./router');
 const { requireSameOrigin } = require('./same-origin');
 
 const owner = req => req.viewer && req.viewer.kind === 'user' ? req.viewer.subject : null;
+/** The session viewer the share check reads (`kind`, `subject`), never a token. */
+const viewer = req => req.viewer && req.viewer.kind === 'user' ? req.viewer : null;
 const token = req => req.viewer && req.viewer.kind === 'user' ? req.viewer.token : null;
 const keyOf = (req) => req.get('x-design-key') || req.query.key || (req.body && req.body.editKey) || null;
 
@@ -50,36 +52,36 @@ function createDesignApi(ctx) {
         return priv(res, 201, result);
     }));
     routes.get('/:id', safe(async (req, res) => priv(res, 200,
-        await ctx.designs.read(req.params.id, owner(req), keyOf(req)))));
+        await ctx.designs.read(req.params.id, owner(req), keyOf(req), viewer(req)))));
     routes.post('/:id/theme', sameOrigin, safe(async (req, res) => priv(res, 200,
-        await ctx.designs.setTheme(req.params.id, (req.body || {}).themeId, owner(req), keyOf(req)))));
+        await ctx.designs.setTheme(req.params.id, (req.body || {}).themeId, owner(req), keyOf(req), viewer(req)))));
     // Publish the working frame on openvibe.space (open item D8): the owner only; { name? } for a new site.
     routes.post('/:id/publish', sameOrigin, safe(async (req, res) => priv(res, 200,
         await ctx.designs.publish({ id: req.params.id, owner: owner(req), name: (req.body || {}).name || '', publisher: ctx.publisher }))));
     routes.post('/:id/pick', sameOrigin, safe(async (req, res) => {
         const body = req.body || {};
         const result = await ctx.designs.pick({ id: req.params.id, variantIndex: body.variantIndex,
-            variantId: body.variantId, owner: owner(req), key: keyOf(req), subject: owner(req), token: token(req) });
+            variantId: body.variantId, owner: owner(req), key: keyOf(req), subject: owner(req), token: token(req), viewer: viewer(req) });
         return priv(res, result.idempotent ? 200 : 201, result);
     }));
     routes.post('/:id/edit', sameOrigin, safe(async (req, res) => {
         const body = req.body || {};
         const result = await ctx.designs.chatEdit({ id: req.params.id, instruction: body.instruction,
-            owner: owner(req), key: keyOf(req), subject: owner(req) });
+            owner: owner(req), key: keyOf(req), subject: owner(req), viewer: viewer(req) });
         return priv(res, 200, result);
     }));
     routes.post('/:id/click', sameOrigin, safe(async (req, res) => {
         const body = req.body || {};
         const result = await ctx.designs.clickEdit({ id: req.params.id, path: body.path, text: body.text,
-            color: body.color, spacing: body.spacing, align: body.align, owner: owner(req), key: keyOf(req), subject: owner(req) });
+            color: body.color, spacing: body.spacing, align: body.align, owner: owner(req), key: keyOf(req), subject: owner(req), viewer: viewer(req) });
         return priv(res, 201, result);
     }));
     routes.get('/:id/versions', safe(async (req, res) => priv(res, 200,
-        await ctx.designs.versions(req.params.id, owner(req), keyOf(req)))));
+        await ctx.designs.versions(req.params.id, owner(req), keyOf(req), viewer(req)))));
     routes.post('/:id/undo', sameOrigin, safe(async (req, res) => priv(res, 200,
-        await ctx.designs.undo(req.params.id, owner(req), keyOf(req)))));
+        await ctx.designs.undo(req.params.id, owner(req), keyOf(req), viewer(req)))));
     routes.post('/:id/redo', sameOrigin, safe(async (req, res) => priv(res, 200,
-        await ctx.designs.redo(req.params.id, owner(req), keyOf(req)))));
+        await ctx.designs.redo(req.params.id, owner(req), keyOf(req), viewer(req)))));
     return routes;
 }
 

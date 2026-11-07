@@ -38,6 +38,7 @@ const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
+const { createSharing, describeRef } = require('./sharing');
 const { createPageRoutes } = require('./http/pages');
 const { createTokenFileRoutes } = require('./http/tokens');
 const { createDiscoveryRoutes } = require('./http/discovery');
@@ -73,7 +74,10 @@ async function createApp(opts = {}) {
     const ai = opts.arenaAi || opts.ai || createArenaAi({ config, fetchImpl, log });
     // The Arena generation job now lives on Bench; Design keeps a no-op loop for test compatibility.
     const jobs = opts.jobs || { tick: async () => null, start: () => null, stop: () => null, get running() { return false; } };
-    const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now });
+    // Sharing (openvibe-sdk/share): the shares row next to each signed-in maker's design, the one access
+    // check every read path asks, and the uniform API below. Guest designs keep their secret edit key.
+    const sharing = opts.sharing || createSharing({ db: s.db, config, log, now });
+    const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now, sharing });
     // Publishing a design on openvibe.space (open item D8).
     const publisher = opts.publisher || require('./publish').createPublisher({ config, fetchImpl, log });
     const accountData = accountDataLib.create({ db: s.db, log });
@@ -83,7 +87,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, catalog, searchIndex, arena, bench, ai, jobs, designs, publisher, accountData, accountSend, log, picks,
+        config, s, store: s, keys, sso, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks,
         random: opts.random || Math.random,
     };
 
@@ -195,6 +199,34 @@ async function createApp(opts = {}) {
     // The mark's intro, as the files /brand offers to download.
     app.use('/brand/motion', express.static(path.join(PUBLIC_DIR, 'brand', 'motion'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
 
+    // ── /api/v1/<kind>/<id>/share — the uniform share API (openvibe-sdk/share) ────
+    // GET/PUT /api/v1/design/:id/share, .../share/requests, .../share/transfer[/accept|decline|cancel],
+    // GET /api/v1/share/people?name=, GET /api/v1/shared-with-me. Authentication is Design's own session;
+    // a guest key is never a share owner. The router answers only its own paths, so the rest of /api/v1
+    // keeps its own 404.
+    {
+        const routed = Object.create(sharing.shares);
+        routed.getWithRevision = async (viewer, ref) => { await sharing.ensure(ref.id); return await sharing.shares.getWithRevision(viewer, ref); };
+        routed.update = async (viewer, ref, body, extra) => { await sharing.ensure(ref.id); return await sharing.shares.update(viewer, ref, body, extra); };
+        routed.requestAccess = async (viewer, ref) => { await sharing.ensure(ref.id); return await sharing.shares.requestAccess(viewer, ref); };
+        const shareApi = express.Router();
+        shareApi.use((req, res, next) => {
+            req.shareViewer = req.viewer && req.viewer.kind === 'user' ? { subject: { type: 'user', id: req.viewer.subject }, staff: false } : null;
+            next();
+        });
+        shareApi.use(sharing.shares.router({
+            service: 'design',
+            authenticate: (req) => req.shareViewer || null,
+            describe: describeRef(s.db, config),
+        }));
+        const SHARE_PATH = /^\/api\/v1\/(?:shared-with-me$|share\/people$|design\/[^/]+\/share(?:\/|$))/;
+        app.use((req, res, next) => (SHARE_PATH.test(req.path) ? shareApi(req, res, next) : next()));
+        if (!opts.startSharingWorker) {
+            const timer = setInterval(() => { sharing.work().catch(() => { /* logged inside */ }); }, 15_000);
+            if (timer.unref) timer.unref();
+            app.locals.sharingTimer = timer;
+        }
+    }
     // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));

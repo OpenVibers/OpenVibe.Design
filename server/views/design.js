@@ -1,10 +1,33 @@
 'use strict';
 
 const { layout, esc } = require('../render/layout');
+const ovServe = require('openvibe-shared/serve');
 const { attrEscape } = require('../arena/sanitize');
 const { themeCss } = require('../designs');
 
 const examples = ['Landing page for a coffee roaster', 'Dashboard for a fitness app', 'Pricing section', 'Mobile onboarding'];
+
+/**
+ * The page somebody who is not on a Specific-people design's list sees. It never shows the prompt,
+ * a variant, a version or a thumbnail; OVShare.gate offers "Ask for access" to a signed-in person and
+ * "Sign in" to everybody else.
+ */
+function gate({ id, signedInAs = null, signInUrl = '/auth/login' }) {
+    const body = `<section class="dv-gate"><h1>A design on OpenVibe.Design</h1>
+<p>This is shared with specific people.</p>
+<div id="design-share-gate"><p>This design is shared with specific people on OpenVibe.Design.</p>
+<p><a class="btn" href="${esc(signInUrl)}">Sign in</a></p></div>
+</section>
+<script src="${ovServe.url('ov-share.js')}" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  var el = document.getElementById('design-share-gate');
+  if (el && window.OVShare) OVShare.gate(el, { kind: 'design', id: ${JSON.stringify(String(id))},
+    signedInAs: ${JSON.stringify(signedInAs || '')}, signInUrl: ${JSON.stringify(signInUrl)} });
+});
+</script>`;
+    return layout({ title: 'A design on OpenVibe.Design', path: '/d', robots: 'noindex, nofollow', body, scripts: [] });
+}
 
 function create({ recent = [] } = {}) {
     const body = `<section class="dv-create"><h1>What will you design?</h1>
@@ -138,7 +161,9 @@ ${versionDetail(v)}</span></li>`).join('');
     const keyInput = `<input type="hidden" name="key" value="${esc(editKey)}">`;
     const body = `<section class="dv-canvas" data-id="${esc(design.id)}" data-key="${esc(editKey)}" data-picked="${pick ? pickedIndex : ''}" data-variant-id="${esc(pickedVariant && pickedVariant.id || '')}">
 <header class="dv-heading"><a href="/create">← New design</a><h1>${esc(design.prompt)}</h1>
-<p id="dv-status" role="status">${esc(statusText)}</p></header>
+<p id="dv-status" role="status">${esc(statusText)}</p>
+<p class="dv-share"><button type="button" data-ov-share-sheet data-kind="design" data-id="${esc(design.id)}"
+  data-title="${esc(design.prompt)}" data-url="${esc(`/d/${encodeURIComponent(design.id)}`)}">Share</button></p></header>
 <form class="dv-chat" id="dv-chat-form" method="post" action="/d/${encodeURIComponent(design.id)}/edit">
 ${keyInput}
 <label for="dv-instruction">Edit with AI</label>
@@ -177,4 +202,4 @@ ${versions.length ? `<ol class="dv-vlist" id="dv-vlist">${versionRows}</ol>` : '
         body, scripts: ['js/design.js'] });
 }
 
-module.exports = { create, canvas, frame, overlayScript };
+module.exports = { create, canvas, gate, frame, overlayScript };

@@ -170,6 +170,26 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
             if (!t) return json(404, { error: 'Theme not found' });
             return json(200, { theme: t });
         }
+        // Sharing (openvibe-sdk/share): exact @name lookup, batch projections and the notification push.
+        if (url.pathname === '/internal/identity/resolve' && req.method === 'GET') {
+            const name = String(url.searchParams.get('username') || '').toLowerCase()
+            const u = [...st.users.values()].find((x) => x.username.toLowerCase() === name)
+            if (!u) return json(404, { error: 'no such person' })
+            return json(200, { subject: { type: 'user', id: u.subject }, username: u.username, display_name: u.display_name, avatar_url: null, banned: false, deleted: false })
+        }
+        if (url.pathname === '/internal/identity/resolve-batch' && req.method === 'POST') {
+            const results = {}
+            for (const id of body.subject_ids || []) {
+                const u = [...st.users.values()].find((x) => x.subject === id)
+                if (u) results[id] = { subject: { type: 'user', id: u.subject }, username: u.username, display_name: u.display_name, avatar_url: null, banned: false, deleted: false }
+            }
+            return json(200, { results })
+        }
+        if (url.pathname === '/internal/notifications/push' && req.method === 'POST') {
+            st.notifications = st.notifications || []
+            st.notifications.push(body)
+            return json(202, { queued: true })
+        }
         return json(404, { error: 'not found' });
     });
     issuer = srv.url;
