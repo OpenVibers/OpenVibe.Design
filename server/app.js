@@ -30,6 +30,8 @@ const { createNetworkSender } = require('openvibe-sdk/account-data');
 const configLib = require('./config');
 const { openStore } = require('./db');
 const { createKeyStore } = require('./auth/keys');
+const settingsLib = require('./settings');
+const { verifyServiceToken } = require('openvibe-sdk/auth');
 const { createSso } = require('./auth/sso');
 const { createThemeCatalog } = require('./themes');
 const { createSearchIndex } = require('./search-index');
@@ -66,6 +68,19 @@ async function createApp(opts = {}) {
     const s = opts.store || await openStore(config, { now, log });
     const keys = createKeyStore({ config, fetchImpl, log });
     const sso = createSso({ config, keys, fetchImpl, log, now });
+    // D11 owner settings (design.publishing): created before the app mounts /internal/config. A failure leaves
+    // Design serving (the Figma token falls back to the environment) and says why in the log.
+    let settings = null;
+    if (opts.settings) settings = opts.settings;
+    else {
+        try {
+            const made = settingsLib.createSettings({ db: s.db, env: opts.env || process.env, log });
+            await made.ready;
+            settings = settingsLib.activate(made);
+        } catch (err) {
+            log.warn('[OpenVibe.Design] owner settings unavailable, the publishing tokens fall back to the environment:', err && err.message);
+        }
+    }
     const catalog = opts.catalog || createThemeCatalog({ config, fetchImpl, log, now });
     // The icon and theme pages in OpenVibe.Search (started by server/index.js, never under DESIGN_DRILL).
     const searchIndex = opts.searchIndex || createSearchIndex({ config, s, catalog, log });
@@ -87,7 +102,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks,
         random: opts.random || Math.random,
     };
 
@@ -170,6 +185,32 @@ async function createApp(opts = {}) {
     // ── Account export/deletion from OpenVibe.Events (loopback only) ──
     // Raw body first: the SDK verifies the delivery signature over the exact bytes.
     app.use('/internal/events', accountData.consumer({ secrets: config.events.secrets, send: accountSend }));
+
+    // ── D11 owner settings (openvibe-shared/config): Network's admin proxy, acting for the owner, reads and
+    // writes design.publishing (the Figma token). Loopback only, guarded by design.config.manage; a secret
+    // change needs X-OV-Fresh: 1, and the test route makes one cheap authenticated Figma read.
+    if (settings) {
+        const configGuard = async (req, res, next) => {
+            if (req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.headers['cf-connecting-ip']) {
+                return res.status(404).json({ code: 'design.not_found', error: 'no such route' });
+            }
+            const header = String(req.headers.authorization || '');
+            if (!header.startsWith('Bearer ')) return res.status(401).json({ code: 'token.missing', error: 'a service token is required' });
+            const r = await verifyServiceToken(header.slice(7).trim(), {
+                jwks: `${config.networkInternalUrl}/api/.well-known/jwks`, issuer: config.networkIssuer, audience: 'openvibe.design',
+                contracts: require('openvibe-contracts'),
+            });
+            if (!r.ok) return res.status(r.code === 'token.unavailable' ? 503 : 401).json({ code: r.code, error: r.reason || 'the token does not verify' });
+            const contracts = require('openvibe-contracts');
+            const decision = contracts.capabilities.check(r.claims, 'design.config.manage');
+            const granted = decision.allowed || contracts.capabilities.grants(r.claims.cap, 'design.config.manage');
+            if (!granted) return res.status(403).json({ code: 'capability.denied', error: 'design.config.manage is not granted' });
+            req.principal = { sub: r.claims.sub, cap: r.claims.cap, jti: r.claims.jti };
+            return next();
+        };
+        app.use('/internal/config', express.json({ limit: '64kb' }));
+        settings.mount(app, { guard: configGuard, log });
+    }
 
     // ── Static assets (content-hashed ?v= → immutable) ──────
     app.use('/shared', serve.handler());
