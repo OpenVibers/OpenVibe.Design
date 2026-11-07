@@ -88,6 +88,7 @@ function createPageRoutes(ctx) {
     });
     // ── How OpenVibe moves: the mark's motion and the shared effects kit (plan L45) ──
     r.get('/motion', (req, res) => page(res, 200, motionView.motionPage({ base: layoutBase() }), req.viewer));
+    r.get('/native', (req, res) => page(res, 200, require('../views/native').nativePage(), req.viewer));
     r.get('/loading', (req, res) => page(res, 200, require('../views/loading').loadingPage({ base: layoutBase() }), req.viewer));
     // ── OpenVibe's own form controls (openvibe-shared ov-forms, 2026-11-03) ──
     r.get('/forms', (req, res) => page(res, 200, require('../views/forms').formsPage({ base: layoutBase() }), req.viewer));

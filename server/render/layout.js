@@ -36,6 +36,7 @@ const NAV = [
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Kit', href: '/kit', icon: 'fa-cubes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
+    { label: 'Apps (Android, iOS)', href: '/native', icon: 'fa-display', more: true },
     { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
     { label: 'Prompts', href: '/prompts', icon: 'fa-quote-left', more: true },
 ];
