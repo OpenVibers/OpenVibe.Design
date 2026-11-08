@@ -44,6 +44,10 @@ function publicPages(themes = []) {
         { path: '/icons/font-awesome-alternative', changefreq: 'monthly', priority: 0.6, title: 'A free Font Awesome alternative', text: 'Keep your Font Awesome markup and show the OpenVibe glyphs: one script, the same classes, animations and transforms, plus free web and desktop fonts.' },
         { path: '/icons/migrate', changefreq: 'monthly', priority: 0.5, title: 'Switch from Font Awesome, Lucide or Material', text: 'Paste your HTML or code and see every Font Awesome, Lucide, Material or MUI icon it uses with its free OpenVibe twin.' },
         { path: '/arena', changefreq: 'daily', priority: 0.9, title: 'The Design Arena', text: 'One prompt, three AI designers, blind votes and an Elo leaderboard per category, with cost and time per generation.' },
+        // The makers (plan R1 item 8): the pages an agent may drive. The drawings and the typefaces they
+        // produce are the person's and stay out of the crawl.
+        { path: '/fonts/make', changefreq: 'monthly', priority: 0.7, title: 'Make a typeface', text: 'Describe a typeface and the model draws it: the outlines, a WOFF2 and an OTF, under the SIL Open Font License.' },
+        { path: '/vectors/make', changefreq: 'monthly', priority: 0.7, title: 'Make a vector', text: 'Describe an icon, an illustration or a pattern and the model draws it as one clean SVG you can download.' },
     ];
     const themePages = (Array.isArray(themes) ? themes : []).filter((t) => t && t.slug).map((t) => ({
         path: `/t/${encodeURIComponent(String(t.slug))}`,
@@ -98,6 +102,12 @@ function createDiscoveryRoutes(ctx) {
                     { title: 'The OpenVibe mark', url: abs('/brand'), note: 'the logo, its states and motion, colours, the brand face, SVG files and code (openvibe-shared/mark, ov-mark.js)' },
                     { title: 'The Design Arena', url: abs('/arena'), note: 'one prompt, three AI designers, blind votes and an Elo leaderboard' },
                     { title: 'For developers', url: abs('/developers'), note: 'the theme API proxy' },
+                ] },
+                // The makers: an agent can drive these two through the API and the MCP tools. Each run is
+                // charged to the signed-in person who asks for it, and their drawings stay theirs.
+                { title: 'Make things', links: [
+                    { title: 'Make a typeface', url: abs('/fonts/make'), note: 'describe a typeface and the model draws the letters; POST /api/v1/typefaces {prompt, baseFamily?, name?} returns the outlines and the font files (/api/v1/typefaces/<id>/font.woff2 and .otf); redraw one letter with POST /api/v1/typefaces/<id>/glyph {char, note}; MCP tool openvibe_design_make_typeface' },
+                    { title: 'Make a vector', url: abs('/vectors/make'), note: 'describe an icon, an illustration or a pattern and the model draws one clean SVG; POST /api/v1/vectors {prompt, kind} returns it; change it with POST /api/v1/vectors/<id>/edit {note}; the drawing as SVG or PNG at /vectors/made/<id>.svg and .png; MCP tool openvibe_design_make_vector' },
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
                 // The data an agent came for is a main section, not something to skip.

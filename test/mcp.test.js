@@ -24,8 +24,12 @@ const components = require('openvibe-shared/components');
                 'openvibe_design_validate_kit_document',
                 'openvibe_design_icon_search', 'openvibe_design_icon_svg', 'openvibe_design_icon_code', 'openvibe_design_icon_migrate',
                 'openvibe_design_list_fonts', 'openvibe_design_get_font',
+                'openvibe_design_make_typeface', 'openvibe_design_make_vector',
             ]);
-            assert.ok(listed.every(x => x.inputSchema && x.annotations.readOnlyHint));
+            assert.ok(listed.every(x => x.inputSchema && x.annotations));
+            // Every tool but the two that make something only reads.
+            assert.ok(listed.filter(x => x.annotations.readOnlyHint).length === listed.length - 2);
+            assert.ok(listed.filter(x => !x.annotations.readOnlyHint).every(x => x.name.startsWith('openvibe_design_make_')));
             assert.strictEqual((await t.get('/mcp', { method: 'OPTIONS' })).status, 204);
             assert.strictEqual((await t.get('/mcp')).status, 405);
             assert.strictEqual((await t.get('/mcp', { body: '{', headers: { 'content-type': 'application/json' } })).json().error.code, -32700);

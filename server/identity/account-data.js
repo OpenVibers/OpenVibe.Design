@@ -20,6 +20,13 @@ const TABLES = [
     // The marks a signed-in person picked on /brand/explore (a guest's picks name nobody).
     { table: 'brand_picks', subject: 'voter', file: 'brand_picks.json', order: 'created_at', columns: ['code', 'created_at'], erase: 'delete' },
     { table: 'glyph_drafts', subject: 'subject', file: 'glyph_drafts.json', order: 'created_at', columns: ['id', 'name', 'sentence', 'svg', 'model', 'status', 'created_at', 'reviewed_at'], erase: 'delete' },
+    // The typefaces a person made with the model (/fonts/make): the outlines the model drew and the notes they
+    // gave. The font files are compiled from the outlines on request, so deleting the rows deletes the fonts.
+    { table: 'ai_typefaces', subject: 'owner', file: 'ai_typefaces.json', order: 'created_at', columns: ['id', 'name', 'prompt', 'base_family', 'style_notes', 'glyphs', 'metrics', 'provider', 'model', 'license', 'state', 'note', 'created_at', 'updated_at'], erase: 'delete' },
+    // The drawings a person made with the model (/vectors/make). A drawing is theirs; nobody else's is exported.
+    { table: 'ai_vectors', subject: 'owner', file: 'ai_vectors.json', order: 'created_at', columns: ['id', 'prompt', 'kind', 'svg', 'provider', 'model', 'license', 'state', 'note', 'created_at', 'updated_at'], erase: 'delete' },
+    // How many model runs a person made and when. It is their own usage; it goes with the account.
+    { table: 'ai_make_runs', subject: 'owner', file: 'ai_make_runs.json', order: 'created_at', columns: ['id', 'kind', 'day', 'created_at'], erase: 'delete' },
 ];
 
 async function extraExport(db, subject) {
