@@ -53,6 +53,13 @@ const TOOLS = [
     { name: 'openvibe_design_icon_migrate', description: 'Read HTML or code and list every Font Awesome, Lucide, Material or MUI icon it uses, with its OpenVibe twin and how often it appears. Read only.', inputSchema: schema(['text'], {
         text: { type: 'string', minLength: 1, maxLength: 400000 },
     }) },
+    { name: 'openvibe_design_list_fonts', description: 'List open licence font families with category, scripts, weights, licence and source.', inputSchema: schema([], {
+        query: { type: 'string', maxLength: 100 }, category: { type: 'string', maxLength: 40 },
+        script: { type: 'string', maxLength: 40 }, weight: { type: 'integer', minimum: 100, maximum: 900 },
+    }) },
+    { name: 'openvibe_design_get_font', description: 'Get one font family with every style, CSS files, licence and three suggested pairings.', inputSchema: schema(['family'], {
+        family: { type: 'string', minLength: 1, maxLength: 100 },
+    }) },
 ].map(tool => ({ ...tool, annotations: { readOnlyHint: true, openWorldHint: false } }));
 
 const rpc = (id, result) => ({ jsonrpc: '2.0', id, result });
@@ -66,7 +73,7 @@ function toolResult(value) {
     };
 }
 
-async function callTool(name, args, { catalog }) {
+async function callTool(name, args, { catalog, fonts }) {
     if (!object(args)) return toolError('Arguments must be an object.');
     switch (name) {
         case 'openvibe_design_list_themes': {
@@ -130,6 +137,17 @@ async function callTool(name, args, { catalog }) {
         case 'openvibe_design_icon_migrate':
             if (typeof args.text !== 'string' || !args.text || args.text.length > 400000) return toolError('text must be a nonempty string of at most 400,000 characters.');
             return toolResult({ icons: aliases.scan(args.text), page: `${BASE}/icons/migrate` });
+        case 'openvibe_design_list_fonts': {
+            if (typeof args.query !== 'undefined' && (typeof args.query !== 'string' || args.query.length > 100)) return toolError('query must be at most 100 characters.');
+            if (args.weight !== undefined && (!Number.isInteger(args.weight) || args.weight < 100 || args.weight > 900)) return toolError('weight must be 100 to 900.');
+            const list = await fonts.list({ q: args.query, category: args.category, script: args.script, weight: args.weight });
+            return toolResult({ fonts: list, count: list.length });
+        }
+        case 'openvibe_design_get_font': {
+            if (typeof args.family !== 'string' || !/^[a-z0-9-]{1,100}$/.test(args.family)) return toolError('family must be a font slug.');
+            const font = await fonts.get(args.family);
+            return font ? toolResult(font) : toolError('No font family by that slug.');
+        }
         default:
             return null;
     }

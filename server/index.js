@@ -22,6 +22,7 @@ function createLifecycle({ server, ctx, exit, signals } = {}) {
         deadlineMs: 10_000,
         close: [
             () => ctx.jobs.stop(),
+            () => ctx.fonts.stop(),
             () => ctx.searchIndex.stop(),
             () => ctx.keys.client.stop(),
             () => ctx.s.close(),
@@ -41,6 +42,7 @@ async function start() {
         ctx.keys.ensure().catch(() => {});
         // Generate queued Arena rounds. DESIGN_DRILL=1 keeps the loop off (a test or a drill drives tick()).
         ctx.jobs.start();
+        if (!config.drill) ctx.fonts.start();
         // The icon and theme pages in OpenVibe.Search: a sweep a minute after boot and every six hours.
         if (!config.drill) ctx.searchIndex.start();
         ctx.designs.resume().catch((err) => console.warn('[OpenVibe.Design] resume designs:', err.message));

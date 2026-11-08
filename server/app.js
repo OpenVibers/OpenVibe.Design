@@ -45,6 +45,8 @@ const { createPageRoutes } = require('./http/pages');
 const { createTokenFileRoutes } = require('./http/tokens');
 const { createDiscoveryRoutes } = require('./http/discovery');
 const { createIconRoutes } = require('./http/icons');
+const { createFontRoutes } = require('./http/fonts');
+const { createFontCatalog } = require('./fonts/catalog');
 const { createServiceReadiness } = require('./observability');
 const { createArenaStore } = require('./arena/store');
 const { createArenaAi } = require('./arena/ai');
@@ -97,12 +99,14 @@ async function createApp(opts = {}) {
     const publisher = opts.publisher || require('./publish').createPublisher({ config, fetchImpl, log });
     const accountData = accountDataLib.create({ db: s.db, log });
     const picks = opts.picks || require('./brand-picks').createBrandPicks({ db: s.db, now });
+    const fonts = opts.fonts || createFontCatalog({ db: s.db, fetchImpl, now, log });
+    await fonts.seedMissing();
     const accountSend = opts.accountSend || (config.oauth.clientSecret
         ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl })
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts,
         random: opts.random || Math.random,
     };
 
@@ -136,7 +140,7 @@ async function createApp(opts = {}) {
                 // The OpenVibe Frame (theme-loader, navbar, footer) comes from the Network; the inline init is ours.
                 scriptSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://static.cloudflareinsights.com', ...turnstileSrc],
                 styleSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
-                fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+                fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
                 // Theme previews may carry inline data: images and any https image the catalogue references.
                 imgSrc: ["'self'", 'data:', 'https:'],
                 // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
@@ -275,6 +279,7 @@ async function createApp(opts = {}) {
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
     app.use(createIconRoutes(ctx));
+    app.use(createFontRoutes(ctx));
     app.use('/api', createApi(ctx));
     // GET /openapi.json (SEO-3): the API as OpenAPI 3.1. It is not in openvibe-contracts, so the document is read from
     // the routes this app mounts under /api/, with the summaries the API files' header comments give them
@@ -285,7 +290,7 @@ async function createApp(opts = {}) {
         app.get('/openapi.json', require('./http/openapi-routes').openapiRoute(app, {
             title: `${d.name} API`, description: d.purpose, version: require('../package.json').version, baseUrl: site,
             docs: `${site}/developers`,
-            files: ['http/api.js', 'http/arena-api.js', 'http/brand-api.js', 'http/design-api.js'].map((f) => require('path').join(__dirname, f)),
+            files: ['http/api.js', 'http/arena-api.js', 'http/brand-api.js', 'http/design-api.js', 'http/fonts.js'].map((f) => require('path').join(__dirname, f)),
         }));
     }
     app.use('/api', (req, res) => contracts.http.sendProblem(res, 404, 'route.not_found', {
