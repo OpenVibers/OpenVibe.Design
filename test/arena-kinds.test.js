@@ -57,19 +57,31 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
         assert.strictEqual(calls.length, 36, 'an all-failed read is not kept');
     });
 
-    await check('arena.js opens a pair at the phone view on a phone, and leaves it on a computer', () => {
+    await check('a pair opens at the phone view on a phone and the desktop view on a computer, by CSS, with no jump', () => {
         const fs = require('fs');
-        const vm = require('vm');
+        const views = require('../server/views');
+        const css = fs.readFileSync(require.resolve('../public/css/design.css'), 'utf8');
         const src = fs.readFileSync(require.resolve('../public/js/arena.js'), 'utf8');
-        const run = (narrow) => {
-            const radio = { checked: false };
-            const document = { getElementById: (id) => (id === 'ar-view-phone' ? radio : null), querySelectorAll: () => [], documentElement: { classList: { add() {} } } };
-            const window = { matchMedia: (q) => ({ matches: narrow && /max-width: 759px/.test(q) }), location: {} };
-            vm.runInNewContext(src, { document, window, setTimeout, fetch: () => null });
-            return radio.checked;
-        };
-        assert.strictEqual(run(true), true);
-        assert.strictEqual(run(false), false);
+        const pair = { round: { id: 'r1', prompt: 'A page' }, left: { id: 'a', frame: 'https://render.test/a' }, right: { id: 'b', frame: 'https://render.test/b' } };
+        const html = views.arenaHome({ kind: 'design.page', pair });
+        // Neither viewport is checked until someone chooses: the screen width decides, before any script runs.
+        assert.doesNotMatch(html, /id="ar-view-(desktop|phone)"[^>]*checked/);
+        assert.match(css, /@media \(max-width: 759px\) \{ \.ar-page:not\(:has\(\.ar-view input:checked\)\) \.ar-shot--desktop \{ display: none; \}/);
+        assert.match(css, /@media \(min-width: 760px\) \{ \.ar-page:not\(:has\(\.ar-view input:checked\)\) \.ar-shot--phone \{ display: none; \}/);
+        assert.doesNotMatch(src, /ar-view-phone'\)\.checked|phoneView\.checked/, 'the script no longer flips the view after the page has drawn');
+    });
+
+    await check('each side of a pair is the vote: a cover button over the drawing, a "Try it" toggle, and the four verdicts', () => {
+        const views = require('../server/views');
+        const pair = { round: { id: 'r1', prompt: 'A fox' }, left: { id: 'a', frame: 'https://render.test/a' }, right: { id: 'b', frame: 'https://render.test/b' } };
+        const html = views.arenaHome({ kind: 'design.svg', pair });
+        assert.match(html, /<button type="submit" class="ar-cover" name="winner" value="left" data-winner="left" aria-label="Design A is better">/);
+        assert.match(html, /<button type="submit" class="ar-cover" name="winner" value="right" data-winner="right" aria-label="Design B is better">/);
+        // The toggle belongs to no form, so it is never sent with a vote.
+        assert.match(html, /<input type="checkbox" class="ar-try-in" id="ar-try-left" form="ar-view-none">/);
+        for (const w of ['left', 'tie', 'both_bad', 'right']) assert.match(html, new RegExp(`class="ovk-btn[^"]*ar-vote-btn[^"]*" name="winner" value="${w}"`));
+        // The model's drawing is only ever a sandboxed frame from the render origin.
+        assert.match(html, /<iframe class="ar-frame ar-art-frame" src="https:\/\/render\.test\/a"[^>]*sandbox="allow-scripts"/);
     });
 
     const t = await boot({ env: { DESIGN_ARENA_GUEST_VOTES_PER_ADDRESS: '2' } });
