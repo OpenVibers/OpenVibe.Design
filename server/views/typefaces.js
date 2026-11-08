@@ -19,11 +19,25 @@ function fontFace(woff2) {
     return '@font-face{font-family:"OpenVibe Made";src:url(data:font/woff2;base64,' + woff2.toString('base64') + ') format("woff2");font-weight:400;font-style:normal;font-display:swap}';
 }
 
+/** "Aa" (or the first two letters it has) drawn from a typeface's own outlines, as one inline SVG. */
+function sample(glyphs) {
+    const list = Array.isArray(glyphs) ? glyphs.filter((g) => g && typeof g.d === 'string' && /^[MmLlHhVvCcSsQqTtZz0-9.,\s-]+$/.test(g.d)) : [];
+    const by = new Map(list.map((g) => [g.char, g]));
+    const picked = ['A', 'a'].every((c) => by.has(c)) ? [by.get('A'), by.get('a')] : list.slice(0, 2);
+    if (!picked.length) return '<span class="tf-sample is-empty">Not drawn yet</span>';
+    let x = 0;
+    const paths = picked.map((g) => { const p = '<path transform="translate(' + x + ' 0)" d="' + esc(g.d) + '"/>'; x += Number(g.advance) || 600; return p; }).join('');
+    return '<svg class="tf-sample" viewBox="0 -800 ' + x + ' 1000" aria-hidden="true"><g transform="scale(1 -1)" fill="currentColor">' + paths + '</g></svg>';
+}
+
 /** The maker: describe a face, start from an open one. */
 function make({ bases = [], mine = [], signedIn = false, left = 0, perDay = 0 } = {}) {
     const options = bases.map((b) => '<option value="' + esc(b.id) + '">' + esc(b.family) + ' — ' + esc(b.category) + '</option>').join('');
+    // Each typeface you made is shown in itself: "Aa" drawn from its own stored outlines (validated paths, font units,
+    // baseline at 0), so the list reads as a shelf of faces, not a list of names (Opus's design pass, 11-08).
     const owned = mine.length
-        ? '<section class="tf-owned"><h2>Your typefaces</h2><ul>' + mine.map((f) => '<li><a href="/fonts/made/' + esc(f.id) + '">' + esc(f.name) + '</a><span>' + esc(f.glyphs.length) + ' letters' + (f.model ? ' · ' + esc(f.model) : '') + '</span></li>').join('') + '</ul></section>'
+        ? '<section class="tf-owned"><h2>Your typefaces <span class="tf-n">' + mine.length + '</span></h2><ul class="tf-shelf">' + mine.map((f) => '<li><a href="/fonts/made/' + esc(f.id) + '">'
+            + sample(f.glyphs) + '<b>' + esc(f.name) + '</b><span>' + esc(f.glyphs.length) + ' letters</span></a></li>').join('') + '</ul></section>'
         : '';
     const body = '<div class="tf"><header class="tf-hero"><p class="tf-eyebrow">AI typefaces</p><h1>Describe a typeface.</h1>'
         + '<p>The model draws the letters, one batch at a time. You get the outlines, the font files and the licence.</p></header>'
@@ -80,8 +94,10 @@ function specimen({ face, compiled, chars = '' } = {}) {
 
 /** The vector maker: one drawing from a prompt. */
 function vectorMake({ mine = [], signedIn = false, left = 0, perDay = 0 } = {}) {
+    // Your drawings as drawings: each one's own SVG as a picture (an <img> runs nothing), with what it was asked to be.
     const owned = mine.length
-        ? '<section class="tf-owned"><h2>Your drawings</h2><ul>' + mine.map((v) => '<li><a href="/vectors/made/' + esc(v.id) + '">' + esc(v.prompt.slice(0, 80)) + '</a><span>' + esc(v.kind) + (v.model ? ' · ' + esc(v.model) : '') + '</span></li>').join('') + '</ul></section>'
+        ? '<section class="tf-owned"><h2>Your drawings <span class="tf-n">' + mine.length + '</span></h2><ul class="tf-gallery">' + mine.map((v) => '<li><a href="/vectors/made/' + esc(v.id) + '">'
+            + '<img src="/vectors/made/' + esc(v.id) + '.svg" alt="" loading="lazy" width="160" height="160"><span>' + esc(v.prompt.slice(0, 80)) + '</span><small>' + esc(v.kind) + '</small></a></li>').join('') + '</ul></section>'
         : '';
     const body = '<div class="tf"><header class="tf-hero"><p class="tf-eyebrow">AI vectors</p><h1>Describe a drawing.</h1>'
         + '<p>One clean SVG: an icon, an illustration or a pattern. You can draw it again, change it with a note, and take it away.</p></header>'

@@ -255,7 +255,9 @@ function createVectorRoutes(ctx) {
     r.get('/vectors/made/:id.svg', async (req, res) => {
         const row = await own(req, res, req.params.id);
         if (!row) return undefined;
-        return res.set('Cache-Control', 'private, no-store').type('image/svg+xml').send(row.svg);
+        // A saved drawing opened on its own is a document: no script, no fetches, whatever the sanitiser missed.
+        return res.set('Cache-Control', 'private, no-store').set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox")
+            .set('X-Content-Type-Options', 'nosniff').type('image/svg+xml').send(row.svg);
     });
     r.get('/vectors/made/:id.png', async (req, res) => {
         const row = await own(req, res, req.params.id);

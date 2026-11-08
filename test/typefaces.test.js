@@ -248,6 +248,7 @@ function fakeAi(overrides = {}) {
             const svg = await t.get('/vectors/made/' + id + '.svg', { as: user });
             assert.equal(svg.status, 200);
             assert.match(svg.headers.get('content-type') || '', /image\/svg\+xml/);
+            assert.match(svg.headers.get('content-security-policy') || '', /default-src 'none'.*sandbox/, 'a saved drawing runs nothing when opened on its own');
             const png = await t.get('/vectors/made/' + id + '.png', { as: user });
             assert.equal(png.status, 200);
             assert.equal(png.buffer.slice(1, 4).toString('latin1'), 'PNG');
