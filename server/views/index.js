@@ -306,7 +306,7 @@ function arenaShot(o, width) {
 // Which viewport the pair (or the round's outputs) shows. The radios belong to no form, so a vote never sends them.
 function arenaViewSwitch() {
     return `<div class="ar-view" role="radiogroup" aria-label="Viewport">
-<input type="radio" id="ar-view-desktop" name="ar_view" value="desktop" form="ar-view-none" checked><label for="ar-view-desktop">Desktop</label>
+<input type="radio" id="ar-view-desktop" name="ar_view" value="desktop" form="ar-view-none"><label for="ar-view-desktop">Desktop</label>
 <input type="radio" id="ar-view-phone" name="ar_view" value="phone" form="ar-view-none"><label for="ar-view-phone">Phone</label></div>`;
 }
 
@@ -362,6 +362,21 @@ function arenaSide(kind, side, letter) {
 
 /** A side's name: the letter as a badge, "Design A" for a screen reader. */
 const arenaLetter = (letter) => `<span class="ar-letter" aria-hidden="true">${letter}</span><span class="dv-visually-hidden">Design ${letter}</span>`;
+/**
+ * One side of a blind pair as the thing you tap to vote: the whole drawing is a submit button laid over the frame
+ * (so a tap picks it and a swipe still scrolls the page, never the frame), and "Try it" lifts that cover for a
+ * design you want to scroll, turn or hover first. Both work without JavaScript: the toggle is a checkbox that
+ * belongs to no form.
+ */
+function arenaPickSide(kind, side, letter, key) {
+    const tryId = `ar-try-${key}`;
+    return `<section class="ar-vote-side ar-pickable" id="ar-vote-${key}" data-side="${key}">`
+        + `<div class="ar-side-h"><h3>${arenaLetter(letter)}</h3>`
+        + `<input type="checkbox" class="ar-try-in" id="${tryId}" form="ar-view-none"><label class="ar-try" for="${tryId}"><span class="ar-try-off">${glyphs.svg('hand', { size: 14 })}Try it</span><span class="ar-try-on">${glyphs.svg('check', { size: 14 })}Done</span></label></div>`
+        + `<div class="ar-side-body">${arenaSide(kind, side, letter)}`
+        + `<button type="submit" class="ar-cover" name="winner" value="${key}" data-winner="${key}" aria-label="Design ${letter} is better"><span class="ar-pick-tag" aria-hidden="true"><span class="ar-pick-l">${letter}</span><span class="ar-pick-t">Pick ${letter}</span>${glyphs.svg('check', { size: 15 })}</span></button>`
+        + `</div></section>`;
+}
 const arenaSecs = (ms) => (ms == null ? null : ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
 
 /**
@@ -405,13 +420,11 @@ ${kind.viewports ? arenaViewSwitch() : ''}
         judge = `<header class="ar-brief"><p class="ar-kicker">Blind pair · ${esc(kind.name)}</p><h2 id="ar-pair-h">Which is better?</h2><blockquote class="ar-prompt" id="ar-prompt">${esc(String(pair.round.prompt).slice(0, 1200))}</blockquote></header>
 <form id="ar-judge" class="ar-vote" method="post" action="/arena/vote">${hidden('kind', kind.id)}${hidden('round_id', pair.round.id)}${hidden('left_output', pair.left.id)}${hidden('right_output', pair.right.id)}${voters ? hidden('voters', voters) : ''}
 ${kind.viewports ? arenaViewSwitch() : ''}
-<div class="ar-vote-pair" id="ar-vote-pair">
-<section class="ar-vote-side" id="ar-vote-left" data-side="left"><h3>${arenaLetter('A')}</h3>${arenaSide(kind, pair.left, 'A')}</section>
-<section class="ar-vote-side" id="ar-vote-right" data-side="right"><h3>${arenaLetter('B')}</h3>${arenaSide(kind, pair.right, 'B')}</section></div>
-<div class="ar-vote-actions" id="ar-vote-actions"><button type="submit" class="ovk-btn ovk-btn--primary ar-vote-btn" name="winner" value="left" data-winner="left">A is better</button>
+<div class="ar-vote-pair" id="ar-vote-pair">${arenaPickSide(kind, pair.left, 'A', 'left')}${arenaPickSide(kind, pair.right, 'B', 'right')}</div>
+<div class="ar-vote-actions" id="ar-vote-actions"><button type="submit" class="ovk-btn ovk-btn--primary ar-vote-btn ar-vote-ab" name="winner" value="left" data-winner="left"><span class="ar-vote-l" aria-hidden="true">A</span> better</button>
 <button type="submit" class="ovk-btn ovk-btn--quiet ar-vote-btn" name="winner" value="tie" data-winner="tie">Tie</button>
-<button type="submit" class="ovk-btn ovk-btn--primary ar-vote-btn" name="winner" value="right" data-winner="right">B is better</button>
-<button type="submit" class="ovk-btn ovk-btn--quiet ar-vote-btn" name="winner" value="both_bad" data-winner="both_bad">Both bad</button></div>
+<button type="submit" class="ovk-btn ovk-btn--quiet ar-vote-btn" name="winner" value="both_bad" data-winner="both_bad">Both bad</button>
+<button type="submit" class="ovk-btn ovk-btn--primary ar-vote-btn ar-vote-ab" name="winner" value="right" data-winner="right"><span class="ar-vote-l" aria-hidden="true">B</span> better</button></div>
 ${who}</form>`;
     } else if (!signedIn && !guestVotes) {
         judge = `<div class="ar-none" id="ar-none"><h2 id="ar-pair-h">Sign in to judge</h2><p>Every vote is blind: two designs from one brief, no model names until you pick.</p><p>${kit.button({ href: signIn, label: 'Sign in to vote' })}</p></div>`;

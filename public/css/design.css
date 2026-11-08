@@ -744,3 +744,119 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 @media (max-width: 1000px) { .ds-system-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .ds-system-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .ds-sys { transition: none; } .ds-sys:hover { transform: none; } }
+
+/* ── The arena, easier to judge (owner 11-08: "make A and B clickable", "smoother between things") ──
+   The drawing is the vote: a transparent button lies over each frame, so a tap picks it and a swipe scrolls the page
+   (never the frame). "Try it" lifts the cover to scroll, turn or hover a design first. The four verdicts sit in one
+   slim floating bar. Frame boxes are sized by CSS alone, so nothing moves when the script scales the drawing. */
+.ar-side-h { display: flex; align-items: center; gap: 8px; min-height: 32px; margin: 0 0 10px; }
+.ar-arena .ar-side-h h3 { margin: 0; }
+.ar-try-in { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ar-try { margin-left: auto; display: inline-flex; align-items: center; min-height: 30px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--border, #26344d);
+    color: var(--text-secondary, #96a7c2); font-size: .78rem; font-weight: 750; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ov-dur-2, .15s), border-color var(--ov-dur-2, .15s), color var(--ov-dur-2, .15s); }
+.ar-try > span { display: inline-flex; align-items: center; gap: 5px; }
+.ar-try:hover { border-color: color-mix(in srgb, var(--room-strong) 50%, var(--border, #26344d)); color: var(--text-primary, #e6edf7); }
+.ar-try .ar-try-on, .ar-try-in:checked + .ar-try .ar-try-off { display: none; }
+.ar-try-in:checked + .ar-try .ar-try-on { display: inline-flex; }
+.ar-try-in:checked + .ar-try { background: color-mix(in srgb, var(--room-strong) 18%, transparent); border-color: var(--room-strong); color: var(--text-primary, #e6edf7); }
+.ar-try-in:focus-visible + .ar-try { outline: 2px solid var(--room-strong); outline-offset: 2px; }
+
+.ar-side-body { position: relative; }
+.ar-cover { all: unset; box-sizing: border-box; position: absolute; inset: 0; z-index: 2; display: flex; align-items: flex-end; justify-content: center; padding: 0 10px 34px;
+    cursor: pointer; border-radius: 12px; -webkit-tap-highlight-color: transparent; touch-action: pan-x pan-y; }
+.ar-pick-tag { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 14px 0 6px; border-radius: 999px; max-width: 100%;
+    background: color-mix(in srgb, var(--bg-primary, #0a0f1c) 80%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border: 1px solid color-mix(in srgb, var(--text-primary, #e6edf7) 16%, transparent); color: var(--text-primary, #e6edf7); font-size: .86rem; font-weight: 800; white-space: nowrap;
+    box-shadow: 0 8px 22px -8px rgba(0, 0, 0, .55); transform: translateY(3px); transition: transform .22s cubic-bezier(.2, .8, .2, 1), background-color .18s, color .18s, box-shadow .22s; }
+.ar-cover .ar-pick-tag { position: sticky; bottom: calc(var(--ovnav-appbar-h, 0px) + 88px + env(safe-area-inset-bottom, 0px)); }
+.ar-pick-l { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; flex: none; background: color-mix(in srgb, var(--room-strong) 24%, transparent); color: var(--room-strong); font-weight: 900; }
+.ar-pick-tag svg { display: none; }
+.ar-cover:is(:hover, :focus-visible) .ar-pick-tag { transform: none; background: var(--room-strong); color: var(--bg-primary, #0a0f1c); box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--room-strong) 70%, transparent); }
+.ar-cover:is(:hover, :focus-visible) .ar-pick-l { background: color-mix(in srgb, var(--bg-primary, #0a0f1c) 22%, transparent); color: var(--bg-primary, #0a0f1c); }
+.ar-cover:focus-visible { outline: none; }
+.ar-pickable { transition: border-color .18s, box-shadow .22s, transform .18s cubic-bezier(.2, .8, .2, 1), opacity .25s, filter .25s; }
+.ar-pickable:has(.ar-cover:is(:hover, :focus-visible)) { border-color: var(--room-strong); box-shadow: 0 0 0 1px var(--room-strong), 0 16px 36px -20px color-mix(in srgb, var(--room-strong) 80%, transparent); }
+.ar-pickable:has(.ar-cover:active) { transform: scale(.985); }
+.ar-pickable:has(.ar-try-in:checked) .ar-cover { display: none; }
+.ar-pickable:has(.ar-try-in:checked) { border-color: color-mix(in srgb, var(--room-strong) 55%, var(--border, #26344d)); }
+/* A phone handset is narrow: the tag is just the letter and the tick */
+.ar-page:has(#ar-view-phone:checked) .ar-pick-t { display: none; }
+.ar-page:has(#ar-view-phone:checked) .ar-pick-tag { padding: 0 6px; }
+@media (max-width: 759px) {
+  .ar-page:has(.ar-view):not(:has(.ar-view input:checked)) .ar-pick-t { display: none; }
+  .ar-page:has(.ar-view):not(:has(.ar-view input:checked)) .ar-pick-tag { padding: 0 6px; }
+}
+.ar-art + .ar-cover { padding-bottom: 14px; }
+
+/* The verdict, the moment it is cast: the pick lights and ticks, the other side steps back, then the answer swaps in */
+.ar-vote-pair[data-pick] .ar-pickable { pointer-events: none; }
+.ar-vote-pair[data-pick=left] #ar-vote-right, .ar-vote-pair[data-pick=right] #ar-vote-left { opacity: .42; filter: saturate(.5); transform: scale(.98); }
+.ar-vote-pair:is([data-pick=left]) #ar-vote-left, .ar-vote-pair:is([data-pick=right]) #ar-vote-right, .ar-vote-pair[data-pick=tie] .ar-pickable {
+    border-color: var(--room-strong); box-shadow: 0 0 0 2px var(--room-strong), 0 18px 40px -20px color-mix(in srgb, var(--room-strong) 80%, transparent); }
+.ar-vote-pair[data-pick=both_bad] .ar-pickable { border-color: color-mix(in srgb, #ef4444 65%, var(--border, #26344d)); opacity: .7; filter: saturate(.6); }
+.ar-vote-pair:is([data-pick=left]) #ar-vote-left .ar-pick-tag, .ar-vote-pair:is([data-pick=right]) #ar-vote-right .ar-pick-tag { transform: none; background: var(--room-strong); color: var(--bg-primary, #0a0f1c); animation: ar-picked .42s cubic-bezier(.2, .9, .3, 1.4); }
+.ar-vote-pair:is([data-pick=left]) #ar-vote-left .ar-pick-tag svg, .ar-vote-pair:is([data-pick=right]) #ar-vote-right .ar-pick-tag svg { display: block; }
+@keyframes ar-picked { 0% { transform: scale(.9); } 55% { transform: scale(1.08); } 100% { transform: none; } }
+
+/* One slim floating bar for the four verdicts (and for "Next pair" after a vote), above the phone's app bar */
+.ar-arena :is(#ar-vote-actions, #ar-next) { display: grid; gap: 6px; width: min(100%, 560px); box-sizing: border-box; margin: 16px auto 0; padding: 6px;
+    bottom: calc(var(--ovnav-appbar-h, 0px) + 10px + env(safe-area-inset-bottom, 0px)); border: 1px solid var(--border, #26344d); border-radius: 18px;
+    background: color-mix(in srgb, var(--bg-primary, #0a0f1c) 82%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow: 0 14px 34px -16px rgba(0, 0, 0, .6); }
+.ar-arena #ar-vote-actions { grid-template-columns: minmax(0, 1fr) auto auto minmax(0, 1fr); }
+.ar-arena #ar-next { grid-template-columns: 1fr 1fr; }
+.ar-arena :is(#ar-vote-actions, #ar-next) .ovk-btn { min-width: 0; width: 100%; min-height: 44px; padding: 0 12px; justify-content: center; white-space: nowrap; border-radius: 13px; font-size: .9rem; }
+.ar-vote-l { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: -1px; border-radius: 7px; background: color-mix(in srgb, currentColor 20%, transparent); font-weight: 900; }
+.ar-arena #ar-vote-actions .ovk-btn:disabled { opacity: .55; }
+@media (max-width: 420px) { .ar-arena :is(#ar-vote-actions, #ar-next) .ovk-btn { padding: 0 9px; font-size: .84rem; } .ar-vote-l { width: 20px; height: 20px; } }
+
+/* Frame boxes sized by CSS alone: a desktop drawing fills its column, a phone is a handset at most 281 px wide */
+.ar-shot--desktop .ar-shot-frame, .ar-shot--desktop::before { width: 100%; }
+.ar-shot--phone .ar-shot-frame { width: min(calc(100% - 14px), 281px); }
+
+/* Desktop or Phone: until someone chooses, the screen decides (a phone opens at the phone view, with no jump) */
+@media (min-width: 760px) { .ar-page:not(:has(.ar-view input:checked)) .ar-shot--phone { display: none; }
+  .ar-view:not(:has(input:checked)) label[for=ar-view-desktop] { background: color-mix(in srgb, var(--room-strong) 20%, transparent); color: var(--text-primary, #e6edf7); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--room-strong) 45%, transparent); } }
+@media (max-width: 759px) { .ar-page:not(:has(.ar-view input:checked)) .ar-shot--desktop { display: none; }
+  .ar-page:has(.ar-view):not(:has(.ar-view input:checked)) .ar-vote-pair { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ar-view:not(:has(input:checked)) label[for=ar-view-phone] { background: color-mix(in srgb, var(--room-strong) 20%, transparent); color: var(--text-primary, #e6edf7); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--room-strong) 45%, transparent); } }
+/* A page pair drawn as two handsets side by side leaves little room: the cards hug them */
+.ar-page:has(#ar-view-phone:checked) .ar-vote-side, .ar-vote-pair .ar-shot--phone:only-child { padding: 8px; }
+@media (max-width: 759px) { .ar-page:not(:has(.ar-view input:checked)) .ar-vote-side:has(.ar-shot--phone) { padding: 8px; } }
+
+/* Moving between kinds, votes and pairs: the pair and the boards cross over in place, the rail stays put */
+.ar-arena #ar-pair { view-transition-name: ar-pair; }
+.ar-arena #ar-boards { view-transition-name: ar-boards; }
+.ar-arena #ar-kinds { view-transition-name: ar-kinds; }
+::view-transition-group(ar-pair), ::view-transition-group(ar-boards) { animation-duration: .34s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+::view-transition-old(ar-pair) { animation: ar-vt-out .16s ease-in both; }
+::view-transition-new(ar-pair) { animation: ar-vt-in .34s cubic-bezier(.2, .8, .2, 1) .05s both; }
+@keyframes ar-vt-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes ar-vt-in { from { opacity: 0; transform: translateY(12px); } }
+.ar-arena #ar-pair { transition: opacity .2s; }
+.ar-arena.is-loading #ar-pair { opacity: .55; }
+.ar-arena.is-loading #ar-kinds .ar-kind[aria-current] .ar-kind-i { animation: ar-breathe 1s ease-in-out infinite alternate; }
+@keyframes ar-breathe { to { opacity: .55; } }
+/* A frame that was swapped in waits on a quiet surface and fades in once drawn, instead of flashing white */
+.ar-wait { background: linear-gradient(100deg, var(--bg-card, #0f1729) 40%, color-mix(in srgb, var(--text-primary, #e6edf7) 7%, var(--bg-card, #0f1729)) 50%, var(--bg-card, #0f1729) 60%) 0 0 / 220% 100%;
+    animation: ar-shimmer 1.3s linear infinite; }
+.ar-wait > .ar-frame { opacity: 0; transition: opacity .3s ease-out; }
+.ar-wait.is-loaded { animation: none; background: #fff; }
+.ar-wait.is-loaded > .ar-frame { opacity: 1; }
+@keyframes ar-shimmer { to { background-position: -220% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ar-pickable, .ar-pick-tag, .ar-arena #ar-pair { transition: none; }
+  .ar-vote-pair[data-pick] .ar-pick-tag, .ar-wait, .ar-arena.is-loading #ar-kinds .ar-kind[aria-current] .ar-kind-i { animation: none; }
+  .ar-vote-pair[data-pick] .ar-pickable { transform: none; }
+}
+
+/* The kinds rail on a phone: the icon beside the name, the line under both, no word broken mid-way */
+@media (max-width: 759px) {
+  .ar-kinds { grid-auto-columns: minmax(148px, 44%); }
+  .ar-kind { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'i b' 's s'; align-items: center; gap: 6px 8px; min-height: 0; padding: 10px; }
+  .ar-kind-i { grid-area: i; width: 26px; height: 26px; border-radius: 8px; }
+  .ar-kind-t { display: contents; }
+  .ar-kind-t b { grid-area: b; overflow-wrap: normal; hyphens: manual; }
+  .ar-kind-t small { grid-area: s; }
+}
