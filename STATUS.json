@@ -8,11 +8,11 @@
   "runtime": "node 22, express 4, openvibe-shared/shell; PostgreSQL (or embedded PGlite in development), OpenVibe.AI generate jobs, OpenVibe.Events account data in, no Valkey",
   "port": "5090",
   "domain": "openvibe.design",
-  "contracts": "openvibe-contracts v0.315.0",
+  "contracts": "openvibe-contracts v0.338.0",
   "sdk": "openvibe-sdk v0.94.0",
   "shared": "openvibe-shared v4.142.0",
   "packages": [
-    "openvibe-contracts v0.315.0",
+    "openvibe-contracts v0.338.0",
     "openvibe-publishing v1.5.0",
     "openvibe-sdk v0.94.0",
     "openvibe-shared v4.142.0"
@@ -71,5 +71,5 @@
     "Design Studio versions and undo/redo",
     "Design tokens as files (JSON, CSS, Tailwind, Style Dictionary, Swift, Kotlin, Android XML)"
   ],
-  "updated": "2026-11-07"
+  "updated": "2026-11-08"
 }
