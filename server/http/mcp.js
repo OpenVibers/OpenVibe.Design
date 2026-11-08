@@ -60,7 +60,19 @@ const TOOLS = [
     { name: 'openvibe_design_get_font', description: 'Get one font family with every style, CSS files, licence and three suggested pairings.', inputSchema: schema(['family'], {
         family: { type: 'string', minLength: 1, maxLength: 100 },
     }) },
-].map(tool => ({ ...tool, annotations: { readOnlyHint: true, openWorldHint: false } }));
+    // The typefaces and vectors a person makes with the model (plan R1 item 8). These two write, so they are
+    // not marked read only: they need a signed-in person, and the run is charged to that person's allowance.
+    { name: 'openvibe_design_make_typeface', description: 'Draw a typeface from a description and return its glyph outlines, metrics and download links. Needs a signed-in person: the run is charged to their allowance.', inputSchema: schema(['prompt'], {
+        prompt: { type: 'string', minLength: 3, maxLength: 600, description: 'The typeface you want, in words ("rounded geometric sans for a kids app").' },
+        baseFamily: { type: 'string', maxLength: 80, description: 'An open font family to start from, as in the font library.' },
+        name: { type: 'string', maxLength: 60, description: 'The name of the face.' },
+    }) },
+    { name: 'openvibe_design_make_vector', description: 'Draw one clean SVG from a prompt and return it, sanitised and ready to use. Needs a signed-in person: the run is charged to their allowance.', inputSchema: schema(['prompt'], {
+        prompt: { type: 'string', minLength: 3, maxLength: 600, description: 'What to draw ("a paper plane folded from a single sheet").' },
+        kind: { type: 'string', enum: ['icon', 'illustration', 'pattern'], default: 'icon' },
+        note: { type: 'string', maxLength: 400, description: 'A note on the drawing, when you are changing one.' },
+    }) },
+].map(tool => ({ ...tool, annotations: { readOnlyHint: tool.name.indexOf('_make_') < 0, openWorldHint: false, destructiveHint: false } }));
 
 const rpc = (id, result) => ({ jsonrpc: '2.0', id, result });
 const error = (id, code, message) => ({ jsonrpc: '2.0', id, error: { code, message } });
@@ -73,8 +85,11 @@ function toolResult(value) {
     };
 }
 
-async function callTool(name, args, { catalog, fonts }) {
+async function callTool(name, args, ctx, req) {
     if (!object(args)) return toolError('Arguments must be an object.');
+    const { catalog, fonts } = ctx;
+    // The tools that make something are charged to the person who calls them, so they need a signed-in caller.
+    const person = req && req.viewer && req.viewer.kind === 'user' ? req.viewer.subject : null;
     switch (name) {
         case 'openvibe_design_list_themes': {
             if (args.query !== undefined && (typeof args.query !== 'string' || args.query.length > 200)) return toolError('query must be a string of at most 200 characters.');
@@ -148,6 +163,49 @@ async function callTool(name, args, { catalog, fonts }) {
             const font = await fonts.get(args.family);
             return font ? toolResult(font) : toolError('No font family by that slug.');
         }
+        case 'openvibe_design_make_typeface': {
+            if (!person) return toolError('Sign in on openvibe.design to make a typeface. The run is charged to your own allowance.');
+            if (typeof args.prompt !== 'string' || !args.prompt.trim() || args.prompt.length > 600) return toolError('prompt is a nonempty string of at most 600 characters.');
+            if (args.baseFamily !== undefined && (typeof args.baseFamily !== 'string' || args.baseFamily.length > 80)) return toolError('baseFamily is a string of at most 80 characters.');
+            if (args.name !== undefined && (typeof args.name !== 'string' || args.name.length > 60)) return toolError('name is a string of at most 60 characters.');
+            try {
+                const drawn = await ctx.maker.drawTypeface({ owner: person, prompt: args.prompt.trim(),
+                    baseFamily: args.baseFamily || null, name: args.name || null });
+                const id = ctx.s.newId('typ');
+                const saved = await ctx.aiStore.saveTypeface({
+                    id, owner: person, name: drawn.name, prompt: args.prompt.trim(),
+                    baseFamily: args.baseFamily || null, styleNotes: args.prompt.trim(),
+                    glyphs: drawn.glyphs, metrics: drawn.metrics, provider: drawn.provider, model: drawn.model,
+                    license: drawn.license, state: 'ready',
+                });
+                return toolResult({ id: saved.id, name: saved.name, glyphs: saved.glyphs.length, metrics: saved.metrics,
+                    model: saved.model, provider: saved.provider, license: saved.license,
+                    page: `${BASE}/fonts/made/${encodeURIComponent(saved.id)}`,
+                    download: { woff2: `${BASE}/api/v1/typefaces/${encodeURIComponent(saved.id)}/font.woff2`, otf: `${BASE}/api/v1/typefaces/${encodeURIComponent(saved.id)}/font.otf` } });
+            } catch (err) {
+                return toolError((err && err.detail) || 'The typeface could not be drawn.');
+            }
+        }
+        case 'openvibe_design_make_vector': {
+            if (!person) return toolError('Sign in on openvibe.design to make a vector. The run is charged to your own allowance.');
+            if (typeof args.prompt !== 'string' || !args.prompt.trim() || args.prompt.length > 600) return toolError('prompt is a nonempty string of at most 600 characters.');
+            if (args.kind !== undefined && !['icon', 'illustration', 'pattern'].includes(args.kind)) return toolError('kind is icon, illustration or pattern.');
+            if (args.note !== undefined && (typeof args.note !== 'string' || args.note.length > 400)) return toolError('note is a string of at most 400 characters.');
+            try {
+                const drawn = await ctx.maker.drawVector({ owner: person, prompt: args.prompt.trim(),
+                    kind: args.kind || 'icon', note: args.note || null });
+                const id = ctx.s.newId('vec');
+                const saved = await ctx.aiStore.saveVector({ id, owner: person, prompt: args.prompt.trim(),
+                    kind: drawn.kind, svg: drawn.svg, provider: drawn.provider, model: drawn.model,
+                    license: drawn.license, state: 'drawn' });
+                return toolResult({ id: saved.id, prompt: saved.prompt, kind: saved.kind, svg: saved.svg,
+                    model: saved.model, provider: saved.provider, license: saved.license,
+                    page: `${BASE}/vectors/made/${encodeURIComponent(saved.id)}`,
+                    download: { svg: `${BASE}/vectors/made/${encodeURIComponent(saved.id)}.svg`, png: `${BASE}/vectors/made/${encodeURIComponent(saved.id)}.png` } });
+            } catch (err) {
+                return toolError((err && err.detail) || 'The drawing could not be made.');
+            }
+        }
         default:
             return null;
     }
@@ -181,7 +239,7 @@ function createMcpRoutes(ctx) {
                 else if (msg.method === 'ping') replies.push(rpc(id, {}));
                 else if (msg.method === 'tools/list') replies.push(rpc(id, { tools: TOOLS }));
                 else if (msg.method === 'tools/call') {
-                    const result = await callTool(params.name, params.arguments || {}, ctx);
+                    const result = await callTool(params.name, params.arguments || {}, ctx, req);
                     replies.push(result ? rpc(id, result) : error(id, -32602, 'Unknown tool'));
                 } else replies.push(error(id, -32601, 'Method not found'));
             }

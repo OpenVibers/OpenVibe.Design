@@ -101,12 +101,16 @@ async function createApp(opts = {}) {
     const picks = opts.picks || require('./brand-picks').createBrandPicks({ db: s.db, now });
     const fonts = opts.fonts || createFontCatalog({ db: s.db, fetchImpl, now, log });
     await fonts.seedMissing();
+    // The typefaces and vectors a person makes with the model (plan R1 item 8): the store, the drawing
+    // service and the routes that serve them.
+    const aiStore = opts.aiStore || require('./typefaces/store').createStore({ db: s.db, log, now: () => new Date(now()) });
+    const maker = opts.maker || require('./typefaces/service').createService({ db: s.db, ai, store: aiStore, config, log, s, sharing });
     const accountSend = opts.accountSend || (config.oauth.clientSecret
         ? createNetworkSender({ networkInternalUrl: config.networkInternalUrl, clientId: config.oauth.clientId, clientSecret: config.oauth.clientSecret, fetch: fetchImpl })
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker,
         random: opts.random || Math.random,
     };
 
@@ -159,7 +163,6 @@ async function createApp(opts = {}) {
         referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     }));
     app.use(cookieParser());
-    app.use(createMcpRoutes(ctx));
     const agentLayer = express();
     const agentDescriptor = {
         id: 'design', name: 'OpenVibe.Design', purpose: 'Public theme tokens and component specifications.',
@@ -185,6 +188,9 @@ async function createApp(opts = {}) {
     // ── Who is signed in, then sign-in itself ───────────────
     app.use(sso.middleware());
     app.use('/auth', sso.routes());
+    // The MCP endpoint, after the session middleware: the tools that make a typeface or a vector are charged to
+    // the person who calls them, so they need to know who that is. The read-only tools answer as before.
+    app.use(createMcpRoutes(ctx));
 
     // ── Account export/deletion from OpenVibe.Events (loopback only) ──
     // Raw body first: the SDK verifies the delivery signature over the exact bytes.
@@ -279,6 +285,14 @@ async function createApp(opts = {}) {
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
     app.use(createIconRoutes(ctx));
+    // The typefaces and vectors a person makes with the model (plan R1 item 8): the makers, the
+    // specimens and the API for agents. These come before the font library's /fonts/:family, so
+    // /fonts/make is the maker and not a family called "make".
+    {
+        const { createTypefaceRoutes, createVectorRoutes } = require('./http/typefaces');
+        app.use(createTypefaceRoutes(ctx));
+        app.use(createVectorRoutes(ctx));
+    }
     app.use(createFontRoutes(ctx));
     app.use('/api', createApi(ctx));
     // GET /openapi.json (SEO-3): the API as OpenAPI 3.1. It is not in openvibe-contracts, so the document is read from

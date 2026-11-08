@@ -99,6 +99,13 @@ function load(env = process.env) {
             chatEditsPerDesign: Math.max(1, int(env.DESIGN_CHAT_EDITS_PER_DESIGN, 5)),
         },
 
+        // The typefaces and vectors a person makes with the model (plan R1 item 8): how many model runs
+        // one person may make a day. A typeface is several runs (the letters are drawn a batch at a time),
+        // so the cap counts runs, not pages.
+        aiMake: {
+            perDay: Math.max(0, int(env.DESIGN_AI_MAKE_PER_DAY, 20)),
+        },
+
         // Arena budgets and jobs. Both limits are per UTC day; the drill flag keeps the worker from starting.
         arena: {
             perDay: Math.max(1, int(env.DESIGN_ARENA_PER_DAY, 3)),
