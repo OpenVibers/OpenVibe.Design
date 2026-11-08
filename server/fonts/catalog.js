@@ -38,7 +38,8 @@ function pairings(f, all) {
         const category = f.category !== g.category;
         const height = a.xHeight !== b.xHeight;
         const era = a.era !== b.era;
-        return { family: g.family, id: g.id, category: g.category, score: (category ? 4 : 0) + (height ? 2 : 0) + (era ? 1 : 0),
+        const headWeight = g.files['700-normal'] ? 700 : g.files['600-normal'] ? 600 : g.files['400-normal'] ? 400 : Number(String(Object.keys(g.files)[0] || '400').split('-')[0]);
+        return { family: g.family, id: g.id, category: g.category, file: g.files[`${headWeight}-normal`] || Object.values(g.files)[0], weight: headWeight, score: (category ? 4 : 0) + (height ? 2 : 0) + (era ? 1 : 0),
             reason: [category && `contrasting ${g.category} and ${f.category} forms`, height && 'different x-height', era && 'classic and modern character'].filter(Boolean).join('; ') || 'a quieter companion' };
     }).sort((x, y) => y.score - x.score || x.family.localeCompare(y.family));
     const chosen = [];

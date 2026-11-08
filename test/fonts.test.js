@@ -23,7 +23,7 @@ const seed = require('../server/fonts/seed.json');
             assert.match(index.text, /fonts\/inter/);
             const detail = await t.get('/fonts/inter');
             assert.equal(detail.status, 200);
-            for (const text of ['Every style', 'OFL-1.1', 'Download WOFF2', '@font-face', 'Suggested pairings', 'SHA-384 integrity', 'integrity="sha384-']) assert.ok(detail.text.includes(text), text);
+            for (const text of ['Every style', 'OFL-1.1', 'Download the regular WOFF2', 'aria-label="Download Inter 400 normal (WOFF2)"', 'More styles <span>(', 'A heading in ', '@font-face', 'Suggested pairings', 'SHA-384 integrity', 'integrity="sha384-']) assert.ok(detail.text.includes(text), text);
             assert.equal((await t.get('/fonts/no-such-family')).status, 404);
         });
         await check('the API filters by category, script and weight and rejects missing families', async () => {
