@@ -12,6 +12,7 @@
  */
 const assert = require('node:assert/strict');
 const { boot, check, done } = require('./helpers/boot');
+const { signDeliveryHeaders } = require('openvibe-sdk/events');
 const { clean } = require('../server/typefaces/glyph');
 const { compile } = require('../server/typefaces/compile');
 const { sanitize } = require('../server/vectors/svg');
@@ -324,6 +325,50 @@ function fakeAi(overrides = {}) {
             assert.equal(runs.length, 2);
             assert.deepEqual(new Set(runs.map(r => r.kind)), new Set(['vector']));
         } finally { await capped.close(); }
+    });
+
+    // ── The account the work belongs to (ADR-033) ──
+    await check('an export carries the person\'s own typefaces and vectors; deleting the account takes them away', async () => {
+        const calls = [];
+        const secret = `fixture_${'design'.repeat(8)}`;
+        const t2 = await boot({ ai: fakeAi(), env: { DESIGN_EVENTS_SECRET: secret },
+            accountSend: async (path, body) => { calls.push({ path, body }); return { ok: true, status: 201, json: async () => ({}) }; } });
+        try {
+            const owner = t2.network.addUser('ida');
+            const stranger = t2.network.addUser('eve');
+            await t2.get('/api/v1/typefaces', { as: owner, method: 'POST', json: { prompt: 'a plain geometric sans', name: 'Kept Sans' } });
+            await t2.get('/api/v1/vectors', { as: owner, method: 'POST', json: { prompt: 'a small bird' } });
+            await t2.get('/api/v1/vectors', { as: stranger, method: 'POST', json: { prompt: 'another bird' } });
+
+            const exportEvent = { event_id: 'evt_01JZ0000000000000000000E11', event_type: 'network.account.export_requested', source: 'network',
+                payload: { export_id: 'exp_01JZ0000000000000000000EX2', subject: owner.subject } };
+            const raw = JSON.stringify({ event: exportEvent, seq: 1 });
+            const res = await t2.get('/internal/events', { method: 'POST', body: raw,
+                headers: { 'content-type': 'application/json', ...signDeliveryHeaders(raw, secret) } });
+            assert.equal(res.status, 200, res.text);
+            const part = calls.find((c) => c.path.startsWith('/internal/account-exports/'));
+            assert.ok(part, 'the part was pushed to Network');
+            const names = part.body.files.map((f) => f.name).sort();
+            assert.ok(names.includes('ai_typefaces.json'), names.join(', '));
+            assert.ok(names.includes('ai_vectors.json'), names.join(', '));
+            assert.ok(names.includes('ai_make_runs.json'), names.join(', '));
+            const all = JSON.stringify(part.body);
+            assert.ok(all.includes('Kept Sans'), 'the typeface travels with the person');
+            assert.ok(!all.includes(stranger.subject), 'another account is never named');
+
+            const deleteEvent = { event_id: 'evt_01JZ0000000000000000000D11', event_type: 'network.account.deleted', source: 'network',
+                payload: { deletion_id: 'del_01JZ0000000000000000000DE2', subject: owner.subject, aliases: [] } };
+            const rawDelete = JSON.stringify({ event: deleteEvent, seq: 1 });
+            const gone = await t2.get('/internal/events', { method: 'POST', body: rawDelete,
+                headers: { 'content-type': 'application/json', ...signDeliveryHeaders(rawDelete, secret) } });
+            assert.equal(gone.status, 200, gone.text);
+            assert.equal(gone.json().outcome, 'erased');
+            const db = t2.ctx.s.db;
+            assert.equal(Number(await db.value('SELECT COUNT(*) FROM ai_typefaces WHERE owner = $1', [owner.subject])), 0);
+            assert.equal(Number(await db.value('SELECT COUNT(*) FROM ai_vectors WHERE owner = $1', [owner.subject])), 0);
+            assert.equal(Number(await db.value('SELECT COUNT(*) FROM ai_make_runs WHERE owner = $1', [owner.subject])), 0);
+            assert.ok(Number(await db.value('SELECT COUNT(*) FROM ai_vectors WHERE owner = $1', [stranger.subject])) > 0, 'another person\'s drawing stays');
+        } finally { await t2.close(); }
     });
 
     // ── When the model is not there ──
