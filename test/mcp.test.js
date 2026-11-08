@@ -23,6 +23,7 @@ const components = require('openvibe-shared/components');
                 'openvibe_design_list_components', 'openvibe_design_get_component',
                 'openvibe_design_validate_kit_document',
                 'openvibe_design_icon_search', 'openvibe_design_icon_svg', 'openvibe_design_icon_code', 'openvibe_design_icon_migrate',
+                'openvibe_design_list_fonts', 'openvibe_design_get_font',
             ]);
             assert.ok(listed.every(x => x.inputSchema && x.annotations.readOnlyHint));
             assert.strictEqual((await t.get('/mcp', { method: 'OPTIONS' })).status, 204);

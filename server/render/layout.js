@@ -33,6 +33,7 @@ const NAV = [
     { label: 'Loading', href: '/loading', icon: 'fa-hourglass-half', more: true },
     { label: 'Forms', href: '/forms', icon: 'fa-list-check', more: true },
     { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
+    { label: 'Fonts', href: '/fonts', icon: 'fa-font', more: true },
     { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
     { label: 'Kit', href: '/kit', icon: 'fa-cubes', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
@@ -49,7 +50,7 @@ const baseUrl = () => BASE;
 const canonical = (p) => `${BASE}${p || '/'}`;
 
 /** The page around a body: the shared shell with the room's stylesheets and behaviour. */
-function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [], image, imageAlt, shared = [], sharedStyles = [] } = {}) {
+function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [], preloads = [], image, imageAlt, shared = [], sharedStyles = [] } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
     const navbar = {
@@ -87,6 +88,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
 ${(sharedStyles || []).map((file) => `<link rel="stylesheet" href="${esc(ovServe.url(file))}">`).join('\n')}
 ${(styles || []).map((rel) => `<link rel="stylesheet" href="${esc(asset(rel))}">`).join('\n')}
 ${(inlineStyles || []).map((css) => `<style>${css}</style>`).join('\n')}
+${preloads.map(p => `<link rel="preload" as="font" type="font/woff2" href="${esc(p.url)}" crossorigin integrity="${esc(p.sri)}">`).join('\n')}
 <script src="${esc(ovServe.url('kit-web.js'))}" defer></script>
 <script src="${esc(ovServe.url('motion.js'))}" defer></script>
 ${(shared || []).map((file) => `<script src="${esc(ovServe.url(file))}" defer></script>`).join('\n')}

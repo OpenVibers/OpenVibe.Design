@@ -1,0 +1,1678 @@
+[
+  {
+    "id": "abril-fatface",
+    "family": "Abril Fatface",
+    "designer": "TypeTogether",
+    "category": "display",
+    "weights": [
+      400
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v25",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/abrilfatface",
+    "files": {
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/abril-fatface@5.3.0/latin-400-normal.woff2"
+    },
+    "sri": "sha384-wpDjVWX1raklpoCthpT+SqPotxqGYsT8rnl9vOxxtp35U2RCo75d5JEHgDqOl7YV"
+  },
+  {
+    "id": "cormorant-garamond",
+    "family": "Cormorant Garamond",
+    "designer": "Christian Thalmann",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v21",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/cormorantgaramond",
+    "files": {
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/cormorant-garamond@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-C7LOiVF8vrW1L9HuZmyWfOOwJ/AklDdrU0e8qUh/vUCDauoEUDgdnz84hC8u5UKR"
+  },
+  {
+    "id": "dancing-script",
+    "family": "Dancing Script",
+    "designer": "Impallari Type",
+    "category": "handwriting",
+    "weights": [
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v29",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/dancingscript",
+    "files": {
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dancing-script@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dancing-script@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dancing-script@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dancing-script@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-lrSz6x6b6m90dJcsoNLhQhuKJXyrVxpHZVtubEuWgw2Pdg1znt+/jxv9YGhfvjJ0"
+  },
+  {
+    "id": "dm-sans",
+    "family": "DM Sans",
+    "designer": "Colophon Foundry",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v17",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/dmsans",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/dm-sans@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-ZdBBucdtQA81cDAiMrRzG0sKtablpH7avbTQ8sL/bLTJaRLqKw3iRRIk7BlZXmBL"
+  },
+  {
+    "id": "fira-code",
+    "family": "Fira Code",
+    "designer": "The Mozilla Foundation, Telefonica S.A., Nikita Prokopov",
+    "category": "monospace",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "symbols2"
+    ],
+    "license": "OFL-1.1",
+    "version": "v27",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/firacode",
+    "files": {
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-code@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-code@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-code@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-code@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-code@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-8yWSvZzF1qfjfXS1YbHQUZEefwH+Xr7wHeqdaG0dWfVTJyqZrzfkxNN1K9Sn1WFG"
+  },
+  {
+    "id": "fira-sans",
+    "family": "Fira Sans",
+    "designer": "Carrois Apostrophe",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v18",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/firasans",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/fira-sans@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-+mFWbPBWAziTjtBaXJHKLKt8ciu/OCjv0taTqX0caIJ0siDoWne4W6miuaELAXvj"
+  },
+  {
+    "id": "ibm-plex-mono",
+    "family": "IBM Plex Mono",
+    "designer": "Mike Abbink, Bold Monday",
+    "category": "monospace",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v20",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/ibmplexmono",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-mono@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-oFQAuS7n3CFHgvwGpuoFV1kPR39MQLTlQIL+UnoEvMkkFZsrFNOZy/f7x+DofQNH"
+  },
+  {
+    "id": "inconsolata",
+    "family": "Inconsolata",
+    "designer": "Raph Levien",
+    "category": "monospace",
+    "weights": [
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v37",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/inconsolata",
+    "files": {
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inconsolata@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-SadIt3drVYfBAGMttu7SYdoD0icQVq35V3MfX8oSCrAJCwrQtE19i4TDCYb9ZTHZ"
+  },
+  {
+    "id": "inter",
+    "family": "Inter",
+    "designer": "Rasmus Andersson",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v20",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/inter",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-tqh0FAOjwwo8QcrfmptsbU/OH9394dupGj2d2zJQ7lFJdE5ouzRr13+2JlwV7vrE"
+  },
+  {
+    "id": "jetbrains-mono",
+    "family": "JetBrains Mono",
+    "designer": "JetBrains, Philipp Nurullin, Konstantin Bulenkov",
+    "category": "monospace",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v24",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/jetbrainsmono",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@5.3.0/latin-800-normal.woff2"
+    },
+    "sri": "sha384-/4dCc3INKaFZBsZMku6bd44i8Gr1uXW1GYvdcNjsbHXHh2nGnk9G4RAhHf8hx3GT"
+  },
+  {
+    "id": "josefin-sans",
+    "family": "Josefin Sans",
+    "designer": "Santiago Orozco",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v34",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/josefinsans",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/josefin-sans@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-dnO5dwLeQGRECJGM/PT1eRqKbkQTCefJr96a9obMYjlDnlpYSmCqZYnA3n2LxpXU"
+  },
+  {
+    "id": "lato",
+    "family": "Lato",
+    "designer": "Łukasz Dziedzic",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      300,
+      400,
+      700,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v25",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/lato",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-100-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-400-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-700-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lato@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-+chn3xqCWRPSXDBtVEFQn+0J9Gb0SYR2FO1WrXo+L/arnyr8lXLVX2p0BqZIUemc"
+  },
+  {
+    "id": "libre-baskerville",
+    "family": "Libre Baskerville",
+    "designer": "Impallari Type",
+    "category": "serif",
+    "weights": [
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v24",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/librebaskerville",
+    "files": {
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/libre-baskerville@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-uRckE2OjWTlzltjCXxrZffS/bXnLA6oEECyxYUb3eix/O1iaEoOdEnkaHoB2R36J"
+  },
+  {
+    "id": "lora",
+    "family": "Lora",
+    "designer": "Cyreal",
+    "category": "serif",
+    "weights": [
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "math",
+      "symbols",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v37",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/lora",
+    "files": {
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/lora@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-4K0WjzceC/SOy/usx6omCD3VyEOFfhpO97BismDBHNTJVOkoaAqmoEOWkiDGJr/8"
+  },
+  {
+    "id": "manrope",
+    "family": "Manrope",
+    "designer": "Mikhail Sharanda",
+    "category": "sans-serif",
+    "weights": [
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v20",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/manrope",
+    "files": {
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/manrope@5.3.0/latin-800-normal.woff2"
+    },
+    "sri": "sha384-MZMzLPF8CUlQGCqf+feQOIKEzmoRP/SDPngpfNIiv7DasqbtsikGsheLZWB98pAR"
+  },
+  {
+    "id": "merriweather",
+    "family": "Merriweather",
+    "designer": "Sorkin Type",
+    "category": "serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v33",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/merriweather",
+    "files": {
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/merriweather@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-ZgZJGQ6rET5qzeALEh9evIZFPZkUYTzCcGEuYSyWnqSwzXc9Qyefyu+AJ+ynNhyi"
+  },
+  {
+    "id": "montserrat",
+    "family": "Montserrat",
+    "designer": "Julieta Ulanovsky, Sol Matas, Juan Pablo del Peral, Jacques Le Bailly",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v31",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/montserrat",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/montserrat@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-TZp3MNli7D4I9HF7ut1KGl19b69Ah6oafBq+SgFy8VzLt3vFx74DrLJ2Jt/z5gUY"
+  },
+  {
+    "id": "noto-sans-arabic",
+    "family": "Noto Sans Arabic",
+    "designer": "Google",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "arabic",
+      "latin",
+      "latin-ext",
+      "math",
+      "symbols"
+    ],
+    "license": "OFL-1.1",
+    "version": "v33",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/notosansarabic",
+    "files": {
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-100-normal.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-arabic@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-ktrmBjgMzmznHZm9VmzUAl/2ht+E/QB11F4mctEPuHTmK7VU8KeItUlJ945Qv6FI"
+  },
+  {
+    "id": "noto-sans-devanagari",
+    "family": "Noto Sans Devanagari",
+    "designer": "Google",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "devanagari",
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v30",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/notosansdevanagari",
+    "files": {
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-100-normal.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-devanagari@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-6qvgeq5MT8DL150wuVD7QhgdnpuMOQcit0+3WA+BihqdLH9QNWAIJVwOkPLByDHK"
+  },
+  {
+    "id": "noto-sans-jp",
+    "family": "Noto Sans JP",
+    "designer": "Google",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "japanese",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v57",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/notosansjp",
+    "files": {
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-100-normal.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-jp@5.3.1/latin-900-normal.woff2"
+    },
+    "sri": "sha384-ZMGxbGF40IH+TlOdWEUxyz1qJOy2eWeNBhWXMgE3ytakMsKeDuj4RoAPPwuk8THu"
+  },
+  {
+    "id": "noto-sans-kr",
+    "family": "Noto Sans KR",
+    "designer": "Google",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "korean",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v40",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/notosanskr",
+    "files": {
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-100-normal.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@5.3.1/latin-900-normal.woff2"
+    },
+    "sri": "sha384-MQrIcZ3XdaBQuSgSMpZ5h4v6YE0xA6sy9r3IKqiQsb3b6tD6npc3FosmBEm/DHbo"
+  },
+  {
+    "id": "noto-serif",
+    "family": "Noto Serif",
+    "designer": "Google",
+    "category": "serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "math",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v33",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/notoserif",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/noto-serif@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-mErvIjhu9VEDQVGNFT+/Ax8p/AQ8jA03O3yWHCu9Gbkds3UzFuAaOPJgshiPzsOZ"
+  },
+  {
+    "id": "nunito",
+    "family": "Nunito",
+    "designer": "Vernon Adams, Cyreal, Jacques Le Bailly",
+    "category": "sans-serif",
+    "weights": [
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v32",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/nunito",
+    "files": {
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/nunito@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-/Q+nUswFTZOi6aXONHIluy9SKfcuGoXESMYZkW//IgytrlO29H5JEwZ7KyeFzHJf"
+  },
+  {
+    "id": "open-sans",
+    "family": "Open Sans",
+    "designer": "Steve Matteson",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "hebrew",
+      "latin",
+      "latin-ext",
+      "math",
+      "symbols",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v44",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/opensans",
+    "files": {
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/open-sans@5.3.0/latin-800-normal.woff2"
+    },
+    "sri": "sha384-y5c6efoQ3OOtWXIDzjW2R3FJVtHOFICtnJqM5+8NHiPlG95BTMDNxiS862cIaIyx"
+  },
+  {
+    "id": "oswald",
+    "family": "Oswald",
+    "designer": "Vernon Adams, Kalapi Gajjar, Cyreal",
+    "category": "sans-serif",
+    "weights": [
+      200,
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v57",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/oswald",
+    "files": {
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/oswald@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/oswald@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/oswald@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/oswald@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/oswald@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/oswald@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-pAZFASbk49K48F9Ak4QWKRMPCS+PUVOTyZ8lbOmavPcxXfSm2MXJz7RYx/sj79m4"
+  },
+  {
+    "id": "outfit",
+    "family": "Outfit",
+    "designer": "Smartsheet Inc, Rodrigo Fuenzalida",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v15",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/outfit",
+    "files": {
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-100-normal.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/outfit@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-LAIKRxjNJSUYh5JU9qx1to4Cg5fiTZmEHpe+giOnsw5m/9nofEsQw+b65hqvaQio"
+  },
+  {
+    "id": "permanent-marker",
+    "family": "Permanent Marker",
+    "designer": "Font Diner",
+    "category": "handwriting",
+    "weights": [
+      400
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "latin"
+    ],
+    "license": "Apache-2.0",
+    "version": "v16",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/apache/permanentmarker",
+    "files": {
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/permanent-marker@5.3.0/latin-400-normal.woff2"
+    },
+    "sri": "sha384-vT5xTr25YOIF7ASHObdDkQnLzyunaZ1r9FRHtYCen88HCgzujW8tWPo6rzU2vt77"
+  },
+  {
+    "id": "playfair-display",
+    "family": "Playfair Display",
+    "designer": "Claus Eggers Sørensen",
+    "category": "serif",
+    "weights": [
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v40",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/playfairdisplay",
+    "files": {
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-eIw2aTe54daHavGiBUeDMN9SiosN3q5uI4UASs2J59iv0Rje8ZTBs6dq/jw8WKEI"
+  },
+  {
+    "id": "poppins",
+    "family": "Poppins",
+    "designer": "Indian Type Foundry, Jonny Pinhorn, Ninad Kale",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "devanagari",
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v24",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/poppins",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/poppins@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-W4IwjlabTeW68fblL1nwDvUYgUVRfBlSg7TwKfQGYAuYTkO+zEQFxqxcc6hCAyp4"
+  },
+  {
+    "id": "raleway",
+    "family": "Raleway",
+    "designer": "Matt McInerney, Pablo Impallari, Rodrigo Fuenzalida",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v37",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/raleway",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/raleway@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-3TJ5i8gimHsS/euAR5EX6GeSQlDDV1iYtoHAzCtoza0M5y4Jy7FELGLUQiFFbgbd"
+  },
+  {
+    "id": "roboto",
+    "family": "Roboto",
+    "designer": "Christian Robertson, ParaType, Font Bureau",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "math",
+      "symbols",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v51",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/roboto",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-cL8xRHWIL6DOapsGZvH0PmgY8FHJfx1/oZFwZsJdZtGrbgWNFiUSs6P2RQldUJuZ"
+  },
+  {
+    "id": "roboto-slab",
+    "family": "Roboto Slab",
+    "designer": "Christian Robertson",
+    "category": "serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "Apache-2.0",
+    "version": "v36",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/apache/robotoslab",
+    "files": {
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-100-normal.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-200-normal.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-700-normal.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-800-normal.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/roboto-slab@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-8jbBGEUvybflDyOzrH9bExjVKMnrgI5Pno4lP5PVxiesK+IBAmy3bUnJqitpZlBu"
+  },
+  {
+    "id": "rubik",
+    "family": "Rubik",
+    "designer": "Hubert and Fischer, Meir Sadan, Cyreal, Daniel Grumer, Omaima Dajani",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "arabic",
+      "cyrillic",
+      "cyrillic-ext",
+      "hebrew",
+      "latin",
+      "latin-ext"
+    ],
+    "license": "OFL-1.1",
+    "version": "v31",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/rubik",
+    "files": {
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/rubik@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-h6cxownIAO3b8G3yOMfioFISos4smxsXsfM2SuVeBOt+EWzON5L8IrtaLvpmwcvk"
+  },
+  {
+    "id": "source-sans-3",
+    "family": "Source Sans 3",
+    "designer": "Paul D. Hunt",
+    "category": "sans-serif",
+    "weights": [
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v20",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/sourcesans3",
+    "files": {
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@5.3.1/latin-900-normal.woff2"
+    },
+    "sri": "sha384-YbPa4/38CWQVCsfXlRcOJywm27n3RERUyzIuomA7HNoa7hcXwEy5uL9nHMyXj8Hb"
+  },
+  {
+    "id": "source-serif-4",
+    "family": "Source Serif 4",
+    "designer": "Frank Grießhammer",
+    "category": "serif",
+    "weights": [
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v15",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/sourceserif4",
+    "files": {
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/source-serif-4@5.3.1/latin-900-normal.woff2"
+    },
+    "sri": "sha384-QH8kQ1dp35FXXdgaYtl6lRIMtjT62fMRls72L4GH5Apv6brOezk4QZWWj/Sam95h"
+  },
+  {
+    "id": "space-grotesk",
+    "family": "Space Grotesk",
+    "designer": "Florian Karsten",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      600,
+      700
+    ],
+    "styles": [
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v22",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/spacegrotesk",
+    "files": {
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@5.3.0/latin-300-normal.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@5.3.0/latin-400-normal.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@5.3.0/latin-500-normal.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@5.3.0/latin-600-normal.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-LN9HSpXtfJY+J/HQtn1ux4LTp3GzWE5bXPvrP3x2ydU9Fj4Ie3RJ8RUqZX8c834d"
+  },
+  {
+    "id": "ubuntu",
+    "family": "Ubuntu",
+    "designer": "Dalton Maag",
+    "category": "sans-serif",
+    "weights": [
+      300,
+      400,
+      500,
+      700
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "greek-ext",
+      "latin",
+      "latin-ext"
+    ],
+    "license": "UFL-1.0",
+    "version": "v21",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ufl/ubuntu",
+    "files": {
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-500-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/ubuntu@5.3.0/latin-700-normal.woff2"
+    },
+    "sri": "sha384-jGsKWVoTkCuJGW0HOJgSCbQQtkTaHgnKbzKERY4HBWzy6WWCGvTYfvkugA578CAT"
+  },
+  {
+    "id": "work-sans",
+    "family": "Work Sans",
+    "designer": "Wei Huang",
+    "category": "sans-serif",
+    "weights": [
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900
+    ],
+    "styles": [
+      "italic",
+      "normal"
+    ],
+    "subsets": [
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ],
+    "license": "OFL-1.1",
+    "version": "v24",
+    "source": "https://github.com/google/fonts",
+    "license_url": "https://github.com/google/fonts/tree/main/ofl/worksans",
+    "files": {
+      "100-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-100-italic.woff2",
+      "100-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-100-normal.woff2",
+      "200-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-200-italic.woff2",
+      "200-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-200-normal.woff2",
+      "300-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-300-italic.woff2",
+      "300-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-300-normal.woff2",
+      "400-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-400-italic.woff2",
+      "400-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-400-normal.woff2",
+      "500-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-500-italic.woff2",
+      "500-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-500-normal.woff2",
+      "600-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-600-italic.woff2",
+      "600-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-600-normal.woff2",
+      "700-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-700-italic.woff2",
+      "700-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-700-normal.woff2",
+      "800-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-800-italic.woff2",
+      "800-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-800-normal.woff2",
+      "900-italic": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-900-italic.woff2",
+      "900-normal": "https://cdn.jsdelivr.net/fontsource/fonts/work-sans@5.3.0/latin-900-normal.woff2"
+    },
+    "sri": "sha384-x6cgTi/NG/0nnQyCVkB8w/JUcS7wSz8cG5AEGjk2qktSQfVtBz259hNqnzRKhRnV"
+  }
+]
