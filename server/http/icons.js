@@ -25,7 +25,7 @@
  *   GET  /api/v1/glyphs/drafts          approved drafts, for openvibe-shared to take in (an admin may ask for others)
  */
 const express = require('express');
-const { http } = require('openvibe-contracts');
+const { http, serviceAuth, capabilities } = require('openvibe-contracts');
 const glyphs = require('openvibe-shared/glyphs');
 const { asyncRouter } = require('./router');
 const { send, baseUrl } = require('../render/layout');
@@ -87,6 +87,51 @@ function createIconRoutes(ctx) {
     const isAdmin = (req) => !!(req.viewer && req.viewer.kind === 'user' && req.viewer.role === 'admin');
     const problem = (res, req, status, code, detail) => http.sendProblem(res, status, code, { detail, ctx: req.ov });
     const back = (res, q) => res.redirect(303, `/icons?${new URLSearchParams(q)}#draw`);
+    const serviceDrafts = new Map();
+
+    // First-party requests use the same staff review queue as the icon form.
+    r.post('/api/v1/glyphs/drafts', express.json({ limit: '2kb' }), async (req, res) => {
+        res.set('Cache-Control', 'no-store');
+        const header = String(req.headers.authorization || '');
+        if (!header.startsWith('Bearer ')) return problem(res, req, 401, 'token.required', 'A service token is required.');
+        const publicKey = ctx.keys.get();
+        if (!publicKey) return problem(res, req, 503, 'identity.unavailable', 'The Network signing key is unavailable.');
+        const verified = serviceAuth.verifyServiceToken(header.slice(7).trim(), {
+            publicKey, issuer: config.networkIssuer, audience: 'openvibe.design',
+        });
+        if (!verified.ok) return problem(res, req, 401, verified.code || 'token.invalid', 'The service token did not verify.');
+        const claims = verified.claims;
+        if (claims.actor_type !== 'service' || !/^svc:[a-z0-9_-]+$/.test(String(claims.sub || '')) ||
+            !capabilities.grants(claims.cap, 'design.glyph.draft')) {
+            return problem(res, req, 403, 'capability.denied', 'This service cannot request glyph drafts.');
+        }
+        const name = String(req.body?.name || '').trim().toLowerCase();
+        const sentence = String(req.body?.sentence || '').trim();
+        if (!req.body || typeof req.body !== 'object' || Object.keys(req.body).some((k) => !['name', 'sentence'].includes(k)) ||
+            !/^[a-z][a-z0-9-]{1,31}$/.test(name) || sentence.length < 3 || sentence.length > 200) {
+            return problem(res, req, 422, 'design.glyph_draft_invalid', 'Use a short glyph name and a sentence up to 200 characters.');
+        }
+        const subject = `service:${claims.sub.slice(4)}`;
+        const key = `${subject}:${name}`;
+        const run = async () => {
+            const prior = await s.db.many("SELECT id,status FROM glyph_drafts WHERE subject=$1 AND name=$2 AND status IN ('draft','approved') ORDER BY created_at DESC LIMIT 8", [subject, name]);
+            if (prior.length) return { name, status: prior.some((d) => d.status === 'approved') ? 'approved' : 'pending',
+                draft_ids: prior.map((d) => d.id).sort(), created: false };
+            const out = await drafts.draft({ subject, name, sentence, service: true });
+            if (!out.kept.length) throw Object.assign(new Error('No candidate passed the glyph checks.'), { status: 503 });
+            return { name, status: 'pending', draft_ids: out.kept.map((d) => d.id).sort(), created: true };
+        };
+        if (!serviceDrafts.has(key)) serviceDrafts.set(key, run().finally(() => serviceDrafts.delete(key)));
+        try {
+            const result = await serviceDrafts.get(key);
+            return res.status(result.created ? 201 : 200).json(result);
+        } catch (err) {
+            if (!err.status || err.status >= 500) log.warn('[OpenVibe.Design] service glyph draft failed:', err && err.message);
+            return problem(res, req, err.status && err.status < 500 ? err.status : 503,
+                err.status === 429 ? 'design.glyph_draft_limit' : 'design.glyph_draft_unavailable',
+                err.status && err.status < 500 ? err.message : 'The glyph draft is unavailable.');
+        }
+    });
 
     r.get('/icons', async (req, res) => {
         const subject = subjectOf(req);

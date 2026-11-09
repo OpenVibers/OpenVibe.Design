@@ -64,7 +64,7 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         db.exec("DELETE FROM glyph_guest_draws WHERE created_at < now() - interval '2 days'").catch(() => {});
     }
 
-    async function draft({ subject, name, sentence = '', guest = null, styles = null, sourceSvg = '' }) {
+    async function draft({ subject, name, sentence = '', guest = null, service = false, styles = null, sourceSvg = '' }) {
         if (!subject && !guest) throw Object.assign(new Error('sign in to draw an icon'), { status: 401 });
         if (guest && !/^[0-9a-f]{16,64}$/.test(String(guest.id || ''))) throw Object.assign(new Error('this browser cannot draw without signing in'), { status: 400 });
         const who = subject || `guest:${guest.id}`;
@@ -96,7 +96,7 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
                 // aren't logged in… log in for the maximum tier, Anthropic"). Signed in: Claude Opus 5.5 first, on the
                 // person's own key when they have one, else OpenVibe's Anthropic offer. A guest: the cheapest offer that
                 // can do the job, on OpenVibe's, inside the guest caps above.
-                ...(subject ? { person: subject, prefer: CLAUDE } : { preset: { name: 'cheapest' } }),
+                ...(subject && !service ? { person: subject, prefer: CLAUDE } : { preset: { name: 'cheapest' } }),
             });
             let got = [];
             try {
