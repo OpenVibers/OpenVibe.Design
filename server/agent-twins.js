@@ -12,7 +12,7 @@ const express = require('express');
 const agentLayer = require('openvibe-shared/agent-layer');
 
 // /developers (the theme API) is on the same page router: an agent's most useful page here (11-03).
-const TWIN_PATH_RE = /^\/(?:arena|brand|components|developers|kit|loading|look|motion|studio|tokens|t\/[A-Za-z0-9_-]+)?$/;
+const TWIN_PATH_RE = /^\/(?:arena|brand|components|developers|fonts(?:\/make)?|forms|kit|loading|look|motion|studio|tokens|vectors\/make|t\/[A-Za-z0-9_-]+)?$/;
 
 /** A response the page code can write to; the first body written is the page's HTML. */
 function mockRes() {

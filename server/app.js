@@ -285,15 +285,28 @@ async function createApp(opts = {}) {
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
     app.use(createIconRoutes(ctx));
+    // The public page routers are built before they are mounted: the Markdown twins render through the same routers
+    // (server/agent-twins.js), so a twin cannot drift from the page a browser gets.
+    const { createTypefaceRoutes, createVectorRoutes } = require('./http/typefaces');
+    const typefaceRoutes = createTypefaceRoutes(ctx);
+    const vectorRoutes = createVectorRoutes(ctx);
+    const fontRoutes = createFontRoutes(ctx);
+    const pageRoutes = createPageRoutes(ctx);
+    const twinRouter = express.Router();
+    twinRouter.use(typefaceRoutes);
+    twinRouter.use(vectorRoutes);
+    twinRouter.use(fontRoutes);
+    twinRouter.use(pageRoutes);
+    // The Markdown twins of the public pages, and the head link and Link: header that name them (SEO-1,
+    // server/agent-twins.js): a twin is the page rendered signed out. Mounted before every page router so a
+    // page that answers 200 names its own twin.
+    require('./agent-twins').mountTwins(app, { router: twinRouter, descriptor: agentDescriptor, baseUrl: ctx.config.baseUrl });
     // The typefaces and vectors a person makes with the model (plan R1 item 8): the makers, the
     // specimens and the API for agents. These come before the font library's /fonts/:family, so
     // /fonts/make is the maker and not a family called "make".
-    {
-        const { createTypefaceRoutes, createVectorRoutes } = require('./http/typefaces');
-        app.use(createTypefaceRoutes(ctx));
-        app.use(createVectorRoutes(ctx));
-    }
-    app.use(createFontRoutes(ctx));
+    app.use(typefaceRoutes);
+    app.use(vectorRoutes);
+    app.use(fontRoutes);
     app.use('/api', createApi(ctx));
     // GET /openapi.json (SEO-3): the API as OpenAPI 3.1. It is not in openvibe-contracts, so the document is read from
     // the routes this app mounts under /api/, with the summaries the API files' header comments give them
@@ -319,10 +332,6 @@ async function createApp(opts = {}) {
     app.use('/tokens', createTokenFileRoutes(ctx));
 
     // ── Pages ───────────────────────────────────────────────
-    const pageRoutes = createPageRoutes(ctx);
-    // The Markdown twins of the public pages, and the head link and Link: header that name them (SEO-1,
-    // server/agent-twins.js): a twin is the page rendered signed out.
-    require('./agent-twins').mountTwins(app, { router: pageRoutes, descriptor: agentDescriptor, baseUrl: ctx.config.baseUrl });
     app.use(pageRoutes);
 
     // eslint-disable-next-line no-unused-vars
