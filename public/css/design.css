@@ -674,11 +674,12 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 /* /look: the icon styles side by side (server/views/look.js iconStyles): three small phone screens drawn with the
    real glyphs. Each is a button that picks its style; the picked one wears the accent. */
 .lk-styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:2px 14px 16px}
-.lk-style{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;min-width:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.lk-style:focus-visible .lk-st-screen{outline:2px solid var(--accent);outline-offset:3px}
+.lk-style input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.lk-style{all:unset;position:relative;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;min-width:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lk-style:has(input:focus-visible) .lk-st-screen{outline:2px solid var(--accent);outline-offset:3px}
 .lk-st-screen{display:flex;flex-direction:column;gap:7px;padding:10px 10px 0;border-radius:18px;border:1px solid var(--border,color-mix(in srgb, var(--text-primary, #fff) 10%, transparent));background:var(--bg-primary);color:var(--text-primary);overflow:hidden;transition:border-color var(--ov-dur-2,.2s) var(--ov-ease-out,ease-out),transform var(--ov-dur-2,.2s) var(--ov-ease-out,ease-out)}
 .lk-style:hover .lk-st-screen{border-color:color-mix(in srgb,var(--accent) 55%,var(--border,transparent))}
-.lk-style[aria-pressed="true"] .lk-st-screen{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.lk-style:has(input:checked) .lk-st-screen{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .lk-style:active .lk-st-screen{transform:scale(.98)}
 .lk-st-head{display:flex;align-items:center;gap:8px;font-size:21px;padding-bottom:2px}
 .lk-st-title{flex:1 1 auto;height:9px;border-radius:5px;background:color-mix(in srgb,var(--text-primary) 70%,transparent);max-width:48%}
@@ -693,7 +694,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .lk-st-cap{display:flex;flex-direction:column;gap:2px;padding:0 2px}
 .lk-st-cap b{font-size:14px}
 .lk-st-cap small{color:var(--text-muted);font-size:12px;line-height:1.35}
-.lk-style[aria-pressed="true"] .lk-st-cap b{color:var(--accent)}
+.lk-style:has(input:checked) .lk-st-cap b{color:var(--accent)}
 @media (max-width:480px){.lk-styles{gap:8px}.lk-st-screen{padding:8px 7px 0;border-radius:14px}.lk-st-head{font-size:19px;gap:6px}.lk-st-lines>span+span{display:none}.lk-st-bar{margin:4px -7px 0;font-size:15px}.lk-st-tab{width:26px}.lk-st-cap small{font-size:11px}}
 @media (prefers-reduced-motion:reduce){.lk-st-screen{transition:none}.lk-style:active .lk-st-screen{transform:none}}
 

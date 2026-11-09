@@ -17,7 +17,7 @@ function list() {
         {
             id: 'design-page',
             title: 'Designing a page',
-            used: 'Create, the Studio and the Arena: every page, screen, component or logo a model draws.',
+            used: 'Create and the Arena: every page, screen, component or logo a model draws.',
             source: 'server/arena/ai.js',
             parts: [
                 { label: 'System prompt (the category changes per request)', text: systemPrompt('{category}') },
@@ -28,14 +28,14 @@ function list() {
         {
             id: 'design-theme',
             title: 'Drawing it in your theme',
-            used: 'Create and the Studio, when a design is drawn in the theme you picked.',
+            used: 'Create, when a design is drawn in the theme you picked.',
             source: 'server/designs.js',
             parts: [{ label: 'The request', text: themePrompt('{your prompt}', ['{the theme\'s colour variables}']) }],
         },
         {
             id: 'design-edit',
             title: 'Editing a design',
-            used: 'The Studio, when you ask for a change in words.',
+            used: 'Create, when you ask for a change in words.',
             source: 'server/designs.js',
             parts: [{ label: 'The request', text: editPrompt('{your instruction}', '{the current page}', '{the theme\'s colour variables}') }],
         },

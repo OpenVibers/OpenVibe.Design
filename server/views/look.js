@@ -19,8 +19,8 @@ const SITES = [['live', 'OpenVibe.Live'], ['chat', 'OpenVibe.Chat'], ['games', '
  * The three icon styles side by side, each a small phone screen drawn with the real glyphs (ov-glyphs.js): a header
  * with icons above 18 px, rows with small ones and an app bar whose current tab is solid. Line and Solid force their
  * style on every icon (.ovg-line, .ovg-solid); Auto resets the person's own choice (--ovg-pref) so it shows what
- * Auto does: solid where an icon is small, lines where it is large. A screen is a button that picks its style
- * (public/js/look.js), the same as the Icons choice above it.
+ * Auto does: solid where an icon is small, lines where it is large. The three screens ARE the choice (one radio group,
+ * name "icons"): a second control beside them said the same thing twice.
  */
 function iconStyles() {
     const STYLES = [
@@ -35,7 +35,7 @@ function iconStyles() {
         const bar = ['fa-house', 'fa-compass', 'fa-bell', 'fa-user'].map((n, k) => `<span class="lk-st-tab"${k === 0 ? ' aria-current="page"' : ''}>${i(n, force)}</span>`).join('');
         return `<span class="lk-st-screen"${style === 'auto' ? ' style="--ovg-pref:18.4px"' : ''}><span class="lk-st-head"><span class="lk-st-title"></span>${i('fa-magnifying-glass', force)}${i('fa-bell', force)}</span>${rows}<span class="lk-st-bar">${bar}</span></span>`;
     };
-    return `<div class="lk-styles" role="group" aria-label="The icon styles, side by side">${STYLES.map(([id, name, what]) => `<button type="button" class="lk-style" data-pick-icons="${id}" aria-pressed="${id === 'auto' ? 'true' : 'false'}">${screen(id)}<span class="lk-st-cap"><b>${name}</b><small>${what}</small></span></button>`).join('')}</div>`;
+    return `<div class="lk-icons"><span class="ovk-set-text" id="lk-icons-h">Icons</span><div class="lk-styles" role="radiogroup" aria-labelledby="lk-icons-h">${STYLES.map(([id, name, what]) => `<label class="lk-style"><input type="radio" name="icons" value="${id}"${id === 'auto' ? ' checked' : ''}>${screen(id)}<span class="lk-st-cap"><b>${name}</b><small>${what}</small></span></label>`).join('')}</div></div>`;
 }
 
 function lookPage({ themes = [], me = {} } = {}) {
@@ -43,18 +43,17 @@ function lookPage({ themes = [], me = {} } = {}) {
     const signedIn = !!me.signedIn;
     const current = `<section class="ovk-section lk-current" aria-labelledby="lk-cur-h"><h2 id="lk-cur-h">Your theme</h2>
 <div class="lk-theme"><span class="tk-dots" id="lk-dots" aria-hidden="true"></span><span><b id="lk-name">The OpenVibe default</b><small id="lk-mode"></small></span></div>
-<p class="lk-acts">${kit.button({ href: '/themes', label: 'Change it in the studio', attrs: { id: 'lk-studio' } })} ${kit.button({ href: '/tokens', label: 'As code', kind: 'quiet', attrs: { id: 'lk-code' } })}</p></section>`;
+<p class="lk-acts">${kit.button({ href: '/themes', label: 'Change your theme', attrs: { id: 'lk-change' } })} ${kit.button({ href: '/tokens', label: 'As code', kind: 'quiet', attrs: { id: 'lk-code' } })}</p></section>`;
     const settings = kit.section({
         id: 'lk-settings',
         title: 'How every site looks to you',
         note: signedIn ? 'Each change applies at once and is saved to your account, so every OpenVibe site follows.' : 'Each change applies at once on this device. Sign in and it follows you to every OpenVibe site.',
-        body: kit.seg({ name: 'scheme', label: 'Light or dark', options: [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Match my device']], value: 'auto' })
+        body: kit.seg({ name: 'scheme', label: 'Light or dark', options: [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Automatic']], value: 'auto' })
             + kit.seg({ name: 'text', label: 'Text size', options: [['100', 'Standard'], ['112', 'Larger'], ['125', 'Largest']], value: '100' })
             + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'Full'], ['reduced', 'Reduced']], value: 'auto' })
             // Icons (openvibe-shared 4.71.0, plan L56; the owner, 2026-11-01: "a setting to prefer a certain icon type…
             // configurable for users in most cases"): the sample under it is ordinary page markup, drawn by ov-glyphs.js, so
             // it changes as the choice does.
-            + kit.seg({ name: 'icons', label: 'Icons', options: [['auto', 'Auto'], ['line', 'Line'], ['solid', 'Solid']], value: 'auto' })
             + iconStyles()
             + kit.switchRow({ name: 'seasonal', label: 'The season\'s themes', hint: 'Halloween and winter stand in for the default theme while they last', on: true }),
     });
