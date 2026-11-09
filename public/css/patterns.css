@@ -127,3 +127,24 @@
 .six-demo span{padding:4px 8px;border-radius:999px;color:var(--text-secondary)}.six-more{border:1px solid var(--border)}
 @media (prefers-reduced-motion:reduce){.sheet-demo,.tray-demo li i{transition:none}.menu-demo.open .menu-panel{animation:none}}
 .status-word{font-weight:700;font-size:15px}
+
+/* Honest numbers (2026-11-09) */
+.hn-quiet{color:var(--text-muted);font-weight:400}
+.hn-table td,.hn-table th{white-space:nowrap}
+.hn-rank{list-style:decimal;margin:0;padding-left:1.4em;display:grid;gap:6px}
+.hn-rank li{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--bg-card)}
+.hn-rank li b{margin-right:10px}
+.hn-rank li span{font-variant-numeric:tabular-nums}
+.hn-pick{margin:0 0 10px;font-weight:700}
+.hn-pick.hn-wrong{color:var(--danger,#ef4444)}
+.hn-card{display:grid;gap:4px;max-width:280px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--bg-card)}
+.hn-score{font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums}
+.hn-score.hn-quiet{font-size:1.05rem;font-weight:600}
+.hn-card small{color:var(--text-muted)}
+.hn-price b{font-size:1.6rem;font-variant-numeric:tabular-nums}
+.hn-price.stale{border-style:dashed}
+.hn-price.stale small{color:var(--warning,#f59e0b)}
+.hn-fig{display:grid;gap:2px;text-align:left;max-width:320px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--bg-card);color:inherit;font:inherit;cursor:pointer}
+.hn-fig b{font-size:1.6rem;font-variant-numeric:tabular-nums}
+.hn-fig .hn-src{color:var(--text-muted);max-height:0;overflow:hidden;transition:max-height var(--ov-dur-2,260ms) ease}
+.hn-fig.open .hn-src{max-height:4em}
