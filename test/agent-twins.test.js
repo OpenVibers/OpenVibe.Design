@@ -37,6 +37,27 @@ const PAGES = ['/', '/brand', '/components', '/tokens', '/motion', '/kit', '/dev
                 assert.ok(!/<(?:script|style)\b/i.test(prose) && twin.text.length > 150, `${twinPath} is the page's words`);
             }
         });
+        // The font library, the typeface and vector makers, and the form controls are mounted by their own routers;
+        // a twin still renders through the same page code, signed out, and cannot drift from the page.
+        const MORE_PAGES = [
+            ['/fonts', 'Find a face for your idea.'],
+            ['/fonts/make', 'Describe a typeface.'],
+            ['/forms', 'Controls that look like OpenVibe, on every site'],
+            ['/vectors/make', 'Describe a drawing.'],
+        ];
+        await check('the font, typeface, form and vector pages have twins that name the page heading', async () => {
+            for (const [p, heading] of MORE_PAGES) {
+                assert.ok(TWIN_PATH_RE.test(p), `${p} is a twin path`);
+                const page = await t.get(p);
+                assert.strictEqual(page.status, 200, p);
+                const twinPath = `${p}.md`;
+                assert.ok(page.text.includes(`<link rel="alternate" type="text/markdown" href="${origin}${twinPath}">`), `${p} names its twin in the head`);
+                const twin = await t.get(twinPath);
+                assert.strictEqual(twin.status, 200, twinPath);
+                assert.match(String(twin.headers.get('content-type') || ''), /^text\/markdown/, `${twinPath} is Markdown`);
+                assert.ok(twin.text.includes(`# ${heading}`), `${twinPath} names the page heading "${heading}"`);
+            }
+        });
         await check('a path with no twin answers a Markdown 404, and a missing page names no twin', async () => {
             const twin = await t.get('/no-such-page-here.md');
             assert.strictEqual(twin.status, 404);
