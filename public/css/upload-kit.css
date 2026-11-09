@@ -1,0 +1,11 @@
+.uk-wrap { max-width: 1050px; margin: 0 auto; padding: 20px 20px 70px; }
+.uk-wrap header { max-width: 760px; margin: 14px 0 30px; }
+.uk-wrap h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; }
+.uk-wrap p { line-height: 1.6; }
+.uk-kicker { color: var(--ov-accent, #9b7bff); font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
+.uk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 15px; }
+.uk-card { min-width: 0; margin: 0 0 16px; padding: 20px; border: 1px solid var(--ov-line, #596179); border-radius: 16px; background: var(--ov-surface, rgba(100,110,145,.08)); }
+.uk-card h2 { margin: 0 0 6px; font-size: 1.2rem; }
+.uk-card > p { margin: 0 0 16px; }
+.uk-card code { overflow-wrap: anywhere; }
+.uk-note { margin-top: 12px !important; opacity: .7; font-size: .9rem; }
