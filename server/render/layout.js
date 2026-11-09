@@ -7,7 +7,7 @@
  *
  *   - <head>: the shared app icon, the room's stylesheets, this site's content-hashed design.css
  *   - the navbar's session probe (/auth/me), sign-in and sign-out URLs and silent sign-in, as every site's
- *   - the product's own script only where a page offers an in-browser convenience (/studio)
+ *   - the product's own script only where a page offers an in-browser convenience (/themes)
  */
 const shell = require('openvibe-shared/shell');
 const ovServe = require('openvibe-shared/serve');
@@ -22,26 +22,29 @@ const ROOM = rooms.get('design');
 const esc = kit.esc;
 
 const NAV = [
+    // Six places in the bar (the six-places rule); everything else under More, in the System page's order.
     { label: 'Home', href: '/', icon: 'fa-house' },
-    { label: 'Create', href: '/create', icon: 'fa-palette' },
-    { label: 'Studio', href: '/studio', icon: 'fa-palette' },
+    { label: 'Create', href: '/create', icon: 'fa-wand-magic-sparkles' },
+    { label: 'Themes', href: '/themes', icon: 'fa-palette' },
     { label: 'Your look', href: '/look', icon: 'fa-circle-half-stroke' },
     { label: 'Arena', href: '/arena', icon: 'fa-crown' },
-    { label: 'Tokens', href: '/tokens', icon: 'fa-code' },
-    { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
-    { label: 'Motion', href: '/motion', icon: 'fa-wand-magic-sparkles', more: true },
-    { label: 'Loading', href: '/loading', icon: 'fa-hourglass-half', more: true },
-    { label: 'Progress', href: '/progress', icon: 'fa-bars-progress', more: true },
-    { label: 'Uploader', href: '/uploader', icon: 'fa-upload', more: true },
-    { label: 'Forms', href: '/forms', icon: 'fa-list-check', more: true },
-    { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
+    { label: 'System', href: '/system', icon: 'fa-layer-group' },
+    { label: 'Tokens', href: '/tokens', icon: 'fa-code', more: true },
     { label: 'Fonts', href: '/fonts', icon: 'fa-font', more: true },
-    { label: 'Patterns', href: '/patterns', icon: 'fa-shapes', more: true },
-    { label: 'Kit', href: '/kit', icon: 'fa-cubes', more: true },
+    { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
+    { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
+    { label: 'Motion', href: '/motion', icon: 'fa-wind', more: true },
     { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
-    { label: 'Apps (Android, iOS)', href: '/native', icon: 'fa-display', more: true },
-    { label: 'Developers', href: '/developers', icon: 'fa-code', more: true },
+    { label: 'Kit', href: '/kit', icon: 'fa-cubes', more: true },
+    { label: 'Forms', href: '/forms', icon: 'fa-list-check', more: true },
+    { label: 'Loading', href: '/loading', icon: 'fa-hourglass-half', more: true },
+    { label: 'Progress', href: '/progress', icon: 'fa-gauge-high', more: true },
+    { label: 'Uploader', href: '/uploader', icon: 'fa-upload', more: true },
+    { label: 'Rules', href: '/rules', icon: 'fa-scale-balanced', more: true },
+    { label: 'Patterns', href: '/patterns', icon: 'fa-table-cells', more: true },
     { label: 'Prompts', href: '/prompts', icon: 'fa-quote-left', more: true },
+    { label: 'Apps (Android, iOS)', href: '/native', icon: 'fa-mobile-screen', more: true },
+    { label: 'Developers', href: '/developers', icon: 'fa-terminal', more: true },
 ];
 
 let RELEASE = 'dev';
@@ -59,7 +62,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
         service: 'design',
         apiBase: NETWORK,
         links: NAV.map((l) => ({ ...l, active: l.href === active || (l.href !== '/' && String(active).startsWith(`${l.href}/`)) })),
-        appBar: [{ label: 'Home', href: '/', icon: 'fa-house' }, { label: 'Studio', href: '/studio', icon: 'fa-palette' }, { label: 'Your look', href: '/look', icon: 'fa-circle-half-stroke' }, { label: 'Arena', href: '/arena', icon: 'fa-crown' }],
+        appBar: [{ label: 'Home', href: '/', icon: 'fa-house' }, { label: 'Create', href: '/create', icon: 'fa-wand-magic-sparkles' }, { label: 'Themes', href: '/themes', icon: 'fa-palette' }, { label: 'Arena', href: '/arena', icon: 'fa-crown' }, { label: 'System', href: '/system', icon: 'fa-layer-group' }],
         history: { type: 'page', title: title || NAME },
         silentLogin: `${BASE}/auth/login?silent=1&next={url}`,
         sessionUrl: '/auth/me',

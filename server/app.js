@@ -289,6 +289,8 @@ async function createApp(opts = {}) {
     app.use('/api/v1/arena', createArenaApi(ctx));
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
+    // The decision register (openvibe.design/rules) as data: open to any origin, for code and AI assistants.
+    app.get('/api/v1/rules', (req, res) => { res.set({ 'Cache-Control': 'public, max-age=300', 'Access-Control-Allow-Origin': '*' }); res.json(require('./views/rules').rulesJson()); });
     app.use(createIconRoutes(ctx));
     // The public page routers are built before they are mounted: the Markdown twins render through the same routers
     // (server/agent-twins.js), so a twin cannot drift from the page a browser gets.

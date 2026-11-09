@@ -43,7 +43,7 @@ function lookPage({ themes = [], me = {} } = {}) {
     const signedIn = !!me.signedIn;
     const current = `<section class="ovk-section lk-current" aria-labelledby="lk-cur-h"><h2 id="lk-cur-h">Your theme</h2>
 <div class="lk-theme"><span class="tk-dots" id="lk-dots" aria-hidden="true"></span><span><b id="lk-name">The OpenVibe default</b><small id="lk-mode"></small></span></div>
-<p class="lk-acts">${kit.button({ href: '/studio', label: 'Change it in the studio', attrs: { id: 'lk-studio' } })} ${kit.button({ href: '/tokens', label: 'As code', kind: 'quiet', attrs: { id: 'lk-code' } })}</p></section>`;
+<p class="lk-acts">${kit.button({ href: '/themes', label: 'Change it in the studio', attrs: { id: 'lk-studio' } })} ${kit.button({ href: '/tokens', label: 'As code', kind: 'quiet', attrs: { id: 'lk-code' } })}</p></section>`;
     const settings = kit.section({
         id: 'lk-settings',
         title: 'How every site looks to you',
@@ -85,7 +85,7 @@ ${kit.sheet({ id: 'lk-site-sheet', title: 'Add a site', body: `<form class="lk-s
 <noscript>${kit.notice({ kind: 'info', text: 'These settings need JavaScript in this browser. Your theme still follows your account.' })}</noscript>
 <div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}${comfort}${sites}
 <div class="lk-toast" id="lk-toast" role="status" aria-live="polite" hidden><span id="lk-status"></span><button type="button" id="lk-undo" hidden>Undo</button></div>
-${signedIn ? `<p class="lk-history-link"><a class="ovk-btn ovk-btn--quiet ovk-btn--small" href="/studio#ds-history">${kit.icon('clock')}<span>Your history</span></a></p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
+${signedIn ? `<p class="lk-history-link"><a class="ovk-btn ovk-btn--quiet ovk-btn--small" href="/themes#ds-history">${kit.icon('clock')}<span>Your history</span></a></p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
 <script type="application/json" id="lk-themes">${JSON.stringify(list).replace(/</g, '\\u003c')}</script>`;
     return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion, seasonal themes and comfort settings (contrast, a readable font, colour-blind-safe colours, true black) for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'], styles: ['css/studio-look.css'] });
 }

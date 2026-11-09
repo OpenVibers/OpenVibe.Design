@@ -40,7 +40,7 @@
             dots.replaceChildren(...t.dots.map((c) => { const i = document.createElement('i'); i.className = 'tk-dot'; i.style.background = c; return i; }));
         }
         const studio = $('#lk-studio');
-        if (studio) studio.href = `/studio?theme=${encodeURIComponent(id)}`;
+        if (studio) studio.href = `/themes?theme=${encodeURIComponent(id)}`;
         const code = $('#lk-code');
         if (code) code.href = `/tokens?theme=${encodeURIComponent(id)}`;
     }

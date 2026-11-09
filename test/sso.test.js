@@ -27,7 +27,7 @@ const cookieJar = (r) => cookies(r).map((c) => c.split(';')[0]).join('; ');
         'javascript:alert(1)', null, '', 12]) {
         assert.strictEqual(sanitizeNext(v, config), '/', JSON.stringify(v) + ' goes home');
     }
-    assert.strictEqual(sanitizeNext('/studio?tab=contrast', config), '/studio?tab=contrast');
+    assert.strictEqual(sanitizeNext('/themes?tab=contrast', config), '/themes?tab=contrast');
     // The SDK keeps a same-site address whole (it is this site's own origin, never another one).
     assert.strictEqual(sanitizeNext('https://openvibe.design/a/b?x=1#c', config), 'https://openvibe.design/a/b?x=1#c');
     for (const v of ['https://evil.com/a', 'https://openvibe.design.evil.com/a', 'https://openvibe.design@evil.com/', 'http://openvibe.design/a']) {
@@ -38,7 +38,7 @@ const cookieJar = (r) => cookies(r).map((c) => c.split(';')[0]).join('; ');
     const user = t.network.addUser('kim');
 
     await check('login redirects to Network with state, client id design and an S256 challenge', async () => {
-        const r = await t.get('/auth/login?next=/studio');
+        const r = await t.get('/auth/login?next=/themes');
         assert.strictEqual(r.status, 302);
         const loc = new URL(r.headers.get('location'));
         assert.strictEqual(loc.origin + loc.pathname, t.network.url + '/oauth/authorize');
@@ -53,7 +53,7 @@ const cookieJar = (r) => cookies(r).map((c) => c.split(';')[0]).join('; ');
         assert.ok(state, 'the flow cookie is set');
         assert.match(cookies(r).find((c) => c.includes('ov_oauth_state=')), /Path=\/auth.*HttpOnly/i);
         assert.ok(cookieNamed(r, 'ov_oauth_verifier'), 'the verifier is kept in its own cookie');
-        assert.strictEqual(decodeURIComponent(cookieNamed(r, 'ov_oauth_next').split('=')[1]), '/studio');
+        assert.strictEqual(decodeURIComponent(cookieNamed(r, 'ov_oauth_next').split('=')[1]), '/themes');
     });
 
     await check('silent sign-in adds prompt=none and next= only keeps this site', async () => {
@@ -66,13 +66,13 @@ const cookieJar = (r) => cookies(r).map((c) => c.split(';')[0]).join('; ');
     });
 
     await check('the callback exchanges the code and sets httpOnly session cookies', async () => {
-        const login = await t.get('/auth/login?next=/studio');
+        const login = await t.get('/auth/login?next=/themes');
         const loc = new URL(login.headers.get('location'));
         const flowCookie = cookieJar(login);
         const code = t.network.issueCode(user, loc.searchParams.get('code_challenge'));
         const r = await t.get('/auth/callback?code=' + code + '&state=' + loc.searchParams.get('state'), { cookie: flowCookie });
         assert.strictEqual(r.status, 302, r.text);
-        assert.strictEqual(r.headers.get('location'), '/studio');
+        assert.strictEqual(r.headers.get('location'), '/themes');
         const all = cookies(r).join('\n');
         assert.match(all, /ov_token=[^;]+;.*HttpOnly/i);
         assert.match(all, /ov_refresh=[^;]+;.*HttpOnly/i);
@@ -146,9 +146,9 @@ const cookieJar = (r) => cookies(r).map((c) => c.split(';')[0]).join('; ');
     });
 
     await check('sign-out clears the cookies and returns to next', async () => {
-        const r = await t.get('/auth/logout?next=%2Fstudio', { headers: { 'sec-fetch-site': 'same-origin' } });
+        const r = await t.get('/auth/logout?next=%2Fthemes', { headers: { 'sec-fetch-site': 'same-origin' } });
         assert.strictEqual(r.status, 303);
-        assert.strictEqual(r.headers.get('location'), '/studio');
+        assert.strictEqual(r.headers.get('location'), '/themes');
         assert.match(cookies(r).join('\n'), /design_at=;/);
     });
 

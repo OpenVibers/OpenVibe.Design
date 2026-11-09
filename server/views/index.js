@@ -99,12 +99,12 @@ function home({ themes } = {}) {
     const glyphNames = (() => { try { return require('openvibe-shared/glyphs').NAMES.length; } catch { return 0; } })();
     const componentCount = (() => { try { return Object.keys(require('./components').SAMPLES).length; } catch { return 0; } })();
     const SYSTEM = [
-        { href: '/studio', name: 'Themes', count: all.length, unit: 'themes', text: 'Colour, type and shape for every site at once, each checked for contrast.', glyph: 'palette' },
+        { href: '/themes', name: 'Themes', count: all.length, unit: 'themes', text: 'Colour, type and shape for every site at once, each checked for contrast.', glyph: 'palette' },
         { href: '/icons', name: 'Icons', count: glyphNames, unit: 'icons', text: 'One line, one grid, in the text’s colour; draw new ones with AI.', glyph: 'shapes' },
         { href: '/components', name: 'Components', count: componentCount, unit: 'parts', text: 'Each drawn for the web, Jetpack Compose and SwiftUI from the same spec.', glyph: 'puzzle' },
-        { href: '/patterns', name: 'Patterns', count: patterns.length, unit: 'rules', text: 'What production taught, each with its bug, a live demo and native code.', glyph: 'rules' },
-        { href: '/motion', name: 'Motion', count: 3, unit: 'timings', text: 'Glint, glow, lift, press, ripple: one kit of effects and one set of curves.', glyph: 'motion' },
-        { href: '/forms', name: 'Forms', count: 0, unit: '', text: 'Fields, choices and errors that read the same on every site.', glyph: 'forms' },
+        { href: '/rules', name: 'Rules', count: (() => { try { return require('../rules/register').RULES.length; } catch { return 0; } })(), unit: 'rules', text: 'Every style, design and organization decision, with the day and the reason.', glyph: 'rules' },
+        { href: '/patterns', name: 'Patterns', count: patterns.length, unit: 'patterns', text: 'What production taught, each with its bug, a live demo and native code.', glyph: 'rules' },
+        { href: '/motion', name: 'Motion', count: (() => { try { return require('./motion').EFFECTS.length; } catch { return 0; } })(), unit: 'effects', text: 'Glint, glow, lift, press, ripple: one kit of effects and one set of curves.', glyph: 'motion' },
         { href: '/tokens', name: 'Tokens', count: 7, unit: 'formats', text: 'Any theme as CSS, Tailwind, Compose, SwiftUI, Flutter, Figma or DTCG.', glyph: 'code' },
         { href: '/native', name: 'Apps', count: 3, unit: 'platforms', text: 'From the web to Android and iOS, without a frame: the road and the rules.', glyph: 'apps' },
     ];
@@ -119,7 +119,7 @@ function home({ themes } = {}) {
         apps: 'M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM10.5 18h3',
     };
     const glyphSvg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${GLYPH[k]}"/></svg>`;
-    const system = `<section class="ds-system" aria-labelledby="ds-system-h"><div class="ds-head-row"><h2 id="ds-system-h">The whole system</h2><a class="ds-more" href="/kit">The kit${kit.icon('chevron')}</a></div>
+    const system = `<section class="ds-system" aria-labelledby="ds-system-h"><div class="ds-head-row"><h2 id="ds-system-h">The whole system</h2><a class="ds-more" href="/system">Everything${kit.icon('chevron')}</a></div>
 <p class="ds-fine ds-system-lede">Everything an OpenVibe interface is made of, in one place: the same parts on every site, and in the apps.</p>
 <ul class="ds-system-grid">${SYSTEM.map((x) => `<li><a class="ds-sys" href="${esc(x.href)}"><span class="ds-sys-ic">${glyphSvg(x.glyph)}</span><span class="ds-sys-t"><b>${esc(x.name)}</b>${x.count ? `<em>${esc(String(x.count))} ${esc(x.unit)}</em>` : ''}</span><small>${esc(x.text)}</small></a></li>`).join('')}</ul></section>`;
     const room = sc.room({
@@ -127,8 +127,8 @@ function home({ themes } = {}) {
         hero: {
             title: 'Your look, everywhere',
             lede: 'Pick or make a theme once and every OpenVibe site wears it. Take it into your own app as code for the web, Android and iOS, and design pages on it with AI.',
-            start: { href: '/studio', label: 'Change your theme' },
-            chips: picks.slice(0, 5).map((t) => ({ label: t.name, href: `/studio?theme=${encodeURIComponent(t.id)}` })),
+            start: { href: '/themes', label: 'Change your theme' },
+            chips: picks.slice(0, 5).map((t) => ({ label: t.name, href: `/themes?theme=${encodeURIComponent(t.id)}` })),
             motif: orb,
         },
         proof: [
@@ -137,7 +137,7 @@ function home({ themes } = {}) {
             { value: 7, label: 'platforms to export to' },
         ].filter((p) => p.value),
         scenes: [
-            { title: 'One theme, every site', text: 'Try a theme on a Live channel, a Chat room and a shop side by side. Every contrast check must pass, and colour-blind previews show it as everyone sees it. Use it, and the whole network wears it from its next page; any earlier look is one tap back. Comfort settings ride on top of any theme: more contrast, a readable font, colour-blind-safe colours, true black.', html: `<div class="ds-scene-pv">${previews()}</div>`, action: { href: '/studio', label: 'Open the studio' } },
+            { title: 'One theme, every site', text: 'Try a theme on a Live channel, a Chat room and a shop side by side. Every contrast check must pass, and colour-blind previews show it as everyone sees it. Use it, and the whole network wears it from its next page; any earlier look is one tap back. Comfort settings ride on top of any theme: more contrast, a readable font, colour-blind-safe colours, true black.', html: `<div class="ds-scene-pv">${previews()}</div>`, action: { href: '/themes', label: 'Open the studio' } },
             { title: 'Make it with AI, on your theme', text: 'Describe what you need and three AI designers draft it at once. Every draft wears your theme, so it already looks like it belongs.', html: make, action: { href: '/create', label: 'Make something' } },
             { title: 'See which AI designs best', text: 'The Arena sends one prompt to three models, shows two drafts without their names, and ranks the designers by the votes, with what each draft cost and how long it took. Every prompt, page and vote is open data.', html: vs, action: { href: '/arena', label: 'Vote in the Arena' } },
         ],
@@ -156,7 +156,7 @@ function home({ themes } = {}) {
             { title: 'Create', text: 'Three AI drafts on your theme', href: '/create', icon: 'ov:ai' },
             { title: 'Your look', text: 'Light or dark, text size, motion, seasons and comfort settings, for every site', href: '/look', icon: 'ov:account' },
         ] },
-        html: system + (strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/studio">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : ''),
+        html: system + (strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/themes">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : ''),
         faq: { items: [
             ['Where does my theme apply?', 'Everywhere you are signed in to OpenVibe: the theme lives on your account, and every site picks it up on its next page.'],
             ['Can I use it in my own app?', 'Yes. Tokens gives any theme as CSS variables, a Tailwind config, a Jetpack Compose colour scheme, SwiftUI colours, a Flutter colour scheme, Figma variables or W3C design-token JSON, with its light and dark halves together. The API is open.'],
@@ -236,17 +236,17 @@ ${kit.sheet({ id: 'ds-share-sheet', title: 'Share it in the gallery', body: `<fo
 ${signedIn ? `<details class="ds-history" id="ds-history"><summary>${kit.icon('clock')}<span>History</span></summary><ol id="ds-history-list"><li class="ds-history-empty"><span aria-hidden="true">◌</span><p>Your earlier looks appear here.</p></li></ol></details>` : ''}
 </aside></div></div>
 <script type="application/json" id="ds-themes">${data}</script>`;
-    return layout({ title: 'Theme studio', description: 'Pick an OpenVibe theme, edit any colour with contrast and colour-vision checks, see it on Live, Chat and a shop at once, and use it everywhere.', path: '/studio', body: `<div class="ds-wrap">${body}</div>`, active: '/studio', scripts: ['js/studio.js'], styles: ['css/studio-look.css'] });
+    return layout({ title: 'Theme studio', description: 'Pick an OpenVibe theme, edit any colour with contrast and colour-vision checks, see it on Live, Chat and a shop at once, and use it everywhere.', path: '/themes', body: `<div class="ds-wrap">${body}</div>`, active: '/themes', scripts: ['js/studio.js'], styles: ['css/studio-look.css'] });
 }
 
 function theme({ theme: t } = {}) {
     const v = (t && t.variables) || {};
     const rows = CORE.map(([k, l]) => (HEX.test(String(v[k] || '')) ? `<div><dt>${esc(l)}</dt><dd><i style="background:${esc(v[k])}"></i><code>${esc(v[k])}</code></dd></div>` : '')).join('');
     const body = `<header class="ds-page-h"><p class="ds-kicker">${t.mode === 'light' ? 'Light theme' : 'Dark theme'}</p><h1>${esc(t.name)}</h1>${t.description ? `<p class="ds-lede">${esc(t.description)}</p>` : ''}
-<p class="ds-act">${kit.button({ href: `/studio?theme=${encodeURIComponent(t.id)}`, label: 'Open in the studio' })} ${kit.button({ href: `/tokens?theme=${encodeURIComponent(t.slug || t.id)}`, label: 'As code', kind: 'quiet' })}</p>${tryOn(t.slug || t.id)}</header>
+<p class="ds-act">${kit.button({ href: `/themes?theme=${encodeURIComponent(t.id)}`, label: 'Open in the studio' })} ${kit.button({ href: `/tokens?theme=${encodeURIComponent(t.slug || t.id)}`, label: 'As code', kind: 'quiet' })}</p>${tryOn(t.slug || t.id)}</header>
 ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
 <section aria-labelledby="ds-pv-h"><h2 id="ds-pv-h">How it looks</h2><div class="ds-previews ds-previews--static" style="${esc(varsStyle(v))}">${previews()}</div></section>`;
-    return layout({ title: `${t.name}: an OpenVibe theme`, description: t.description || `${t.name}, a ${t.mode === 'light' ? 'light' : 'dark'} OpenVibe theme: its colours and how Live, Chat and a shop look in it.`, path: `/t/${encodeURIComponent(t.slug || t.id)}`, body: `<div class="ds-wrap">${body}</div>`, active: '/studio' });
+    return layout({ title: `${t.name}: an OpenVibe theme`, description: t.description || `${t.name}, a ${t.mode === 'light' ? 'light' : 'dark'} OpenVibe theme: its colours and how Live, Chat and a shop look in it.`, path: `/t/${encodeURIComponent(t.slug || t.id)}`, body: `<div class="ds-wrap">${body}</div>`, active: '/themes' });
 }
 
 function developers() {
@@ -515,7 +515,7 @@ ${outputs.some((o) => !o.error) ? arenaViewSwitch() : ''}
 }
 
 function notFound() {
-    const body = `<header class="ds-page-h"><h1>Nothing here</h1><p class="ds-lede">That page does not exist. <a href="/studio">Open the studio</a> or <a href="/">browse the themes</a>.</p></header>`;
+    const body = `<header class="ds-page-h"><h1>Nothing here</h1><p class="ds-lede">That page does not exist. <a href="/themes">Open the studio</a> or <a href="/">browse the themes</a>.</p></header>`;
     return layout({ title: 'Not found', robots: 'noindex, follow', body: `<div class="ds-wrap">${body}</div>`, active: '/' });
 }
 
