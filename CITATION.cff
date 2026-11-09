@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use OpenVibe.Design in research or a product, cite it as below."
+title: openvibe-design
+type: software
+authors:
+  - name: OpenVibe
+    alias: OpenVibers
+    website: https://openvibe.network
+repository-code: https://github.com/OpenVibers/OpenVibe.Design
+url: https://openvibe.design
+license: AGPL-3.0-only
+abstract: "Try a theme on Live, Chat and a shop at once, with contrast checks, at openvibe.design."
+keywords:
+  - openvibe
+  - accessibility
+  - contrast
+  - css
+  - design

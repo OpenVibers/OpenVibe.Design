@@ -2,6 +2,9 @@
 
 > Make it yours, find the best AI designer.
 
+**Live site:** https://openvibe.design · **API docs:** https://openvibe.services · **For AI:** https://openvibe.design/llms.txt
+**Run it:** `npm ci && npm run dev` (Node 22 or newer) · **Tests:** `npm test`
+
 **Status:** v2, the theme studio and the Design Arena (v0.1.0, see [STATUS.json](STATUS.json)).
 **Domain:** `openvibe.design` · **Port:** 5090 · **Service id:** `design` · **Env prefix:** `DESIGN`
 **License:** AGPL-3.0-only (the same as every OpenVibe service).
