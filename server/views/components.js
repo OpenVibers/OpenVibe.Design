@@ -13,6 +13,7 @@ const components = require('openvibe-shared/components');
 const tokens = require('openvibe-shared/tokens');
 const { BUILTIN_THEMES } = require('openvibe-shared/builtin-themes');
 const { layout, esc } = require('../render/layout');
+const { registryLinks } = require('./component-registry');
 
 // A sample kit document for each component: what the page shows rendered, and what the Web tab prints.
 const card = (n, title, extra = {}) => ({ type: 'card', props: { href: `/components?c=card#${n}`, title, type: 'stream', ...extra } });
@@ -86,6 +87,7 @@ ${kit.tabs({ base: '/components', param: 'c', active: spec.id, label: 'Component
 ${kit.tabs({ base: `${base}`, param: 'p', active: p, label: 'Platform', items: PLATFORMS.map((x) => ({ ...x, href: `${base}&p=${x.key}#cp-code` })) })}
 <p class="tk-how">${esc(how)}</p>
 ${kit.snippet({ code, id: 'cp-code-snip', label: 'Copy the code' })}</section>
+<section class="cr"><h2>Shared interfaces</h2><p>Web, Android and iOS definitions for the navigation, composer, sheets, settings and motion used across OpenVibe. <a href="/components/registry">See the whole registry</a>, or read it as JSON at <code>/api/v1/components</code>.</p>${registryLinks()}</section>
 ${kit.fold({ id: 'cp-docs', title: 'Kit documents: screens as data', body: `<p>A screen can be sent as a tree of these components, for example <code>{ "type": "rail", "children": [{ "type": "card", … }] }</code>. Every OpenVibe client renders the same document with its own views, so a screen can change without an app release (the server-driven UI pattern of Airbnb and DivKit). Documents are checked strictly: known components and props only, typed values, which children each takes, a size limit, and https or same-site links.</p><p>${kit.button({ href: '/api/v1/components', label: 'The specs as JSON', kind: 'quiet', small: true })} ${kit.button({ href: '/tokens', label: 'The tokens they wear', kind: 'quiet', small: true })}</p>` })}`;
     return layout({
         title: `${spec.name}: an OpenVibe component for web, Android and iOS`,
@@ -93,6 +95,7 @@ ${kit.fold({ id: 'cp-docs', title: 'Kit documents: screens as data', body: `<p>A
         path: `/components?c=${encodeURIComponent(spec.id)}`,
         body: `<div class="ds-wrap tk">${body}</div>`,
         active: '/components',
+        styles: ['css/component-registry.css'],
     });
 }
 

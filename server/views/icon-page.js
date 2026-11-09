@@ -170,7 +170,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
     return layout({
         title: head.length <= 40 ? head : `${T} icon: SVG, PNG, font`,
         description: `A free ${T.toLowerCase()} icon: download the SVG, make a PNG at any size and colour, or use the font.${fa.length ? ` A drop-in for Font Awesome's fa-${fa[0]}.` : ''} MIT.`.slice(0, 160),
-        path: `/icons/${name}`, active: '/icons', styles: ['css/icons.css', 'css/icon-motion.css'], scripts: ['js/icon.js'], jsonLd,
+        path: `/icons/${name}`, active: '/icons', styles: ['css/icons.css', 'css/icon-motion.css', 'css/demo-motion-controls.css'], scripts: ['js/icon.js', 'js/demo-motion-controls.js'], jsonLd,
         image: `${base}/icons/${name}.png?size=512&color=mark&pad=18&ground=squircle&bg=0b1020`, imageAlt: `The ${T.toLowerCase()} icon`,
         body: `<article class="ic gp">${hero}${maker}${use}${moving}${rel}</article>`,
     });

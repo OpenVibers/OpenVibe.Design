@@ -1,0 +1,63 @@
+/* Theme actions and site choices use the same kit controls on phones and computers. */
+.ds-actions { align-items: stretch; }
+.ds-actions .ovk-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; }
+.ds-actions .ovk-i { width: 18px; height: 18px; }
+.ds-actions [data-ovk-sheet] { min-height: 44px; }
+.ds-try { display: block; }
+.ds-try > span { display: block; }
+.ds-try-sites { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: thin; }
+.ds-try .ds-try-sites a { display: inline-flex; flex: none; flex-direction: column; justify-content: center; gap: 3px; min-width: 62px; min-height: 68px; padding: 6px; border-radius: 14px; font-size: .7rem; }
+.ds-try-sites img { width: 28px; height: 28px; border-radius: 8px; }
+.ds-share-preview { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
+.ds-share-preview .tk-dots { display: flex; }
+#ds-submit-form { display: grid; gap: 12px; }
+#ds-submit-form label { display: grid; gap: 5px; font-weight: 700; }
+#ds-submit-form input { width: 100%; min-height: 44px; }
+#ds-submit-form .ovk-btn { min-height: 44px; }
+.ds-history summary { display: flex; gap: 8px; min-height: 44px; align-items: center; }
+.ds-history summary .ovk-i { width: 18px; height: 18px; }
+.ds-history ol { display: flex; gap: 10px; overflow-x: auto; padding: 4px 0 10px; scroll-snap-type: x proximity; }
+.ds-history li { flex: 0 0 148px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 130px; padding: 10px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); scroll-snap-align: start; }
+.ds-history li .ds-hist-dot { display: block; width: 100%; height: 34px; border-radius: 8px; }
+.ds-history li b { line-height: 1.25; }
+.ds-history li small { grid-column: auto; }
+.ds-history li button { grid-column: auto; grid-row: auto; min-height: 44px; margin-top: auto; }
+.ds-history li.ds-history-empty { flex: 1 0 100%; min-height: 90px; flex-direction: row; align-items: center; color: var(--ovk-muted); }
+.ds-history-empty > span { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--ovk-panel-2); font-size: 1.8rem; }
+.ds-history-empty p { margin: 0; }
+
+.lk-sites { padding: 0 14px; }
+.lk-sites li { position: relative; display: flex; justify-content: flex-start; gap: 12px; min-height: 68px; padding: 8px 0; }
+.lk-site-icon { flex: none; border-radius: 11px; object-fit: cover; }
+.lk-site-text { display: grid; gap: 3px; min-width: 0; }
+.lk-site-text b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lk-site-text small { display: flex; align-items: center; gap: 6px; color: var(--ovk-muted); }
+.lk-site-swatch { width: 13px; height: 13px; border-radius: 50%; border: 1px solid var(--ovk-line); }
+.lk-site-menu { position: relative; margin-left: auto; }
+.lk-site-menu summary { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 11px; cursor: pointer; font-size: 1.4rem; list-style: none; }
+.lk-site-menu summary::-webkit-details-marker { display: none; }
+.lk-site-menu[open] summary { background: var(--ovk-panel-2); }
+.lk-site-menu button { position: absolute; z-index: 2; right: 0; top: 46px; min-width: 190px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-panel); color: var(--ovk-text); text-align: left; box-shadow: 0 10px 24px #0004; cursor: pointer; }
+.lk-add { padding: 10px 14px 14px; }
+.lk-add .ovk-btn { min-height: 44px; }
+.lk-site-form { display: grid; gap: 14px; padding: 0; }
+.lk-site-form label, .lk-site-form select { width: 100%; max-width: none; }
+.lk-site-form .ovk-btn { justify-self: start; }
+.lk-history-link a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.lk-history-link .ovk-i { width: 18px; height: 18px; }
+.lk-toast { position: fixed; z-index: 60; left: 50%; bottom: calc(var(--ovnav-appbar-h, 0px) + 12px); transform: translateX(-50%); display: flex; align-items: center; gap: 12px; width: max-content; max-width: calc(100vw - 28px); min-height: 48px; padding: 8px 10px 8px 16px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); color: var(--ovk-text); box-shadow: 0 12px 30px #0005; }
+.lk-toast[hidden], .lk-toast button[hidden] { display: none; }
+.lk-toast button { min-height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ovk-panel-2); color: var(--ovk-text); font: inherit; font-weight: 700; cursor: pointer; }
+
+@media (max-width: 759px) {
+    .ds-studio { padding-bottom: calc(84px + var(--ovnav-appbar-h, 0px)); }
+    .ds-actions { position: fixed; z-index: 45; left: 0; right: 0; bottom: var(--ovnav-appbar-h, 0px); display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, auto); gap: 5px; margin: 0; padding: 8px max(12px, env(safe-area-inset-left)) 8px max(12px, env(safe-area-inset-right)); border-top: 1px solid var(--ovk-line); background: var(--ovk-panel); box-shadow: 0 -8px 24px #0003; }
+    html:has(#ov-try-bar) .ds-actions { bottom: calc(var(--ovnav-appbar-h, 0px) + 68px); }
+    .ds-actions .ovk-btn { flex-direction: column; gap: 2px; min-width: 52px; min-height: 48px; padding: 3px 5px; font-size: .67rem; line-height: 1.15; text-align: center; }
+    .ds-actions #ds-use { flex-direction: row; min-width: 0; padding: 6px 8px; font-size: .82rem; }
+    .ds-actions #ds-use span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    /* Undo, Code and Share are icon buttons on a phone; their labels stay for a screen reader and appear on a computer. */
+    .ds-actions #ds-reset span, .ds-actions #ds-code span, .ds-actions [data-ovk-sheet] span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .ds-actions [data-ovk-sheet] { font-size: .67rem; }
+    .ds-actions [data-ovk-sheet] .ovk-i { width: 18px; height: 18px; }
+}
