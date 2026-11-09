@@ -19,6 +19,7 @@ const crypto = require('crypto');
 const { clean, cleanSolid } = require('./validate');
 
 const PER_DAY = 12;
+const CLAUDE = Object.freeze({ provider: 'anthropic', model: 'claude-opus-5-5' });
 const CANDIDATES = 4;
 const NAME_RE = /^[a-z][a-z0-9-]{1,31}$/;
 
@@ -80,9 +81,11 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
                 prompt: `The icon: "${n}".${what ? ` What it stands for: ${what}` : ''}${extra}`,
                 maxTokens: 1800,
                 target: { service: 'design', type: 'glyph_draft', id: n },
-                prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },   // Claude first, soft, on the person's key (L37)
-                // A person's own key when they have one (L37); a guest runs on OpenVibe's, inside the caps above.
-                ...(subject ? { person: subject } : {}),
+                // Two tiers (owner, 11-09: "the free one should use the cheapest or most cost-effective model if people
+                // aren't logged in… log in for the maximum tier, Anthropic"). Signed in: Claude Opus 5.5 first, on the
+                // person's own key when they have one, else OpenVibe's Anthropic offer. A guest: the cheapest offer that
+                // can do the job, on OpenVibe's, inside the guest caps above.
+                ...(subject ? { person: subject, prefer: CLAUDE } : { preset: { name: 'cheapest' } }),
             });
             let got = [];
             try {
