@@ -377,7 +377,7 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
      * Plain text from OpenVibe.AI's routing (the glyph drafts, L32): the same token and run as the Arena, one answer.
      * → { text, model, provider, run_id, paid_by, prefer }
      */
-    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null, person = null }) {
+    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null, preset = null, person = null }) {
         const startedAt = Date.now();
         const who = onBehalfOf(person);
         const wait = Math.min(ai.waitMs, 60_000);
@@ -388,6 +388,7 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
             input: { ...(system ? { system } : {}), messages: [{ role: 'user', content: String(prompt == null ? '' : prompt) }], max_tokens: maxTokens },
             options: { cache: false },
             ...(prefer ? { prefer } : {}),
+            ...(preset ? { preset } : {}),   // a built-in policy by name, e.g. { name: 'cheapest' }
             ...(who ? { on_behalf_of: who } : {}),
             ...(target ? { target } : {}),
         }, legacy, wait);

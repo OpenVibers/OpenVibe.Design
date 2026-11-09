@@ -97,7 +97,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   <div class="ic-sec-head"><h2 id="ic-draw">Draw an icon</h2><p>Name it and say what it stands for. OpenVibe.AI draws a few candidates in this hand; each is checked (strokes only, on the grid, a few shapes) before it is kept, and an admin reviews it before it joins the set.</p></div>
   ${notice ? kit.notice({ kind: 'ok', text: notice }) : ''}${error ? kit.notice({ kind: 'error', text: error }) : ''}
   <form class="ic-form" method="post" action="/icons/draft">
-    <label><span>Name</span><input name="name" required pattern="[a-z][a-z0-9-]{1,31}" maxlength="32" placeholder="hot-tub" value="${esc(draw)}" autocomplete="off" spellcheck="false"></label>
+    <label><span>Name</span><input name="name" required pattern="[a-z][a-z0-9\\-]{1,31}" maxlength="32" placeholder="hot-tub" value="${esc(draw)}" autocomplete="off" spellcheck="false"></label>
     <label class="ic-grow"><span>What it stands for</span><input name="sentence" maxlength="200" placeholder="A tub with steam over it: a hot tub at a rental"></label>
     ${guest && guest.turnstile ? `<div class="cf-turnstile ic-human" data-sitekey="${esc(guest.turnstile)}" data-theme="auto" data-size="flexible"></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>` : ''}
     <button type="submit" class="ic-btn is-go">${kit.icon('spark')} Draw it</button>
