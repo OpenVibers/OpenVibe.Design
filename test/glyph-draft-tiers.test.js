@@ -27,7 +27,7 @@ function fakeAi(calls) {
         enabled: true,
         async text(args) {
             calls.push(args);
-            const claude = args.prefer && args.prefer.provider === 'anthropic';
+            const claude = !!args.person;
             return { text: JSON.stringify({ candidates: [{ line: LINE, solid: SOLID }, { line: '<path d="M12 5v14"/>', solid: SOLID }] }),
                 provider: claude ? 'anthropic' : 'shared', model: claude ? 'claude-opus-5-5' : 'gpt-5-nano' };
         },
@@ -43,7 +43,8 @@ function fakeAi(calls) {
         const out = await d.draft({ subject: 'usr_1', name: 'hot-tub', sentence: 'a round tub with steam' });
         assert.ok(out.kept.length >= 1, 'drafts are kept');
         assert.strictEqual(calls.length, 1);
-        assert.deepStrictEqual(calls[0].prefer, { provider: 'anthropic', model: 'claude-opus-5-5' }, 'signed in asks for Claude Opus 5.5');
+        assert.equal(calls[0].task, 'design.icon', 'AI owns the signed-in default');
+        assert.equal(calls[0].prefer, undefined);
         assert.strictEqual(calls[0].person, 'usr_1', 'as the person, so their own key is tried first');
         assert.strictEqual(calls[0].preset, undefined, 'no cheapest preset for a signed-in person');
         assert.strictEqual(out.kept[0].model, 'claude-opus-5-5', 'the draft records the model that drew it');
@@ -55,7 +56,8 @@ function fakeAi(calls) {
         const d = createGlyphDrafts({ db, ai: fakeAi(calls), referenceSearch: async () => [] });
         const out = await d.draft({ subject: null, guest: { id: 'a'.repeat(32), ipHash: 'h1' }, name: 'hot-tub' });
         assert.ok(out.kept.length >= 1, 'a guest gets drafts too');
-        assert.deepStrictEqual(calls[0].preset, { name: 'cheapest' }, 'a guest runs on the cheapest offer');
+        assert.equal(calls[0].task, 'design.icon', 'AI owns the guest default');
+        assert.equal(calls[0].preset, undefined);
         assert.strictEqual(calls[0].prefer, undefined, 'a guest never asks for Claude');
         assert.strictEqual(calls[0].person, undefined, 'a guest is nobody\'s key');
     }
@@ -64,7 +66,9 @@ function fakeAi(calls) {
         const calls = [], db = fakeDb();
         const d = createGlyphDrafts({ db, ai: fakeAi(calls), referenceSearch: async () => [] });
         const sourceSvg = '<path d="M5 12h14"/>';
-        const out = await d.draft({ subject: 'usr_2', name: 'hot-tub', sourceSvg, styles: ['solid'] });
+        const choice = {model:'qwen/qwen3',source:'keys'};
+        const out = await d.draft({ subject: 'usr_2', name: 'hot-tub', sourceSvg, styles: ['solid'], choice });
+        assert.deepEqual(calls[0].choice, choice, 'per-run choice reaches AI');
         assert.ok(out.kept.length && out.kept[0].solid_svg, 'the model solid is fitted and kept');
         assert.ok(calls[0].system.includes('filled twins for existing'), 'solid work uses the solid-specific instructions');
         assert.ok(calls[0].prompt.includes(sourceSvg), 'the existing line drawing is supplied to match');
