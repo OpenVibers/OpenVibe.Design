@@ -22,6 +22,23 @@ const AGENT_SELECT = `<select id="fm-agent" name="agent" data-ov-title="Fallback
           data-href="#fm-attrs" data-href-label="Sign in">MiniMax Code</option>
 </select>`;
 
+const ROWS_SNIPPET = `// The kit's builders, server or browser (openvibe-shared/kit, docs/kit.md)
+kit.switchRow({
+  name: 'burn_after_read', icon: 'flame',
+  title: 'Burn after reading', line: 'Gone once it is opened',
+})
+kit.segmented({
+  name: 'visibility', value: 'public', label: 'Visibility',
+  items: [
+    { value: 'public',   label: 'Public',   icon: 'globe' },
+    { value: 'unlisted', label: 'Unlisted', icon: 'link'  },
+    { value: 'private',  label: 'Private',  icon: 'lock'  },
+  ],
+})`;
+
+// The demo is the kit's own output: kit.switchRow and kit.segmented (openvibe-shared, pinned here).
+const VISIBILITY = [{ value: 'public', label: 'Public', icon: 'globe' }, { value: 'unlisted', label: 'Unlisted', icon: 'link' }, { value: 'private', label: 'Private', icon: 'lock' }];
+
 const MODELS = [
     ['OpenAI', ['gpt-5.5', 'gpt-5.5-mini', 'gpt-5.4-codex']],
     ['Anthropic', ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']],
@@ -67,7 +84,7 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
   <p class="fm-eye">Forms</p>
   <h1 class="fm-h1">Controls that look like OpenVibe, on every site</h1>
   <p class="fm-lede">Every select is OpenVibe’s own: a menu on a computer, a sheet from the bottom on a phone. A choice can say whether it is ready, how much is used, and how to set it up. The form underneath is the browser’s, so everything that worked still works, and a page without JavaScript keeps its plain controls.</p>
-  <nav class="fm-jump" aria-label="On this page"><a href="#fm-select">The select</a><a href="#fm-more">Several, search, groups</a><a href="#fm-controls">Switches and boxes</a><a href="#fm-fields">Fields and choices</a><a href="#fm-attrs">What it reads</a><a href="#fm-use">Use it</a></nav>
+  <nav class="fm-jump" aria-label="On this page"><a href="#fm-select">The select</a><a href="#fm-more">Several, search, groups</a><a href="#fm-controls">Switches and boxes</a><a href="#fm-rows">Switch rows and segments</a><a href="#fm-fields">Fields and choices</a><a href="#fm-attrs">What it reads</a><a href="#fm-use">Use it</a></nav>
 </header>
 
 <section class="fm-sec" id="fm-select" aria-labelledby="fm-select-h">
@@ -99,6 +116,22 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
     <label class="fm-check"><input type="radio" name="fm-r"> Full access</label>
     <label class="fm-check fm-range">Volume <input type="range" min="0" max="100" value="64"></label>
     <label class="fm-check">A file <input type="file"></label>
+  </div>
+</section>
+
+<section class="fm-sec" id="fm-rows" aria-labelledby="fm-rows-h">
+  <div class="fm-sec-head"><h2 id="fm-rows-h">Switch rows and segmented choices</h2><p>The kit builds the two rows a settings form is made of. A switch row is 56 px and the whole row is the target: an icon tile, a title, one line, and an iOS-style switch that is the native checkbox underneath, so it works without JavaScript. A segmented control puts three or four choices in one 44 px control, icons before the words.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live">
+      <div class="ovk-form">
+        ${kit.switchRow({ name: 'fm-burn', icon: 'flame', title: 'Burn after reading', line: 'Gone once it is opened' })}
+        ${kit.switchRow({ name: 'fm-nsfw', icon: 'eye-off', title: 'Mark as NSFW', line: 'Blurred until it is opened', checked: true })}
+        ${kit.switchRow({ name: 'fm-lock', icon: 'lock', title: 'Lock it', line: 'OpenVibe can’t read what’s inside' })}
+        ${kit.segmented({ name: 'fm-visibility', value: 'public', label: 'Visibility', items: VISIBILITY })}
+      </div>
+      <p class="fm-out" aria-live="polite">Chosen: <b data-fm-out="fm-visibility">public</b></p>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: ROWS_SNIPPET, id: 'fm-rows-code', label: 'Copy' })}</div>
   </div>
 </section>
 

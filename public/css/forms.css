@@ -21,6 +21,18 @@
 .fm-row { display: flex; flex-wrap: wrap; gap: 14px 28px; padding: 20px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-secondary); }
 .fm-check { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; }
 .fm-range input { width: 160px; }
+/* The switch-row / segmented demo (markup of kit 4.164; this site's pin catches up on the next round). */
+.fm .ovk-set-switch { min-height: 56px; }
+.fm .ovk-set-ic { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--ov-radius-1); background: color-mix(in srgb, var(--ovk-accent) 12%, transparent); color: var(--ovk-accent); }
+.fm .ovk-set-ic .ovk-i { width: 19px; height: 19px; }
+.fm .ovk-set-row .ovk-switch { margin-left: auto; }
+.fm .ovk-set-seg { flex-wrap: wrap; }
+.fm .ovk-set-seg .ovk-set-text { flex: 1 1 100%; }
+.fm .ovk-seg--fill { display: flex; flex: 1 1 100%; flex-wrap: nowrap; width: 100%; min-width: 0; }
+.fm .ovk-seg--fill .ovk-seg-item { flex: 1 1 0; min-width: 0; }
+.fm .ovk-seg--fill span { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm .ovk-seg--fill .ovk-i { flex: none; width: 16px; height: 16px; }
+.fm #fm-rows .ovk-set-row:first-child { border-top: 0; }
 .fm-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
 .fm-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .fm-table th, .fm-table td { padding: 11px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }

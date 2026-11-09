@@ -1,11 +1,17 @@
-// /forms: say what the first demo's select holds, so a visitor sees the hidden select follow OpenVibe's list.
+// /forms: say what a demo holds, so a visitor sees the hidden control follow OpenVibe's own (a select, or a set of
+// segmented radios).
 (function () {
     'use strict';
     document.querySelectorAll('[data-fm-out]').forEach(function (out) {
-        var select = document.getElementById(out.getAttribute('data-fm-out'));
+        var key = out.getAttribute('data-fm-out');
+        var select = document.getElementById(key) || document.querySelector('input[name="' + key + '"]');
         if (!select) return;
-        var say = function () { out.textContent = select.value || '(none)'; };
-        select.addEventListener('change', say);
+        var group = select.name ? document.querySelectorAll('input[name="' + select.name + '"]') : [select];
+        var say = function () {
+            var checked = select.type === 'radio' ? document.querySelector('input[name="' + select.name + '"]:checked') : select;
+            out.textContent = (checked && checked.value) || '(none)';
+        };
+        group.forEach(function (el) { el.addEventListener('change', say); });
         say();
     });
 })();
