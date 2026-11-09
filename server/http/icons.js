@@ -236,6 +236,22 @@ function createIconRoutes(ctx) {
         }
     });
 
+    // SDK/API entry point for a full style family. API guests use the same-origin form and its Turnstile caps;
+    // programmatic drafts require a signed-in Exchange/Network identity.
+    r.post('/api/v1/glyphs/draft', express.json({ limit: '8kb' }), async (req, res) => {
+        const subject = subjectOf(req);
+        if (!subject) return problem(res, req, 401, 'design.sign_in_required', 'Sign in to draft glyphs through the API.');
+        if (!writeAllowed(req, config)) return problem(res, req, 403, 'design.same_origin_required', 'Open this request from an authorized OpenVibe client.');
+        try {
+            const body = req.body || {};
+            const out = await drafts.draft({ subject, name: body.name, sentence: body.sentence, styles: body.styles, sourceSvg: body.sourceSvg });
+            return res.status(201).set('Cache-Control', 'private, no-store').json({ kept: out.kept, refused: out.refused });
+        } catch (err) {
+            if (!err.status || err.status >= 500) log.warn('[OpenVibe.Design] glyph API draft failed:', err && err.message);
+            return problem(res, req, err.status || 500, 'design.glyph_draft_failed', err.status && err.status < 500 ? err.message : 'The glyph could not be drafted.');
+        }
+    });
+
     r.post('/icons/drafts/:id/review', form, async (req, res) => {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
         if (!isAdmin(req)) return res.status(403).send('Only an admin reviews drafts.');
@@ -258,12 +274,29 @@ function createIconRoutes(ctx) {
         }).filter(Boolean);
         res.json({ count: out.length, glyphs: out });
     });
+    r.get('/api/v1/glyphs/search', (req, res) => {
+        const q = String(req.query.q || '').slice(0, 100);
+        const names = aliases.search(q, Math.min(Math.max(Number(req.query.limit) || 24, 1), 60));
+        res.set('Cache-Control', 'public, max-age=300').set(OPEN).json({ query: q, glyphs: names.map((name) => ({ name, svg: glyphs.path(name), solid: glyphs.solid(name) || '' })) });
+    });
+    r.get('/api/v1/glyphs/:name', (req, res, next) => {
+        const name = aliases.resolve(String(req.params.name || '').toLowerCase());
+        if (!name) return next();
+        const style = String(req.query.style || 'regular').toLowerCase();
+        const widths = { thin: 1, light: 1.5, regular: 2, bold: 2.5, line: 2, solid: null, duotone: 2 };
+        if (!Object.prototype.hasOwnProperty.call(widths, style)) return problem(res, req, 422, 'design.invalid_style', 'style is thin, light, regular, bold, solid or duotone.');
+        const line = glyphs.path(name), solid = glyphs.solid(name) || '';
+        if (style === 'solid' && !solid) return problem(res, req, 404, 'design.glyph_style_missing', 'This glyph does not have a solid drawing yet.');
+        const drawing = style === 'solid' ? solid : line;
+        res.set('Cache-Control', 'public, max-age=300').set(OPEN).json({ name, style, svg: drawing, solid,
+            strokeWidth: widths[style], underlay: style === 'duotone' ? solid : '', underlayOpacity: style === 'duotone' && solid ? 0.2 : 0 });
+    });
     r.get('/api/v1/glyphs/drafts', async (req, res) => {
         const status = String(req.query.status || 'approved');
         if (status !== 'approved' && !isAdmin(req)) return problem(res, req, 403, 'design.glyph_drafts_private', 'Only approved drafts are public.');
         if (!['approved', 'draft', 'rejected'].includes(status)) return problem(res, req, 422, 'design.invalid', 'status is approved, draft or rejected.');
         const rows = await drafts.list({ status, limit: 500 });
-        res.set('Cache-Control', status === 'approved' ? 'public, max-age=300' : 'private, no-store').json({ drafts: rows.map((d) => ({ id: d.id, name: d.name, sentence: d.sentence, svg: d.svg, solid_svg: d.solid_svg || null, model: d.model, status: d.status, created_at: d.created_at, reviewed_at: d.reviewed_at })) });
+        res.set('Cache-Control', status === 'approved' ? 'public, max-age=300' : 'private, no-store').json({ drafts: rows.map((d) => ({ id: d.id, name: d.name, sentence: d.sentence, svg: d.svg, solid_svg: d.solid_svg || null, styles: d.styles_json || [], references: d.references_json || [], model: d.model, status: d.status, created_at: d.created_at, reviewed_at: d.reviewed_at })) });
     });
     return r;
 }

@@ -17,6 +17,8 @@
  */
 const crypto = require('crypto');
 const { clean, cleanSolid } = require('./validate');
+const { fitDrawing } = require('./fit');
+const { searchReferences } = require('./references');
 
 const PER_DAY = 12;
 const CLAUDE = Object.freeze({ provider: 'anthropic', model: 'claude-opus-5-5' });
@@ -44,8 +46,9 @@ different idea, not the same drawing moved. Each candidate also has its solid tw
 idea as filled shapes, a hole cut with fill-rule="evenodd" on a path, a part that has to stay a line (a handle, a
 stem, a slash) as class="ln"; no other attributes, at most 6 shapes. Answer with JSON only:
 {"candidates": [{"line": "<path d=\\"…\\"/>", "solid": "<path d=\\"…\\"/>"}, …]} with ${CANDIDATES} different candidates.${examples()}`;
+const SOLID_SYSTEM = `You make filled twins for existing OpenVibe line glyphs. Keep the idea and outer silhouette identical to the provided line drawing. Turn closed regions into filled shapes, preserve holes with fill-rule="evenodd", and keep handles, stems, slashes and other open strokes as class="ln". Return JSON only as {"candidates":[{"solid":"<path d=\\"…\\"/>"},…]}. Use only path, circle, ellipse and rect shapes; no transforms, styles, colours or scripts.`;
 
-function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests = { perGuest: 2, perAddress: 4, daily: 25 } }) {
+function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests = { perGuest: 2, perAddress: 4, daily: 25 }, referenceSearch = searchReferences }) {
     const id = () => `gd_${crypto.randomBytes(8).toString('hex')}`;
     const iso = () => new Date(clock.now()).toISOString();
 
@@ -61,13 +64,18 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         db.exec("DELETE FROM glyph_guest_draws WHERE created_at < now() - interval '2 days'").catch(() => {});
     }
 
-    async function draft({ subject, name, sentence = '', guest = null }) {
+    async function draft({ subject, name, sentence = '', guest = null, styles = null, sourceSvg = '' }) {
         if (!subject && !guest) throw Object.assign(new Error('sign in to draw an icon'), { status: 401 });
         if (guest && !/^[0-9a-f]{16,64}$/.test(String(guest.id || ''))) throw Object.assign(new Error('this browser cannot draw without signing in'), { status: 400 });
         const who = subject || `guest:${guest.id}`;
         const n = String(name || '').trim().toLowerCase();
         if (!NAME_RE.test(n)) throw Object.assign(new Error('a name is 2 to 32 lowercase letters, digits and dashes, like "hot-tub"'), { status: 422 });
         const what = String(sentence || '').trim().slice(0, 200);
+        const sourceLine = sourceSvg ? clean(sourceSvg) : null;
+        if (sourceLine && !sourceLine.ok) throw Object.assign(new Error(`sourceSvg: ${sourceLine.why}`), { status: 422 });
+        const allowedStyles = new Set(['thin', 'light', 'regular', 'bold', 'solid', 'duotone']);
+        const requestedStyles = Array.isArray(styles) ? [...new Set(styles.map((x) => String(x).toLowerCase()).filter((x) => allowedStyles.has(x)))].slice(0, 6) : [...allowedStyles];
+        if (!requestedStyles.length) throw Object.assign(new Error('styles must include thin, light, regular, bold, solid or duotone'), { status: 422 });
         if (!ai || !ai.enabled) throw Object.assign(new Error('drawing needs OpenVibe.AI, which is not configured here'), { status: 503 });
         if (subject) {
             const today = await db.maybe("SELECT count(*)::int AS n FROM glyph_drafts WHERE subject = $1 AND created_at > now() - interval '1 day'", [subject]);
@@ -75,10 +83,13 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         } else {
             await admitGuest(guest);
         }
+        let references = [];
+        if (!sourceLine) { try { references = await referenceSearch(`${n.replace(/-/g, ' ')} ${what}`, { limit: 5 }); } catch { references = []; } }
+        const referenceWords = references.map((r) => `${r.name.replace(/-/g, ' ')} (${r.setName}; ${r.license})`).join(', ');
         const ask = async (extra = '') => {
             const answer = await ai.text({
-                system: SYSTEM,
-                prompt: `The icon: "${n}".${what ? ` What it stands for: ${what}` : ''}${extra}`,
+                system: sourceLine ? SOLID_SYSTEM : SYSTEM,
+                prompt: `${sourceLine ? `Make a solid twin of this existing line drawing for "${n}": ${sourceLine.svg}` : `The icon: "${n}".`}${what ? ` What it stands for: ${what}` : ''}${referenceWords ? `\nRelated open icon concepts for vocabulary only: ${referenceWords}. Draw an original OpenVibe glyph; do not copy a reference.` : ''}${extra}`,
                 maxTokens: 1800,
                 target: { service: 'design', type: 'glyph_draft', id: n },
                 // Two tiers (owner, 11-09: "the free one should use the cheapest or most cost-effective model if people
@@ -99,23 +110,32 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         // Fewer than two that pass the checks: ask once more, saying why the last ones failed (more reliable drafts).
         const lineOf = (c) => (typeof c === 'string' ? c : (c && typeof c.line === 'string' ? c.line : ''));
         const solidOf = (c) => (c && typeof c === 'object' && typeof c.solid === 'string' ? c.solid : '');
-        const passing = list.filter((c) => clean(lineOf(c)).ok).length;
+        const passing = list.filter((c) => sourceLine ? cleanSolid(solidOf(c)).ok : clean(lineOf(c)).ok).length;
         if (passing < 2) {
-            const whys = list.map((c) => clean(lineOf(c))).filter((r) => !r.ok).map((r) => r.why).slice(0, 4);
+            const whys = list.map((c) => sourceLine ? cleanSolid(solidOf(c)) : clean(lineOf(c))).filter((r) => !r.ok).map((r) => r.why).slice(0, 4);
             const again = await ask(`\nThe last answer ${list.length ? `failed the checks: ${whys.join('; ') || 'too few usable drawings'}` : 'had no candidates'}. Keep strictly to the rules.`).catch(() => null);
             if (again && again.got.length) { list = list.concat(again.got).slice(0, CANDIDATES * 2); answer = again.answer; }
         }
         const kept = [], refused = [];
         const seen = new Set();
         for (const c of list) {
-            const r = clean(lineOf(c));
+            const r = sourceLine ? sourceLine : clean(lineOf(c));
             if (!r.ok) { refused.push(r.why); continue; }
-            if (seen.has(r.svg)) continue;
-            seen.add(r.svg);
-            const sol = solidOf(c) ? cleanSolid(solidOf(c)) : { ok: false };
-            const row = { id: id(), subject: who, name: n, sentence: what, svg: r.svg, solid_svg: sol.ok ? sol.svg : null, provider: answer.provider, model: answer.model, status: 'draft', created_at: iso() };
-            await db.exec('INSERT INTO glyph_drafts (id, subject, name, sentence, svg, solid_svg, provider, model, status, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
-                [row.id, row.subject, row.name, row.sentence, row.svg, row.solid_svg, row.provider, row.model, row.status, row.created_at]);
+            const fitted = fitDrawing(r.svg);
+            if (!fitted.ok) { refused.push(fitted.why); continue; }
+            if (seen.has(fitted.svg)) continue;
+            seen.add(fitted.svg);
+            let sol = solidOf(c) ? cleanSolid(solidOf(c)) : { ok: false };
+            if (sol.ok) {
+                // The solid twin has different filled extents from the line drawing (especially where a
+                // stem or slash remains class="ln"). Fit it to the same house box independently.
+                const solidFit = fitDrawing(sol.svg);
+                if (solidFit.ok) sol = solidFit; else { refused.push(`${n} solid: ${solidFit.why}`); sol = { ok: false }; }
+            }
+            const row = { id: id(), subject: who, name: n, sentence: what, svg: fitted.svg, solid_svg: sol.ok ? sol.svg : null,
+                styles: requestedStyles, references, provider: answer.provider, model: answer.model, status: 'draft', created_at: iso() };
+            await db.exec('INSERT INTO glyph_drafts (id, subject, name, sentence, svg, solid_svg, provider, model, status, created_at, styles_json, references_json) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)',
+                [row.id, row.subject, row.name, row.sentence, row.svg, row.solid_svg, row.provider, row.model, row.status, row.created_at, JSON.stringify(row.styles), JSON.stringify(row.references)]);
             kept.push(row);
         }
         if (!list.length) refused.push('the model answered no candidates');
@@ -127,7 +147,7 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         if (status) { args.push(status); where.push(`status = $${args.length}`); }
         if (subject) { args.push(subject); where.push(`subject = $${args.length}`); }
         args.push(Math.min(Math.max(Number(limit) || 60, 1), 500));
-        return db.many(`SELECT id, name, sentence, svg, solid_svg, provider, model, status, created_at, reviewed_at FROM glyph_drafts${where.length ? ` WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC LIMIT $${args.length}`, args);
+        return db.many(`SELECT id, name, sentence, svg, solid_svg, styles_json, references_json, provider, model, status, created_at, reviewed_at FROM glyph_drafts${where.length ? ` WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC LIMIT $${args.length}`, args);
     }
 
     async function review({ id: draftId, action, reviewer }) {
