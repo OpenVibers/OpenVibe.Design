@@ -231,6 +231,44 @@
       draw(); widget.append(bar, work);
       control('Next state', () => { k = (k + 1) % states.length; draw(); }, true);
       control('The bug', () => { work.classList.add('covered'); say('A blurred cover over the work: nobody can watch it being made.'); });
+    } else if (id === 'column-earns-place') {
+      const rows = [['atlas-1', '$0.40', '1.4 s'], ['nimbus-2', '$2.00', '2.6 s'], ['orbit', '$1.20', null]];
+      const table = node('table', 'num-demo hn-table'); widget.append(table);
+      const draw = (bug) => { const cols = bug ? ['Model', 'Price', 'Reply time', 'Tokens/s', 'First token', 'Licence'] : ['Model', 'Price', 'Reply time'];
+        const head = node('tr'); cols.forEach((h) => head.append(node('th', '', h))); const thead = node('thead'); thead.append(head); const body = node('tbody');
+        rows.forEach((r) => { const tr = node('tr'); cols.forEach((_, i) => { const v = r[i]; const td = node('td', v == null ? 'hn-quiet' : '', v == null ? (i < 3 ? 'No traffic yet' : 'Not measured yet') : v); tr.append(td); }); body.append(tr); });
+        table.replaceChildren(thead, body); };
+      draw(false); say('Three columns, each with values; one missing value says why.');
+      control('Columns with values', () => { draw(false); say('Three columns, each with values; one missing value says why.'); }, true);
+      control('The bug', () => { draw(true); say('Three more columns, nine cells of “Not measured yet”: the real numbers are harder to find.'); });
+    } else if (id === 'missing-not-zero') {
+      const data = [['atlas-1', 1400], ['nimbus-2', 2600], ['orbit', null]];
+      const list = node('ol', 'hn-rank'); const pick = node('p', 'hn-pick'); widget.append(pick, list);
+      const draw = (bug) => { const val = (v) => (v == null ? (bug ? 0 : Infinity) : v); const sorted = [...data].sort((a, b) => val(a[1]) - val(b[1]));
+        list.replaceChildren(...sorted.map(([m, v]) => { const li = node('li'); li.append(node('b', '', m), node('span', v == null ? 'hn-quiet' : '', v == null ? (bug ? '0 ms' : 'No traffic yet') : `${(v / 1000).toFixed(1)} s`)); return li; }));
+        pick.textContent = `Fastest: ${sorted[0][0]}`; pick.classList.toggle('hn-wrong', bug); };
+      draw(false); say('The unmeasured model sorts last and wins nothing.');
+      control('Missing sorts last', () => { draw(false); say('The unmeasured model sorts last and wins nothing.'); }, true);
+      control('The bug', () => { draw(true); say('null became 0: a model nobody measured is “Fastest”.'); });
+    } else if (id === 'not-rated-yet') {
+      const card = node('div', 'hn-card'); const name = node('b', '', 'orbit'); const score = node('span', 'hn-score'); const sub = node('small', ''); card.append(name, score, sub); widget.append(card);
+      const draw = (games, bug) => { if (games || bug) { score.textContent = String(1000 + games * 6); score.classList.remove('hn-quiet'); sub.textContent = games ? `± ${Math.max(12, 80 - games * 4)} · ${games} games` : '0 games'; } else { score.textContent = 'Not rated yet'; score.classList.add('hn-quiet'); sub.textContent = 'No votes so far'; } };
+      let games = 0; draw(0, false); say('No games: the words say so.');
+      control('Play a game', () => { games += 1; draw(games, false); say(`${games} ${games === 1 ? 'game' : 'games'}: now there is a rating, with its spread.`); }, true);
+      control('The bug', () => { games = 0; draw(0, true); say('1000 with no games reads as a result. It is only where everyone starts.'); });
+    } else if (id === 'number-names-source') {
+      const fig = node('button', 'hn-fig'); fig.type = 'button'; const v = node('b', '', '1.4 s'); const what = node('span', '', 'typical reply'); const src = node('small', 'hn-src', 'Real traffic through the Exchange · 13,208 requests · last 7 days'); fig.append(v, what, src); widget.append(fig);
+      fig.addEventListener('click', () => { fig.classList.toggle('open'); say(fig.classList.contains('open') ? 'Where it came from, how much it rests on, and when.' : 'Tap the number for its source.'); });
+      fig.classList.add('open'); say('The value, then what it rests on.');
+      control('With its source', () => { fig.classList.add('open'); fig.classList.remove('bare'); say('The value, then what it rests on.'); }, true);
+      control('The bug', () => { fig.classList.remove('open'); fig.classList.add('bare'); say('A bare “1.4 s”: measured how, on what, when?'); });
+    } else if (id === 'price-freshness') {
+      const card = node('div', 'hn-card hn-price'); const p = node('b', '', '$0.90'); const unit = node('span', '', 'per 1M output tokens'); const when = node('small', ''); card.append(p, unit, when); widget.append(card);
+      const draw = (hours, bug) => { card.classList.toggle('stale', hours > 72 && !bug); when.textContent = bug ? '' : hours < 24 ? `Checked ${hours} hours ago on the provider’s page` : `Checked ${Math.round(hours / 24)} days ago · may have changed`; };
+      draw(3, false); say('Checked 3 hours ago.');
+      control('Checked today', () => { draw(3, false); say('Checked 3 hours ago.'); }, true);
+      control('Nine days later', () => { draw(216, false); say('Old: the price says it may have changed.'); });
+      control('The bug', () => { draw(216, true); say('No date: a nine-day-old price looks as live as one we set.'); });
     } else if (id === 'mark-system') {
       const row=node('div','mark-demo'),mark=node('span','ov-mark','ov');row.append(mark,node('span','','OpenVibe'));widget.append(row);control('Loading state',()=>{mark.classList.toggle('loading');say(mark.classList.contains('loading')?'Loading state active.':'Loading state stopped.');});control('Change site',()=>{mark.textContent=mark.textContent==='ov'?'lv':'ov';mark.style.borderRadius=mark.textContent==='lv'?'50%':'16px';say('The mark morphs for the active site.');});control('Open five studies',()=>{window.location.href='/patterns/mark/studies';});
     }
