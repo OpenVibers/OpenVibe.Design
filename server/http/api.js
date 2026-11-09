@@ -15,7 +15,8 @@
  *   GET  /api/me/theme/overrides                  Network GET /api/themes/me/overrides (a theme for one site)
  *   PUT|DELETE /api/me/theme/overrides/:service   Network's PUT|DELETE /api/themes/me/overrides/:service
  *   GET  /api/v1/tokens                           the export targets and the token names (OpenVibe Tokens)
- *   GET  /api/v1/components                       the components' contract (openvibe-shared/components)
+ *   GET  /api/v1/components                       design.component@1 entries from the component registry
+ *   GET  /api/v1/components/:name                 one entry, with its default example's markup
  *   POST /api/v1/components/validate              { doc } → { ok, errors }: a kit document checked against it
  *   GET  /api/v1/tokens/:idOrSlug?format=&both=&download=   a theme as code: css, tailwind, compose, swiftui, flutter,
  *                                                 figma or json (DTCG); both=0 leaves out its other half; download=1
@@ -31,7 +32,7 @@ const { ACCESS_COOKIE } = require('../auth/sso');
 const { ownOrigin, bearer, requireSameOrigin } = require('./same-origin');
 const themeTokens = require('../tokens');
 const components = require('openvibe-shared/components');
-const registry = require('../components/registry');
+const legacyRegistry = require('../components/registry');
 
 /** A Network 4xx answer, with its own status and body. A 2xx answer is passed through the same way. */
 function passThrough(res, r) {
@@ -57,7 +58,7 @@ function forward(res, req, up) {
 }
 
 function createApi(ctx) {
-    const { config, catalog, log } = ctx;
+    const { config, catalog, log, registry } = ctx;
     const r = asyncRouter();
     // A cookie write needs a same-origin signal; a Bearer write is not cookie-authenticated and is left alone.
     const requireOrigin = requireSameOrigin(config, { detail: 'A change to a theme must come from openvibe.design itself.' });
@@ -110,13 +111,30 @@ function createApi(ctx) {
         return res.send(body);
     });
 
-    // ── Components: the contract as JSON, and a kit document checked against it (public; nothing is stored) ──
-    r.get('/v1/components', (req, res) => {
+    // ── Components: the registry as JSON, and a kit document checked against it (public; read-only) ──
+    r.get('/v1/components', async (req, res) => {
+        const entries = await registry.list();
         res.set('Cache-Control', 'public, max-age=3600');
-        return res.json({ schema: 'design.component@1', version: 1, components: registry.COMPONENTS, kitComponents: components.SPECS, limits: components.LIMITS, preamble: components.PREAMBLE, docs: 'https://openvibe.design/components/registry', llms: 'https://openvibe.design/llms.txt' });
+        return res.json({
+            schema: 'design.component@1',
+            version: 1,
+            components: entries.map((entry) => entry.definition),
+            examples: Object.fromEntries(entries.map((entry) => [entry.name, entry.examples])),
+            kitComponents: components.SPECS,
+            limits: components.LIMITS,
+            preamble: components.PREAMBLE,
+            docs: 'https://openvibe.design/components',
+            llms: 'https://openvibe.design/llms.txt',
+        });
     });
-    r.get('/v1/components/:name', (req, res) => {
-        const component = registry.get(req.params.name);
+    r.get('/v1/components/:name', async (req, res) => {
+        const entry = await registry.get(req.params.name);
+        if (entry) {
+            res.set('Cache-Control', 'public, max-age=3600');
+            return res.json({ schema: entry.definition.schema, component: entry.definition, examples: entry.examples });
+        }
+        // The designed interface pages shipped before the registry had storage; their definitions stay readable.
+        const component = legacyRegistry.get(req.params.name);
         if (!component) return http.sendProblem(res, 404, 'design.component_not_found', { detail: 'No component by that name.', ctx: req.ov });
         res.set('Cache-Control', 'public, max-age=3600');
         return res.json({ schema: component.schema, component, examples: component.examples });

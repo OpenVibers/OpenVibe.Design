@@ -129,11 +129,15 @@ const { boot, check, done } = require('./helpers/boot');
     await check('the components API: the contract as JSON, and kit documents checked against it', async () => {
         const spec = (await t.get('/api/v1/components')).json();
         assert.strictEqual(spec.schema, 'design.component@1');
-        assert.ok(spec.components.find((c) => c.name === 'thread-composer').platforms.android.specification.includes('OutlinedTextField'));
+        assert.ok(spec.components.find((c) => c.name === 'page-head').platforms.android.specification.includes('TopAppBar'));
         assert.ok(spec.kitComponents.find((c) => c.id === 'card').native.swiftui.includes('struct OvCard'));
         const one = (await t.get('/api/v1/components/sheet')).json();
         assert.strictEqual(one.component.name, 'sheet');
         assert.strictEqual(one.component.behaviors.scrollLock, true);
+        assert.match(one.examples[0].markup, /ovk-sheet/);
+        // The hand-written interface pages still read their own definitions through the same endpoint.
+        const legacy = (await t.get('/api/v1/components/thread-composer')).json();
+        assert.ok(legacy.component.platforms.android.specification.includes('OutlinedTextField'));
         assert.strictEqual((await t.get('/api/v1/components/no-such-part')).status, 404);
         const page = await t.get('/components/sheet');
         assert.strictEqual(page.status, 200);
@@ -148,7 +152,7 @@ const { boot, check, done } = require('./helpers/boot');
         const registry = await t.get('/components/registry');
         assert.strictEqual(registry.status, 200);
         assert.match(registry.text, /One vocabulary, three platforms/);
-        assert.strictEqual((registry.text.match(/class="cr-card-link"/g) || []).length, spec.components.length);
+        assert.strictEqual((registry.text.match(/class="cr-card-link"/g) || []).length, require('../server/components/registry').COMPONENTS.length);
         assert.match((await t.get('/llms.txt')).text, /https:\/\/openvibe\.design\/components\/registry/);
         assert.strictEqual((await t.get('/sitemap.xml')).text.includes('/components/registry'), true);
         const good = await t.get('/api/v1/components/validate', { json: { doc: { type: 'rail', props: { title: 'Live' }, children: [{ type: 'card', props: { href: '/c/1', title: 'x' } }] } } });

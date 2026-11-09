@@ -23,6 +23,7 @@ const views = require('../views');
 const tokensView = require('../views/tokens');
 const lookView = require('../views/look');
 const componentsView = require('../views/components');
+const componentsListView = require('../views/components-list');
 const kitView = require('../views/kit');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
@@ -55,7 +56,7 @@ const subjectOf = (req) => (req.viewer && req.viewer.kind === 'user' ? req.viewe
 const tokenOf = (req) => (req.viewer && req.viewer.kind === 'user' ? req.viewer.token : null);
 
 function createPageRoutes(ctx) {
-    const { config, catalog, arena, log } = ctx;
+    const { config, catalog, arena, log, registry } = ctx;
     const r = asyncRouter();
     const safe = (fn) => Promise.resolve().then(fn).catch((err) => {
         log.warn('[OpenVibe.Design] page catalogue failed:', (err && err.message) || err);
@@ -249,11 +250,31 @@ function createPageRoutes(ctx) {
         const html = kitView.kitPart(String(req.params.id || ''));
         return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);
     });
-    r.get('/components', (req, res) => page(res, 200, componentsView.componentsPage({ id: String(req.query.c || ''), platform: String(req.query.p || 'web') }), req.viewer));
+    // /components is the registry as the plain list the owner asked for; the earlier designed kit-document page stays
+    // on its deep links (?c=<id>&p=web|android|ios), so a link from /kit or an old page still lands on its component.
+    r.get('/components', async (req, res) => {
+        if (req.query.c || req.query.p) {
+            return page(res, 200, componentsView.componentsPage({ id: String(req.query.c || ''), platform: String(req.query.p || 'web') }), req.viewer);
+        }
+        try {
+            return page(res, 200, componentsListView.componentsListPage(await registry.list()), req.viewer);
+        } catch (err) {
+            log.error('[OpenVibe.Design] component registry list failed:', (err && err.message) || err);
+            return page(res, 500, views.notFound(), req.viewer);
+        }
+    });
     r.get('/components/registry', (req, res) => page(res, 200, require('../views/component-registry').registryPage(), req.viewer));
-    r.get('/components/:name', (req, res) => {
-        const html = require('../views/component-registry').componentPage(req.params.name);
-        return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);
+    r.get('/components/:name', async (req, res) => {
+        const designed = require('../views/component-registry').componentPage(req.params.name);
+        if (designed) return page(res, 200, designed, req.viewer);
+        try {
+            const entry = await registry.get(req.params.name);
+            return entry ? page(res, 200, componentsListView.componentEntryPage(entry), req.viewer)
+                : page(res, 404, views.notFound(), req.viewer);
+        } catch (err) {
+            log.error('[OpenVibe.Design] component registry entry failed:', (err && err.message) || err);
+            return page(res, 500, views.notFound(), req.viewer);
+        }
     });
 
     // ── Tokens: any public theme as code (views/tokens.js) ──
