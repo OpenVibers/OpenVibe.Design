@@ -273,7 +273,7 @@ function createIconRoutes(ctx) {
             guest = guestOf(req, res, { make: true });
         }
         try {
-            const out = await drafts.draft({ subject, guest, name: (req.body || {}).name, sentence: (req.body || {}).sentence });
+            const out = await drafts.draft({ subject, guest, name: (req.body || {}).name, sentence: (req.body || {}).sentence, choice: req.body.choice ? JSON.parse(req.body.choice) : null });
             back(res, { drafted: String(out.kept.length), draw: String((req.body || {}).name || '') });
         } catch (err) {
             if (!err.status || err.status >= 500) log.warn('[OpenVibe.Design] glyph draft failed:', err && err.message);
@@ -289,7 +289,7 @@ function createIconRoutes(ctx) {
         if (!writeAllowed(req, config)) return problem(res, req, 403, 'design.same_origin_required', 'Open this request from an authorized OpenVibe client.');
         try {
             const body = req.body || {};
-            const out = await drafts.draft({ subject, name: body.name, sentence: body.sentence, styles: body.styles, sourceSvg: body.sourceSvg });
+            const out = await drafts.draft({ subject, name: body.name, sentence: body.sentence, styles: body.styles, sourceSvg: body.sourceSvg, choice: body.choice });
             return res.status(201).set('Cache-Control', 'private, no-store').json({ kept: out.kept, refused: out.refused });
         } catch (err) {
             if (!err.status || err.status >= 500) log.warn('[OpenVibe.Design] glyph API draft failed:', err && err.message);

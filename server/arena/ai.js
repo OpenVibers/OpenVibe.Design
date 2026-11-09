@@ -380,7 +380,7 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
      * Plain text from OpenVibe.AI's routing (the glyph drafts, L32): the same token and run as the Arena, one answer.
      * → { text, model, provider, run_id, paid_by, prefer }
      */
-    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null, preset = null, person = null }) {
+    async function text({ prompt, system, maxTokens = 2000, target = null, prefer = null, preset = null, person = null, task = null, choice = null }) {
         const startedAt = Date.now();
         const who = onBehalfOf(person);
         const wait = Math.min(ai.waitMs, 60_000);
@@ -388,6 +388,9 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
             ...(system ? { system } : {}), ...(who ? { on_behalf_of: who } : {}), ...(target ? { target } : {}) };
         const created = await createRun({
             workflow: 'ai.chat',
+            // A task lets AI resolve the model (the owner's default for it, the person's saved choice, their kind
+            // default): Design no longer names a model for its icon drafts. A per-run choice overrides it.
+            ...(task ? { task } : {}), ...(choice ? { choice } : {}),
             input: { ...(system ? { system } : {}), messages: [{ role: 'user', content: String(prompt == null ? '' : prompt) }], max_tokens: maxTokens },
             options: { cache: false },
             ...(prefer ? { prefer } : {}),
