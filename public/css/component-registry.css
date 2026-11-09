@@ -62,3 +62,32 @@
 .cr-motion-notice div { display: flex; flex-wrap: wrap; gap: 8px; }
 .cr-motion-notice button { min-height: 44px; }
 @media (max-width: 720px) { .cr-layout { grid-template-columns: minmax(0, 1fr); } .cr-props div, .cr-facts div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* The registry list and an entry page (Opus, 11-09): a chip row to jump between groups, each group's line under its
+   name, cards with their counts and module; an entry's states and tokens as chips beside its behaviour. */
+.crl-jump { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 18px 0 6px; padding-bottom: 4px; }
+.crl-jump::-webkit-scrollbar { display: none; }
+.crl-jump a { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--ovk-line); color: var(--ovk-text); text-decoration: none; font-size: .88rem; font-weight: 600; }
+.crl-jump a:hover { border-color: var(--ovk-accent, var(--accent)); }
+.crl-jump a span { color: var(--ovk-muted); font-variant-numeric: tabular-nums; font-weight: 500; }
+.crl-group { scroll-margin-top: calc(var(--ovnav-h, 56px) + 12px); }
+.crl-group-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 10px; }
+.crl-group-h h2 { margin: 0; }
+.crl-group-h p { margin: 0; color: var(--ovk-muted); font-size: .9rem; }
+.crl-counts { color: var(--ovk-muted); font-size: .78rem; }
+.crl-module { padding: 2px 7px; border-radius: 6px; background: var(--ovk-panel-2); color: var(--ovk-muted); font-size: .72rem; }
+.crl-where { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.crl-where code { padding: 3px 8px; border-radius: 6px; background: var(--ovk-panel-2); font-size: .8rem; }
+.crl .ds-kicker a { color: inherit; text-decoration: none; }
+.crl .ds-kicker a:hover { text-decoration: underline; }
+.crl-sec h2 { margin: 18px 0 10px; font-size: 1.05rem; }
+.crl-sec h2:first-child { margin-top: 0; }
+.crl-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.crl-chips li { padding: 4px 10px; border-radius: 999px; background: var(--ovk-panel-2); color: var(--ovk-text); font-size: .82rem; }
+.crl-chips--code li { border-radius: 6px; padding: 3px 8px; }
+.crl-chips--code code { font-size: .78rem; }
+.crl-none { color: var(--ovk-muted); margin: 0; }
+.crl-role { color: var(--ovk-muted); font-size: .85rem; margin: 0 0 6px; }
+.crl-ex-t { margin: 12px 0 6px; font-weight: 700; }
+.crl-card .cr-card-link span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.crl-build { margin: 4px 0 22px; }

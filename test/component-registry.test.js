@@ -66,17 +66,17 @@ const { boot, check, done } = require('./helpers/boot');
             assert.strictEqual(legacy.component.name, 'thread-composer');
         });
 
-        await check('/components is one plain unstyled list of the entries, with no cards, groups or registry CSS', async () => {
+        await check('/components groups every entry by purpose (Opus organizes the registry), each one a card linking its page', async () => {
             const page = await t.get('/components');
             assert.strictEqual(page.status, 200);
-            assert.match(page.text, /<h1>Component registry<\/h1>/);
-            assert.match(page.text, /<ul>/);
-            assert.match(page.text, /<h2>Page head<\/h2>/);
-            assert.match(page.text, /<h2>Home grid<\/h2>/);
-            assert.match(page.text, /<pre><code>&lt;header class=&quot;ovk-page-head&quot;/);
-            assert.doesNotMatch(page.text, /cr-card|cr-group|class="cr\b/);
-            assert.doesNotMatch(page.text, /component-registry\.css/);
-            assert.doesNotMatch(page.text, /<h2>Navigation<\/h2>/, 'no categories');
+            assert.match(page.text, /<h1>Every part of OpenVibe, defined once<\/h1>/);
+            assert.match(page.text, /component-registry\.css/);
+            assert.match(page.text, /id="crl-layout"/, 'the layout group');
+            assert.match(page.text, /id="crl-home"/, 'the Home group');
+            assert.match(page.text, /href="\/components\/page-head"><b>Page head<\/b>/);
+            assert.match(page.text, /href="\/components\/home-grid"><b>Home grid<\/b>/);
+            assert.match(page.text, /class="crl-jump"/, 'a chip row jumps between groups');
+            assert.doesNotMatch(page.text, /&lt;header class=&quot;ovk-page-head&quot;/, 'markup lives on the entry page, not the list');
 
             const one = await t.get('/components/page-head');
             assert.strictEqual(one.status, 200);
