@@ -40,7 +40,8 @@
 .cr-card-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
 .cr-card-platforms { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .cr-card-platforms span { padding: 2px 7px; border-radius: 999px; background: var(--ovk-panel-2); color: var(--ovk-muted); font-size: .72rem; }
-.cr-card-meta a { display: inline-flex; align-items: center; min-height: 32px; color: var(--ovk-accent); font-size: .78rem; font-weight: 700; }
+.cr-card-meta a { display: inline-flex; align-items: center; min-height: 32px; padding: 0 8px; border-radius: 8px; color: var(--text-muted, var(--ovk-muted)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; font-weight: 650; text-decoration: none; }
+.cr-card-meta a:hover { color: var(--ovk-accent); background: color-mix(in srgb, var(--ovk-accent) 10%, transparent); }
 .cr-native { padding: 15px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
 .cr-native p { margin: 0 0 8px; }
 .cr-index { display: flex; flex-wrap: wrap; gap: 8px; }
