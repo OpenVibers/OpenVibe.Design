@@ -40,6 +40,7 @@ const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
+const { createComponentRegistry } = require('./components/store');
 const { createSharing, describeRef } = require('./sharing');
 const { createPageRoutes } = require('./http/pages');
 const { createTokenFileRoutes } = require('./http/tokens');
@@ -68,6 +69,10 @@ async function createApp(opts = {}) {
     const now = opts.now || (() => Date.now());
 
     const s = opts.store || await openStore(config, { now, log });
+    // The public component registry: one design.component@1 row per Shared kit component. The import is additive so a
+    // definition a person edited is kept; a shared release refreshes with scripts/import-components.js --force.
+    const registry = opts.registry || createComponentRegistry({ db: s.db, log });
+    try { await registry.importEntries(); } catch (err) { log.warn('[OpenVibe.Design] component registry import failed:', err && err.message); }
     const keys = createKeyStore({ config, fetchImpl, log });
     const sso = createSso({ config, keys, fetchImpl, log, now });
     // D11 owner settings (design.publishing): created before the app mounts /internal/config. A failure leaves
@@ -110,7 +115,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker, registry,
         random: opts.random || Math.random,
     };
 
