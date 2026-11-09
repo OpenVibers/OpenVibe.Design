@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const seo = require('openvibe-shared/seo');
 const glyphs = require('openvibe-shared/glyphs');
+const { COMPONENTS } = require('../components/registry');
 const { asyncRouter } = require('./router');
 
 const SITE_NAME = 'OpenVibe.Design';
@@ -33,6 +34,7 @@ function publicPages(themes = []) {
         { path: '/look', changefreq: 'monthly', priority: 0.6, title: 'Your look', text: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.' },
         { path: '/kit', changefreq: 'weekly', priority: 0.7, title: 'The OpenVibe Kit', text: 'Every part an OpenVibe page is made of, one function call each: drawn, with its code for the server and the page, and what its CSS weighs.' },
         { path: '/components', changefreq: 'weekly', priority: 0.7, title: 'Components', text: 'The OpenVibe design system\'s components, each with its parts, tokens, states and accessibility, and code for the web, Jetpack Compose and SwiftUI.' },
+        { path: '/components/registry', changefreq: 'weekly', priority: 0.8, title: 'Component registry', text: 'Every shared OpenVibe interface as one design.component@1 definition: navbar, menu, You home, Dock and tabs, thread composer, sheets, pop-overs, keyboard behaviour, kit rows, cards, sections, empty states, switches, segmented controls, uploads, the model chip and motion, for web, Android and iOS.' },
         { path: '/tokens', changefreq: 'weekly', priority: 0.8, title: 'Your theme, as code', text: 'Any OpenVibe theme as design tokens: CSS variables, Tailwind, Jetpack Compose, SwiftUI, Flutter, Figma variables and W3C DTCG JSON, light and dark together.' },
         { path: '/brand', changefreq: 'monthly', priority: 0.7, title: 'The OpenVibe mark', text: 'The OpenVibe mark, a ring O and a round V: what each of its moves means, its forms, colours and the names beside it, with the SVG files and the code to use it on any site.' },
         { path: '/loading', changefreq: 'monthly', priority: 0.6, title: 'Loading: nothing spins', text: 'How OpenVibe waits: placeholders shaped like the content (kit.skeleton), the mark at work instead of a spinner (OpenVibeLoading), the navbar while a page moves (OpenVibeNavbar.busy), and the rules.' },
@@ -62,7 +64,11 @@ function publicPages(themes = []) {
         text: `The ${n.replace(/-/g, ' ')} icon from the OpenVibe glyphs: SVG, PNG at any size and colour, and the font.`,
         images: [`/icons/${n}.svg`, `/icons/${n}.png?size=512`],
     }));
-    return [...static_, ...themePages, ...glyphPages];
+    const componentPages = COMPONENTS.map((component) => ({
+        path: `/components/${component.name}`, changefreq: 'weekly', priority: 0.6,
+        title: `${component.title}: OpenVibe component`, text: component.summary,
+    }));
+    return [...static_, ...componentPages, ...themePages, ...glyphPages];
 }
 
 function createDiscoveryRoutes(ctx) {
@@ -110,10 +116,15 @@ function createDiscoveryRoutes(ctx) {
                     { title: 'Make a vector', url: abs('/vectors/make'), note: 'describe an icon, an illustration or a pattern and the model draws one clean SVG; POST /api/v1/vectors {prompt, kind} returns it; change it with POST /api/v1/vectors/<id>/edit {note}; the drawing as SVG or PNG at /vectors/made/<id>.svg and .png; MCP tool openvibe_design_make_vector' },
                 ] },
                 { title: 'Themes', links: list.filter((t) => t && t.slug).slice(0, 100).map((t) => ({ title: String(t.name || t.slug), url: abs(`/t/${encodeURIComponent(String(t.slug))}`), note: `${t.mode ? String(t.mode) : 'theme'}${t.description ? ` — ${String(t.description)}` : ''}` })) },
+                { title: 'Component registry', links: [
+                    { title: 'The component registry', url: abs('/components/registry'), note: 'every shared interface as a design.component@1 definition, for web, Android and iOS' },
+                    ...COMPONENTS.map((c) => ({ title: c.title, url: abs(`/components/${c.name}`), note: `${c.summary} Definition: ${abs(`/api/v1/components/${c.name}`)}` })),
+                ] },
                 // The data an agent came for is a main section, not something to skip.
                 { title: 'Machine-readable', links: [
                     { title: 'The theme catalogue (JSON)', url: abs('/api/themes'), note: 'public, cached for 5 minutes' },
                     { title: 'Font catalogue (JSON)', url: abs('/api/v1/fonts'), note: 'open licence families, cached for 5 minutes' },
+                    { title: 'The component registry (JSON)', url: abs('/api/v1/components'), note: 'design.component@1 definitions for every shared interface; one at /api/v1/components/<name>; the SDK exposes ov.design.components()' },
                     { title: 'The Arena dataset (JSONL)', url: abs('/api/v1/arena/dataset.jsonl'), note: 'prompts, outputs and votes, no voters' },
                     { title: 'Agent manifest', url: abs('/.well-known/agent.json') },
                 ] },

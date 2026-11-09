@@ -248,6 +248,11 @@ function createPageRoutes(ctx) {
         return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);
     });
     r.get('/components', (req, res) => page(res, 200, componentsView.componentsPage({ id: String(req.query.c || ''), platform: String(req.query.p || 'web') }), req.viewer));
+    r.get('/components/registry', (req, res) => page(res, 200, require('../views/component-registry').registryPage(), req.viewer));
+    r.get('/components/:name', (req, res) => {
+        const html = require('../views/component-registry').componentPage(req.params.name);
+        return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);
+    });
 
     // ── Tokens: any public theme as code (views/tokens.js) ──
     r.get('/tokens', async (req, res) => {

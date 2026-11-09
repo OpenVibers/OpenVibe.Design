@@ -12,6 +12,7 @@
  */
 const { serviceAuth } = require('openvibe-contracts');
 const { sanitizeHtml } = require('./sanitize');
+const { vocabulary } = require('../components/registry');
 
 class ArenaAiError extends Error {
     constructor(status, code, detail) {
@@ -41,6 +42,8 @@ function systemPrompt(category) {
         'Rules: return only the HTML document, starting with <!doctype html>. Use inline CSS in a <style> tag or style attributes.',
         'No JavaScript, no event-handler attributes, no external stylesheets, fonts, scripts or images. Images may be inline SVG or data: URIs.',
         'Make it responsive enough to be judged at 390 px and 1280 px wide. Use real, plausible content, not lorem ipsum. No explanations outside the HTML.',
+        'Use OpenVibe registry components as the interface vocabulary; mark each major component with data-ov-component set to its registry name.',
+        vocabulary(),
     ].join('\n');
 }
 

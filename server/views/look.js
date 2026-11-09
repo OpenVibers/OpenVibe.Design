@@ -9,6 +9,7 @@
  *   lookPage({ themes, me })
  */
 const kit = require('openvibe-shared/kit');
+const appIcons = require('openvibe-shared/app-icons');
 const { layout, esc } = require('../render/layout');
 
 // The sites a person can give a look of their own (service ids, as openvibe-shared/shell writes them on <html>).
@@ -75,17 +76,18 @@ function lookPage({ themes = [], me = {} } = {}) {
         title: 'A different look on one site',
         note: 'Wear another theme on one site only: Games in Neon Tokyo, Live in Daylight. Everywhere else keeps your theme.',
         body: `<ul class="lk-sites" id="lk-site-list" aria-live="polite"></ul>
-<form class="lk-site-form" id="lk-site-form"><label><span>Site</span><select name="service">${SITES.map(([id, name]) => `<option value="${esc(id)}">${esc(name)}</option>`).join('')}</select></label>
-<label><span>Theme</span><select name="theme_id">${themeOpts}</select></label>${kit.button({ type: 'submit', label: 'Add', small: true })}</form>`,
+<div class="lk-add">${kit.sheetButton({ sheet: 'lk-site-sheet', label: 'Add a site', icon: 'plus', iconOnly: false })}</div>
+${kit.sheet({ id: 'lk-site-sheet', title: 'Add a site', body: `<form class="lk-site-form" id="lk-site-form"><label><span>Site</span><select name="service">${SITES.map(([id, name]) => `<option value="${esc(id)}" data-app-icon="${esc(appIcons.url(id, 192) || '')}">${esc(name)}</option>`).join('')}</select></label>
+<label><span>Theme</span><select name="theme_id">${themeOpts}</select></label>${kit.button({ type: 'submit', label: 'Add site' })}</form>` })}`,
     }) : '';
     const body = `<header class="ds-page-h"><p class="ds-kicker">Your look</p><h1>Your look, everywhere</h1>
 <p class="ds-lede">One theme and one set of comfort settings for every OpenVibe site: Live, Chat, Games, the shops and the rest.</p></header>
 <noscript>${kit.notice({ kind: 'info', text: 'These settings need JavaScript in this browser. Your theme still follows your account.' })}</noscript>
 <div class="lk" data-signed-in="${signedIn ? '1' : '0'}">${current}${settings}${comfort}${sites}
-<p class="lk-status" id="lk-status" role="status"></p>
-${signedIn ? `<p class="ds-fine">Every change keeps the look it replaced: <a href="/studio#ds-history">your history</a> brings any of the last fifty back.</p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
+<div class="lk-toast" id="lk-toast" role="status" aria-live="polite" hidden><span id="lk-status"></span><button type="button" id="lk-undo" hidden>Undo</button></div>
+${signedIn ? `<p class="lk-history-link"><a class="ovk-btn ovk-btn--quiet ovk-btn--small" href="/studio#ds-history">${kit.icon('clock')}<span>Your history</span></a></p>` : `<p>${kit.button({ href: '/auth/login?next=%2Flook', label: 'Sign in so it follows you', kind: 'quiet', small: true })}</p>`}</div>
 <script type="application/json" id="lk-themes">${JSON.stringify(list).replace(/</g, '\\u003c')}</script>`;
-    return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion, seasonal themes and comfort settings (contrast, a readable font, colour-blind-safe colours, true black) for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'] });
+    return layout({ title: 'Your look', description: 'Your theme, light or dark, text size, motion, seasonal themes and comfort settings (contrast, a readable font, colour-blind-safe colours, true black) for every OpenVibe site, in one place.', path: '/look', body: `<div class="ds-wrap tk">${body}</div>`, active: '/look', scripts: ['js/look.js'], styles: ['css/studio-look.css'] });
 }
 
 module.exports = { lookPage, esc, SITES };

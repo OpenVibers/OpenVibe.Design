@@ -31,6 +31,7 @@ const { ACCESS_COOKIE } = require('../auth/sso');
 const { ownOrigin, bearer, requireSameOrigin } = require('./same-origin');
 const themeTokens = require('../tokens');
 const components = require('openvibe-shared/components');
+const registry = require('../components/registry');
 
 /** A Network 4xx answer, with its own status and body. A 2xx answer is passed through the same way. */
 function passThrough(res, r) {
@@ -112,7 +113,13 @@ function createApi(ctx) {
     // ── Components: the contract as JSON, and a kit document checked against it (public; nothing is stored) ──
     r.get('/v1/components', (req, res) => {
         res.set('Cache-Control', 'public, max-age=3600');
-        return res.json({ version: components.VERSION, limits: components.LIMITS, preamble: components.PREAMBLE, components: components.SPECS, docs: 'https://openvibe.design/components' });
+        return res.json({ schema: 'design.component@1', version: 1, components: registry.COMPONENTS, kitComponents: components.SPECS, limits: components.LIMITS, preamble: components.PREAMBLE, docs: 'https://openvibe.design/components/registry', llms: 'https://openvibe.design/llms.txt' });
+    });
+    r.get('/v1/components/:name', (req, res) => {
+        const component = registry.get(req.params.name);
+        if (!component) return http.sendProblem(res, 404, 'design.component_not_found', { detail: 'No component by that name.', ctx: req.ov });
+        res.set('Cache-Control', 'public, max-age=3600');
+        return res.json({ schema: component.schema, component, examples: component.examples });
     });
     r.post('/v1/components/validate', (req, res) => {
         const doc = req.body && req.body.doc;

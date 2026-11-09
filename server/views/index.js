@@ -22,6 +22,7 @@ const { iframeHtml } = require('../arena/sanitize');
 const glyphs = require('openvibe-shared/glyphs');
 const { DESIGN_KINDS, DEFAULT_KIND, kindOf } = require('../arena/kinds');
 const ovServe = require('openvibe-shared/serve');
+const appIcons = require('openvibe-shared/app-icons');
 const { TARGETS } = require('openvibe-shared/tokens');
 
 const { layout, esc, NAME } = layoutLib;
@@ -46,7 +47,7 @@ const TRY_SITES = [['Live', 'https://openvibe.live/'], ['Chat', 'https://openvib
 /** "Try it on" links for a catalog theme (id: its slug); data-try lets the studio point them at the picked theme. */
 function tryOn(id) {
     const q = id ? `?ov-try=${encodeURIComponent(id)}` : '';
-    return `<p class="ds-try"><span>Try it on the real sites, nothing saved:</span>${TRY_SITES.map(([name, url]) => `<a href="${esc(url + q)}" data-try="${esc(url)}" rel="noopener">${esc(name)}</a>`).join('')}</p>`;
+    return `<div class="ds-try"><span>Try it on a site · preview only</span><div class="ds-try-sites">${TRY_SITES.map(([name, url]) => `<a href="${esc(url + q)}" data-try="${esc(url)}" rel="noopener" target="_blank">${appIcons.url(name.toLowerCase(), 192) ? `<img src="${esc(appIcons.url(name.toLowerCase(), 192))}" width="28" height="28" alt="">` : kit.icon('globe')}<span>${esc(name)}</span></a>`).join('')}</div></div>`;
 }
 
 /** A theme as a swatch button (the studio) or link (the home and gallery without JavaScript). */
@@ -222,19 +223,20 @@ ${signedIn ? `<p class="ds-sign ds-fine">Signed in as <b>${esc((me.user && (me.u
 <aside class="ds-editor" aria-labelledby="ds-ed-h"><h2 id="ds-ed-h">Edit</h2>
 <div class="ds-fields">${CORE.map(([k, l]) => `<label class="ds-field"><span>${esc(l)}</span><input type="color" data-var="${k}" aria-label="${esc(l)}"><input type="text" data-hex="${k}" inputmode="text" maxlength="7" spellcheck="false" aria-label="${esc(l)}, hex"></label>`).join('')}</div>
 <h3>Checks</h3><ul class="ds-checks" id="ds-checks" aria-live="polite"><li class="ds-fine">Pick a theme to check it.</li></ul>
-<div class="ds-actions"><button type="button" class="ovk-btn ovk-btn--primary" id="ds-use" disabled>${signedIn ? 'Use this theme' : 'Sign in to use it'}</button>
-<button type="button" class="ovk-btn ovk-btn--quiet" id="ds-reset" disabled>Undo my edits</button>
-<a class="ovk-btn ovk-btn--quiet" id="ds-code" href="/tokens" data-tokens-src="${esc(ovServe.url('tokens.js'))}" title="This theme, with your edits, for the web, Android, iOS, Flutter and Figma">As code</a></div>
+<div class="ds-actions" aria-label="Theme actions"><button type="button" class="ovk-btn ovk-btn--primary" id="ds-use" disabled>${kit.icon('check')}<span>${signedIn ? 'Use this theme' : 'Sign in to use it'}</span></button>
+<button type="button" class="ovk-btn ovk-btn--quiet" id="ds-reset" disabled aria-label="Undo my edits" title="Undo my edits">${kit.icon('retry')}<span>Undo</span></button>
+<a class="ovk-btn ovk-btn--quiet" id="ds-code" href="/tokens" data-tokens-src="${esc(ovServe.url('tokens.js'))}" aria-label="This theme as code" title="This theme, with your edits, for the web, Android, iOS, Flutter and Figma">${kit.icon('code')}<span>Code</span></a>
+${kit.sheetButton({ sheet: 'ds-share-sheet', label: 'Share', icon: 'send', iconOnly: false })}</div>
 ${codeSheet()}
 <div id="ds-try" hidden>${tryOn('')}</div>
 <p class="ds-status" id="ds-status" role="status"></p>
-<details class="ds-submit"><summary>Share it in the gallery</summary><form id="ds-submit-form"><label>Name <input type="text" id="ds-name" maxlength="60" minlength="2" required placeholder="Cozy autumn"></label>
+${kit.sheet({ id: 'ds-share-sheet', title: 'Share it in the gallery', body: `<form id="ds-submit-form"><div class="ds-share-preview" aria-hidden="true"><span class="tk-dots" id="ds-share-dots"></span><strong id="ds-share-theme">Your theme</strong></div><label>Name <input type="text" id="ds-name" maxlength="60" minlength="2" required placeholder="Cozy autumn"></label>
 <label>One line about it <input type="text" id="ds-desc" maxlength="300" placeholder="Warm browns and a pumpkin accent"></label>
-<button type="submit" class="ovk-btn ovk-btn--quiet" ${signedIn ? '' : 'disabled'}>Send for review</button><p class="ds-fine">A person reviews each theme before anyone else sees it.</p></form></details>
-${signedIn ? '<details class="ds-history" id="ds-history"><summary>History</summary><ol id="ds-history-list"><li class="ds-fine">Your earlier looks appear here.</li></ol></details>' : ''}
+<button type="submit" class="ovk-btn ovk-btn--primary" ${signedIn ? '' : 'disabled'}>${kit.icon('send')} Send for review</button><p class="ds-fine">A person reviews each theme before anyone else sees it.</p></form>` })}
+${signedIn ? `<details class="ds-history" id="ds-history"><summary>${kit.icon('clock')}<span>History</span></summary><ol id="ds-history-list"><li class="ds-history-empty"><span aria-hidden="true">◌</span><p>Your earlier looks appear here.</p></li></ol></details>` : ''}
 </aside></div></div>
 <script type="application/json" id="ds-themes">${data}</script>`;
-    return layout({ title: 'Theme studio', description: 'Pick an OpenVibe theme, edit any colour with contrast and colour-vision checks, see it on Live, Chat and a shop at once, and use it everywhere.', path: '/studio', body: `<div class="ds-wrap">${body}</div>`, active: '/studio', scripts: ['js/studio.js'] });
+    return layout({ title: 'Theme studio', description: 'Pick an OpenVibe theme, edit any colour with contrast and colour-vision checks, see it on Live, Chat and a shop at once, and use it everywhere.', path: '/studio', body: `<div class="ds-wrap">${body}</div>`, active: '/studio', scripts: ['js/studio.js'], styles: ['css/studio-look.css'] });
 }
 
 function theme({ theme: t } = {}) {
