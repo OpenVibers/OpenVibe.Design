@@ -67,6 +67,8 @@ const PARTS = [
         code: `kit.list([kit.row({ href: '/r/night-owls', mark: kit.mark({ name: 'Night owls' }), title: 'Night owls', sub: 'ana: anyone up for the surf race?', meta: '14:05', unread: 2 }), kit.row({ href: '/r/robots', mark: kit.mark({ name: 'Robot arms' }), title: 'Robot arms', sub: 'kai sent a clip', meta: 'Yesterday' })], { title: 'Your rooms', more: { href: '/rooms', label: 'All' } })` },
     { id: 'row', fn: 'row', group: 'layout', name: 'Row', line: 'A mark, the title with a badge and the time on one line, one muted line under it. The whole row is the link.',
         code: `kit.list([kit.row({ href: '/@goosely', mark: kit.mark({ name: 'goosely' }), title: 'goosely', badge: kit.badge('live', 'live'), meta: '2 h', sub: 'Seattle at night, chat picks the route' })])` },
+    { id: 'page-head', fn: 'pageHead', group: 'layout', name: 'Page head', line: 'The top of a page: the way back, the page\'s icon and title, its actions, and one line saying what it is for.',
+        code: `kit.pageHead({ back: { href: '/kit', label: 'Rooms' }, icon: 'chat', title: 'Night owls', lede: 'A room for people who stream after midnight.', actions: [{ icon: 'share', label: 'Share' }, { icon: 'more', label: 'More' }] })` },
     { id: 'section', fn: 'section', group: 'layout', name: 'Section', line: 'A titled block of a page, with its count and one quiet note.',
         code: `kit.section({ title: 'Members', count: 12, note: 'Who can do what', body: kit.list([kit.row({ mark: kit.mark({ name: 'Ana Lima' }), title: 'Ana Lima', sub: 'Owner' })], { flush: true }) })` },
     { id: 'fold', fn: 'fold', group: 'layout', name: 'Fold', line: 'A card that opens: setup, extras, the danger zone. It says what is inside and how much.',
