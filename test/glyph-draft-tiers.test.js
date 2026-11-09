@@ -39,7 +39,7 @@ function fakeAi(calls) {
     {
         const calls = [];
         const db = fakeDb();
-        const d = createGlyphDrafts({ db, ai: fakeAi(calls) });
+        const d = createGlyphDrafts({ db, ai: fakeAi(calls), referenceSearch: async () => [] });
         const out = await d.draft({ subject: 'usr_1', name: 'hot-tub', sentence: 'a round tub with steam' });
         assert.ok(out.kept.length >= 1, 'drafts are kept');
         assert.strictEqual(calls.length, 1);
@@ -52,12 +52,23 @@ function fakeAi(calls) {
     {
         const calls = [];
         const db = fakeDb();
-        const d = createGlyphDrafts({ db, ai: fakeAi(calls) });
+        const d = createGlyphDrafts({ db, ai: fakeAi(calls), referenceSearch: async () => [] });
         const out = await d.draft({ subject: null, guest: { id: 'a'.repeat(32), ipHash: 'h1' }, name: 'hot-tub' });
         assert.ok(out.kept.length >= 1, 'a guest gets drafts too');
         assert.deepStrictEqual(calls[0].preset, { name: 'cheapest' }, 'a guest runs on the cheapest offer');
         assert.strictEqual(calls[0].prefer, undefined, 'a guest never asks for Claude');
         assert.strictEqual(calls[0].person, undefined, 'a guest is nobody\'s key');
+    }
+    // A missing solid twin keeps the exact reviewed line as its source while the model supplies filled geometry.
+    {
+        const calls = [], db = fakeDb();
+        const d = createGlyphDrafts({ db, ai: fakeAi(calls), referenceSearch: async () => [] });
+        const sourceSvg = '<path d="M5 12h14"/>';
+        const out = await d.draft({ subject: 'usr_2', name: 'hot-tub', sourceSvg, styles: ['solid'] });
+        assert.ok(out.kept.length && out.kept[0].solid_svg, 'the model solid is fitted and kept');
+        assert.ok(calls[0].system.includes('filled twins for existing'), 'solid work uses the solid-specific instructions');
+        assert.ok(calls[0].prompt.includes(sourceSvg), 'the existing line drawing is supplied to match');
+        assert.ok(out.kept[0].svg.includes('M2.5 12h19'), 'the original line geometry is fitted, not redrawn');
     }
     // The AI client carries the preset into the run it creates.
     const aiSrc = fs.readFileSync(path.join(__dirname, '..', 'server', 'arena', 'ai.js'), 'utf8');

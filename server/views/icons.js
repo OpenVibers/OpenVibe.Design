@@ -91,10 +91,24 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
   ${left.length > 24 ? `<details class="ic-fold ic-left-fold"><summary>${left.length - 24} more <span>each used a few times</span></summary><ul class="ic-left">${left.slice(24).map((n) => `<li><a href="/icons?draw=${encodeURIComponent(n.name)}#draw">${esc(n.name)}</a><small>${n.uses}</small></li>`).join('')}</ul></details>` : ''}
 </section>` : '';
 
-    const draftCard = (d, actions = '') => `<li class="ic-draft is-${esc(d.status)}"><div class="ic-draft-art"${d.solid_svg ? ' title="The line drawing, and its solid twin as the sites show it at 18 px and under"' : ''}>${svg(d.svg, 40)}${d.solid_svg ? solidSvg(d.solid_svg, 20) : svg(d.svg, 20)}</div><div class="ic-draft-t"><b>${esc(d.name)}</b>${actions && d.sentence ? `<span>${esc(d.sentence)}</span>` : ''}<small>${esc(d.status === 'draft' ? 'waiting for review' : d.status)}${d.model ? ` · ${esc(d.model)}` : ''}</small></div>${actions}</li>`;
+    const compare = (d) => {
+        const all = [...glyphs.NAMES].sort();
+        const at = all.findIndex((n) => n > d.name);
+        const neighbours = [all[(at + all.length - 2) % all.length], all[(at + all.length - 1) % all.length], all[at % all.length], all[(at + 1) % all.length]].filter(Boolean);
+        const styles = [['thin', 1], ['light', 1.5], ['regular', 2], ['bold', 2.5], ['solid', 2], ['duotone', 2]];
+        const sample = (path, size, width, style) => style === 'solid'
+            ? `<svg class="ic-compare-solid" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${path}</svg>`
+            : `<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="stroke-width:${width}" aria-hidden="true">${style === 'duotone' && d.solid_svg ? `<g class="ic-compare-duo">${d.solid_svg}</g>` : ''}${path}</svg>`;
+        const samples = (name, size, width, style, candidate) => {
+            const path = candidate ? (style === 'solid' && d.solid_svg ? d.solid_svg : d.svg) : (glyphs.path(name) || '');
+            return sample(path, size, width, style);
+        };
+        return `<details class="ic-compare"><summary>Compare styles with four neighbours</summary>${styles.map(([style, width]) => `<div class="ic-compare-row"><b>${style}</b>${[16, 20, 32].map((size) => `<div class="ic-compare-size"><small>${size}px</small><div>${samples(d.name, size, width, style, true)}${neighbours.map((n) => samples(n, size, width, style, false)).join('')}</div></div>`).join('')}</div>`).join('')}${(d.references_json || d.references || []).length ? `<p class="ic-compare-refs">References: ${(d.references_json || d.references).map((r) => `<a href="${esc(r.preview)}" target="_blank" rel="noopener">${esc(r.setName)} · ${esc(r.name)} · ${esc(r.license)}</a>`).join(' · ')}</p>` : ''}</details>`;
+    };
+    const draftCard = (d, actions = '') => `<li class="ic-draft is-${esc(d.status)}"><div class="ic-draft-art"${d.solid_svg ? ' title="The line drawing, and its solid twin as the sites show it at 18 px and under"' : ''}>${svg(d.svg, 40)}${d.solid_svg ? solidSvg(d.solid_svg, 20) : svg(d.svg, 20)}</div><div class="ic-draft-t"><b>${esc(d.name)}</b>${actions && d.sentence ? `<span>${esc(d.sentence)}</span>` : ''}<small>${esc(d.status === 'draft' ? 'waiting for review' : d.status)}${d.model ? ` · ${esc(d.model)}` : ''}</small></div>${actions}${actions ? compare(d) : ''}</li>`;
     const reviewForm = (d) => `<div class="ic-draft-acts">${['approve', 'reject'].map((a) => `<form method="post" action="/icons/drafts/${esc(d.id)}/review"><input type="hidden" name="action" value="${a}"><button type="submit" class="ic-btn${a === 'approve' ? ' is-go' : ''}">${a === 'approve' ? 'Approve' : 'Reject'}</button></form>`).join('')}</div>`;
     const drawSec = `<section class="ic-sec" id="draw" aria-labelledby="ic-draw">
-  <div class="ic-sec-head"><h2 id="ic-draw">Draw an icon</h2><p>Name it and say what it stands for. OpenVibe.AI draws a few candidates in this hand; each is checked (strokes only, on the grid, a few shapes) before it is kept, and an admin reviews it before it joins the set.</p></div>
+  <div class="ic-sec-head"><h2 id="ic-draw">Draw an icon</h2><p>Name it and say what it stands for. OpenVibe.AI draws a few candidates in this hand; each is checked before review. House rules: centre on the 24-unit grid, long side 18–20 units, 1/1.5/2/2.5-unit line weights, and 2.5-unit gaps so shapes stay clear at 16 px. Solids should stay under 2.6 times the line ink.</p></div>
   ${notice ? kit.notice({ kind: 'ok', text: notice }) : ''}${error ? kit.notice({ kind: 'error', text: error }) : ''}
   <form class="ic-form" method="post" action="/icons/draft">
     <label><span>Name</span><input name="name" required pattern="[a-z][a-z0-9\\-]{1,31}" maxlength="32" placeholder="hot-tub" value="${esc(draw)}" autocomplete="off" spellcheck="false"></label>
@@ -126,7 +140,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     <div><h3>As a font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-eye"></i>`, id: 'ic-use-font', label: 'Copy the HTML' })}</div>
     <div><h3>On a server</h3>${kit.snippet({ code: "const glyphs = require('openvibe-shared/glyphs');\n\nglyphs.svg('live', { size: 20 });   // a standalone SVG\nglyphs.fromFa('fa-eye');             // 'eye'", id: 'ic-use-node', label: 'Copy the code' })}</div>
     <div><h3>Switching from another set?</h3><p class="ic-more">Font Awesome, Lucide, Material or MUI: <a href="/icons/migrate">paste your page</a> and see every icon with its OpenVibe twin. Their names work in <code>&lt;ov-icon name="lucide:settings"&gt;</code> too.</p></div>
-    <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/api/v1/glyphs?names=heart,fa-gear\nGET ${base}/icons/<name>.svg?style=auto|line|solid\nGET ${base}/icons/<name>.mjs | .xml | /favicon.zip`, id: 'ic-use-api', label: 'Copy' })}</div>
+    <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/api/v1/glyphs?names=heart,fa-gear\nGET ${base}/api/v1/glyphs/search?q=heart\nGET ${base}/api/v1/glyphs/<name>?style=thin|light|regular|bold|solid|duotone\nPOST ${base}/api/v1/glyphs/draft\nGET ${base}/icons/<name>.svg?style=auto|line|solid`, id: 'ic-use-api', label: 'Copy' })}</div>
   </div>
 </section>`;
 

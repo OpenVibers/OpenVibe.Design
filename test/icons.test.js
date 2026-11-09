@@ -6,6 +6,7 @@
 const assert = require('node:assert/strict');
 const { boot, check, done } = require('./helpers/boot');
 const glyphs = require('openvibe-shared/glyphs');
+const { createIconRoutes } = require('../server/http/icons');
 const { clean, cleanSolid } = require('../server/glyphs/validate');
 const { stillFontAwesome } = require('../server/views/icons');
 
@@ -20,6 +21,7 @@ const ai = {
 const form = (fields) => ({ body: new URLSearchParams(fields).toString(), headers: { 'content-type': 'application/x-www-form-urlencoded' } });
 
 (async () => {
+    assert.equal(typeof createIconRoutes, 'function');
     const t = await boot({ ai });
     const ana = t.network.addUser('ana');
     const boss = t.network.addUser('boss', { role: 'admin' });
@@ -71,6 +73,19 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             assert.equal(eye.svg, glyphs.path('eye'));
             assert.ok(eye.fa.includes('eye'));
             assert.equal(j.fa['fa-eye'] || j.fa.eye, 'eye');
+        });
+
+        await check('style and name search API returns the selected glyph drawing', async () => {
+            const thin = await t.get('/api/v1/glyphs/eye?style=thin');
+            assert.equal(thin.status, 200);
+            assert.equal(thin.json().style, 'thin');
+            assert.equal(thin.json().svg, glyphs.path('eye'));
+            assert.equal(thin.json().strokeWidth, 1);
+            const bad = await t.get('/api/v1/glyphs/eye?style=unknown');
+            assert.equal(bad.status, 422);
+            const search = await t.get('/api/v1/glyphs/search?q=eye');
+            assert.equal(search.status, 200);
+            assert.ok(search.json().glyphs.some((g) => g.name === 'eye'));
         });
 
         await check('the validator keeps strokes on the grid and refuses anything else', async () => {
@@ -170,7 +185,8 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             assert.ok(!page.text.includes('onclick="steal()"'), 'the refused one is nowhere');
             assert.ok(!page.text.includes('Waiting for review'), 'not a reviewer');
             // Each kept drawing has its solid twin when that passed its own checks; a failing twin costs the drawing nothing.
-            assert.ok(page.text.includes('<svg class="is-solid" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4.5 9.5h15v9h-15Z"/><path d="M9 6c0-1 1-1 1-2M14 6c0-1 1-1 1-2" class="ln"/></svg>'), 'the solid twin is drawn beside its line drawing');
+            const twin = page.text.match(/<svg class="is-solid"[^>]*>[\s\S]*?<\/svg>/);
+            assert.ok(twin && twin[0].includes('class="ln"') && twin[0].includes('<path'), 'the fitted solid twin is drawn beside its line drawing');
             assert.ok(!page.text.includes('fill="red"'), 'a twin that failed its checks is not kept');
             assert.ok(asked[0].system.includes('solid twin'), 'the model is asked for the twins');
         });
