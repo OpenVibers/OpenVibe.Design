@@ -128,8 +128,29 @@ const { boot, check, done } = require('./helpers/boot');
 
     await check('the components API: the contract as JSON, and kit documents checked against it', async () => {
         const spec = (await t.get('/api/v1/components')).json();
-        assert.strictEqual(spec.components.length, Object.keys(require('openvibe-shared/components').SPECS).length, 'every component openvibe-shared has');
-        assert.ok(spec.components.find((c) => c.id === 'card').native.swiftui.includes('struct OvCard'));
+        assert.strictEqual(spec.schema, 'design.component@1');
+        assert.ok(spec.components.find((c) => c.name === 'thread-composer').platforms.android.specification.includes('OutlinedTextField'));
+        assert.ok(spec.kitComponents.find((c) => c.id === 'card').native.swiftui.includes('struct OvCard'));
+        const one = (await t.get('/api/v1/components/sheet')).json();
+        assert.strictEqual(one.component.name, 'sheet');
+        assert.strictEqual(one.component.behaviors.scrollLock, true);
+        assert.strictEqual((await t.get('/api/v1/components/no-such-part')).status, 404);
+        const page = await t.get('/components/sheet');
+        assert.strictEqual(page.status, 200);
+        assert.match(page.text, /id="cr-sheet"/);
+        assert.match(page.text, /data-ov-component="sheet"/);
+        for (const c of spec.components) {
+            assert.ok(c.anatomy.length && c.states.length && c.tokens.length, `${c.name} describes its parts, states and tokens`);
+            assert.ok(c.behaviors && typeof c.behaviors.scrollLock === 'boolean', `${c.name} states its behaviour`);
+            assert.ok(c.accessibility.name && c.accessibility.target, `${c.name} states its accessibility`);
+            assert.ok(c.platforms.web.markup && c.platforms.android.material3 && c.platforms.ios.specification, `${c.name} names all three platforms`);
+        }
+        const registry = await t.get('/components/registry');
+        assert.strictEqual(registry.status, 200);
+        assert.match(registry.text, /One vocabulary, three platforms/);
+        assert.strictEqual((registry.text.match(/class="cr-card-link"/g) || []).length, spec.components.length);
+        assert.match((await t.get('/llms.txt')).text, /https:\/\/openvibe\.design\/components\/registry/);
+        assert.strictEqual((await t.get('/sitemap.xml')).text.includes('/components/registry'), true);
         const good = await t.get('/api/v1/components/validate', { json: { doc: { type: 'rail', props: { title: 'Live' }, children: [{ type: 'card', props: { href: '/c/1', title: 'x' } }] } } });
         assert.strictEqual(good.status, 200);
         assert.deepStrictEqual(good.json(), { ok: true, errors: [] });
@@ -142,7 +163,7 @@ const { boot, check, done } = require('./helpers/boot');
         const kim = t.network.addUser('kim-sites');
         const page = await t.get('/look', { as: kim });
         assert.match(page.text, /A different look on one site/);
-        assert.match(page.text, /<select name="service"><option value="live">OpenVibe\.Live<\/option>/);
+        assert.match(page.text, /<select name="service"><option value="live" data-app-icon="\/shared\/icons\/[^\"]+">OpenVibe\.Live<\/option>/);
         assert.doesNotMatch((await t.get('/look')).text, /A different look on one site/, 'signed out: no section');
         const origin = 'https://openvibe.design';
         const put = await t.get('/api/me/theme/overrides/games', { as: kim, method: 'PUT', json: { theme_id: 'vibe' }, origin });

@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const { sanitizeHtml, MAX_BYTES } = require('./arena/sanitize');
 const { validateChange, applyChange } = require('./design-edit');
+const { vocabulary } = require('./components/registry');
 
 const KINDS = ['page', 'screen', 'component'];
 const random = () => crypto.randomBytes(24).toString('base64url');
@@ -79,7 +80,7 @@ function wrap(html, variables) {
 // ── The prompts this service sends (published word for word at openvibe.design/prompts) ──
 /** A design drawn in the person's theme: their words, then the theme's colour variables. */
 function themePrompt(prompt, variableNames) {
-    return `${prompt}\nUse ONLY these theme CSS custom properties for all colors: ${variableNames.join(', ')}. No external requests. Mobile first. Return one complete HTML document.`;
+    return `${prompt}\nUse ONLY these theme CSS custom properties for all colors: ${variableNames.join(', ')}. No external requests. Mobile first. Return one complete HTML document.\nBuild the interface from these OpenVibe component definitions. Mark each major component with data-ov-component set to its registry name. Keep the anatomy, state and keyboard behavior described by the definition.\n${vocabulary()}`;
 }
 /** An edit of a drawn design: the person's instruction, the current document, and the theme's colour variables. */
 function editPrompt(instruction, html, names) {
@@ -89,6 +90,7 @@ function editPrompt(instruction, html, names) {
         'The current document is between the markers. Keep its theme, its content and its structure unless the instruction asks otherwise.',
         `<<<CURRENT_DESIGN\n${html}\nCURRENT_DESIGN>>>`,
         `Use ONLY these theme CSS custom properties for every colour: ${names || '(the document already uses them)'}. Do not add scripts, event-handler attributes, links, web fonts, remote images or any external request. Mobile first.`,
+        `Keep using the OpenVibe component registry. Mark each major part with data-ov-component set to its registry name.\n${vocabulary()}`,
     ].join('\n\n');
 }
 

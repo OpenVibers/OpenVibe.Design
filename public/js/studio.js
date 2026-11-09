@@ -54,7 +54,16 @@
     let base = null;         // the theme picked
     let edited = null;       // core overrides, or null
     const coreOf = (v) => ({ '--bg-primary': v['--bg-primary'], '--bg-card': v['--bg-card'] || v['--bg-secondary'], '--text-primary': v['--text-primary'], '--text-muted': v['--text-muted'] || v['--text-secondary'], '--accent': v['--accent'], '--border': v['--border'] });
-    const current = () => { if (!base) return null; if (!edited) return base.variables; return Object.assign({}, base.variables, derive(Object.assign(coreOf(base.variables), edited)) || {}); };
+    const current = () => {
+        if (!base) return null;
+        // A theme may carry only its core colours (or an older catalog only a few); fill the rest from the shared
+        // built-in of the same id, then the theme's own values, so the checks, the previews and the code agree.
+        const builtin = (window.OpenVibeThemeLoader && window.OpenVibeThemeLoader.THEMES && window.OpenVibeThemeLoader.THEMES[base.id]) || {};
+        const source = Object.assign({}, builtin, base.variables);
+        const full = Object.assign(derive(coreOf(source)) || {}, source);
+        if (!edited) return full;
+        return Object.assign(full, derive(Object.assign(coreOf(source), edited)) || {});
+    };
 
     function paint() {
         const v = current();
@@ -64,6 +73,14 @@
         $$('.ds-field input[type=color]').forEach((inp) => { const x = hex(core[inp.getAttribute('data-var')]); if (x) inp.value = toHex(x); });
         $$('.ds-field input[data-hex]').forEach((inp) => { if (document.activeElement !== inp) { const x = hex(core[inp.getAttribute('data-hex')]); inp.value = x ? toHex(x) : ''; } });
         $('#ds-current').textContent = base.name + (edited ? ' (edited)' : '');
+        const shareName = $('#ds-share-theme');
+        if (shareName) shareName.textContent = base.name + (edited ? ' · edited' : '');
+        const dots = $('#ds-share-dots');
+        if (dots) dots.replaceChildren(...['--bg-primary', '--bg-card', '--accent', '--text-primary'].map((key) => {
+            const dot = document.createElement('i'); dot.className = 'tk-dot';
+            if (hex(v[key])) dot.style.background = toHex(hex(v[key]));
+            return dot;
+        }));
         $('#ds-reset').disabled = !edited;
         check(v);
     }
@@ -202,6 +219,7 @@
             await api('/api/themes/submit', { method: 'POST', body: JSON.stringify({ name, slug, description: $('#ds-desc').value.trim(), mode: v['--color-scheme'] === 'light' ? 'light' : 'dark', variables: v, tags: [] }) });
             say(`${name} is waiting for review. You can use it yourself right away.`);
             form.reset();
+            $('#ds-share-sheet').close();
         } catch (err) { say(`Not sent: ${err.message}`); }
     });
 
@@ -225,12 +243,12 @@
         let h = [];
         try { h = (await api('/api/me/theme/history')).history || []; } catch (e) { return; }
         list.textContent = '';
-        if (!h.length) { const li = document.createElement('li'); li.className = 'ds-fine'; li.textContent = 'Your earlier looks appear here after your first change.'; list.appendChild(li); return; }
+        if (!h.length) { const li = document.createElement('li'); li.className = 'ds-history-empty'; li.innerHTML = '<span aria-hidden="true">◌</span><p>Your earlier looks appear here after your first change.</p>'; list.appendChild(li); return; }
         for (const x of h.slice(0, 20)) {
             const li = document.createElement('li');
             const t = byId.get(x.theme_id);
             const dot = document.createElement('i'); dot.className = 'ds-hist-dot';
-            const accent = (x.custom_variables && x.custom_variables['--accent']) || (t && t.variables['--accent']);
+            const accent = (x.custom_variables && x.custom_variables['--accent']) || (t && (t.variables['--accent'] || t.variables['--bg-primary']));
             if (hex(accent)) dot.style.background = toHex(hex(accent));
             const b = document.createElement('b'); b.textContent = (x.theme_name || x.theme_id) + (x.custom_variables ? ' (edited)' : '');
             const when = document.createElement('small'); when.textContent = whenOf(x.created_at);

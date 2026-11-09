@@ -207,8 +207,8 @@ mark.svg({ form: 'heavy' });        // 22 px and under`;
         description: 'The OpenVibe mark: a ring O and a round V. What each of its moves means, its forms, colours and the names beside it, with the SVG files and the code to use it on any site.',
         path: '/brand',
         active: '/brand',
-        styles: ['css/brand.css'],
-        scripts: ['js/brand.js'],
+        styles: ['css/brand.css', 'css/demo-motion-controls.css'],
+        scripts: ['js/brand.js', 'js/demo-motion-controls.js'],
         body,
     });
 }

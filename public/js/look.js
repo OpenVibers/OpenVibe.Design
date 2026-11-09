@@ -11,7 +11,22 @@
     const $ = (s) => document.querySelector(s);
     const themes = (() => { try { return JSON.parse(($('#lk-themes') || {}).textContent || '[]'); } catch (e) { return []; } })();
     const byId = new Map(themes.map((t) => [t.id, t]));
-    const say = (text) => { const s = $('#lk-status'); if (s) s.textContent = text; };
+    let undoAction = null;
+    const say = (message, undo = null) => {
+        const toast = $('#lk-toast');
+        const label = $('#lk-status');
+        const button = $('#lk-undo');
+        if (!toast || !label || !button) return;
+        label.textContent = message;
+        undoAction = undo;
+        button.hidden = !undo;
+        toast.hidden = !message;
+    };
+    $('#lk-undo').addEventListener('click', () => {
+        const action = undoAction;
+        undoAction = null;
+        if (action) Promise.resolve(action()).then(() => say('Undone.')).catch(() => say('That did not work. Try again.'));
+    });
 
     function showTheme() {
         const id = document.documentElement.getAttribute('data-theme') || (L.getCurrent && L.getCurrent()) || 'vibe';
@@ -55,32 +70,51 @@
     root.addEventListener('change', (e) => {
         const i = e.target;
         if (!i || !i.name) return;
+        if (!['scheme', 'seasonal', 'text', 'motion', 'icons', ...Object.keys(COMFORT)].includes(i.name)) return;
+        const previous = i.name === 'scheme' ? L.scheme.get() : L.display.get()[i.name];
         if (i.name === 'scheme') L.scheme.set(i.value);
         else if (i.name === 'seasonal') L.display.set({ seasonal: i.checked ? 'on' : 'off' });
         else if (i.name === 'text' || i.name === 'motion' || i.name === 'icons') L.display.set({ [i.name]: i.value });
         else if (COMFORT[i.name]) L.display.set({ [i.name]: COMFORT[i.name][i.checked ? 0 : 1] });
         showTheme();
         showSettings();
-        say(root.getAttribute('data-signed-in') === '1' ? 'Saved. Every OpenVibe site follows.' : 'Saved on this device.');
+        say(root.getAttribute('data-signed-in') === '1' ? 'Saved. Every OpenVibe site follows.' : 'Saved on this device.', () => {
+            if (i.name === 'scheme') L.scheme.set(previous);
+            else L.display.set({ [i.name]: previous });
+            showTheme(); showSettings();
+        });
     });
     // ── A different look on one site (signed in): list, add, remove, through /api/me/theme/overrides ──
     const siteList = $('#lk-site-list');
-    const siteName = (id) => { const o = root.querySelector(`#lk-site-form select[name="service"] option[value="${id}"]`); return o ? o.textContent : id; };
+    const siteName = (id) => { const o = Array.from(root.querySelectorAll('#lk-site-form select[name="service"] option')).find((x) => x.value === id); return o ? o.textContent : id; };
     const api = (path, opts = {}) => fetch(path, { credentials: 'same-origin', ...opts, headers: { 'content-type': 'application/json', ...(opts.headers || {}) } }).then((r) => (r.ok ? r.json().catch(() => ({})) : Promise.reject(r)));
+    let currentSites = [];
     function drawSites(items) {
         if (!siteList) return;
+        currentSites = items;
         siteList.replaceChildren();
-        if (!items.length) { const li = document.createElement('li'); li.className = 'lk-none'; li.textContent = 'None yet: every site wears your theme.'; siteList.appendChild(li); return; }
+        if (!items.length) { const li = document.createElement('li'); li.className = 'lk-none'; li.textContent = 'Every site wears your theme. Add one to give it a different look.'; siteList.appendChild(li); return; }
         for (const o of items) {
             const li = document.createElement('li');
             const t = byId.get(o.theme_id);
-            const txt = document.createElement('span');
+            const icon = document.createElement('img');
+            icon.className = 'lk-site-icon'; icon.width = 40; icon.height = 40; icon.alt = '';
+            const siteOption = Array.from(root.querySelectorAll('#lk-site-form select[name="service"] option')).find((x) => x.value === o.service);
+            if (siteOption && siteOption.dataset.appIcon) icon.src = siteOption.dataset.appIcon;
+            else icon.hidden = true;
+            const txt = document.createElement('span'); txt.className = 'lk-site-text';
             const b = document.createElement('b'); b.textContent = siteName(o.service);
-            txt.append(b, ` wears ${(t && t.name) || o.theme_name || o.theme_id}`);
+            const theme = document.createElement('small'); theme.textContent = (t && t.name) || o.theme_name || o.theme_id;
+            const dot = document.createElement('i'); dot.className = 'lk-site-swatch';
+            if (t && (t.dots[2] || t.dots[0])) dot.style.background = t.dots[2] || t.dots[0];
+            theme.prepend(dot); txt.append(b, theme);
+            const menu = document.createElement('details'); menu.className = 'lk-site-menu';
+            const summary = document.createElement('summary'); summary.textContent = '⋯'; summary.setAttribute('aria-label', `Options for ${siteName(o.service)}`);
             const rm = document.createElement('button');
-            rm.type = 'button'; rm.className = 'ovk-btn ovk-btn--quiet ovk-btn--small'; rm.textContent = 'Remove';
-            rm.addEventListener('click', () => api(`/api/me/theme/overrides/${encodeURIComponent(o.service)}`, { method: 'DELETE' }).then(loadSites).then(() => say(`${siteName(o.service)} wears your theme again.`)).catch(() => say('That did not work. Try again.')));
-            li.append(txt, rm);
+            rm.type = 'button'; rm.textContent = 'Use my main theme';
+            rm.addEventListener('click', () => api(`/api/me/theme/overrides/${encodeURIComponent(o.service)}`, { method: 'DELETE' }).then(loadSites).then(() => say(`${siteName(o.service)} wears your main theme.`, () => api(`/api/me/theme/overrides/${encodeURIComponent(o.service)}`, { method: 'PUT', body: JSON.stringify({ theme_id: o.theme_id }) }).then(loadSites))).catch(() => say('That did not work. Try again.')));
+            menu.append(summary, rm);
+            li.append(icon, txt, menu);
             siteList.appendChild(li);
         }
     }
@@ -88,12 +122,19 @@
     const siteForm = $('#lk-site-form');
     if (siteForm && siteList) {
         loadSites();
+        document.addEventListener('click', (e) => {
+            siteList.querySelectorAll('.lk-site-menu[open]').forEach((menu) => { if (!menu.contains(e.target)) menu.open = false; });
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') siteList.querySelectorAll('.lk-site-menu[open]').forEach((menu) => { menu.open = false; menu.querySelector('summary').focus(); });
+        });
         siteForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const service = siteForm.elements.service.value;
             const themeId = siteForm.elements.theme_id.value;
+            const earlier = currentSites.find((x) => x.service === service);
             api(`/api/me/theme/overrides/${encodeURIComponent(service)}`, { method: 'PUT', body: JSON.stringify({ theme_id: themeId }) })
-                .then(loadSites).then(() => say(`${siteName(service)} wears ${(byId.get(themeId) || {}).name || themeId} from its next page.`))
+                .then(loadSites).then(() => { $('#lk-site-sheet').close(); say(`${siteName(service)} now wears ${(byId.get(themeId) || {}).name || themeId}.`, () => api(`/api/me/theme/overrides/${encodeURIComponent(service)}`, earlier ? { method: 'PUT', body: JSON.stringify({ theme_id: earlier.theme_id }) } : { method: 'DELETE' }).then(loadSites)); })
                 .catch(() => say('That did not work. Try again.'));
         });
     }

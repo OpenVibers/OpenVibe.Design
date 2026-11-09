@@ -137,8 +137,8 @@ OVFx.scan(document.querySelector('#feed'));`;
         description: 'How OpenVibe moves: the mark’s motion and one shared kit of effects (glint, glow, lift, press, ripple, tilt, reveal, count, confetti), the timing every site shares, the rules, and the code to use it anywhere.',
         path: '/motion',
         active: '/motion',
-        styles: ['css/motion.css'],
-        scripts: ['js/motion.js'],
+        styles: ['css/motion.css', 'css/demo-motion-controls.css'],
+        scripts: ['js/motion.js', 'js/demo-motion-controls.js'],
         body,
     });
 }
