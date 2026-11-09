@@ -160,7 +160,7 @@ function home({ themes } = {}) {
         faq: { items: [
             ['Where does my theme apply?', 'Everywhere you are signed in to OpenVibe: the theme lives on your account, and every site picks it up on its next page.'],
             ['Can I use it in my own app?', 'Yes. Tokens gives any theme as CSS variables, a Tailwind config, a Jetpack Compose colour scheme, SwiftUI colours, a Flutter colour scheme, Figma variables or W3C design-token JSON, with its light and dark halves together. The API is open.'],
-            ['Can I undo a change?', 'Yes. Every change keeps the look it replaced; the studio\'s history brings any of the last fifty back.'],
+            ['Can I undo a change?', 'Yes. Every change keeps the look it replaced; the history on the Themes page brings any of the last fifty back.'],
             ['Can others use my theme?', 'Submit it to the gallery. A person reviews each submission before anyone else sees it.'],
             ['What is coming next?', 'Publishing a design straight to OpenVibe.Website and OpenVibe.Space, brand kits that dress a creator\'s channel, overlays and shop in one go, and the kit\'s components as native Android and iOS views.'],
         ] },
@@ -210,11 +210,11 @@ function studio({ themes, me = {} } = {}) {
     const gallery = all.map((t) => `<li>${swatch(t, { tag: 'button' })}</li>`).join('');
     const data = JSON.stringify(all.map((t) => ({ id: t.id, name: t.name, mode: t.mode, variables: t.variables || {} }))).replace(/</g, '\\u003c');
     const body = `${CVD}<div class="ds-studio" data-signed-in="${signedIn ? '1' : '0'}">
-<header class="ds-studio-h"><div><p class="ds-kicker">Theme studio</p><h1>Make it yours</h1>
+<header class="ds-studio-h"><div><p class="ds-kicker">Themes</p><h1>Make it yours</h1>
 <p class="ds-lede">Pick a theme, change any colour, and see it on three sites at once. Every check must pass before it can be used.</p></div>
-${signedIn ? `<p class="ds-sign ds-fine">Signed in as <b>${esc((me.user && (me.user.display_name || me.user.username)) || 'you')}</b>: Use changes your look on every OpenVibe site.</p>` : `<p class="ds-sign">${kit.button({ href: '/auth/login?next=%2Fstudio', label: 'Sign in to use a theme', kind: 'quiet', small: true })}</p>`}</header>
+${signedIn ? `<p class="ds-sign ds-fine">Signed in as <b>${esc((me.user && (me.user.display_name || me.user.username)) || 'you')}</b>: Use changes your look on every OpenVibe site.</p>` : ''}</header>
 <div class="ds-grid">
-<aside class="ds-gallery" aria-labelledby="ds-gal-h"><div class="ds-gal-head"><h2 id="ds-gal-h">Themes</h2>
+<aside class="ds-gallery" aria-labelledby="ds-gal-h"><div class="ds-gal-head"><h2 id="ds-gal-h">Themes${all.length ? ` <span class="ds-count">${all.length}</span>` : ''}</h2>
 <div class="ds-seg" role="group" aria-label="Show"><button type="button" data-show="all" aria-pressed="true">All</button><button type="button" data-show="dark" aria-pressed="false">Dark</button><button type="button" data-show="light" aria-pressed="false">Light</button></div></div>
 <ul class="ds-gal-list">${gallery || '<li class="ds-fine">The catalog is not answering. Try again in a minute.</li>'}</ul></aside>
 <section class="ds-stage" aria-labelledby="ds-stage-h"><div class="ds-stage-head"><h2 id="ds-stage-h"><span id="ds-current">Your current theme</span></h2>
@@ -223,27 +223,26 @@ ${signedIn ? `<p class="ds-sign ds-fine">Signed in as <b>${esc((me.user && (me.u
 <aside class="ds-editor" aria-labelledby="ds-ed-h"><h2 id="ds-ed-h">Edit</h2>
 <div class="ds-fields">${CORE.map(([k, l]) => `<label class="ds-field"><span>${esc(l)}</span><input type="color" data-var="${k}" aria-label="${esc(l)}"><input type="text" data-hex="${k}" inputmode="text" maxlength="7" spellcheck="false" aria-label="${esc(l)}, hex"></label>`).join('')}</div>
 <h3>Checks</h3><ul class="ds-checks" id="ds-checks" aria-live="polite"><li class="ds-fine">Pick a theme to check it.</li></ul>
-<div class="ds-actions" aria-label="Theme actions"><button type="button" class="ovk-btn ovk-btn--primary" id="ds-use" disabled>${kit.icon('check')}<span>${signedIn ? 'Use this theme' : 'Sign in to use it'}</span></button>
+<div class="ds-actions" aria-label="Theme actions"><p class="ds-status" id="ds-status" role="status"></p><button type="button" class="ovk-btn ovk-btn--primary" id="ds-use" disabled>${kit.icon('check')}<span>${signedIn ? 'Use this theme' : 'Sign in to use it'}</span></button>
 <button type="button" class="ovk-btn ovk-btn--quiet" id="ds-reset" disabled aria-label="Undo my edits" title="Undo my edits">${kit.icon('retry')}<span>Undo</span></button>
 <a class="ovk-btn ovk-btn--quiet" id="ds-code" href="/tokens" data-tokens-src="${esc(ovServe.url('tokens.js'))}" aria-label="This theme as code" title="This theme, with your edits, for the web, Android, iOS, Flutter and Figma">${kit.icon('code')}<span>Code</span></a>
 ${kit.sheetButton({ sheet: 'ds-share-sheet', label: 'Share', icon: 'send', iconOnly: false })}</div>
 ${codeSheet()}
 <div id="ds-try" hidden>${tryOn('')}</div>
-<p class="ds-status" id="ds-status" role="status"></p>
 ${kit.sheet({ id: 'ds-share-sheet', title: 'Share it in the gallery', body: `<form id="ds-submit-form"><div class="ds-share-preview" aria-hidden="true"><span class="tk-dots" id="ds-share-dots"></span><strong id="ds-share-theme">Your theme</strong></div><label>Name <input type="text" id="ds-name" maxlength="60" minlength="2" required placeholder="Cozy autumn"></label>
 <label>One line about it <input type="text" id="ds-desc" maxlength="300" placeholder="Warm browns and a pumpkin accent"></label>
 <button type="submit" class="ovk-btn ovk-btn--primary" ${signedIn ? '' : 'disabled'}>${kit.icon('send')} Send for review</button><p class="ds-fine">A person reviews each theme before anyone else sees it.</p></form>` })}
 ${signedIn ? `<details class="ds-history" id="ds-history"><summary>${kit.icon('clock')}<span>History</span></summary><ol id="ds-history-list"><li class="ds-history-empty"><span aria-hidden="true">◌</span><p>Your earlier looks appear here.</p></li></ol></details>` : ''}
 </aside></div></div>
 <script type="application/json" id="ds-themes">${data}</script>`;
-    return layout({ title: 'Theme studio', description: 'Pick an OpenVibe theme, edit any colour with contrast and colour-vision checks, see it on Live, Chat and a shop at once, and use it everywhere.', path: '/themes', body: `<div class="ds-wrap">${body}</div>`, active: '/themes', scripts: ['js/studio.js'], styles: ['css/studio-look.css'] });
+    return layout({ title: 'Themes', description: 'Pick an OpenVibe theme, edit any colour with contrast and colour-vision checks, see it on Live, Chat and a shop at once, and use it everywhere.', path: '/themes', body: `<div class="ds-wrap">${body}</div>`, active: '/themes', scripts: ['js/studio.js'], styles: ['css/studio-look.css'] });
 }
 
 function theme({ theme: t } = {}) {
     const v = (t && t.variables) || {};
     const rows = CORE.map(([k, l]) => (HEX.test(String(v[k] || '')) ? `<div><dt>${esc(l)}</dt><dd><i style="background:${esc(v[k])}"></i><code>${esc(v[k])}</code></dd></div>` : '')).join('');
     const body = `<header class="ds-page-h"><p class="ds-kicker">${t.mode === 'light' ? 'Light theme' : 'Dark theme'}</p><h1>${esc(t.name)}</h1>${t.description ? `<p class="ds-lede">${esc(t.description)}</p>` : ''}
-<p class="ds-act">${kit.button({ href: `/themes?theme=${encodeURIComponent(t.id)}`, label: 'Open in the studio' })} ${kit.button({ href: `/tokens?theme=${encodeURIComponent(t.slug || t.id)}`, label: 'As code', kind: 'quiet' })}</p>${tryOn(t.slug || t.id)}</header>
+<p class="ds-act">${kit.button({ href: `/themes?theme=${encodeURIComponent(t.id)}`, label: 'Edit this theme' })} ${kit.button({ href: `/tokens?theme=${encodeURIComponent(t.slug || t.id)}`, label: 'As code', kind: 'quiet' })}</p>${tryOn(t.slug || t.id)}</header>
 ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
 <section aria-labelledby="ds-pv-h"><h2 id="ds-pv-h">How it looks</h2><div class="ds-previews ds-previews--static" style="${esc(varsStyle(v))}">${previews()}</div></section>`;
     return layout({ title: `${t.name}: an OpenVibe theme`, description: t.description || `${t.name}, a ${t.mode === 'light' ? 'light' : 'dark'} OpenVibe theme: its colours and how Live, Chat and a shop look in it.`, path: `/t/${encodeURIComponent(t.slug || t.id)}`, body: `<div class="ds-wrap">${body}</div>`, active: '/themes' });
@@ -515,7 +514,7 @@ ${outputs.some((o) => !o.error) ? arenaViewSwitch() : ''}
 }
 
 function notFound() {
-    const body = `<header class="ds-page-h"><h1>Nothing here</h1><p class="ds-lede">That page does not exist. <a href="/themes">Open the studio</a> or <a href="/">browse the themes</a>.</p></header>`;
+    const body = `<header class="ds-page-h"><h1>Nothing here</h1><p class="ds-lede">That page does not exist. <a href="/themes">See every theme</a> or <a href="/">go to the home page</a>.</p></header>`;
     return layout({ title: 'Not found', robots: 'noindex, follow', body: `<div class="ds-wrap">${body}</div>`, active: '/' });
 }
 

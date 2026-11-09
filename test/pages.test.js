@@ -32,7 +32,10 @@ const { assetVersion } = require('../server/assets');
         assert.strictEqual(r.status, 200);
         assert.match(r.text, /\/js\/studio\.js\?v=[0-9a-f]{10}/);
         assert.match(r.text, /\/css\/design\.css\?v=[0-9a-f]{10}/);
-        assert.match(r.text, /Sign in to use a theme/);
+        // One way to sign in on the page: the action bar's own button (a second one in the hero said it twice).
+        assert.match(r.text, /<span>Sign in to use it<\/span>/);
+        assert.doesNotMatch(r.text, /Sign in to use a theme/);
+        assert.match(r.text, /<div class="ds-actions"[^>]*><p class="ds-status" id="ds-status" role="status"><\/p>/, 'the status line sits with the buttons');
         assert.strictEqual(r.headers.get('cache-control'), 'public, max-age=120');
         const me = await t.get('/themes', { as: user });
         assert.strictEqual(me.status, 200);

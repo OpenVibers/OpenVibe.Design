@@ -50,7 +50,8 @@
 .lk-toast button { min-height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--ovk-panel-2); color: var(--ovk-text); font: inherit; font-weight: 700; cursor: pointer; }
 
 @media (max-width: 759px) {
-    .ds-studio { padding-bottom: calc(84px + var(--ovnav-appbar-h, 0px)); }
+    /* The bar is fixed over the page, so the page's last thing (the footer) is what must clear it. */
+    body:has(.ds-studio) main ~ footer { padding-bottom: 96px; }
     .ds-actions { position: fixed; z-index: 45; left: 0; right: 0; bottom: var(--ovnav-appbar-h, 0px); display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, auto); gap: 5px; margin: 0; padding: 8px max(12px, env(safe-area-inset-left)) 8px max(12px, env(safe-area-inset-right)); border-top: 1px solid var(--ovk-line); background: var(--ovk-panel); box-shadow: 0 -8px 24px #0003; }
     html:has(#ov-try-bar) .ds-actions { bottom: calc(var(--ovnav-appbar-h, 0px) + 68px); }
     .ds-actions .ovk-btn { flex-direction: column; gap: 2px; min-width: 52px; min-height: 48px; padding: 3px 5px; font-size: .67rem; line-height: 1.15; text-align: center; }
@@ -61,3 +62,49 @@
     .ds-actions [data-ovk-sheet] { font-size: .67rem; }
     .ds-actions [data-ovk-sheet] .ovk-i { width: 18px; height: 18px; }
 }
+
+/* ── The Themes page's layout (2026-11-09: the owner flagged it; openvibe.design/rules) ── */
+/* The preview is a <section>: the room's section spacing is for reading pages, not for a card in this grid. */
+.ds .ds-grid > section { margin-top: 0; }
+.ds-count { margin-left: 4px; font-size: .78rem; font-weight: 700; color: var(--text-muted, #7386a3); }
+/* The status line belongs to the buttons it answers: above them, and no gap while it has nothing to say. */
+.ds-actions .ds-status { grid-column: 1 / -1; flex-basis: 100%; min-height: 0; margin: 0; }
+.ds-actions .ds-status:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* Five sites, five even tiles. */
+.ds-editor .ds-try-sites { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.ds-editor .ds-try .ds-try-sites a { max-width: none; padding: 6px 1px; font-size: .6rem; }
+.ds-editor .ds-try-sites a span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 760px) {
+    /* One button to use it, then three even ones: no ragged rows. */
+    .ds-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ds-actions #ds-use { grid-column: 1 / -1; }
+    .ds-actions .ovk-btn, .ds-actions [data-ovk-sheet] { box-sizing: border-box; width: 100%; min-width: 0; padding-inline: 6px; }
+}
+@media (min-width: 1100px) { .ds-grid { grid-template-columns: 250px minmax(0, 1fr) 340px; } }
+@media (max-width: 1099px) {
+    /* The themes as a rail of small tiles: three and the edge of a fourth on a phone, so the rail says it goes on. */
+    .ds-gal-list { grid-auto-columns: 112px; gap: 8px; margin-inline: -14px; padding: 3px 14px; scroll-padding-inline: 14px; scrollbar-width: none; }
+    .ds-gal-list::-webkit-scrollbar { display: none; }
+    .ds-gal-list .ds-swatch { grid-template-columns: minmax(0, 1fr); align-content: center; gap: 7px; min-height: 68px; padding: 10px 10px 9px; }
+    .ds-gal-list .ds-swatch-name { font-size: .84rem; }
+    .ds-gal-list .ds-swatch-mode { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .ds-gal-list .ds-swatch { position: relative; }
+}
+@media (max-width: 759px) {
+    /* The three sites side by side to swipe through, so the colours to edit are one screen below the preview, not three. */
+    .ds-stage .ds-previews { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86%; gap: 10px; margin-inline: -14px; padding-inline: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 14px; scrollbar-width: none; }
+    .ds-stage .ds-previews::-webkit-scrollbar { display: none; }
+    .ds-stage .ds-previews > .pv-frame { scroll-snap-align: start; }
+    .ds-stage .pv-video { aspect-ratio: 16 / 6.5; }
+    .ds-stage .pv-composer { margin-top: auto; }
+    .ds-stage .pv-shoe-pic { aspect-ratio: 16 / 7; }
+}
+
+/* ── Your look ── */
+/* The icon styles: the three screens are the choice. */
+.lk-icons { border-top: 1px solid var(--ovk-line); padding-top: 14px; }
+.lk-icons > .ovk-set-text { display: block; padding: 0 14px 10px; }
+.lk .ovk-seg label span { text-align: center; }
+/* The theme's colours as four separate dots: two overlapping ones read as a switch. */
+.lk-theme .tk-dots { gap: 5px; }
+.lk-theme .tk-dots .tk-dot + .tk-dot { margin-left: 0; }

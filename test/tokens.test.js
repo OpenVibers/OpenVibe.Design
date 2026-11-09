@@ -98,8 +98,10 @@ const { boot, check, done } = require('./helpers/boot');
         assert.match(r.text, /Your look, everywhere/);
         for (const name of ['scheme', 'text', 'motion']) assert.match(r.text, new RegExp(`role="radiogroup"[^>]*>(<label><input type="radio" name="${name}"[^<]*<span>[^<]+</span></label>)+`), name);
         assert.match(r.text, /name="seasonal"/);
-        // The icon styles side by side (plan L56): three screens drawn with the real glyphs, each a button for its style.
-        for (const id of ['auto', 'line', 'solid']) assert.match(r.text, new RegExp(`<button type="button" class="lk-style" data-pick-icons="${id}" aria-pressed="(true|false)">`), id);
+        // The icon styles side by side (plan L56): three screens drawn with the real glyphs. They are the choice itself,
+        // one radio group; a segmented control beside them would be a second control for the same setting.
+        for (const id of ['auto', 'line', 'solid']) assert.match(r.text, new RegExp(`<label class="lk-style"><input type="radio" name="icons" value="${id}"( checked)?>`), id);
+        assert.strictEqual((r.text.match(/name="icons"/g) || []).length, 3, 'one control for the icon style');
         assert.match(r.text, /<span class="lk-st-screen" style="--ovg-pref:18\.4px">/, 'Auto shows Auto whatever the person chose');
         assert.match(r.text, /class="fa-solid fa-bell ovg-line"/, 'Line forces lines');
         assert.match(r.text, /class="fa-solid fa-bell ovg-solid"/, 'Solid forces solids');
