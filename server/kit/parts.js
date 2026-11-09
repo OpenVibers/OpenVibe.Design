@@ -91,6 +91,8 @@ const PARTS = [
         code: `'<form class="ovk-form">' + kit.selectRow({ name: 'quality', label: 'Video quality', hint: 'Auto follows your connection', options: [['auto', 'Auto'], ['1080', '1080p'], ['720', '720p']], value: 'auto' }) + '</form>'` },
     { id: 'seg', fn: 'seg', group: 'forms', name: 'Segmented', line: 'Two to four choices you can see at once.',
         code: `kit.seg({ name: 'view', label: 'View', options: [['grid', 'Grid'], ['list', 'List'], ['map', 'Map']], value: 'grid' })` },
+    { id: 'segmented', fn: 'segmented', group: 'forms', name: 'Segmented, full width', line: 'Three or four equal choices filling the row, each with an icon; the radios post without JavaScript.',
+        code: `kit.segmented({ name: 'kind', ariaLabel: 'What to paste', value: 'text', items: [{ value: 'text', label: 'Text', icon: 'page' }, { value: 'code', label: 'Code', icon: 'code' }, { value: 'link', label: 'Link', icon: 'link' }] })` },
     { id: 'chips', fn: 'chips', group: 'forms', name: 'Chips', line: 'Filters you can turn on and off, or one of a few.',
         code: `kit.chips({ name: 'kind', label: 'Show', options: [['live', 'Live', true], ['clips', 'Clips', true], ['rooms', 'Rooms'], ['games', 'Games']] })` },
     { id: 'save-bar', fn: 'saveBar', group: 'forms', name: 'Save bar', line: 'The save button of a settings form, kept in reach above the phone\'s app bar.',
