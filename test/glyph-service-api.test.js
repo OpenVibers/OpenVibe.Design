@@ -34,13 +34,14 @@ function token(t, cap = ['design.glyph.draft'], sub = 'svc:quest') {
             assert.equal((await post(token(t, ['design.glyph.draft']), { ...body, svg: '<svg/>' })).status, 422);
             assert.equal(calls.length, 0);
         });
-        await check('a service request creates review drafts on the cheapest tier and deduplicates', async () => {
+        await check('a service request creates review drafts on the design.icon task and deduplicates', async () => {
             const first = await post(token(t));
             assert.equal(first.status, 201, first.text.slice(0, 180));
             assert.equal(first.json().status, 'pending');
             assert.ok(first.json().draft_ids.length > 0);
             assert.equal(calls.length, 1);
-            assert.deepEqual(calls[0].preset, { name: 'cheapest' });
+            assert.equal(calls[0].task, 'design.icon', 'AI resolves the model for the task');
+            assert.equal(calls[0].preset, undefined, 'Design no longer names a routing preset');
             assert.equal(calls[0].person, undefined, 'a service request never spends a person’s key');
             const again = await post(token(t));
             assert.equal(again.status, 200);
