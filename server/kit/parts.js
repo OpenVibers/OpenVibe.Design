@@ -59,6 +59,8 @@ const PARTS = [
         code: `kit.sheetButton({ sheet: 'filters', label: 'Filters', iconOnly: false }) + kit.sheet({ id: 'filters', title: 'Filters', body: kit.chips({ name: 'kind', label: 'Show', options: [['live', 'Live', true], ['clips', 'Clips'], ['rooms', 'Rooms']] }) })` },
 
     // ── Layout ──
+    { id: 'page-head', fn: 'pageHead', group: 'layout', name: 'Page header', line: 'A named back chip, the page icon and title, and icon actions. On a phone the description folds into About this without JavaScript.', wide: true,
+        code: `kit.pageHead({ back: { label: 'Home', href: '/' }, icon: 'video', title: 'Record a video', lede: 'Record from your camera, review the take and share it when you are ready.', actions: [{ href: '/videos', label: 'Your videos', icon: 'video' }] })` },
     { id: 'head', fn: 'head', group: 'layout', name: 'Head', line: 'The top of an app page: back, the title, one muted line, icon actions and the tabs. It sticks under the navbar.', wide: true,
         code: `kit.head({ title: 'Settings', sub: 'Saved to your account', back: { href: '/', label: 'Home' }, level: 2, sticky: false, actions: [kit.iconButton({ href: '/help', icon: 'help', label: 'Help' })], tabs: kit.tabs({ base: '/kit/head', items: [{ key: 'look', label: 'Look' }, { key: 'sound', label: 'Sound' }, { key: 'privacy', label: 'Privacy' }], active: 'look' }) })` },
     { id: 'tabs', fn: 'tabs', group: 'layout', name: 'Tabs', line: 'Links, so they work without JavaScript. For settings and explainers, never to hide content.',
