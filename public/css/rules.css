@@ -1,0 +1,90 @@
+/* /rules: the decision register. The house style of Design's reference pages (motion, brand): Nunito headings,
+   two-column section heads, the theme's own tokens. */
+.rl{--rl-face:'OV Brand',Nunito,Inter,system-ui,sans-serif;display:grid;max-width:1120px;margin:0 auto;padding:0 clamp(16px,3vw,32px) 96px;color:var(--text-primary)}
+.rl>*{min-width:0}
+.rl a{color:inherit}
+
+.rl-hero{display:grid;gap:14px;padding:clamp(18px,4vw,48px) 0 clamp(18px,3vw,28px);position:relative}
+.rl-hero::before{content:"";position:absolute;inset:-30px 0 auto;height:260px;z-index:-1;pointer-events:none;
+  background:radial-gradient(50% 90% at 12% 0,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%),radial-gradient(40% 80% at 88% 10%,color-mix(in srgb,#8b5cf6 14%,transparent),transparent 70%)}
+.rl-eye{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.rl-h1{margin:0;font-family:var(--rl-face);font-weight:900;font-size:clamp(2.1rem,6vw,3.6rem);line-height:1.02;letter-spacing:-.02em;text-wrap:balance}
+.rl-lede{margin:0;max-width:64ch;color:var(--text-secondary);font-size:clamp(1rem,1.7vw,1.12rem);line-height:1.55}
+.rl-lede a{color:var(--text-primary);text-underline-offset:3px}
+.rl-hero .ovk-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));max-width:620px;overflow:visible;margin-inline:0;padding-inline:0}
+
+.rl-find{display:flex;align-items:center;gap:10px;max-width:620px;min-height:48px;padding:0 14px;border:1px solid var(--border);border-radius:999px;background:var(--bg-card)}
+.rl-find:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.rl-find input{flex:1;min-width:0;border:0;background:transparent;color:var(--text-primary);font:inherit;font-size:1rem;outline:0}
+.rl-find output{flex:none;color:var(--text-muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.rl-find svg{flex:none;width:18px;height:18px;color:var(--text-muted)}
+
+.rl-areas{position:sticky;top:calc(var(--ov-nav-h,56px) + 6px);z-index:2;margin:4px 0 8px;padding:8px 0;background:linear-gradient(var(--bg-primary,#0b1220) 70%,transparent)}
+.rl-areas ul{list-style:none;margin:0;padding:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
+.rl-areas ul::-webkit-scrollbar{display:none}
+.rl-areas a{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--border);border-radius:999px;background:var(--bg-card);text-decoration:none;white-space:nowrap;font-size:.9rem;scroll-snap-align:start}
+.rl-areas a:hover{border-color:var(--accent);color:var(--accent)}
+.rl-areas span,.rl-n{display:inline-grid;place-items:center;min-width:1.6em;height:1.6em;padding:0 .35em;border-radius:999px;background:color-mix(in srgb,var(--text-primary) 8%,transparent);color:var(--text-secondary);font-size:.75rem;font-weight:700;font-variant-numeric:tabular-nums}
+
+.rl-sec{padding:clamp(24px,4vw,40px) 0;border-top:1px solid var(--border);scroll-margin-top:120px}
+.rl-sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:6px 32px;align-items:baseline;margin-bottom:18px}
+.rl-sec-head h2{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--rl-face);font-weight:900;font-size:clamp(1.35rem,3vw,1.85rem);line-height:1.15}
+.rl-sec-head p{margin:0;max-width:60ch;color:var(--text-secondary);line-height:1.5}
+
+.rl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:12px}
+.rl-rule{display:grid;align-content:start;gap:10px;padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--bg-card);scroll-margin-top:120px;min-width:0}
+.rl-rule:target{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.rl-rule-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.rl-rule h3{margin:0;font-size:1.06rem;line-height:1.35;font-weight:750}
+.rl-rule h3 a{text-decoration:none}
+.rl-rule h3 a:hover{text-decoration:underline;text-underline-offset:3px}
+.rl-rule time{flex:none;color:var(--text-muted);font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rl-detail{margin:0;color:var(--text-secondary);line-height:1.55}
+.rl-why{margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--text-primary) 4%,transparent);color:var(--text-secondary);font-size:.9rem;line-height:1.45}
+.rl-why span{margin-right:6px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.rl-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0}
+.rl-label{margin-right:2px;color:var(--text-muted);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.rl-label:not(:first-child){margin-left:8px}
+.rl-chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border:1px solid var(--border);border-radius:999px;font-size:.84rem;text-decoration:none;color:var(--text-primary)}
+a.rl-chip:hover{border-color:var(--accent);color:var(--accent)}
+.rl-chip--check{color:var(--text-secondary);background:color-mix(in srgb,var(--success,#22c55e) 8%,transparent);border-color:color-mix(in srgb,var(--success,#22c55e) 30%,var(--border))}
+.rl-chip svg{width:14px;height:14px}
+
+.rl-recent-list{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:none}
+.rl-recent-list a{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:12px;align-items:baseline;padding:10px 4px;border-bottom:1px solid var(--border);text-decoration:none}
+.rl-recent-list a:hover b{color:var(--accent)}
+.rl-recent-list time{color:var(--text-muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.rl-recent-list b{font-weight:650}
+.rl-data .rl-links{gap:10px}
+
+.rl-sec[data-rl-empty]{display:none}
+
+@media (max-width:720px){
+  .rl-sec-head{grid-template-columns:minmax(0,1fr)}
+  .rl-recent-list a{grid-template-columns:minmax(0,1fr);gap:2px}
+  .rl-rule-head{flex-direction:column;gap:4px}
+}
+
+/* /system: the map. The cards are the home's (.ds-sys); a group's columns divide its cards. */
+.sy{display:grid;gap:6px;max-width:1120px;margin:0 auto;padding:0 clamp(16px,3vw,32px) 96px;color:var(--text-primary)}
+.sy>*{min-width:0}
+.sy-hero{display:grid;gap:12px;padding:clamp(18px,4vw,44px) 0 clamp(10px,2vw,18px)}
+.sy-eye{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.sy-h1{margin:0;font-family:'OV Brand',Nunito,Inter,system-ui,sans-serif;font-weight:900;font-size:clamp(2rem,5.5vw,3.3rem);line-height:1.04;letter-spacing:-.02em;text-wrap:balance}
+.sy-lede{margin:0;max-width:64ch;color:var(--text-secondary);font-size:clamp(1rem,1.7vw,1.1rem);line-height:1.55}
+.sy-group{padding:clamp(20px,3.5vw,32px) 0;border-top:1px solid var(--border);scroll-margin-top:90px}
+.sy-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:6px 32px;align-items:baseline;margin-bottom:16px}
+.sy-head h2{margin:0;font-family:'OV Brand',Nunito,Inter,system-ui,sans-serif;font-weight:900;font-size:clamp(1.3rem,3vw,1.7rem)}
+.sy-head p{margin:0;max-width:60ch;color:var(--text-secondary);line-height:1.5}
+.sy-grid.ds-system-grid{grid-template-columns:repeat(var(--sy-cols,3),minmax(0,1fr))}
+@media (max-width:860px){.sy-grid.ds-system-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.sy-grid.ds-system-grid{grid-template-columns:minmax(0,1fr)}.sy-head{grid-template-columns:minmax(0,1fr)}}
+
+/* A rule is a sentence to read, not an eyebrow: the room's h3 style (capitals, accent) does not apply here. */
+.rl .rl-rule h3{text-transform:none;letter-spacing:0;color:var(--text-primary);font-size:1.06rem;font-weight:750;line-height:1.35}
+.rl .rl-rule h3 a{color:inherit}
+.rl .rl-recent-list b{color:var(--text-primary)}
+.rl .rl-recent-list a:hover b{color:var(--accent)}
+.rl-lede a{color:var(--text-primary)}
+.rl-hero>*{min-width:0}
+@media (max-width:560px){.rl-hero .ovk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rl-hero .ovk-stats>div:last-child:nth-child(odd){grid-column:1/-1}}

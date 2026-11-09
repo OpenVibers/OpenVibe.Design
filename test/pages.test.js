@@ -1,6 +1,6 @@
 'use strict';
 /**
- * The pages and the plumbing: /, /studio, /t/:slug, /developers, the 404; public vs signed-in cache policy; the
+ * The pages and the plumbing: /, /themes, /t/:slug, /developers, the 404; public vs signed-in cache policy; the
  * crawl artifacts (robots.txt, sitemap.xml with the public themes, llms.txt); health and truthful readiness; the
  * release manifest and content-hashed static assets.
  */
@@ -27,14 +27,14 @@ const { assetVersion } = require('../server/assets');
         assert.match(r.headers.get('vary'), /Cookie/i);
     });
 
-    await check('/studio includes the studio script and stylesheet, and says who is signed in', async () => {
-        const r = await t.get('/studio');
+    await check('/themes includes the studio script and stylesheet, and says who is signed in', async () => {
+        const r = await t.get('/themes');
         assert.strictEqual(r.status, 200);
         assert.match(r.text, /\/js\/studio\.js\?v=[0-9a-f]{10}/);
         assert.match(r.text, /\/css\/design\.css\?v=[0-9a-f]{10}/);
         assert.match(r.text, /Sign in to use a theme/);
         assert.strictEqual(r.headers.get('cache-control'), 'public, max-age=120');
-        const me = await t.get('/studio', { as: user });
+        const me = await t.get('/themes', { as: user });
         assert.strictEqual(me.status, 200);
         assert.match(me.text, /kim/);
         assert.strictEqual(me.headers.get('cache-control'), 'private, no-store', 'a signed-in page is never cached');
@@ -64,7 +64,9 @@ const { assetVersion } = require('../server/assets');
         assert.strictEqual(sitemap.status, 200);
         assert.match(sitemap.headers.get('content-type'), /application\/xml/);
         assert.match(sitemap.text, /<loc>https:\/\/openvibe\.design\/<\/loc>/);
-        assert.match(sitemap.text, /<loc>https:\/\/openvibe\.design\/studio<\/loc>/);
+        assert.match(sitemap.text, /<loc>https:\/\/openvibe\.design\/themes<\/loc>/);
+        assert.match(sitemap.text, /<loc>https:\/\/openvibe\.design\/rules<\/loc>/);
+        assert.match(sitemap.text, /<loc>https:\/\/openvibe\.design\/system<\/loc>/);
         assert.match(sitemap.text, /<loc>https:\/\/openvibe\.design\/t\/aurora<\/loc>/);
         const llms = await t.get('/llms.txt');
         assert.strictEqual(llms.status, 200);

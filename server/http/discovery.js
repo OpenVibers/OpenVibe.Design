@@ -4,7 +4,7 @@
  * Crawl artifacts for openvibe.design, built with openvibe-shared/seo: robots.txt, sitemap.xml and llms.txt.
  * The public pages are for search engines and AI crawlers; the studio's writes, the API and sign-in are not.
  *
- * The sitemap is /, /studio and one page per public theme in the catalogue. A Network failure leaves the static
+ * The sitemap is /, /themes and one page per public theme in the catalogue. A Network failure leaves the static
  * pages in place rather than failing the crawl artifact.
  */
 const fs = require('fs');
@@ -30,7 +30,9 @@ function siteUpdated() {
 function publicPages(themes = []) {
     const static_ = [
         { path: '/', changefreq: 'weekly', priority: 1.0, title: 'OpenVibe.Design', text: 'Browse OpenVibe\'s themes, try them on a preview, edit one with contrast checks, use it, and roll back to any earlier setting.' },
-        { path: '/studio', changefreq: 'weekly', priority: 0.9, title: 'The theme studio', text: 'Try a theme on a preview, edit its variables with contrast checks, use it across the network, submit it to the gallery, and roll back.' },
+        { path: '/themes', changefreq: 'weekly', priority: 0.9, title: 'Themes', text: 'Try a theme on a preview, edit its variables with contrast checks, use it across the network, submit it to the gallery, and roll back.' },
+        { path: '/system', changefreq: 'weekly', priority: 0.8, title: 'The design system', text: 'Everything OpenVibe is made of in one map: themes, tokens, fonts, icons, the mark and motion; components, the kit and forms; the rules and patterns; apps and developer tools.' },
+        { path: '/rules', changefreq: 'weekly', priority: 0.8, title: 'How OpenVibe decides', text: 'Every style, design and organization rule behind OpenVibe, with the day it was decided, why, and what carries it out. Also as data at /api/v1/rules.' },
         { path: '/look', changefreq: 'monthly', priority: 0.6, title: 'Your look', text: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.' },
         { path: '/kit', changefreq: 'weekly', priority: 0.7, title: 'The OpenVibe Kit', text: 'Every part an OpenVibe page is made of, one function call each: drawn, with its code for the server and the page, and what its CSS weighs.' },
         { path: '/components', changefreq: 'weekly', priority: 0.7, title: 'Components', text: 'The component registry as one plain list: every Shared kit component as a design.component@1 entry with its props, states, example markup and Android and iOS notes.' },
@@ -100,7 +102,9 @@ function createDiscoveryRoutes(ctx) {
             sections: [
                 { title: 'Start here', links: [
                     { title: 'OpenVibe.Design', url: abs('/'), note: 'the theme catalogue' },
-                    { title: 'The studio', url: abs('/studio'), note: 'try, edit, use, submit and roll back a theme' },
+                    { title: 'Themes', url: abs('/themes'), note: 'try, edit, use, submit and roll back a theme' },
+                    { title: 'Rules', url: abs('/rules'), note: 'every style, design and organization decision behind OpenVibe, with the day and the reason; read it before designing for OpenVibe. JSON: GET /api/v1/rules' },
+                    { title: 'The design system', url: abs('/system'), note: 'every reference page in four groups: foundations, components, guidance, platforms' },
                     { title: 'Tokens', url: abs('/tokens'), note: 'any theme as CSS, Tailwind, Compose (Android), SwiftUI (iOS), Flutter, Figma or DTCG JSON; the API is GET /api/v1/tokens/:theme?format=' },
                     { title: 'The OpenVibe glyphs', url: abs('/icons'), note: 'every icon in one hand, each with its own page (/icons/<name>): SVG, PNG at any size and colour (/icons/<name>.png?size=&color=&stroke=&pad=&ground=&bg=), the WOFF2/TTF/OTF fonts and the sprite (/icons/pack/<file>); style=auto|line|solid (auto: the solid drawing at 18 px and under); /icons/<name>.mjs (ES module), .xml (Android VectorDrawable), /icons/<name>/favicon.zip; the <ov-icon name=\"…\"> web component at /ov-icon.js; the registry as data at GET /api/v1/glyphs (?names=a,fa-b,lucide:c,material:d for just those); POST /api/v1/glyphs/migrate {text} lists every Font Awesome, Lucide, Material or MUI icon in a page or code with its OpenVibe twin (/icons/migrate is the page). All open, no sign-in, CORS *', html: true },
                     { title: 'Open font library', url: abs('/fonts'), note: 'Open licence typefaces with live previews, every style, licence, source, CSS and download. Search and filters at /fonts; JSON at GET /api/v1/fonts and /api/v1/fonts/<family>; MCP tools list and get fonts.' },

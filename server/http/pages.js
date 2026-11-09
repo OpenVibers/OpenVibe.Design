@@ -3,7 +3,9 @@
 /**
  * The pages:
  *   /                       the theme catalogue's front door
- *   /studio                 the theme studio
+ *   /themes                 the theme editor and gallery (/studio answers 301)
+ *   /rules                  the decision register (its Markdown twin /rules.md; data at /api/v1/rules)
+ *   /system                 the design system's map
  *   /t/:slug                one public theme
  *   /arena                  the Arena leaderboard and its front door
  *   /arena/new              start a round (the form also posts here, so it works without JavaScript)
@@ -214,9 +216,24 @@ function createPageRoutes(ctx) {
         return page(res, 200, views.home({ themes: list ? list.themes : null }), req.viewer);
     });
 
-    r.get('/studio', async (req, res) => {
+    r.get('/themes', async (req, res) => {
         const list = await safe(() => catalog.list());
         return page(res, 200, views.studio({ themes: list ? list.themes : null, me: meOf(req.viewer) }), req.viewer);
+    });
+    // The theme editor was /studio until 2026-11-09; openvibe.studio is a separate product (photo, video, sound), so
+    // Design's page is named for what it holds.
+    r.get('/studio', (req, res) => {
+        const q = req.originalUrl.indexOf('?');
+        return res.redirect(301, `/themes${q === -1 ? '' : req.originalUrl.slice(q)}`);
+    });
+
+    // The decision register and the system map.
+    const rulesView = require('../views/rules');
+    r.get('/rules', (req, res) => page(res, 200, rulesView.rulesPage(), req.viewer));
+    r.get('/system', async (req, res) => {
+        const list = await safe(() => catalog.list());
+        const n = list && Array.isArray(list.themes) ? list.themes.length : null;
+        return page(res, 200, require('../views/system').systemPage({ themes: n }), req.viewer);
     });
 
     r.get('/t/:slug', async (req, res) => {
