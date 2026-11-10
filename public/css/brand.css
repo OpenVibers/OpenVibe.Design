@@ -156,7 +156,7 @@
   .br-play-stage{min-height:220px}
   .br-sizes{gap:18px 22px}
 }
-@media (prefers-reduced-motion:reduce){.br-chip:not([data-fx-demo] *),.br-files a:not([data-fx-demo] *){transition:none}.br:not([data-fx-demo]) .br-files a:hover{transform:none}}
+html[data-ov-motion=off] .br:not([data-fx-demo]) .br-files a:hover{transform:none}
 .br-h3-note{margin-left:6px;color:var(--text-muted);font-weight:600;font-size:12px}
 
 /* A phone: the motion files are a sideways rail (the owner, 10-31: short pages by rails and folds, never by hiding). */

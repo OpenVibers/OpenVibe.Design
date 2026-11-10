@@ -18,8 +18,10 @@
     if (!anchor) return;
     const loader = window.OpenVibeThemeLoader;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const calm = () => Boolean(loader && loader.display && loader.display.get().motion === 'reduced');
-    const reduced = () => calm() || media.matches;
+    // 'full' | 'calm' | 'off' (openvibe-shared 4.183.0): Calm plays every effect, smaller and slower; only Off stops them.
+    const level = () => { const m = document.documentElement.getAttribute('data-ov-motion'); return m === 'off' ? 'off' : m === 'reduced' ? 'calm' : 'full'; };
+    const chosen = () => (loader && loader.display ? loader.display.get().motion : 'auto');
+    const reduced = () => level() !== 'full';
     const playing = () => page.hasAttribute('data-fx-demo');
 
     const notice = document.createElement('div');
@@ -29,7 +31,7 @@
     const words = document.createElement('p');
     const acts = document.createElement('div');
     const button = (label, kind) => { const b = document.createElement('button'); b.type = 'button'; b.className = `ovk-btn ovk-btn--${kind}`; b.textContent = label; acts.appendChild(b); return b; };
-    const playBtn = button('Play them on this page', 'primary');
+    const playBtn = button('Play them in full on this page', 'primary');
     const stopBtn = button('Stop', 'quiet');
     const calmBtn = button('Turn Calm off everywhere', 'quiet');
     notice.append(words, acts);
@@ -39,15 +41,22 @@
         const on = playing();
         notice.hidden = !(reduced() || on);
         notice.classList.toggle('is-playing', on);
+        const lv = level(), mine = chosen();
         words.textContent = on
-            ? 'Playing on this page only. Your setting has not changed.'
-            : calm()
-                ? 'Calm is on, so nothing on this page moves. That is the setting working.'
-                : 'This device asks for less motion, so nothing on this page moves. That is the setting working.';
+            ? 'Playing in full on this page only. Your setting has not changed.'
+            : lv === 'off'
+                ? 'Motion is off, so nothing on this page moves. That is the setting working.'
+                : mine === 'reduced'
+                    ? 'Calm is on: every effect here plays, smaller and slower.'
+                    : 'This device asks for less motion, so you are seeing the calm versions: every effect plays, smaller and slower.';
         playBtn.hidden = on;
         stopBtn.hidden = !on;
-        calmBtn.hidden = on || !calm();
-        if (!on && reduced()) document.querySelectorAll('.br-motion-video').forEach((video) => video.pause());
+        // One way out beside the notice, named for what it changes: Calm you chose, motion you turned off, or the
+        // device's own setting (Full outranks it).
+        calmBtn.hidden = on || lv === 'full';
+        calmBtn.textContent = lv === 'off' ? 'Turn motion back on' : mine === 'reduced' ? 'Turn Calm off everywhere' : 'Always play in full';
+        calmBtn.dataset.set = lv === 'off' || mine === 'reduced' ? 'auto' : 'full';
+        if (!on && lv === 'off') document.querySelectorAll('.br-motion-video').forEach((video) => video.pause());
     }
 
     // The demos were wired while motion was reduced, so a reveal or a count-up skipped itself. Making each stage's
@@ -72,7 +81,7 @@
     }
     playBtn.addEventListener('click', play);
     stopBtn.addEventListener('click', stop);
-    calmBtn.addEventListener('click', () => { if (loader && loader.display) loader.display.set({ motion: 'auto' }); refresh(); });
+    calmBtn.addEventListener('click', () => { if (loader && loader.display) loader.display.set({ motion: calmBtn.dataset.set || 'auto' }); refresh(); });
     media.addEventListener('change', refresh);
     new MutationObserver(refresh).observe(document.documentElement, { attributes: true, attributeFilter: ['data-ov-motion'] });
     refresh();

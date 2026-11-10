@@ -1,7 +1,7 @@
 'use strict';
 /**
  * Icon motion (plan L50 step 7): six presets, each a single move when something happens. Nothing loops and nothing
- * spins; reduced motion (the system's, or OpenVibe's calm setting, html[data-ov-motion="reduced"]) stops them all.
+ * spins; Calm plays them; only motion off (html[data-ov-motion="off"]) stops them all.
  * The CSS is public/css/icon-motion.css (served as /icons/pack/ov-icon-motion.css); <ov-icon motion="…"> carries the
  * same moves in its own shadow.
  *

@@ -16,11 +16,11 @@
     if (!buttons.length) return;
     const loader = window.OpenVibeThemeLoader;
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const calm = () => Boolean(loader && loader.display && loader.display.get().motion === 'reduced');
+    const off = () => document.documentElement.getAttribute('data-ov-motion') === 'off';
     let playHere = false;
 
     // The demos use the shared motion tokens (openvibe-shared/ov-fx.js); Play reads them at click time, after
-    // Calm's zero durations have been lifted for this page only.
+    // Off's zero durations have been lifted for this page only (Calm keeps its own, calmer lengths).
     const tokenMs = (name, fallback) => {
         const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const value = parseFloat(raw);
@@ -36,10 +36,8 @@
     buttons[0].closest('.cr-demo').before(notice);
 
     const refresh = () => {
-        notice.hidden = playHere || !(calm() || media.matches);
-        notice.querySelector('span').textContent = calm()
-            ? 'Animations are off: your Motion setting is Calm.'
-            : 'Animations are off: your device asks for less motion.';
+        notice.hidden = playHere || !off();
+        notice.querySelector('span').textContent = 'Animations are off: your Motion setting is Off.';
     };
     notice.querySelector('[data-play-here]').addEventListener('click', () => {
         playHere = true;

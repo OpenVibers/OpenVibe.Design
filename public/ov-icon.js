@@ -84,7 +84,7 @@
         + '@keyframes ovm-ring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}32%{transform:rotate(-12deg)}50%{transform:rotate(8deg)}68%{transform:rotate(-5deg)}84%{transform:rotate(2deg)}}'
         + '@keyframes ovm-beat{0%,100%{transform:scale(1)}18%{transform:scale(1.2)}36%{transform:scale(.96)}54%{transform:scale(1.1)}72%{transform:scale(1)}}'
         + '@keyframes ovm-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}40%{transform:translateX(3px)}60%{transform:translateX(-2px)}80%{transform:translateX(1px)}}'
-        // Calm: the system's reduced motion or OpenVibe's (html[data-ov-motion="reduced"]) stops every move.
+        // Still: only motion off (html[data-ov-motion="off"]) stops every move; Calm and a device that asks for less play them.
         + ':host([data-calm]) svg,:host([data-calm]) svg *{animation:none!important;transition:none!important}'
         + ':host([data-calm]) .l>*{stroke-dashoffset:0!important}:host([data-calm]) svg{transform:none!important}';
     var sheet = null;
@@ -92,7 +92,7 @@
 
     var live = new Set();
     var reduceMq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-    function calm() { return !!(reduceMq && reduceMq.matches) || document.documentElement.getAttribute('data-ov-motion') === 'reduced'; }
+    function calm() { return document.documentElement.getAttribute('data-ov-motion') === 'off'; }
     if (reduceMq && reduceMq.addEventListener) reduceMq.addEventListener('change', function () { live.forEach(function (el) { el._calm(); }); });
     function pref() {
         var p = document.documentElement.getAttribute('data-ov-icons');

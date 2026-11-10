@@ -124,7 +124,6 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 /* The home's motif: the theme orb (each dot a theme's accent); its dashed ring breathes, it never spins. */
 .ds-orb { position: relative; width: min(100%, 320px); aspect-ratio: 1; margin: 0 auto; }
 .ds-orb-ring { position: absolute; inset: 8%; border-radius: 50%; border: 1.5px dashed color-mix(in srgb, var(--room-accent) 40%, transparent); animation: ds-breathe 9s var(--ov-ease-in-out, ease-in-out) infinite alternate; }
-@media (prefers-reduced-motion: reduce) { .ds-orb-ring { animation: none; } }
 .ds-orb-core { position: absolute; inset: 30%; border-radius: 50%; background: conic-gradient(from 90deg, var(--room-accent), #5b7cfa, #22c55e, #f59e0b, #ef4444, var(--room-accent)); filter: saturate(1.1); box-shadow: 0 20px 60px -20px var(--room-accent); }
 .ds-orb i { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px; border-radius: 50%; border: 3px solid var(--bg-primary, #0a0f1c); transform: rotate(calc(var(--i) * 60deg)) translateY(-136%) rotate(calc(var(--i) * -60deg)); }
 @supports (container-type: inline-size) { .ds-orb { container-type: inline-size; } .ds-orb i { transform: rotate(calc(var(--i) * 60deg)) translateY(-42cqw) rotate(calc(var(--i) * -60deg)); } }
@@ -142,8 +141,6 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds-eps > div { padding: 12px 14px; border-radius: 14px; background: var(--bg-card, #0f1729); border: 1px solid var(--border, #1f2d47); }
 .ds-eps dt code { font: 600 .9rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--room-strong); overflow-wrap: anywhere; }
 .ds-eps dd { margin: 6px 0 0; color: var(--text-secondary, #96a7c2); line-height: 1.5; }
-@media (prefers-reduced-motion: reduce) { .ds-orb-ring { animation: none; } .ds-swatch, .ds-previews { transition: none; } }
-html[data-ov-motion=reduced] .ds-orb-ring { animation: none; }
 
 /* ── The Design Arena (plan 2026-10-28 §5.2 v2) ──────────────────────────────────────────────────────────────
    Server-rendered placeholders for the main session's design. The generated page only ever appears inside an
@@ -249,7 +246,6 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 /* Forms */
 .ar-form select:focus-visible, .ar-form textarea:focus-visible { outline: 2px solid var(--room-strong); outline-offset: 1px; }
 .ar-form textarea::placeholder { color: var(--text-muted, #7386a3); }
-@media (prefers-reduced-motion: reduce) { .ar-vote-side { transition: none; } }
 /* Design Studio A: a quiet prompt and canvas. */
 .dv-visually-hidden { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
 .dv-create { max-width: 800px; margin: clamp(48px, 13vh, 150px) auto 100px; padding: 0 20px; }
@@ -308,7 +304,6 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
     .dv-toolbar select { max-width: 102px; }
     .dv-toolbar form, .dv-toolbar label { gap: 4px; font-size: .72rem; }
 }
-@media (prefers-reduced-motion: reduce) { .dv-frame { transition: none; } .dv-skeleton { animation: none; } }
 
 /* Part B: the working frame, the chat composer, versions and the click-edit panel. One toolbar stays the only
    floating control bar; the composer and the version list are in the page flow, and the element panel opens only
@@ -363,7 +358,6 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
     .dv-versions { margin-bottom: 104px; }
     .dv-element { left: 12px; right: 12px; bottom: calc(var(--ovnav-appbar-h, 56px) + 76px); width: auto; max-height: 56vh; }
 }
-@media (prefers-reduced-motion: reduce) { .dv-pick { transition: none; } }
 
 /* ── /tokens: a theme as code (views/tokens.js) ── */
 .tk { max-width: 980px; }
@@ -669,7 +663,6 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
   .ar-kb { scroll-snap-align: start; }
   .ar-who { text-align: left; }
 }
-@media (prefers-reduced-motion: reduce) { .ar-kind { transition: none; } }
 
 /* /look: the icon styles side by side (server/views/look.js iconStyles): three small phone screens drawn with the
    real glyphs. Each is a button that picks its style; the picked one wears the accent. */
@@ -696,7 +689,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .lk-st-cap small{color:var(--text-muted);font-size:12px;line-height:1.35}
 .lk-style:has(input:checked) .lk-st-cap b{color:var(--accent)}
 @media (max-width:480px){.lk-styles{gap:8px}.lk-st-screen{padding:8px 7px 0;border-radius:14px}.lk-st-head{font-size:19px;gap:6px}.lk-st-lines>span+span{display:none}.lk-st-bar{margin:4px -7px 0;font-size:15px}.lk-st-tab{width:26px}.lk-st-cap small{font-size:11px}}
-@media (prefers-reduced-motion:reduce){.lk-st-screen{transition:none}.lk-style:active .lk-st-screen{transform:none}}
+html[data-ov-motion=off] .lk-style:active .lk-st-screen{transform:none}
 
 /* Publish on openvibe.space (open item D8), drawn like the Versions panel. */
 .dv-publish { max-width: 1320px; margin: 0 auto 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-card); }
@@ -744,7 +737,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .ds-sys small { font-size: 13px; line-height: 1.45; }
 @media (max-width: 1000px) { .ds-system-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .ds-system-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (prefers-reduced-motion: reduce) { .ds-sys { transition: none; } .ds-sys:hover { transform: none; } }
+html[data-ov-motion=off] .ds-sys:hover{transform: none}
 
 /* ── The arena, easier to judge (owner 11-08: "make A and B clickable", "smoother between things") ──
    The drawing is the vote: a transparent button lies over each frame, so a tap picks it and a swipe scrolls the page
@@ -846,11 +839,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .ar-wait.is-loaded { animation: none; background: #fff; }
 .ar-wait.is-loaded > .ar-frame { opacity: 1; }
 @keyframes ar-shimmer { to { background-position: -220% 0; } }
-@media (prefers-reduced-motion: reduce) {
-  .ar-pickable, .ar-pick-tag, .ar-arena #ar-pair { transition: none; }
-  .ar-vote-pair[data-pick] .ar-pick-tag, .ar-wait, .ar-arena.is-loading #ar-kinds .ar-kind[aria-current] .ar-kind-i { animation: none; }
-  .ar-vote-pair[data-pick] .ar-pickable { transform: none; }
-}
+html[data-ov-motion=off] .ar-vote-pair[data-pick] .ar-pickable{transform: none}
 
 /* The kinds rail on a phone: the icon beside the name, the line under both, no word broken mid-way */
 @media (max-width: 759px) {
