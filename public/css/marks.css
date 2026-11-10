@@ -286,7 +286,7 @@ html[data-ov-motion=off] .mb-peek,html[data-ov-motion=off] .mb-peek i{transition
   .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=nod] .mb-i{animation:mbNod var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out)}
   .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=apart] .mb-u{animation:mbApart var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out)}
   .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=apart] .mb-d{animation:mbApart var(--ov-dur-4, .8s) var(--ov-ease-in-out, ease-in-out) reverse}
-  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=orbit] .mb-orb{animation:mbOrbit 1s var(--ov-ease-in-out, cubic-bezier(.65,0,.35,1))}
+  .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=orbit] .mb-orb{animation:mbOrbit 1.2s var(--ov-ease-in-out, cubic-bezier(.65,0,.35,1))}
   .mb-btn:not(.is-open):is(:hover,:focus-visible,.is-play) svg[data-anim=spin] .mb-g{animation:mbSpin .9s var(--ov-ease-in-out, cubic-bezier(.65,0,.35,1))}
 @keyframes mbRipple{0%,100%{transform:scale(1)}35%{transform:scale(.5)}70%{transform:scale(1.2)}}
 @keyframes mbWave{0%,100%{transform:translateY(0)}40%{transform:translateY(-2.6px)}}
@@ -301,7 +301,7 @@ html[data-ov-motion=off] .mb-peek,html[data-ov-motion=off] .mb-peek i{transition
 @keyframes mbTilt{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}55%{transform:rotate(9deg)}80%{transform:rotate(-4deg)}}
 @keyframes mbNod{0%,100%{transform:translateY(0)}30%{transform:translateY(2.4px)}60%{transform:translateY(-.6px)}80%{transform:translateY(1.2px)}}
 @keyframes mbApart{0%,100%{transform:translateY(0)}45%{transform:translateY(-1.6px)}}
-@keyframes mbOrbit{to{transform:rotate(360deg)}}
+@keyframes mbOrbit{50%{transform:rotate(200deg)}}
 @keyframes mbSpin{to{transform:rotate(90deg)}}
 .mb-card .mx-stage{color:#e8edf3}
 .mb-big{width:auto;height:auto;padding:14px;border-radius:24px}
