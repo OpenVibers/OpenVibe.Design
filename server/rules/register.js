@@ -145,10 +145,10 @@ const RULES = Object.freeze([
         [{ label: 'Motion', href: '/motion' }]),
 
     // ── Navigation and the Frame ──
-    R('one-menu-button', 'navigation', 'One menu button on every site: the orb.',
-        'The nine-dot orb opens the OpenVibe menu; there is never a second three-line button that does the same thing.',
+    R('one-menu-button', 'navigation', 'One menu button on every site.',
+        'The menu button at the top of the page opens the OpenVibe menu; there is never a second button that does the same thing.',
         '2026-11-08', 'Two buttons opened the same menu, and the custom orb had been hidden.',
-        [{ label: 'One menu, opened from either end', href: '/patterns/one-menu' }]),
+        [{ label: 'One menu button', href: '/patterns/one-menu' }]),
     R('one-bar', 'navigation', 'One navbar per page, owned by the shared Frame.',
         'A site’s own section links go in the page body, never in a second header under the bar.',
         '2026-10-30', 'Page headers under the bar doubled the navigation.',

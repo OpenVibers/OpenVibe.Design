@@ -168,11 +168,20 @@
       control('Mixed with the text', () => { row.classList.remove('broken'); say('Half the hue, half the text: readable on both.'); }, true);
       control('The bug', () => { row.classList.add('broken'); say('The pure hue: fine on dark, 1.7:1 for gold on white.'); });
     } else if (id === 'one-menu') {
-      const box = node('div', 'menu-demo'); const bar = node('div', 'menu-bar'); const orb = button('✦', () => open('orb')); orb.setAttribute('aria-label', 'Open from the orb'); const burger = button('☰', () => open('burger')); burger.setAttribute('aria-label', 'Open from the burger');
-      bar.append(orb, node('strong', '', 'OpenVibe.Live'), node('span', 'menu-gap'), burger); const panel = node('ol', 'menu-panel'); box.append(bar, panel); widget.append(box);
-      const order = { burger: ['This site’s pages', 'Live now', 'Your places', 'Your workspace', 'From the sites', 'What’s new', 'Every site (54)', 'Jump back in'], orb: ['Your places', 'Live now', 'Your workspace', 'From the sites', 'What’s new', 'This site’s pages', 'Every site (54)', 'Jump back in'] };
-      function open(from) { panel.replaceChildren(...order[from].map((t) => node('li', '', t))); box.classList.add('open'); say(from === 'burger' ? 'From the burger: this site’s pages first.' : 'From the orb: your places first.'); }
-      control('Open from the burger', () => open('burger'), true); control('Back', () => { box.classList.remove('open'); say('Back closed the menu; the page stayed.'); });
+      // The owner's menu button (openvibe-shared 4.187.0, root.OpenVibeOrb.svg): a search bar over three apps.
+      // Drawn by the shared navbar when it is on the page, else the same shapes inline.
+      const orb = (open) => (window.OpenVibeOrb ? window.OpenVibeOrb.svg(20, open)
+        : `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><rect x="4" y="5.2" width="16" height="5.6" rx="2.8" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="7.4" cy="8" r="1.15"/><rect x="4.2" y="14.6" width="4" height="4" rx="1.3"/><rect x="10" y="14.6" width="4" height="4" rx="1.3"/><rect x="15.8" y="14.6" width="4" height="4" rx="1.3"/></svg>`);
+      const box = node('div', 'menu-demo'); const bar = node('div', 'menu-bar');
+      const menu = node('button', 'dbtn menu-orb'); menu.type = 'button'; menu.setAttribute('aria-label', 'The menu button at the top of the page');
+      const paint = (open) => { menu.innerHTML = orb(open) + `<span>${open ? 'Close' : 'Menu'}</span>`; menu.setAttribute('aria-expanded', String(open)); };
+      paint(false);
+      bar.append(node('strong', '', 'OpenVibe.Live'), node('span', 'menu-gap'), menu); const panel = node('ol', 'menu-panel'); box.append(bar, panel); widget.append(box);
+      const order = ['This site’s pages', 'Live now', 'Your places', 'Your workspace', 'From the sites', 'What’s new', 'Every site (54)', 'Jump back in'];
+      function open(show) { if (show) panel.replaceChildren(...order.map((t) => node('li', '', t))); box.classList.toggle('open', show); paint(show); }
+      menu.addEventListener('click', () => open(!box.classList.contains('open')));
+      control('Open the menu', () => { open(true); say('The menu button at the top of the page opens the OpenVibe menu on this site: its pages lead.'); }, true);
+      control('Back', () => { open(false); say('Back closed the menu; the page stayed.'); });
     } else if (id === 'site-cards') {
       const card = node('div', 'card-demo'); const head = node('div', 'card-head'); head.append(node('strong', '', 'Trending'), node('span', 'pmeta', 'Video')); const list = node('ol', 'card-rows'); card.append(head, list); widget.append(card);
       const add = (title, meta, ok) => { if (!ok) { say('Dropped: the entry’s link is not https on an OpenVibe host.'); return; } const li = node('li', ''); li.append(node('b', '', title), node('small', '', meta)); list.append(li); card.hidden = false; say(`${list.children.length} real entr${list.children.length === 1 ? 'y' : 'ies'}.`); };
