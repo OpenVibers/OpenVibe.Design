@@ -199,7 +199,7 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             assert.ok(!/infinite|rotate\(360deg\)|turn\)/.test(css.text), 'nothing loops or spins');
             assert.match(css.text, /html\[data-ov-motion=off\]/, 'only motion off stops an icon; Calm plays it');
             assert.doesNotMatch(css.text, /prefers-reduced-motion/);
-            assert.match(css.text, /html\[data-ov-motion="reduced"\]/, 'OpenVibe\'s calm setting stops them too');
+            assert.doesNotMatch(css.text, /data-ov-motion="?reduced/, 'Calm plays them');
             const wc = (await t.get('/ov-icon.js')).text;
             for (const k of ['ovm-draw', 'ovm-ring', 'ovm-beat', 'ovm-shake']) assert.ok(wc.includes(`@keyframes ${k}{`) && css.text.includes(`@keyframes ${k} {`), `${k} in both`);
             assert.ok(!/infinite/.test(wc), 'the component loops nothing either');
