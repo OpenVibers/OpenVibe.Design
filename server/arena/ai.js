@@ -31,6 +31,10 @@ const CATEGORY_BRIEF = {
     game_ui: 'A game interface: HUD, inventory or lobby that is readable at a glance and feels like a game.',
     logo: 'A logo and small brand sheet: the mark, a wordmark, a colour palette and a few lockups.',
     slides: 'A short slide deck: a title slide and two or three content slides with a clear visual hierarchy.',
+    component: 'One interface component with its states: its anatomy, the default view and the empty, busy and error states side by side.',
+    email: 'A 600 px email: table-friendly, inline styling, no scripts or remote images, one clear action and readable with images off.',
+    social: 'A share card with one idea: a short headline, a supporting line and the mark, legible at a glance inside the safe margins.',
+    mark: 'A brand mark sheet: the mark, a wordmark, a small palette and two or three lockups, drawn with inline SVG.',
 };
 
 /** The system prompt every design generation sends (published at openvibe.design/prompts). */
@@ -92,6 +96,43 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
         if (!res.ok) {
             const code = (json && (json.code || json.error)) || `ai.http_${res.status}`;
             const detail = (json && (json.detail || json.message)) || `OpenVibe.AI refused the run (${res.status}).`;
+            throw new ArenaAiError(res.status >= 500 ? 502 : res.status, String(code).slice(0, 80), String(detail).slice(0, 500));
+        }
+        return json;
+    }
+
+    /**
+     * The Exchange catalogue AI publishes: every model, its offers, price in/out, speed, uptime and the 18+
+     * mark (`uncensored`). The create options read this, not a list kept in Design.
+     */
+    async function exchangeCatalog({ kind = 'chat' } = {}) {
+        const query = kind ? `?kind=${encodeURIComponent(kind)}` : '';
+        return await call('GET', `/api/v1/exchange/catalog${query}`);
+    }
+
+    /**
+     * AI's choice for a task, with the person's own token when there is one: the options grouped by source
+     * (openvibe, keys, machines), and `adult`, which says whether AI lets this person use the 18+ tier. A
+     * request with no token is the signed-out answer. A bad person token falls back to the signed-out answer
+     * rather than failing the whole create page.
+     */
+    async function choices({ token = null, task = 'ai.generate' } = {}) {
+        const path = `/api/v1/choices?task=${encodeURIComponent(task)}`;
+        const headers = { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+        let res;
+        try {
+            res = await fetchImpl(`${ai.url.replace(/\/+$/, '')}${path}`, {
+                headers, signal: AbortSignal.timeout(ai.timeoutMs),
+            });
+        } catch (err) {
+            throw new ArenaAiError(502, 'ai.unreachable', err && err.name === 'TimeoutError'
+                ? 'OpenVibe.AI did not answer in time.'
+                : 'OpenVibe.AI could not be reached.');
+        }
+        const json = await res.json().catch(() => null);
+        if (!res.ok) {
+            const code = (json && (json.code || json.error)) || `ai.http_${res.status}`;
+            const detail = (json && (json.detail || json.message)) || `OpenVibe.AI answered ${res.status}.`;
             throw new ArenaAiError(res.status >= 500 ? 502 : res.status, String(code).slice(0, 80), String(detail).slice(0, 500));
         }
         return json;
@@ -403,7 +444,7 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
         return { text: textOf(run.output), model: String(prov.model || run.model || 'unknown').slice(0, 120), provider: providerName(prov.provider || run.provider || 'ai').slice(0, 80), run_id: run.id || null, ...paidFrom(run) };
     }
 
-    return { enabled, slots, slotPlan, designPlan, offeredModels, rankOffers, generate, systemPrompt, text, CATEGORY_BRIEF };
+    return { enabled, slots, slotPlan, designPlan, offeredModels, rankOffers, generate, systemPrompt, text, exchangeCatalog, choices, CATEGORY_BRIEF };
 }
 
 module.exports = { createArenaAi, ArenaAiError, CATEGORY_BRIEF, systemPrompt };

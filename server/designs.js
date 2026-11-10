@@ -4,8 +4,10 @@ const crypto = require('crypto');
 const { sanitizeHtml, MAX_BYTES } = require('./arena/sanitize');
 const { validateChange, applyChange } = require('./design-edit');
 const { vocabulary } = require('./components/registry');
+const { kindOf, instructionFor, categoryFor } = require('./create/kinds');
+const { makeThumbnail } = require('./create/thumbnail');
+const { publicStart, startPrompt } = require('./create/start');
 
-const KINDS = ['page', 'screen', 'component'];
 const random = () => crypto.randomBytes(24).toString('base64url');
 const hash = (key) => crypto.createHash('sha256').update(key).digest();
 const fail = (status, code, detail) => Object.assign(new Error(detail), { status, code, detail });
@@ -97,11 +99,20 @@ function editPrompt(instruction, html, names) {
 function createDesigns({ s, ai, bench = null, catalog, config = {}, log = console, now = () => Date.now(), sharing = null }) {
     const db = s.db;
     const chatEditLimit = Math.max(1, Number(config.studio && config.studio.chatEditsPerDesign) || CHAT_EDITS_DEFAULT);
-    const publicRow = d => ({ id: d.id, prompt: d.prompt, kind: d.kind, themeId: d.theme_id,
-        status: d.variants.every(v => v.status === 'done' || v.status === 'failed')
-            ? d.variants.some(v => v.status === 'done') ? 'done' : 'failed' : 'running',
-        createdAt: d.created_at, updatedAt: d.updated_at,
-        published: d.space_url ? { url: d.space_url, at: d.published_at || null } : null });
+    const publicRow = d => {
+        const names = [...new Set((d.variants || []).map(v => v.name || v.model).filter(Boolean))];
+        return {
+            id: d.id, prompt: d.prompt, kind: d.kind, themeId: d.theme_id,
+            frame: d.frame || null, look: d.look || d.theme_id || null,
+            model: names[0] || null, models: names,
+            start: publicStart(d.start || {}), sourceDesignId: d.source_design_id || null,
+            estimate: d.estimate || null,
+            status: d.variants.every(v => v.status === 'done' || v.status === 'failed')
+                ? d.variants.some(v => v.status === 'done') ? 'done' : 'failed' : 'running',
+            createdAt: d.created_at, updatedAt: d.updated_at,
+            published: d.space_url ? { url: d.space_url, at: d.published_at || null } : null,
+        };
+    };
     function allowed(d, owner, key) {
         if (d.owner && owner === d.owner) return true;
         if (!d.guest_hash || !key) return false;
@@ -135,30 +146,97 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         if (!selected) throw fail(422, 'design.invalid_theme', 'Choose a theme from the catalog.');
         return selected;
     }
-    async function create({ prompt, kind = 'page', themeId, owner = null, ip = '', who = 'claude' }) {
+    /**
+     * The look a design was made in: the theme's variables as they were resolved when it was created (a
+     * person's own theme is not always in the public catalogue), else the public theme it names.
+     */
+    async function lookTheme(d) {
+        if (d && d.look_variables && typeof d.look_variables === 'object' && Object.keys(d.look_variables).length) {
+            return { id: d.look || d.theme_id, name: d.look || d.theme_id, variables: d.look_variables };
+        }
+        return await theme(d && d.theme_id);
+    }
+    async function create({ prompt, kind = 'page', themeId, look = null, lookVariables = null, frame: frameId = null,
+        models = null, takes = null, start = null, sourceDesignId = null, estimate = null,
+        owner = null, ip = '', who = 'claude' }) {
         prompt = String(prompt || '').trim();
-        if (!prompt || prompt.length > 4000 || !KINDS.includes(kind))
+        const kindEntry = kindOf(kind);
+        if (!prompt || prompt.length > 4000 || !kindEntry)
             throw fail(422, 'design.invalid_input', 'Provide a prompt up to 4000 characters and a valid kind.');
         const cutoff = new Date(now() - 86400000).toISOString();
         const count = Number(await db.value(`SELECT COUNT(*) FROM designs WHERE ${owner ? 'owner' : 'guest_ip'}=$1 AND created_at >= $2::timestamptz`, [owner || ip, cutoff]));
         if (count >= (owner ? 10 : 2)) throw fail(429, 'design.daily_limit', 'Daily design limit reached.');
-        const selected = await theme(themeId);
-        // Claude first (L37) as a soft preference: claude -> Opus 5.5, sonnet -> Sonnet 5.5, any -> no preference;
-        // `compare` is the one pinned mode. An AI client without designPlan (tests, older) uses its slots.
-        const plan = ai.designPlan ? await ai.designPlan(who) : await ai.slotPlan();
-        const prefer = plan.prefer || null, pin = plan.pin === true;
-        const slots = plan.slots.slice(0, 3);
+
+        // The look: the resolved theme variables when the caller read them from the theme centre or the
+        // person's own themes, else the public theme (today's behaviour).
+        let selected, lookId = null;
+        if (look && lookVariables && typeof lookVariables === 'object' && Object.keys(lookVariables).length) {
+            selected = { id: themeId || look, name: look, variables: lookVariables };
+            lookId = look;
+        } else {
+            const wanted = look && look !== 'system' ? look : themeId;
+            selected = await theme(wanted);
+            lookId = look === 'system' ? 'system' : (look || selected.id);
+        }
+        const frame = frameId && kindEntry.frames.includes(frameId) ? frameId : kindEntry.frames[0];
+
+        // The takes: one per chosen model (several models side by side), or today's design plan when no
+        // models were named. Each take records the model it was asked for before the run answers.
+        let slots = [], planPrefer = null, planPin = false, requested = null;
+        if (Array.isArray(models) && models.length) {
+            const per = Math.max(1, Math.min(Number(takes) || 1, 4));
+            requested = models.map((model) => ({
+                id: model.id, name: model.name || null, provider: model.provider || null, model: model.model || null,
+                price_in: model.price_in == null ? null : Number(model.price_in),
+                price_out: model.price_out == null ? null : Number(model.price_out),
+                source: model.source || 'exchange',
+            }));
+            slots = [];
+            for (const model of models) for (let i = 0; i < per; i++) {
+                slots.push({
+                    provider: model.provider || null, model: model.model || null,
+                    model_id: model.id || null, name: model.name || null,
+                    price_in: model.price_in == null ? null : Number(model.price_in),
+                    price_out: model.price_out == null ? null : Number(model.price_out),
+                    source: model.source || 'exchange',
+                    prefer: model.prefer || (model.provider && model.model ? { provider: model.provider, model: model.model } : model.model ? { model: model.model } : null),
+                    pin: model.pin !== false,
+                });
+            }
+        } else {
+            const plan = ai.designPlan ? await ai.designPlan(who) : await ai.slotPlan();
+            planPrefer = plan.prefer || null;
+            planPin = plan.pin === true;
+            slots = plan.slots.slice(0, 3).map((slot) => ({
+                provider: slot.provider, model: slot.model, model_id: null, name: null, price_in: null, price_out: null,
+                source: 'exchange', prefer: planPrefer ? { ...planPrefer } : null, pin: planPin,
+            }));
+        }
+
         const variants = slots.map((slot, index) => ({ id: s.newId('dva'), slot: index, provider: slot.provider,
-            model: slot.model, status: 'pending', html: '', ms: 0, costUsd: 0, error: null,
-            paid_by: null, prefer: prefer ? { ...prefer } : null, pin }));
+            model: slot.model, model_id: slot.model_id || null, name: slot.name || null,
+            price_in: slot.price_in == null ? null : Number(slot.price_in), price_out: slot.price_out == null ? null : Number(slot.price_out),
+            source: slot.source || null, status: 'pending', html: '', ms: 0, costUsd: 0, error: null,
+            paid_by: null, prefer: slot.prefer || null, pin: slot.pin === true }));
         const id = s.newId('dsn'), editKey = owner ? null : random();
-        await db.exec('INSERT INTO designs(id,prompt,kind,theme_id,variants,owner,guest_hash,guest_ip,created_at,updated_at) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9::timestamptz,$9::timestamptz)',
-            [id, prompt, kind, selected.id, JSON.stringify(variants), owner, editKey ? hash(editKey).toString('hex') : null, owner ? null : ip, s.iso()]);
+        const startRecord = start && typeof start === 'object' && !Array.isArray(start) ? start : {};
+        const thumbnail = makeThumbnail({ kind, kindName: kindEntry.name, prompt,
+            model: variants[0] ? (variants[0].name || variants[0].model) : null, variables: selected.variables || {} });
+        await db.exec(`INSERT INTO designs(id,prompt,kind,theme_id,variants,owner,guest_hash,guest_ip,created_at,updated_at,
+                frame,look,look_variables,models,start,source_design_id,estimate,thumbnail_svg)
+            VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9::timestamptz,$9::timestamptz,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17)`,
+        [id, prompt, kind, selected.id, JSON.stringify(variants), owner, editKey ? hash(editKey).toString('hex') : null,
+            owner ? null : ip, s.iso(), frame, lookId || selected.id, JSON.stringify(selected.variables || {}),
+            requested ? JSON.stringify(requested) : null, JSON.stringify(startRecord), sourceDesignId || null,
+            estimate ? JSON.stringify(estimate) : null, thumbnail]);
         // A signed-in maker's new design is Only me until its Share sheet says otherwise (a guest's is its key).
         if (sharing && owner) await sharing.register(id, owner).catch((err) => log.warn('[OpenVibe.Design] share row not registered:', err.message));
         run(id).catch(err => log.warn('[OpenVibe.Design] generation:', err.message));
-        return { design: publicRow({ id, prompt, kind, theme_id: selected.id, variants, created_at: s.iso(), updated_at: s.iso() }),
-            editKey, editUrl: editKey ? `/d/${id}?key=${encodeURIComponent(editKey)}` : null };
+        return { design: publicRow({ id, prompt, kind, theme_id: selected.id, frame, look: lookId || selected.id,
+            look_variables: selected.variables || {}, models: requested, start: startRecord, source_design_id: sourceDesignId || null,
+            estimate, variants, created_at: s.iso(), updated_at: s.iso() }),
+        takes: variants.map(v => ({ id: v.id, slot: v.slot, provider: v.provider, model: v.model, modelId: v.model_id, name: v.name, status: v.status })),
+        editKey, editUrl: editKey ? `/d/${id}?key=${encodeURIComponent(editKey)}` : null };
     }
     async function updateVariant(id, index, variant) {
         await db.exec('UPDATE designs SET variants=jsonb_set(variants, ARRAY[$2::text], $3::jsonb, false), updated_at=$4::timestamptz WHERE id=$1',
@@ -172,13 +250,14 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             const running = { ...v, status: 'running', error: null };
             await updateVariant(id, index, running);
             try {
-                const t = await theme(d.theme_id);
-                const prompt = themePrompt(d.prompt, Object.keys(t.variables || {}));
-                const out = await ai.generate({ prompt, category: d.kind === 'component' ? 'logo' : d.kind === 'screen' ? 'mobile_app' : 'landing',
+                const t = await lookTheme(d);
+                const prompt = [themePrompt(d.prompt, Object.keys(t.variables || {})),
+                    instructionFor(d.kind, d.frame), startPrompt(d.start || {})].filter(Boolean).join('\n\n');
+                const out = await ai.generate({ prompt, category: categoryFor(d.kind),
                     slot: { provider: v.provider, model: v.model }, roundId: id, index,
                     prefer: v.prefer || null, person: d.owner || null, pin: v.pin === true });
-                const current = await db.maybe('SELECT theme_id FROM designs WHERE id=$1', [id]);
-                const currentTheme = await theme(current.theme_id);
+                const current = await db.maybe('SELECT * FROM designs WHERE id=$1', [id]);
+                const currentTheme = await lookTheme(current);
                 await updateVariant(id, index, { ...running, status: 'done', html: wrap(out.html, currentTheme.variables || {}),
                     provider: out.provider, model: out.model, ms: out.ms, costUsd: out.cost_usd, error: null,
                     paid_by: out.paid_by || null, prefer: out.prefer || v.prefer || null });
@@ -212,7 +291,11 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             canRedo: Array.isArray(p.redo_stack) && p.redo_stack.length > 0,
         };
     }
-    const categoryOf = (kind) => kind === 'component' ? 'logo' : kind === 'screen' ? 'mobile_app' : 'landing';
+    // Bench's board categories: the closest kind it knows for the new create kinds.
+    const categoryOf = (kind) => kind === 'component' || kind === 'mark' ? 'logo'
+        : kind === 'screen' ? 'mobile_app'
+            : kind === 'slide' ? 'slides'
+                : kind === 'social-card' ? 'logo' : 'landing';
     const pickRunId = (v) => `dsp_${v.id}`;
 
     /** Record the pick once: create the Arena round, submit the variants as room entries and cast one vote. */
@@ -316,7 +399,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
     }
 
     async function read(id, owner, key, viewer = null) {
-        const d = await row(id, owner, key, viewer), selected = await theme(d.theme_id);
+        const d = await row(id, owner, key, viewer), selected = await lookTheme(d);
         const p = await pickRow(id);
         const versions = p ? await db.many('SELECT * FROM design_versions WHERE design_id=$1 ORDER BY seq', [id]) : [];
         const current = p ? versions.find(v => Number(v.seq) === Number(p.current_seq)) : null;
@@ -367,7 +450,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const d = await row(id, owner, key, viewer, true);
         const p = await pickRow(id);
         if (!p) throw fail(409, 'design.no_pick', 'Pick a working frame before editing it.');
-        const selected = await theme(d.theme_id);
+        const selected = await lookTheme(d);
         const variant = d.variants[Number(p.variant_index)];
         if (!variant || variant.status !== 'done') throw fail(409, 'design.variant_not_ready', 'The working frame is not ready yet.');
         let current = await versionRow(id, p.current_seq);
@@ -396,7 +479,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             ? { provider: asked.provider, model: asked.model || null }
             : variant.provider && variant.provider !== 'ai' && !String(variant.provider).startsWith('byo:self:') && variant.model
                 ? { provider: variant.provider, model: variant.model } : null;
-        const out = await ai.generate({ prompt, category: categoryOf(d.kind), slot: { provider: variant.provider, model: variant.model },
+        const out = await ai.generate({ prompt, category: categoryFor(d.kind), slot: { provider: variant.provider, model: variant.model },
             roundId: d.id, index: variant.slot, prefer, person: subject || d.owner || null, pin: false });
         const html = wrap(out.html, variables);
         const version = await addVersion(d, p, { kind: 'chat', html, instruction, model: out.model || variant.model,
@@ -474,17 +557,51 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
     async function setTheme(id, themeId, owner, key, viewer = null) {
         await row(id, owner, key, viewer, true);
         const selected = await theme(themeId);
-        await db.exec('UPDATE designs SET theme_id=$1,updated_at=$2::timestamptz WHERE id=$3', [selected.id, s.iso(), id]);
+        await db.exec('UPDATE designs SET theme_id=$1,look=$1,look_variables=$4::jsonb,updated_at=$2::timestamptz WHERE id=$3',
+            [selected.id, s.iso(), id, JSON.stringify(selected.variables || {})]);
         return { themeId: selected.id, variables: selected.variables || {} };
     }
-    async function recent(owner, guestLinks = []) {
-        if (owner) return (await db.many('SELECT * FROM designs WHERE owner=$1 ORDER BY created_at DESC LIMIT 3', [owner]))
-            .map(d => ({ ...publicRow(d), url: `/d/${d.id}` }));
-        const result = [];
-        for (const item of guestLinks.slice(0, 3)) {
-            try { const d = await row(item.id, null, item.key); result.push({ ...publicRow(d), url: `/d/${d.id}?key=${encodeURIComponent(item.key)}` }); } catch { /* stale draft */ }
+    function recentItem(d, key = null) {
+        const suffix = key ? `?key=${encodeURIComponent(key)}` : '';
+        const thumb = `/api/create/designs/${encodeURIComponent(d.id)}/thumb.svg${suffix}`;
+        return { ...publicRow(d), url: `/d/${d.id}${suffix}`, thumbnail: thumb };
+    }
+    /**
+     * The person's designs, newest first. The present page asks for three (its own list); the create API passes
+     * { limit, before } and pages with the last createdAt. A guest's designs are the ones their draft cookie names.
+     */
+    async function recent(owner, guestLinks = [], { limit = 3, before = null } = {}) {
+        const size = Math.max(1, Math.min(48, Number(limit) || 3));
+        const cursor = before && !Number.isNaN(Date.parse(before)) ? before : null;
+        if (owner) {
+            const rows = await db.many(`SELECT * FROM designs WHERE owner=$1
+                AND ($2::timestamptz IS NULL OR created_at < $2::timestamptz)
+                ORDER BY created_at DESC, id DESC LIMIT $3`, [owner, cursor, size]);
+            return rows.map(d => recentItem(d));
         }
-        return result;
+        const result = [];
+        for (const item of Array.isArray(guestLinks) ? guestLinks : []) {
+            try {
+                const d = await row(item.id, null, item.key);
+                if (cursor && new Date(d.created_at).getTime() >= new Date(cursor).getTime()) continue;
+                result.push(recentItem(d, item.key));
+            } catch { /* stale draft */ }
+        }
+        result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return result.slice(0, size);
+    }
+
+    /** The recent list's card for one design, with the same access check every read uses. */
+    async function thumbnail(id, owner, key, viewer = null) {
+        const d = await row(id, owner, key, viewer);
+        let svg = d.thumbnail_svg;
+        if (!svg) {
+            const kindEntry = kindOf(d.kind);
+            const selected = await lookTheme(d).catch(() => ({ variables: {} }));
+            svg = makeThumbnail({ kind: d.kind, kindName: (kindEntry && kindEntry.name) || 'Design', prompt: d.prompt,
+                model: (d.variants[0] && (d.variants[0].name || d.variants[0].model)) || null, variables: selected.variables || {} });
+        }
+        return { svg, design: publicRow(d) };
     }
     async function resume() {
         const pending = await db.many("SELECT id FROM designs WHERE variants @> '[{\"status\":\"pending\"}]'::jsonb OR variants @> '[{\"status\":\"running\"}]'::jsonb ORDER BY created_at LIMIT 20");
@@ -506,7 +623,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         return out;
     }
 
-    return { create, read, setTheme, recent, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit, publish };
+    return { create, read, setTheme, recent, thumbnail, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit, publish };
 }
 
 module.exports = { createDesigns, wrap, tokenCss, themeCss, themePrompt, editPrompt };

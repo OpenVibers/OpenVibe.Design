@@ -64,6 +64,19 @@ function load(env = process.env) {
             maxHtmlBytes: 200 * 1024,
         },
 
+        // OpenVibe.Media: a starting picture is uploaded there by the page and the create request carries its id;
+        // Design names its public file address in the prompt and never takes raw image bytes.
+        media: {
+            publicOrigin: trim(env.OV_MEDIA_PUBLIC_ORIGIN || 'https://openvibe.media'),
+        },
+
+        // OpenVibe.Billing: the person's Balance, read with their own token for the create estimate. Off (null)
+        // when the service is not on this host; the estimate then says the Balance is unknown, never zero.
+        billing: {
+            internalUrl: trim(env.OV_BILLING_INTERNAL_URL || 'http://127.0.0.1:4600'),
+            timeoutMs: Math.max(500, int(env.DESIGN_BILLING_TIMEOUT_MS, 3000)),
+        },
+
         // OpenVibe.Space (open item D8): a design is published as a static site, with Design's service token acting for
         // the person (X-OV-Subject); Network grants space.site.manage and space.deploy.create.
         space: {
