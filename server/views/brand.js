@@ -63,7 +63,8 @@ const live = (attrs = '', o = {}) => `<span class="ov-mark" ${attrs}>${art(o)}</
 
 const STATES = [
     ['', 'At rest', 'Still. It moves for a moment on your first visit, and when you point at it.'],
-    ['busy', 'Working', 'The V bobs while the O breathes, in turn: something is on its way.'],
+    ['busy', 'Working', 'The O breaks into dots that go round while the V bobs: something is on its way.'],
+    ['think', 'Thinking', 'Three dots rise inside the O and the V glimmers: your agent is thinking or writing.'],
     ['ok', 'Done', 'The V becomes a tick and goes green. The tick only ever means done.'],
     ['error', 'Failed', 'The V becomes an exclamation mark, red, and the mark shakes once.'],
     ['no', 'Declined', 'The V becomes a cross, grey: cancelled, turned down, not now.'],
@@ -88,7 +89,7 @@ function brandPage({ base = 'https://openvibe.design' } = {}) {
 </header>`;
 
     const moves = `<section class="br-sec" aria-labelledby="br-moves">
-  <div class="br-sec-head"><h2 id="br-moves">It moves when it means something</h2><p>Every move is a word: one shape says working, done, failed and live, in colour and in form. Nothing spins.</p></div>
+  <div class="br-sec-head"><h2 id="br-moves">It moves when it means something</h2><p>Every move is a word: one shape says working, thinking, done, failed and live, in colour and in form. The only thing that goes round is its own O.</p></div>
   <div class="br-play">
     <div class="br-play-stage">${live('data-size="190" data-wide data-br-demo', { wide: true })}</div>
     <div class="br-play-side">

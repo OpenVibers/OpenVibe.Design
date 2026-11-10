@@ -100,9 +100,9 @@ function motionPage({ base = 'https://openvibe.design' } = {}) {
   <div class="mo-sec-head"><h2 id="mo-rules">The rules</h2><p>So that motion stays a signal, never noise.</p></div>
   <div class="mo-rules">
     ${rule('It means something.', 'Every move says one thing: this is new, this worked, this is yours to press. A move that says nothing is cut.')}
-    ${rule('Nothing spins.', 'A wait is a shimmer, a bob or a ring drawing round, never a circle chasing its tail.')}
+    ${rule('The wait is the mark\u2019s own.', 'Working is its O as dots going round; thinking is three dots rising inside it. Nothing else turns a circle, and there is no borrowed spinner.')}
     ${rule('Once, then still.', 'Effects play on a hover, a press or the first time something is seen, then rest. Nothing runs on its own, and nothing moves off screen.')}
-    ${rule('Calm wins.', 'With reduced motion or Calm on, nothing moves, nothing counts and no confetti falls. The page looks the same, only still.')}
+    ${rule('Calm is gentler. Off is still.', 'Calm, or a device that asks for less motion, plays every effect smaller and slower. Only Off stops them: then nothing moves, nothing counts and no confetti falls.')}
     ${rule('Never hide to animate.', 'What is on screen when the page opens is never hidden for an entrance. Only what is further down rises in.')}
     ${rule('One kit.', 'Every site uses the same effects and the same timing, so the network feels like one place.')}
   </div>
