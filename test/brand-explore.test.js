@@ -60,7 +60,8 @@ const explore = require('../server/views/marks-explore');
                 assert.match(r.text, new RegExp(`<section class="mx-panel" id="${tab}" role="tabpanel"`));
             }
             assert.match(r.text, /<noscript><style>\.mx-panel\[hidden\]\{display:block!important\}<\/style><\/noscript>/, 'without the script every tab shows');
-            assert.match(r.text, /<h1>Which logo should OpenVibe use\?<\/h1>\n<p class="mx-lede">Tap every logo you like, from both kinds if you want\. Then pick a menu button and a font\. Votes count right away\.<\/p>/, 'the top says it simply');
+            assert.match(r.text, /<h1>The mark and the menu button were chosen here<\/h1>\n<p class="mx-lede">Both are in the bar above this page now\./, 'the top says what was chosen');
+            assert.ok(/class="mx-won"/.test(r.text) && /P07 · the mark on every site/.test(r.text) && /M57 · the menu button, and its close/.test(r.text) && !/class="mx-eye"/.test(r.text), 'and shows both, with no line naming the page above the title');
             assert.match(r.text, /<span class="mx-qn">1<\/span> <b>Pick a logo<\/b>[\s\S]*?<span class="mx-or" aria-hidden="true">\+<\/span>[\s\S]*?<span class="mx-qn">2<\/span> <b>Pick a menu button<\/b>[\s\S]*?<span class="mx-qn">3<\/span> <b>Pick a font<\/b>/, 'three steps: a logo, a menu button, a font');
             assert.ok((r.text.match(/<section class="mx-row">/g) || []).length >= 15, 'sorted into rows by idea');
             assert.match(r.text, /<meta name="robots" content="noindex, follow">/, 'proposals are not indexed');
