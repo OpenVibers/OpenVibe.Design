@@ -111,13 +111,16 @@ function createPageRoutes(ctx) {
         const recent = await ctx.designs.recent(subjectOf(req), links);
         // The Look choice shows the catalogue's themes; without the catalogue the composer still works on the default.
         const themes = await catalog.list().then((x) => x.themes, () => []);
-        return page(res, 200, designView.create({ recent, themes }), req.viewer, { cacheControl: 'private, no-store' });
+        // What can be made, in which sizes and looks, by which models at what price (the same answer /api/create/options
+        // gives). Without it the composer shows the themes and the four ways, and posts the old form.
+        const options = ctx.createOptions ? await ctx.createOptions.options({ token: tokenOf(req) }).then((all) => ctx.createOptions.publicOptions(all), () => null) : null;
+        return page(res, 200, designView.create({ recent, themes, options }), req.viewer, { cacheControl: 'private, no-store' });
     });
     r.post('/create', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
         try {
             const out = await ctx.designs.create({ prompt: req.body.prompt, kind: req.body.kind || 'page',
-                themeId: req.body.themeId || undefined, owner: subjectOf(req), ip: req.ip, who: req.body.who });
+                themeId: req.body.themeId || (req.body.look && req.body.look !== 'system' ? req.body.look : undefined), owner: subjectOf(req), ip: req.ip, who: req.body.who });
             if (out.editKey) {
                 let links = [];
                 try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }

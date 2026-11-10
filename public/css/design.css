@@ -256,7 +256,8 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 /* (backwards, not both: a transform that stays would make the composer the box its sheets are fixed to.) */
 .dv-composer:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); box-shadow: 0 26px 64px -24px color-mix(in srgb, var(--accent) 75%, transparent); }
 @keyframes dvIn { from { opacity: 0; transform: translateY(calc(12px * var(--ov-move, 1))) scale(.985); } }
-.dv-kinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
+/* Seven kinds: one row that shares the width on a computer and rides sideways on a phone. */
+.dv-kinds { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .dv-kinds label, .dv-opt, .dv-look { position: relative; display: block; cursor: pointer; }
 .dv-kinds input, .dv-opt input, .dv-look input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .dv-kinds span { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 8px; border-radius: 14px; color: var(--text-secondary); background: color-mix(in srgb, var(--text-primary) 5%, transparent); font-size: .92rem; transition: background-color .18s, color .18s, transform .12s; }
@@ -324,9 +325,36 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .dv-examples button svg { width: 16px; height: 16px; flex: none; color: var(--accent-light, var(--accent)); }
 .dv-examples button:hover, .dv-examples button:focus-visible { color: var(--text-primary); border-color: var(--accent); }
 .dv-examples button:active { transform: scale(.96); }
-.dv-create:has(input[name="kind"][value="page"]:checked) .dv-examples button:not([data-kind="page"]),
-.dv-create:has(input[name="kind"][value="screen"]:checked) .dv-examples button:not([data-kind="screen"]),
-.dv-create:has(input[name="kind"][value="component"]:checked) .dv-examples button:not([data-kind="component"]) { display: none; }
+.dv-examples button[hidden] { display: none; }
+/* In a choice's sheet: a second group, checked rows, the takes, a starting address; and the cost under the tray. */
+.dv-opt[hidden] { display: none; }
+.dv-mod[hidden] { display: none; }
+.dv-ways.is-off { opacity: .5; }
+.dv-group-h { display: grid; gap: 2px; margin: 12px 4px 8px; padding-top: 12px; border-top: 1px solid var(--border); font-size: .95rem; font-weight: 700; }
+.dv-group-h small { font-size: .8rem; font-weight: 400; color: var(--text-secondary); }
+.dv-opt--check > span { padding-left: 44px; }
+.dv-opt--check > span::before { content: ""; position: absolute; left: 14px; top: 50%; width: 20px; height: 20px; margin-top: -10px; box-sizing: border-box; border-radius: 6px; border: 2px solid color-mix(in srgb, var(--text-primary) 30%, transparent); transition: background-color .15s, border-color .15s; }
+.dv-opt--check input:checked + span::before { background: var(--accent); border-color: var(--accent); }
+.dv-opt--check input:checked + span::after { right: auto; left: 21px; margin-top: -8px; width: 5px; height: 10px; border-color: #fff; }
+.dv-opt--check input:disabled + span { opacity: .45; }
+.dv-takes { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0 2px; padding: 8px 8px 8px 12px; border-radius: 14px; background: color-mix(in srgb, var(--text-primary) 5%, transparent); }
+.dv-takes > span:first-child { display: grid; gap: 1px; }
+.dv-takes b { font-size: .92rem; }
+.dv-takes small { font-size: .78rem; color: var(--text-secondary); }
+.dv-step { display: inline-flex; align-items: center; gap: 2px; }
+.dv-step button { width: 44px; height: 44px; border: 0; border-radius: 12px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--text-primary); font: inherit; font-size: 1.3rem; font-weight: 700; cursor: pointer; transition: background-color .15s, transform .12s; }
+.dv-step button:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+.dv-step button:active { transform: scale(.92); }
+.dv-step input { width: 40px; border: 0; background: none; color: var(--text-primary); font: inherit; font-size: 1.05rem; font-weight: 800; text-align: center; -moz-appearance: textfield; appearance: textfield; }
+.dv-step input::-webkit-outer-spin-button, .dv-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.dv-start { display: block; }
+.dv-start input { width: 100%; box-sizing: border-box; min-height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-input, var(--bg-primary)); color: var(--text-primary); font: inherit; font-size: 1rem; }
+.dv-start input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dv-start-note { margin: 8px 4px 2px; font-size: .8rem; color: var(--text-secondary); }
+.dv-cost { margin: 8px 6px 2px; font-size: .86rem; color: var(--text-secondary); animation: dvIn .3s cubic-bezier(.2, .9, .3, 1.1) backwards; }
+.dv-cost[hidden] { display: none; }
+.dv-cost.is-error { color: var(--warning-text, #f59e0b); }
+.dv-rc-k img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
 .dv-recent { margin-top: 44px; }
 .dv-recent h2 { margin: 0 0 12px; font-size: 1.05rem; }
 .dv-recent ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 8px; }
@@ -339,12 +367,16 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .dv-rc-t small { color: var(--text-secondary); font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 640px) {
     .dv-create { margin-top: 22px; }
+    .dv-kinds { grid-auto-columns: minmax(84px, 1fr); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -8px; padding: 0 8px; scroll-snap-type: x proximity; }
+    .dv-kinds::-webkit-scrollbar { display: none; }
+    .dv-kinds label { scroll-snap-align: start; }
     .dv-kinds span { flex-direction: column; gap: 3px; min-height: 58px; font-size: .8rem; }
-    .dv-tray { display: grid; grid-template-columns: minmax(0, 1fr); }
-    .dv-mod > summary { display: flex; }
+    .dv-tray { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dv-mod > summary { display: flex; gap: 6px; padding: 0 10px 0 8px; }
     .dv-mod > summary b { flex: 1; }
-    .dv-mod-k { min-width: 4.6em; }
-    .dv-go { width: 100%; margin: 2px 0 0; min-height: 52px; }
+    .dv-mod-k { display: none; }
+    .dv-mod:not([hidden]):nth-of-type(odd):last-of-type { grid-column: 1 / -1; }
+    .dv-go { grid-column: 1 / -1; width: 100%; margin: 2px 0 0; min-height: 52px; }
     /* The options rise from the bottom over a dimmed page. */
     .dv-mod[open]::before { content: ""; position: fixed; inset: 0; z-index: 10005; background: rgba(0, 0, 0, .5); animation: dvFade .2s both; }
     .dv-mod-sheet { position: fixed; z-index: 10006; left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 76vh; padding: 16px 12px calc(16px + env(safe-area-inset-bottom, 0px)); border-radius: 24px 24px 0 0; border-width: 1px 0 0; transform-origin: 50% 100%; animation: dvRise .3s cubic-bezier(.2, .9, .25, 1) both; }

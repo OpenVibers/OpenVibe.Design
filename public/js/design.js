@@ -2,39 +2,121 @@
     'use strict';
     const prompt = document.getElementById('dv-prompt');
     if (prompt) {
-        const form = prompt.form, KEY = 'dv-composer';
-        const kindOf = () => (form.querySelector('input[name="kind"]:checked') || {}).value || 'page';
-        const setKind = (id) => { const k = form.querySelector(`input[name="kind"][value="${CSS.escape(id)}"]`); if (k) { k.checked = true; prompt.placeholder = k.dataset.placeholder || prompt.placeholder; } };
+        const form = prompt.form, KEY = 'dv-composer', API = form.dataset.api || '';
+        const q = (sel) => form.querySelector(sel), all = (sel) => Array.from(form.querySelectorAll(sel));
+        const picked = (name) => (q(`input[name="${name}"]:checked`) || {}).value || '';
+        const chosenModels = () => all('input[name="models"]:checked').map((x) => x.value);
+        const takesEl = q('input[name="takes"]'), cost = q('[data-dv-cost]'), goLabel = q('[data-go-label]'), go = q('.dv-go');
+        const setText = (mod, text) => { const v = q(`.dv-mod[data-mod="${mod}"] [data-mod-v]`); if (v) v.textContent = text; };
         // What a choice in the tray shows: the name of what is chosen (and, for the look, its colours).
         const show = (input) => {
-            const mod = input.closest('.dv-mod'); if (!mod) return;
+            const mod = input.closest('.dv-mod'); if (!mod || input.type !== 'radio') return;
+            if (mod.dataset.mod === 'who' && chosenModels().length) return;
             const v = mod.querySelector('[data-mod-v]'); if (v) v.textContent = input.dataset.label || input.value;
             const sw = mod.querySelector('[data-mod-sw]'); if (sw && input.dataset.sw) sw.setAttribute('style', input.dataset.sw);
         };
-        const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ kind: kindOf(), who: (form.querySelector('input[name="who"]:checked') || {}).value, themeId: (form.querySelector('input[name="themeId"]:checked') || {}).value })); } catch { /* a private window */ } };
+        // The sizes a kind can be made at: the others step out of the list, and the first allowed one is chosen.
+        const fitFrames = () => {
+            const k = q('input[name="kind"]:checked'); const allowed = k && k.dataset.frames ? k.dataset.frames.split(' ').filter(Boolean) : [];
+            const rows = all('.dv-opt[data-frame]'); if (!rows.length) return;
+            rows.forEach((r) => { r.hidden = allowed.length > 0 && !allowed.includes(r.dataset.frame); });
+            const cur = q('input[name="frame"]:checked');
+            if (!cur || cur.closest('.dv-opt').hidden) { const first = rows.find((r) => !r.hidden); if (first) { const i = first.querySelector('input'); i.checked = true; show(i); } }
+            const mod = q('.dv-mod[data-mod="frame"]'); if (mod) mod.hidden = rows.filter((r) => !r.hidden).length < 2;
+        };
+        // The ideas under the composer are those of the kind chosen.
+        const fitExamples = () => { const id = picked('kind'); document.querySelectorAll('.dv-examples [data-kind]').forEach((b) => { b.hidden = b.dataset.kind !== id; }); };
+        const setKind = (id) => { const k = q(`input[name="kind"][value="${CSS.escape(id)}"]`); if (k) { k.checked = true; prompt.placeholder = k.dataset.placeholder || prompt.placeholder; fitFrames(); fitExamples(); const row = k.closest('.dv-kinds'), lab = k.closest('label'); if (row && lab && row.scrollWidth > row.clientWidth) row.scrollTo({ left: Math.max(0, lab.offsetLeft - row.offsetLeft - (row.clientWidth - lab.offsetWidth) / 2), behavior: 'smooth' }); } };
+        // Models and takes: at most the page's number of models, and models × takes within the run's total.
+        const takesNow = () => (takesEl ? Math.max(Number(takesEl.min) || 1, Math.min(Number(takesEl.max) || 4, Number(takesEl.value) || 1)) : 3);
+        const fitModels = () => {
+            const box = q('.dv-models'); const max = box ? Number(box.dataset.max) || 4 : 4; const on = chosenModels();
+            all('input[name="models"]').forEach((x) => { x.disabled = !x.checked && on.length >= max; });
+            if (takesEl) { const total = Number(takesEl.dataset.total) || 8; const cap = Math.max(1, Math.floor(total / Math.max(1, on.length))); if (takesNow() > cap) takesEl.value = String(cap); else takesEl.value = String(takesNow()); }
+            const ways = q('.dv-ways'); if (ways) ways.classList.toggle('is-off', on.length > 0);
+            const n = on.length ? on.length * takesNow() : 3;
+            if (on.length) setText('who', on.length === 1 ? (q('input[name="models"]:checked').dataset.label || '1 model') : `${on.length} models`);
+            else { const w = q('input[name="who"]:checked'); if (w) setText('who', w.dataset.label || w.value); }
+            if (goLabel && !go.hasAttribute('aria-busy')) goLabel.textContent = n === 1 ? 'Create one take' : `Create ${['', '', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][n] || n} takes`;
+            return n;
+        };
+        const startUrl = () => { const el = q('input[name="start_url"]'); return el ? el.value.trim() : ''; };
+        const body = () => {
+            const b = { prompt: prompt.value, kind: picked('kind') || 'page', who: picked('who') || 'claude' };
+            if (picked('frame')) b.frame = picked('frame');
+            if (picked('look')) b.look = picked('look');
+            const m = chosenModels(); if (m.length) { b.models = m; b.takes = takesNow(); }
+            if (startUrl()) b.start = { url: startUrl() };
+            return b;
+        };
+        const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ kind: picked('kind'), who: picked('who'), look: picked('look'), frame: picked('frame'), models: chosenModels(), takes: takesNow() })); } catch { /* a private window */ } };
+        // What the run will cost, asked from the server as the choices settle (the same plan the run uses).
+        const usd = (n) => (n >= 0.995 ? `$${n.toFixed(2)}` : n >= 0.01 ? `${Math.round(n * 100)}¢` : n > 0 ? 'under 1¢' : 'nothing');
+        let costTimer = 0, costSeq = 0;
+        const say = (text, bad) => { if (!cost) return; cost.textContent = text || ''; cost.hidden = !text; cost.classList.toggle('is-error', Boolean(bad)); };
+        const askCost = () => {
+            if (!API || !cost) return;
+            clearTimeout(costTimer);
+            costTimer = setTimeout(async () => {
+                const seq = ++costSeq;
+                try {
+                    const r = await fetch(`${API}/estimate`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body()) });
+                    const e = await r.json(); if (seq !== costSeq) return;
+                    if (!r.ok) return say(chosenModels().length || startUrl() ? (e.detail || '') : '', true);
+                    const total = Number(e.total_usd);
+                    if (!isFinite(total)) return say('');
+                    const about = `About ${usd(total)} for this run`;
+                    const bal = e.balance ? (e.covers === false ? ` · your Balance (${usd(Number(e.balance.available_usd) || 0)}) does not cover it` : ' · your Balance covers it') : (e.balance_note ? ` · ${e.balance_note}` : '');
+                    say(about + bal, e.covers === false);
+                } catch { if (seq === costSeq) say(''); }
+            }, 450);
+        };
         // The last choices come back (they are this person's habits, kept in this browser only).
         try {
             const last = JSON.parse(localStorage.getItem(KEY) || '{}');
-            if (last.kind) setKind(last.kind);
-            ['who', 'themeId'].forEach((name) => { const el = last[name] && form.querySelector(`input[name="${name}"][value="${CSS.escape(last[name])}"]`); if (el) { el.checked = true; show(el); } });
-        } catch { /* nothing kept */ }
-        const mods = [...form.querySelectorAll('.dv-mod')];
+            if (last.kind) setKind(last.kind); else { fitFrames(); fitExamples(); }
+            ['who', 'look', 'frame'].forEach((name) => { const el = last[name] && q(`input[name="${name}"][value="${CSS.escape(last[name])}"]`); if (el && !(el.closest('.dv-opt') && el.closest('.dv-opt').hidden)) { el.checked = true; show(el); } });
+            (last.models || []).forEach((id) => { const el = q(`input[name="models"][value="${CSS.escape(id)}"]`); if (el) el.checked = true; });
+            if (takesEl && last.takes) takesEl.value = String(last.takes);
+        } catch { fitFrames(); fitExamples(); }
+        fitModels();
+        const mods = all('.dv-mod');
         const closeMods = (except) => mods.forEach((m) => { if (m !== except) m.open = false; });
         form.addEventListener('change', (event) => {
             const input = event.target;
             if (input.name === 'kind') setKind(input.value);
+            else if (input.name === 'models' || input.name === 'takes') fitModels();
+            else if (input.name === 'start_url') setText('start', startUrl() ? (() => { try { return new URL(startUrl()).hostname; } catch { return 'A page'; } })() : 'Blank');
+            else if (input.name === 'who') { all('input[name="models"]').forEach((x) => { x.checked = false; }); fitModels(); show(input); setTimeout(() => closeMods(null), 160); }
             else if (input.closest('.dv-mod')) { show(input); setTimeout(() => closeMods(null), 160); }
-            save();
+            save(); askCost();
         });
+        form.addEventListener('click', (event) => {
+            const step = event.target.closest('[data-step]'); if (!step || !takesEl) return;
+            takesEl.value = String(takesNow() + Number(step.dataset.step)); fitModels(); save(); askCost();
+        });
+        prompt.addEventListener('blur', askCost);
         mods.forEach((m) => m.addEventListener('toggle', () => { if (m.open) closeMods(m); }));
-        document.addEventListener('click', (event) => { const open = mods.find((m) => m.open); if (open && !open.contains(event.target)) closeMods(null); else if (open && event.target === open) closeMods(null); });
+        document.addEventListener('click', (event) => { const open = mods.find((m) => m.open); if (open && (!open.contains(event.target) || event.target === open)) closeMods(null); });
         document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const open = mods.find((m) => m.open); if (open) { closeMods(null); open.querySelector('summary').focus(); } } });
         prompt.addEventListener('keydown', (event) => { if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) form.requestSubmit(); });
-        form.addEventListener('submit', () => { const go = form.querySelector('.dv-go'); if (go) { go.setAttribute('aria-busy', 'true'); const t = go.querySelector('span'); if (t) t.textContent = 'Drawing three takes…'; } });
+        const busy = (on) => { if (!go) return; if (on) { go.setAttribute('aria-busy', 'true'); if (goLabel) goLabel.textContent = 'Drawing…'; } else { go.removeAttribute('aria-busy'); fitModels(); } };
+        form.addEventListener('submit', async (event) => {
+            if (!API || typeof fetch !== 'function') return busy(true);   // the plain form, as before
+            event.preventDefault();
+            if (!prompt.value.trim()) return prompt.focus();
+            busy(true); closeMods(null);
+            try {
+                const r = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body()) });
+                const out = await r.json().catch(() => ({}));
+                if (!r.ok) { busy(false); return say(out.detail || out.title || 'The designs could not be started. Try again.', true); }
+                location.href = out.editUrl || `/d/${encodeURIComponent(out.design.id)}`;
+            } catch { busy(false); say('The designs could not be started: this page could not reach the server.', true); }
+        });
         document.querySelectorAll('[data-example]').forEach(button => button.addEventListener('click', () => {
             prompt.value = button.dataset.example;
             if (button.dataset.kind) { setKind(button.dataset.kind); save(); }
-            prompt.focus();
+            prompt.focus(); askCost();
         }));
         return;
     }
