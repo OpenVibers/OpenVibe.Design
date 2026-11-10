@@ -39,8 +39,8 @@
         if (dots && t) {
             dots.replaceChildren(...t.dots.map((c) => { const i = document.createElement('i'); i.className = 'tk-dot'; i.style.background = c; return i; }));
         }
-        const studio = $('#lk-studio');
-        if (studio) studio.href = `/themes?theme=${encodeURIComponent(id)}`;
+        const change = $('#lk-change');
+        if (change) change.href = `/themes?theme=${encodeURIComponent(id)}`;
         const code = $('#lk-code');
         if (code) code.href = `/tokens?theme=${encodeURIComponent(id)}`;
     }
@@ -55,18 +55,10 @@
         check('text', d.text);
         check('motion', d.motion);
         check('icons', d.icons || 'auto');
-        root.querySelectorAll('[data-pick-icons]').forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute('data-pick-icons') === (d.icons || 'auto'))));
         const s = root.querySelector('input[name="seasonal"]');
         if (s) s.checked = d.seasonal !== 'off';
         for (const k of Object.keys(COMFORT)) { const c = root.querySelector(`input[name="${k}"]`); if (c) c.checked = d[k] === COMFORT[k][0]; }
     }
-    // A screen in the icon styles picks its style, the same as the Icons choice above it.
-    root.addEventListener('click', (e) => {
-        const b = e.target.closest && e.target.closest('[data-pick-icons]');
-        if (!b) return;
-        const r = root.querySelector(`input[name="icons"][value="${b.getAttribute('data-pick-icons')}"]`);
-        if (r && !r.checked) r.click();
-    });
     root.addEventListener('change', (e) => {
         const i = e.target;
         if (!i || !i.name) return;
