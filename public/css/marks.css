@@ -454,6 +454,16 @@ html[data-ov-motion=off] .mb-peek,html[data-ov-motion=off] .mb-peek i{transition
 .openvibe-navbar .ovnav-orb .mx-navmenu{all:unset;position:relative;display:grid;place-items:center;width:24px;height:24px;color:inherit}
 .openvibe-navbar .ovnav-orb .mx-navmenu svg{width:22px;height:22px}
 .openvibe-navbar .mx-nav-flash{animation:mxNavFlash 1.1s var(--ov-ease-out, ease-out)}
+/* The two close buttons the picked menu button becomes (the menu's own and the Dock's) wear it too, open. Their own
+   drawing stays in place, unseen: the Dock measures it to start on the bar's button. */
+.mx-skinned > *{grid-area:1/1}
+.mx-skinned > svg{opacity:0}
+.mx-skinned > .mx-navmenu{all:unset;grid-area:1/1;display:grid;place-items:center;width:24px;height:24px;color:inherit;pointer-events:none}
+.mx-skinned > .mx-navmenu svg{width:22px;height:22px}
+/* On this page the bar is the preview, so it stays in view (the owner, 11-10: "the nav bar will just go away… while you
+   scroll… disable that on that page"). Everywhere else a phone's bar still hides as you scroll down. */
+html:has(.mx-wrap) .openvibe-navbar.ovnav-hide{transform:none!important}
+html:has(.mx-wrap) #navbar-mount:has(> .ovnav-hide){pointer-events:auto}
 @keyframes mxNavFlash{0%{box-shadow:0 0 0 0 color-mix(in srgb,#8b5cf6 70%,transparent);border-radius:12px}60%{box-shadow:0 0 0 10px transparent;border-radius:12px}100%{box-shadow:none}}
 
 /* The tally counts both families (a person can like both), and every vote sits in a fold under it. */

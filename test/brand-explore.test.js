@@ -20,6 +20,18 @@ const explore = require('../server/views/marks-explore');
         }
     });
 
+    await check('the bar is the preview: every menu button it has wears the pick, so do the two close buttons, and it stays in view', () => {
+        const fs = require('fs'), path = require('path');
+        const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'marks.js'), 'utf8');
+        const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'marks.css'), 'utf8');
+        assert.ok(js.includes("var orbs = all('.ovnav-orb', bar)"), 'every menu button in the bar (a phone shows the one at its right end)');
+        assert.ok(js.includes("all('.ovs-orb, .ovdk-orbx').forEach"), 'the menu\'s own close button and the Dock\'s wear it too');
+        assert.ok(js.includes("flag(mine, 'is-open', dock ? !dock.hidden && !host.classList.contains('is-from') : host.classList.contains('is-x'))"), 'open when the sheet is, at rest while it is still on the bar\'s button');
+        assert.ok(/\.mx-skinned > svg\{opacity:0\}/.test(css) && /\.mx-skinned > \.mx-navmenu\{all:unset;grid-area:1\/1;/.test(css), 'over their own drawing, which keeps its place (the Dock measures it)');
+        assert.ok(css.includes('html:has(.mx-wrap) .openvibe-navbar.ovnav-hide{transform:none!important}'), 'on this page a phone\'s bar does not hide as you scroll');
+        assert.ok(!/prefers-reduced-motion:\s*no-preference/.test(css), 'no move is kept only for people who have not asked for less motion');
+    });
+
     const t = await boot();
     try {
         await check('three tabs, a hundred and fifty numbered cards in rows, every one pickable', async () => {
