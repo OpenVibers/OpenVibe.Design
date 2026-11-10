@@ -17,7 +17,22 @@ const MAKES = [
     { id: 'component', name: 'Component', glyph: G('<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="3.5" y="13" width="17" height="7.5" rx="2"/>'),
         placeholder: 'Describe the part: what it shows and the states it has…',
         examples: ['Pricing section', 'Sign-up form with its errors', 'A stat card with a small chart'] },
+    { id: 'slide', name: 'Slide', glyph: G('<rect x="3" y="4.5" width="18" height="12" rx="2.5"/><path d="M12 16.5V20M8.5 20h7M7 9h6M7 12h9"/>'),
+        placeholder: 'Describe the slide: the one point it makes and who is in the room…',
+        examples: ['Title slide for a launch talk', 'Three numbers from last quarter', 'A before and after comparison'] },
+    { id: 'email', name: 'Email', glyph: G('<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.6 7.6l8.4 6 8.4-6"/>'),
+        placeholder: 'Describe the email: who gets it and what you want them to do…',
+        examples: ['Welcome email for a new member', 'A monthly product update', 'A receipt that reads well'] },
+    { id: 'social-card', name: 'Social card', glyph: G('<rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9.3" cy="9.6" r="1.7"/><path d="M4.6 16.4l4.4-4 3.4 3 2.6-2.2 4.4 4"/>'),
+        placeholder: 'Describe the card: what it announces and where it will be posted…',
+        examples: ['Going live tonight at 8', 'A quote from a customer', 'A new feature in one line'] },
+    { id: 'mark', name: 'Mark', glyph: G('<circle cx="12" cy="12" r="8.2"/><path d="M8.4 12.4l2.4 2.4 4.8-5.4"/>'),
+        placeholder: 'Describe the mark: the name, what it stands for and where it will be used…',
+        examples: ['A mark for a robotics club', 'An app icon for a notes app', 'A monogram, two letters'] },
 ];
+const MAKE = Object.fromEntries(MAKES.map((m) => [m.id, m]));
+const FRAME_ICON = G('<rect x="3.5" y="5" width="12" height="9" rx="2"/><rect x="14" y="9.5" width="6.5" height="10" rx="2"/>');
+const LINK_ICON = G('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.200 1.200M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1.200-1.200"/>');
 const WHO = [
     { id: 'claude', name: 'Claude Opus 5.5', line: 'Three takes from one designer, the strongest' },
     { id: 'sonnet', name: 'Claude Sonnet 5.5', line: 'Three takes from one designer, sooner' },
@@ -51,28 +66,64 @@ function gate({ id, signedInAs = null, signInUrl = '/auth/login' }) {
     return layout({ title: 'A design on OpenVibe.Design', path: '/d', robots: 'noindex, nofollow', body, scripts: [] });
 }
 
-function create({ recent = [], themes = [] } = {}) {
-    const looks = themes.slice(0, 12), look = looks[0] || null;
-    const kinds = `<fieldset class="dv-kinds"><legend class="dv-visually-hidden">What you are making</legend>${MAKES.map((m, i) => `<label><input type="radio" name="kind" value="${m.id}" data-placeholder="${esc(m.placeholder)}"${i ? '' : ' checked'}><span>${m.glyph}<b>${m.name}</b></span></label>`).join('')}</fieldset>`;
-    const lookMod = look ? `<details class="dv-mod" data-mod="look"><summary><i class="dv-sw" style="${swatch(look)}" data-mod-sw></i><span class="dv-mod-k">Look</span><b data-mod-v>${esc(look.name)}</b></summary>
+// A look's four colours (page, text, accent, card) as the small picture's variables; plain colours only.
+const lookStyle = (look) => { const w = (look && look.swatch) || []; return `--b:${colour(w[0], '#0b0f19')};--t:${colour(w[1], '#e6edf7')};--a:${colour(w[2], '#3b82f6')};--c:${colour(w[3], '#151b28')}`; };
+const money = (n) => `$${Number(n).toFixed(2)}`;
+// A maker's name as the maker writes it; "shared" is OpenVibe's own key for that model.
+const MAKER = { openai: 'OpenAI', deepseek: 'DeepSeek', anthropic: 'Anthropic', google: 'Google', meta: 'Meta', xai: 'xAI', mistral: 'Mistral', minimax: 'MiniMax', openrouter: 'OpenRouter', shared: 'OpenVibe', local: 'Your machine' };
+const maker = (p) => { const k = String(p || '').toLowerCase(); return MAKER[k] || (k ? k.charAt(0).toUpperCase() + k.slice(1) : ''); };
+
+/**
+ * /create. `options` is what GET /api/create/options answers (kinds, frames, looks, models, takes, limits); without it
+ * (the catalogue or the model list did not answer) the composer falls back to the themes and the four ways to pick a
+ * designer, and the form posts as it always did. With a script, the form is sent to POST /api/create and the cost is
+ * asked from POST /api/create/estimate as the choices change.
+ */
+function create({ recent = [], themes = [], options = null } = {}) {
+    const o = options || {};
+    const kinds = (o.kinds && o.kinds.length ? o.kinds : MAKES.slice(0, 3).map((m) => ({ id: m.id, name: m.name, frames: [] })))
+        .map((k) => ({ ...k, ...(MAKE[k.id] || { glyph: MAKES[0].glyph, placeholder: 'Describe what you need…', examples: [] }), name: k.name || (MAKE[k.id] || {}).name || k.id }));
+    const frames = o.frames || [];
+    const looksAll = o.looks && o.looks.length ? o.looks
+        : themes.map((t) => { const v = t.variables || {}; return { id: t.id, name: t.name, source: 'theme', swatch: [v['--bg-primary'], v['--text-primary'], v['--accent'], v['--bg-card']] }; });
+    const looks = looksAll.slice(0, 12), look = looks[0] || null;
+    const models = o.models || [];
+    const takes = o.takes || { min: 1, max: 4, default: 3 };
+    const limits = o.limits || { models: 4, takes_total: 8 };
+
+    const kindRow = `<fieldset class="dv-kinds" data-ovk-scroll><legend class="dv-visually-hidden">What you are making</legend>${kinds.map((k, i) => `<label><input type="radio" name="kind" value="${esc(k.id)}" data-placeholder="${esc(k.placeholder)}" data-frames="${esc((k.frames || []).join(' '))}"${i ? '' : ' checked'}><span>${k.glyph}<b>${esc(k.name)}</b></span></label>`).join('')}</fieldset>`;
+    const first = kinds[0] || { frames: [] };
+    const frameMod = frames.length ? `<details class="dv-mod" data-mod="frame"><summary>${FRAME_ICON}<span class="dv-mod-k">Size</span><b data-mod-v>${esc((frames.find((f) => f.id === (first.frames || [])[0]) || frames[0]).name)}</b></summary>
+<div class="dv-mod-sheet" role="group" aria-label="Size"><header><b>Size</b><small>The frame the design is drawn and judged in.</small></header>
+${frames.map((f) => `<label class="dv-opt" data-frame="${esc(f.id)}"><input type="radio" name="frame" value="${esc(f.id)}" data-label="${esc(f.name)}"${f.id === (first.frames || [])[0] ? ' checked' : ''}><span><b>${esc(f.name)}</b><small>${Number(f.width)} × ${Number(f.height)}</small></span></label>`).join('')}</div></details>` : '';
+    const lookMod = look ? `<details class="dv-mod" data-mod="look"><summary><i class="dv-sw" style="${lookStyle(look)}" data-mod-sw></i><span class="dv-mod-k">Look</span><b data-mod-v>${esc(look.name)}</b></summary>
 <div class="dv-mod-sheet" role="group" aria-label="Look"><header><b>Look</b><small>Every take wears this theme. You can change it on the canvas.</small></header>
-<div class="dv-looks">${looks.map((t, i) => `<label class="dv-look"><input type="radio" name="themeId" value="${esc(t.id)}" data-label="${esc(t.name)}" data-sw="${swatch(t)}"${i ? '' : ' checked'}><span style="${swatch(t)}"><i aria-hidden="true"></i><b>${esc(t.name)}</b></span></label>`).join('')}</div>
-<a class="dv-mod-more" href="/themes">All ${themes.length} themes, or make your own</a></div></details>` : '';
+<div class="dv-looks">${looks.map((t, i) => `<label class="dv-look"><input type="radio" name="look" value="${esc(t.id)}" data-label="${esc(t.name)}" data-sw="${lookStyle(t)}"${i ? '' : ' checked'}><span style="${lookStyle(t)}"><i aria-hidden="true"></i><b>${esc(t.name)}</b></span></label>`).join('')}</div>
+<a class="dv-mod-more" href="/themes">All ${looksAll.length} looks, or make your own</a></div></details>` : '';
+    const modelRows = models.map((m) => `<label class="dv-opt dv-opt--check"><input type="checkbox" name="models" value="${esc(m.id)}" data-label="${esc(m.name)}"><span><b>${esc(m.name)}</b><small>${esc(maker(m.provider))}${m.price_in != null && m.price_out != null ? ` · ${money(m.price_in)} in, ${money(m.price_out)} out, per million tokens` : ''}</small></span></label>`).join('');
     const whoMod = `<details class="dv-mod" data-mod="who"><summary>${SPARK}<span class="dv-mod-k">Designer</span><b data-mod-v>${WHO[0].name}</b></summary>
-<div class="dv-mod-sheet" role="group" aria-label="Designer"><header><b>Designer</b><small>Who draws the three takes.</small></header>
-${WHO.map((w, i) => `<label class="dv-opt"><input type="radio" name="who" value="${w.id}" data-label="${esc(w.name)}"${i ? '' : ' checked'}><span><b>${esc(w.name)}</b><small>${esc(w.line)}</small></span></label>`).join('')}
+<div class="dv-mod-sheet" role="group" aria-label="Designer"><header><b>Designer</b><small>Who draws the takes.</small></header>
+<div class="dv-ways">${WHO.map((w, i) => `<label class="dv-opt"><input type="radio" name="who" value="${w.id}" data-label="${esc(w.name)}"${i ? '' : ' checked'}><span><b>${esc(w.name)}</b><small>${esc(w.line)}</small></span></label>`).join('')}</div>
+${models.length ? `<p class="dv-group-h">Or choose the models yourself<small>Up to ${Number(limits.models) || 4}, side by side. Prices are OpenVibe Exchange's.</small></p>
+<div class="dv-models" data-max="${Number(limits.models) || 4}">${modelRows}</div>
+<div class="dv-takes"><span><b>Takes from each</b><small>${Number(limits.takes_total) || 8} takes at most in one run</small></span><span class="dv-step"><button type="button" data-step="-1" aria-label="One take fewer">−</button><input type="number" name="takes" inputmode="numeric" min="${Number(takes.min) || 1}" max="${Number(takes.max) || 4}" value="${Number(takes.default) || 3}" data-total="${Number(limits.takes_total) || 8}" aria-label="Takes from each model"><button type="button" data-step="1" aria-label="One take more">+</button></span></div>` : ''}
 <a class="dv-mod-more" href="https://openvibe.exchange/models">Compare these models on OpenVibe Exchange</a></div></details>`;
-    const kindName = Object.fromEntries(MAKES.map((m) => [m.id, m]));
-    const themeName = Object.fromEntries(themes.map((t) => [t.id, t.name]));
+    const startMod = options ? `<details class="dv-mod" data-mod="start"><summary>${LINK_ICON}<span class="dv-mod-k">Start</span><b data-mod-v>Blank</b></summary>
+<div class="dv-mod-sheet" role="group" aria-label="Start from"><header><b>Start from a page</b><small>Paste a public address and the takes begin from what that page says and how it is laid out. Leave it empty to start blank.</small></header>
+<label class="dv-start"><span class="dv-visually-hidden">The page's address</span><input type="url" name="start_url" inputmode="url" autocomplete="off" placeholder="https://example.com/page" maxlength="2000"></label>
+<p class="dv-start-note">An earlier design can be the start too: open it and press Remix.</p></div></details>` : '';
+    const kindName = Object.fromEntries(kinds.map((k) => [k.id, k]));
+    const lookName = Object.fromEntries(looksAll.map((t) => [t.id, t.name]));
     const body = `<section class="dv-create"><h1>What will you design?</h1>
-<form method="post" action="/create" class="dv-composer" data-dv-composer>
-${kinds}
+<form method="post" action="/create" class="dv-composer" data-dv-composer${options ? ' data-api="/api/create"' : ''}>
+${kindRow}
 <label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
-<textarea id="dv-prompt" name="prompt" required maxlength="4000" placeholder="${esc(MAKES[0].placeholder)}"></textarea>
-<div class="dv-tray">${lookMod}${whoMod}<button type="submit" class="dv-go"><span>Create three takes</span>${ARROW}</button></div></form>
-<div class="dv-examples" aria-label="Try an example">${MAKES.map((m) => m.examples.map((x) => `<button type="button" data-example="${esc(x)}" data-kind="${m.id}">${m.glyph}<span>${esc(x)}</span></button>`).join('')).join('')}</div>
-${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map((d) => { const k = kindName[d.kind] || MAKES[0]; const bits = [k.name, themeName[d.themeId], d.status === 'running' ? 'Drawing now' : d.status === 'failed' ? 'Did not finish' : ago(d.createdAt)].filter(Boolean);
-        return `<li><a class="dv-rc" href="${esc(d.url)}"><span class="dv-rc-k" aria-hidden="true">${k.glyph}</span><span class="dv-rc-t"><b>${esc(d.prompt)}</b><small>${esc(bits.join(' · '))}</small></span></a></li>`; }).join('')}</ul></section>` : ''}</section>`;
+<textarea id="dv-prompt" name="prompt" required maxlength="${Number(limits.prompt) || 4000}" placeholder="${esc((kinds[0] || MAKES[0]).placeholder)}"></textarea>
+<div class="dv-tray">${frameMod}${lookMod}${whoMod}${startMod}<button type="submit" class="dv-go"><span data-go-label>Create three takes</span>${ARROW}</button></div>
+<p class="dv-cost" data-dv-cost role="status" hidden></p></form>
+<div class="dv-examples" aria-label="Try an example">${kinds.map((k) => (k.examples || []).map((x) => `<button type="button" data-example="${esc(x)}" data-kind="${esc(k.id)}">${k.glyph}<span>${esc(x)}</span></button>`).join('')).join('')}</div>
+${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map((d) => { const k = kindName[d.kind] || MAKE[d.kind] || MAKES[0]; const bits = [k.name, lookName[d.look] || lookName[d.themeId], d.model, d.status === 'running' ? 'Drawing now' : d.status === 'failed' ? 'Did not finish' : ago(d.createdAt)].filter(Boolean);
+        return `<li><a class="dv-rc" href="${esc(d.url)}"><span class="dv-rc-k" aria-hidden="true">${d.thumbnail ? `<img src="${esc(d.thumbnail)}" alt="" loading="lazy" decoding="async">` : k.glyph}</span><span class="dv-rc-t"><b>${esc(d.prompt)}</b><small>${esc(bits.join(' · '))}</small></span></a></li>`; }).join('')}</ul></section>` : ''}</section>`;
     return layout({ title: 'Create a design', path: '/create', body, active: '/create', scripts: ['js/design.js'] });
 }
 

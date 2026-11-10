@@ -82,10 +82,12 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
             assert.match(recent.text, /Mobile onboarding/);
             // The composer of choices (the owner, 11-10: "modular selection … different things and different models"):
             // what is made, who designs it, and the recent designs as cards that say what each is.
-            assert.deepEqual([...recent.text.matchAll(/name="kind" value="([a-z]+)"/g)].map((m) => m[1]), ['page', 'screen', 'component'], 'the three things that can be made');
+            const kindsShown = [...recent.text.matchAll(/name="kind" value="([a-z-]+)"/g)].map((m) => m[1]);
+            assert.deepEqual(kindsShown.slice(0, 3), ['page', 'screen', 'component'], 'the things that can be made, the first three first');
+            assert.ok(kindsShown.length === 3 || kindsShown.length === 7, 'three without the options, seven with them');
             assert.deepEqual([...recent.text.matchAll(/name="who" value="([a-z]+)"/g)].map((m) => m[1]), ['claude', 'sonnet', 'any', 'compare'], 'the four ways to pick who designs');
             assert.match(recent.text, /href="https:\/\/openvibe\.exchange\/models">Compare these models on OpenVibe Exchange<\/a>/, 'the models are compared on Exchange');
-            assert.match(recent.text, /<a class="dv-rc" href="\/d\/[^"]+"><span class="dv-rc-k" aria-hidden="true"><svg/, 'a recent design is a card with its kind drawn');
+            assert.match(recent.text, /<a class="dv-rc" href="\/d\/[^"]+"><span class="dv-rc-k" aria-hidden="true"><(?:svg|img src="\/api\/create\/designs\/)/, 'a recent design is a card with its picture (or its kind drawn where there is none)');
             assert.doesNotMatch(recent.text, /<section class="dv-recent"><h2>Your recent designs<\/h2><ul><li><a href=/, 'not a bare list of links');
         });
         await check('guest and signed-in studio HTML stay private without changing public pages', async () => {
