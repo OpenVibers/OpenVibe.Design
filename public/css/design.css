@@ -312,9 +312,12 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .dv-go:hover svg { transform: translateX(calc(3px * var(--ov-move, 1))); }
 .dv-go svg { transition: transform .25s cubic-bezier(.2, 1.4, .3, 1); }
 .dv-go:active { transform: scale(.96); }
-.dv-go[aria-busy="true"] { pointer-events: none; filter: saturate(.7); }
-.dv-go[aria-busy="true"] svg { animation: dvSpin .8s linear infinite; }
-@keyframes dvSpin { to { transform: rotate(360deg); } }
+/* Pressed: the button fills from the left and its arrow keeps stepping forward (nothing here spins). */
+.dv-go[aria-busy="true"] { pointer-events: none; position: relative; overflow: hidden; }
+.dv-go[aria-busy="true"]::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 26%, transparent), transparent); transform: translateX(-100%); animation: dvSweep 1.3s ease-in-out infinite; }
+.dv-go[aria-busy="true"] svg { animation: dvStep .7s ease-in-out infinite; }
+@keyframes dvSweep { to { transform: translateX(100%); } }
+@keyframes dvStep { 50% { transform: translateX(calc(5px * var(--ov-move, 1))); opacity: .6; } }
 /* Ideas to start from: those of the kind chosen above, each with its glyph. */
 .dv-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .dv-examples button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border: 1px solid var(--border); border-radius: 99px; padding: 0 14px 0 11px; background: var(--bg-card); color: var(--text-secondary); font: inherit; font-size: .86rem; cursor: pointer; transition: color .15s, border-color .15s, transform .12s; animation: dvIn .4s cubic-bezier(.2, .9, .3, 1.1) both; }
