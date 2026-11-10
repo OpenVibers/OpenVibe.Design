@@ -8,6 +8,16 @@
 .mx-wrap [hidden]{display:none!important}
 .mx-hero{display:grid;gap:8px;max-width:860px;margin:0 0 clamp(14px,2.4vw,24px)}
 .mx-eye{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent,#4f7cff)}
+/* The top shows what was chosen: the mark and the menu button, large, each with its name. No line naming the page. */
+.mx-won{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:560px;margin:0 0 6px}
+.mx-won-card{display:grid;justify-items:center;gap:10px;margin:0;padding:18px 10px 14px;border-radius:20px;border:1px solid color-mix(in srgb,var(--accent,#4f7cff) 38%,var(--mx-line));background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--accent,#4f7cff) 16%,transparent),transparent 70%),var(--mx-card);animation:mxWon .5s cubic-bezier(.2,.9,.3,1.15) both}
+.mx-won-card:nth-child(2){animation-delay:.08s}
+@keyframes mxWon{from{opacity:0;transform:translateY(calc(10px*var(--ov-move,1))) scale(.97)}}
+.mx-won-card figcaption{display:grid;gap:2px;text-align:center}
+.mx-won-card figcaption b{font-family:var(--mx-face);font-size:15px}
+.mx-won-card figcaption span{font-size:12px;color:var(--mx-muted)}
+.mx-won-btn{display:grid;place-items:center;width:72px;height:53px;color:var(--text-primary,#e6edf7)}
+.mx-won-btn svg{fill:currentColor}.mx-won-bar{fill:none;stroke:currentColor;stroke-width:1.9}.mx-won-a{fill:var(--accent-light,#60a5fa)}
 .mx-hero h1{margin:0;font-family:var(--mx-face);font-weight:900;font-size:clamp(26px,4.2vw,46px);line-height:1.05;letter-spacing:-.02em;text-wrap:balance}
 .mx-lede,.mx-how{margin:0;max-width:72ch;font-size:clamp(14.5px,1.6vw,16px);line-height:1.55;color:var(--text-secondary,#b4bfcc)}
 .mx-lede b,.mx-how b{color:var(--text-primary,#e8edf3)}

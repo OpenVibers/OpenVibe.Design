@@ -808,10 +808,13 @@ function explorePage({ tally = null, wild = false } = {}) {
     const body = `<div class="mx-wrap" data-mx data-mx-fontcss="${esc(FONT_CSS)}">
 <svg class="mx-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>${today.defs}</defs><g id="art-pair-today">${today.body}</g></svg>
 <noscript><style>.mx-panel[hidden]{display:block!important}</style></noscript>
-<header class="mx-hero">
-<p class="mx-eye">OpenVibe logo vote</p>
-<h1>Which logo should OpenVibe use?</h1>
-<p class="mx-lede">Tap every logo you like, from both kinds if you want. Then pick a menu button and a font. Votes count right away.</p>
+<header class="mx-hero mx-hero--chosen">
+<div class="mx-won" aria-label="Chosen on 10 November 2026">
+<figure class="mx-won-card"><span class="ov-mark" data-size="96" data-wide></span><figcaption><b>The Pair, wide gap</b><span>P07 · the mark on every site</span></figcaption></figure>
+<figure class="mx-won-card"><span class="mx-won-btn" aria-hidden="true"><svg viewBox="0 0 24 24" width="56" height="56"><rect class="mx-won-bar" x="4" y="5.2" width="16" height="5.6" rx="2.8"/><circle class="mx-won-a" cx="7.4" cy="8" r="1.15"/><rect x="4.2" y="14.6" width="4" height="4" rx="1.3"/><rect class="mx-won-a" x="10" y="14.6" width="4" height="4" rx="1.3"/><rect x="15.8" y="14.6" width="4" height="4" rx="1.3"/></svg></span><figcaption><b>Search and apps</b><span>M57 · the menu button, and its close</span></figcaption></figure>
+</div>
+<h1>The mark and the menu button were chosen here</h1>
+<p class="mx-lede">Both are in the bar above this page now. The font is still open: tap the ones you like. Votes count right away, and the logos and buttons stay open to change your mind.</p>
 </header>
 ${tallyBlock(tally, { wild })}
 <nav class="mx-choose" role="tablist" aria-label="What to choose">
