@@ -40,6 +40,9 @@ const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
+const { createCreateOptions } = require('./create/options');
+const { createCreateApi } = require('./create/api');
+const { createBalanceReader } = require('./create/billing');
 const { createComponentRegistry } = require('./components/store');
 const { createSharing, describeRef } = require('./sharing');
 const { createPageRoutes } = require('./http/pages');
@@ -100,6 +103,10 @@ async function createApp(opts = {}) {
     // check every read path asks, and the uniform API below. Guest designs keep their secret edit key.
     const sharing = opts.sharing || createSharing({ db: s.db, config, log, now });
     const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now, sharing });
+    // The create page's options, its estimate and its person's Balance, read from the services that own them
+    // (AI's Exchange catalogue and choices, Network's themes, Billing's Balance), never a second hand-kept list.
+    const balance = opts.balance || createBalanceReader({ config, fetchImpl, log });
+    const createOptions = opts.createOptions || createCreateOptions({ config, ai, catalog, fetchImpl, log, now });
     // Publishing a design on openvibe.space (open item D8).
     const publisher = opts.publisher || require('./publish').createPublisher({ config, fetchImpl, log });
     const accountData = accountDataLib.create({ db: s.db, log });
@@ -115,7 +122,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker, registry,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker, registry, createOptions, balance,
         random: opts.random || Math.random,
     };
 
@@ -286,6 +293,7 @@ async function createApp(opts = {}) {
     // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
+    app.use('/api/create', createCreateApi(ctx));
     app.use('/api/v1/arena', createArenaApi(ctx));
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
