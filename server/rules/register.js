@@ -70,7 +70,7 @@ const RULES = Object.freeze([
     R('a-handle-is-written-with-its-at', 'words', 'A link to an @address says @name.',
         'Where a row, a card or a link opens an /@name address and names it by the handle, the handle is written @name: the words are the address. A display name stays a display name, with the @handle on the second line where the row has one. Not in a chat line’s author and not in running text a person wrote.',
         '2026-11-10', 'A profile listed "Maticus · Live channel" for a card that opens openvibe.live/@Maticus.',
-        [{ label: 'Words', href: '/words' }], ['OpenVibe.Network test: public-profile']),
+        [{ label: 'Patterns', href: '/patterns' }], ['OpenVibe.Network test: public-profile']),
     R('a-computer-is-added-once', 'products', 'A computer is added in one place, and picked everywhere.',
         'A person adds a computer at openvibe.link. Every other site picks from the person’s Link machines with the one shared picker and never asks anyone to type a machine’s id. A site may show which machine it uses and what it is doing there; it keeps no list of its own, no "add a machine" of its own and no machines tab.',
         '2026-11-10', 'Actor asked for a "Link machine ID" in a text field, beside other sites with machine pages of their own.',
