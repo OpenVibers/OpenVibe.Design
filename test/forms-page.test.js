@@ -26,8 +26,8 @@ const { ATTRS } = require('../server/views/forms');
             assert.match(html, /\/js\/forms-page\.js/);
             assert.match(html, /data-ov-forms=&quot;off&quot;|data-ov-forms="off"/, 'how a site keeps the browser\'s own');
         });
-        await check('found: the menu, the sitemap and llms.txt', async () => {
-            assert.ok((await t.get('/')).text.includes('/forms'), 'the menu');
+        await check('found: the See door, the sitemap and llms.txt', async () => {
+            assert.ok((await t.get('/see')).text.includes('/forms'), 'the See door');
             assert.ok((await t.get('/sitemap.xml')).text.includes('https://openvibe.design/forms'));
             assert.ok((await t.get('/llms.txt')).text.includes('/forms'));
         });

@@ -2,6 +2,7 @@
 
 /**
  * The pages:
+ *   /see, /make, /use       the doors: their pages as cards in order, each from its own lede (views/doors.js)
  *   /                       the theme catalogue's front door
  *   /themes                 the theme editor and gallery (/studio answers 301)
  *   /rules                  the decision register (its Markdown twin /rules.md; data at /api/v1/rules)
@@ -70,6 +71,11 @@ function createPageRoutes(ctx) {
         const subject = viewer && viewer.kind === 'user' ? viewer.subject : null;
         return subject ? await arena.counts(subject).catch(() => null) : null;
     };
+
+    // ── The four doors: the site's whole bar, and where every page says it sits (server/views/doors.js) ──
+    r.get('/see', (req, res) => page(res, 200, require('../views/doors').doorPage('see'), req.viewer));
+    r.get('/make', (req, res) => page(res, 200, require('../views/doors').doorPage('make'), req.viewer));
+    r.get('/use', (req, res) => page(res, 200, require('../views/doors').doorPage('use'), req.viewer));
 
     // ── Production patterns: one data-backed page and generated native spec per pattern ──
     // ── The OpenVibe mark, and its files ──

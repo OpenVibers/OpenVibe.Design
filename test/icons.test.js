@@ -253,7 +253,9 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
         await check('it is in the navbar, the sitemap and llms.txt', async () => {
             assert.ok((await t.get('/sitemap.xml')).text.includes('/icons</loc>'), 'sitemap');
             assert.ok((await t.get('/llms.txt')).text.includes('/icons'), 'llms.txt');
-            assert.ok(/"href":"\/icons"[^}]*"active":true/.test((await t.get('/icons')).text), 'the navbar marks it');
+            const page = await t.get('/icons');
+            assert.ok(/"href":"\/make"[^}]*"active":true/.test(page.text), 'the bar marks the Make door');
+            assert.match(page.text, /<a href="\/make">Make<\/a>[\s\S]*?aria-current="page">Icons</, 'and the breadcrumb says where it sits');
         });
     } finally {
         await t.close();

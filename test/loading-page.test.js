@@ -32,8 +32,8 @@ const { SHAPES } = require('../server/views/loading');
             assert.match(js, /window\.OpenVibeLoading\.mount\(screen/);
             assert.match(js, /nav\.busy\(true\)[\s\S]*nav\.busy\(false\)/);
         });
-        await check('found: the menu, the sitemap and llms.txt', async () => {
-            assert.ok((await t.get('/')).text.includes('/loading'), 'the menu');
+        await check('found: the See door, the sitemap and llms.txt', async () => {
+            assert.ok((await t.get('/see')).text.includes('/loading'), 'the See door');
             assert.ok((await t.get('/sitemap.xml')).text.includes('https://openvibe.design/loading'));
             assert.ok((await t.get('/llms.txt')).text.includes('/loading'));
         });
