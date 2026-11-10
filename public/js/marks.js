@@ -467,9 +467,13 @@
             var mb = e.target.closest('[data-mb]');
             if (mb) {
                 var open = !mb.classList.contains('is-open');
-                mb.classList.toggle('is-open', open);
-                mb.setAttribute('aria-pressed', open ? 'true' : 'false');
-                if (!open) play(mb);
+                // One press opens it everywhere on its card: the big one (with the menu it opens behind it) and both bars.
+                var card = mb.closest('.mb-card');
+                (card ? all('[data-mb]', card) : [mb]).forEach(function (b) {
+                    b.classList.toggle('is-open', open);
+                    b.setAttribute('aria-pressed', open ? 'true' : 'false');
+                    if (!open) play(b);
+                });
                 return;
             }
             var p = e.target.closest('[data-pick]');

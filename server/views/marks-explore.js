@@ -10,7 +10,8 @@
  *
  *   L01–L72  the Loop: a ring opened at the top with the V folded into it
  *   P01–P60  the Pair: a ring O and a V side by side, the ground showing where they cross
- *   M01–M50  the menu button: search and every OpenVibe site, beside the name on every site
+ *   M01–M61  the menu button: search and every OpenVibe site, beside the name on every site (M51–M61, 2026-11-10:
+ *            drawn from the logo, and the menu in miniature; shown first)
  *
  * Each tab is sorted into rows by idea (proportion, shape, construction, colour, app icon…), so a row shows what
  * changes. Every mark is drawn large, beside a site's name (OpenVibe.Live, .Video, .Pics…, in a font the reader picks),
@@ -584,6 +585,26 @@ const MENU_ROWS = [
         ['Tiles in a circle', 'four tiles in a ring', 'bloom', '', ring(12, 12, 10, ' mb-faint', 0, 1.6) + tiles(2, 4.4, 1.6, 1.2, 1)],
         ['Chevron in a circle', 'a V pointing down; open, it flips', 'nod', 'flip', ring(12, 12, 8.8, ' mb-faint', 0, 1.8) + `<g class="mb-g">${line('M8.2 10.4 12 14.2 15.8 10.4', ' mb-sa', 1, 2.4)}</g>`],
     ] },
+    // ── Eleven more (the owner, 2026-11-10: "generate more icons for the menu, considering what the menu opens… and
+    // considering it'll turn into a close button… and OpenVibe in general, try and theme it better"). Two families made
+    // for this button and no other: drawn from the logo, so the × is already in them (a V is the top half of an ×);
+    // and the menu itself in miniature (search on top, your apps, you in the middle). They are appended, so M01–M50
+    // keep their numbers and the votes cast for them; `lead` shows these two rows first.
+    { title: 'From the logo', line: 'the O and the V as a button; most open into an × of their own', lead: true, items: [
+        ['V in the O', 'the mark in a ring; open, the V grows through into an ×', 'pop', 'grow', ring(12, 12, 9.4, ' mb-faint', 0, 1.9) + line('M7.5 7.5L16.5 16.5', ' mb-h', 1, 2.5) + line('M16.5 7.5L7.5 16.5', ' mb-h', 2, 2.5)],
+        ['The V and its dot', 'a V with the O as a lit dot; open, the dot rises to the middle of an ×', 'nod', 'growdot', line('M6.4 6.4L17.6 17.6', ' mb-h', 0, 2.8) + line('M17.6 6.4L6.4 17.6', ' mb-h', 1, 2.8) + dot(12, 18.4, 2.3, ' mb-a mb-o', 2)],
+        ['Two Vs', 'a V over its reflection; open, they meet point to point', 'apart', 'meet', line('M6.8 4.4L12 9.6L17.2 4.4', ' mb-sa mb-u', 0, 2.6) + line('M6.8 19.6L12 14.4L17.2 19.6', ' mb-d', 1, 2.6)],
+        ['Spark', 'the spark you ask Vibe with; open, an ×', 'twinkle', '', fill(spark(12, 12.4, 8.8), '', 0) + fill(spark(19, 5, 2.9), ' mb-a', 1)],
+        ['Orbit', 'you, and something circling you', 'orbit', '', ring(12, 12, 8.4, ' mb-faint', 0, 1.7) + dot(12, 12, 2.4, '', 0) + `<g class="mb-orb">${dot(...polar(8.4, -45), 2.3, ' mb-a', 1)}</g>`],
+        ['Today, in the logo\'s colours', 'the nine dots, cyan into blue into violet', 'ripple', 'diamond', `<g class="mb-g">${[[12, 12, 0], [12, 5, 1], [19, 12, 1], [12, 19, 1], [5, 12, 1], [5, 5, 2], [19, 5, 2], [19, 19, 2], [5, 19, 2]].map(([x, y, n]) => dot(x, y, n ? 2.15 : 2.5, ` mb-r${n} ${x < 12 ? 'mb-c1' : x > 12 ? 'mb-c3' : 'mb-a'}`, n)).join('')}</g>`],
+    ] },
+    { title: 'What it opens', line: 'the menu itself, small: search, your apps, you', lead: true, items: [
+        ['Search and apps', 'the search bar over three apps', 'wave', '', frame(4, 5.2, 16, 5.6, 2.8, '', 0, 1.9) + dot(7.4, 8, 1.15, ' mb-a', 0) + box(4.2, 14.6, 4, 4, 1.3, '', 1) + box(10, 14.6, 4, 4, 1.3, ' mb-a', 2) + box(15.8, 14.6, 4, 4, 1.3, '', 3)],
+        ['You and your apps', 'you in the middle, eight apps round you; open, an × of dots', 'spin', 'gather', `<g class="mb-g">${dot(12, 12, 2.7, ' mb-a mb-r0', 0)}${[0, 1, 2, 3, 4, 5, 6, 7].map((k) => dot(...polar(8, k * 45), 1.45, k % 2 ? ' mb-r2' : ' mb-r1', 1 + (k % 2))).join('')}</g>`],
+        ['The V in the grid', 'the launcher\'s nine dots with a V lit in them; open, an × of dots', 'ripple', 'vgrid', `<g class="mb-g">${[[12, 12, 0, 1], [12, 5, 1, 0], [19, 12, 1, 0], [12, 19, 1, 0], [5, 12, 1, 0], [5, 5, 2, 1], [19, 5, 2, 1], [19, 19, 2, 0], [5, 19, 2, 0]].map(([x, y, n, lit]) => dot(x, y, n ? 2.1 : 2.4, ` mb-r${n}${lit ? ' mb-a' : ' mb-soft'}`, n)).join('')}</g>`],
+        ['Petals', 'four petals round a lit centre; open, they turn into an ×', 'bloom', 'plus', `<g class="mb-g">${box(10.4, 3, 3.2, 7.2, 1.6, '', 1)}${box(13.8, 10.4, 7.2, 3.2, 1.6, '', 2)}${box(10.4, 13.8, 3.2, 7.2, 1.6, '', 3)}${box(3, 10.4, 7.2, 3.2, 1.6, '', 4)}${dot(12, 12, 1.5, ' mb-a', 0)}</g>`],
+        ['Home screen', 'six apps and a dock, as on a phone', 'bloom', '', [0, 1].map((r) => [0, 1, 2].map((c) => box(4.2 + c * 5.8, 4 + r * 5.8, 4, 4, 1.3, r === 0 && c === 2 ? ' mb-a' : '', r + c)).join('')).join('') + box(5.2, 16.8, 13.6, 2.8, 1.4, ' mb-soft', 3)],
+    ] },
 ];
 
 // ── The page ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -645,11 +666,14 @@ function markCard(code, kind, [name, line_, spec, lock, motion], i) {
 }
 
 const menuSvg = (anim, own, parts, size) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" data-anim="${anim}"${own ? ` data-own="${own}"` : ''}><g class="mb-i">${parts}</g>${own ? '' : '<g class="mb-x"><path d="M7 7L17 17M17 7L7 17"/></g>'}</svg>`;
+// What the button opens, behind it on the stage: the menu in small (its search bar, its three tabs, your apps). Pressed,
+// the button goes to the menu's top right and is its close button (marks.css .mb-peek); it is a picture, not a control.
+const PEEK = `<span class="mb-peek" aria-hidden="true"><i class="mb-peek-s"></i><span class="mb-peek-t">${[0, 1, 2].map((k) => `<i style="--i:${k + 1}"></i>`).join('')}</span><span class="mb-peek-g">${[212, 268, 28, 205, 152, 318, 48, 172].map((hue, k) => `<i style="--i:${k + 3};--h:${hue}"></i>`).join('')}</span></span>`;
 function menuCard(code, [name, line_, anim, own, parts], i) {
     const bar = (tone) => `<div class="mb-nav mb-${tone}">${useOf('art-pair-today', 22)}${word()}<button type="button" class="mb-btn" data-mb aria-pressed="false" aria-label="${code} at its real size: press to open">${menuSvg(anim, own, parts, 22)}</button></div>`;
     return `<li class="mx-card mb-card" id="${code}" data-code="${code}" style="${delay(i)}">
 <button type="button" class="mx-pick" data-pick="${code}" aria-pressed="false" aria-label="Pick ${code}"></button>
-<div class="mx-stage"><button type="button" class="mb-btn mb-big" data-mb aria-pressed="false" aria-label="${code} ${esc(name)}: press to open it">${menuSvg(anim, own, parts, 84)}</button></div>
+<div class="mx-stage">${PEEK}<button type="button" class="mb-btn mb-big" data-mb aria-pressed="false" aria-label="${code} ${esc(name)}: press to open it">${menuSvg(anim, own, parts, 84)}</button></div>
 <div class="mb-bars">${bar('dark')}${bar('light')}</div>
 <p class="mx-name"><b>${code}</b> ${esc(name)}</p>
 <p class="mx-line">${esc(line_)}</p>
@@ -696,11 +720,13 @@ function fontCard(code, [name, line_, stack, weight], i) {
 const pad = (n) => String(n).padStart(2, '0');
 function panel(id, kind, rows, label, hidden) {
     let n = 0;
-    const body = rows.map((row) => {
+    // A row marked `lead` is shown first; its numbers still come from its place in the list, so no number ever moves.
+    const sections = rows.map((row) => {
         const first = n + 1;
         const cards = row.items.map((item) => { n += 1; const code = `${kind}${pad(n)}`; return kind === 'M' ? menuCard(code, item, n - 1) : kind === 'F' ? fontCard(code, item, n - 1) : markCard(code, kind, item, n - 1); }).join('');
         return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small><span class="mx-swipe" aria-hidden="true">swipe →</span></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
-    }).join('');
+    });
+    const body = rows.map((row, k) => [row.lead ? 0 : 1, k]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(([, k]) => sections[k]).join('');
     const NEXT = {
         loop: [['pair', 'See the Pair', 'the other kind'], ['menu', 'Next: menu button', 'step 2']],
         pair: [['loop', 'See the Loop', 'the other kind'], ['menu', 'Next: menu button', 'step 2']],
@@ -715,7 +741,7 @@ function panel(id, kind, rows, label, hidden) {
         loop: [1, 'Pick a logo: the Loop', 'Tap the ones you like. Look at the Pair too.'],
         pair: [1, 'Pick a logo: the Pair', 'Tap the ones you like. Look at the Loop too.'],
         wild: [1, 'Pick a logo: the Wildcards', 'The O and the V, forty other ways. Each moves, shows a status, and wears the name its own way.'],
-        menu: [2, 'Pick a menu button', 'Tap one to see it open.'],
+        menu: [2, 'Pick a menu button', 'Tap one: it opens the menu and becomes its close button.'],
         font: [3, 'Pick a font', 'Tap the one that looks right.'],
     }[id];
     const head = `<div class="mx-stephead"><span class="mx-stepn mx-stepn-lg" aria-hidden="true">${STEP[0]}</span><div><b>Step ${STEP[0]} of 3 · ${esc(STEP[1])}</b><small>${esc(STEP[2])}</small></div></div>`;
@@ -798,7 +824,7 @@ ${wild ? `<span class="mx-or" aria-hidden="true">+</span>
 ${tab('wild', 'The Wildcards', 'OV, forty other ways', `<svg viewBox="0 0 100 100" width="58" height="58" aria-hidden="true"><defs>${wildEx.defs}</defs>${wildEx.body}</svg>`, `W01–W${pad(WN)} · ${WN} ideas`)}` : ''}
 </div>
 <p class="mx-q" role="presentation"><span class="mx-qn">2</span> <b>Pick a menu button</b> <small>it sits next to the logo</small></p>
-${tab('menu', 'The menu button', 'The button next to the logo', `<span class="mb-btn mb-tabbtn">${menuSvg(m1[2], m1[3], m1[4], 30)}</span>`, 'M01–M50', false, true)}
+${tab('menu', 'The menu button', 'The button next to the logo', `<span class="mb-btn mb-tabbtn">${menuSvg(m1[2], m1[3], m1[4], 30)}</span>`, `M01–M${pad(MENU_ROWS.reduce((t, r) => t + r.items.length, 0))}`, false, true)}
 <p class="mx-q" role="presentation"><span class="mx-qn">3</span> <b>Pick a font</b> <small>for the name</small></p>
 ${tab('font', 'The font', 'The letters of the name', '<span class="fx-tabart" aria-hidden="true">Aa</span>', `F01–F${pad(FONTS.length)}`, false, true)}
 </nav>
@@ -817,7 +843,7 @@ ${wild ? `<a href="#wild" data-mx-go="wild" class="mx-step">${miniArt('W01', 20,
 ${panel('loop', 'L', LOOP_ROWS, `The Loop: ${LOOPS.length} takes`, false)}
 ${panel('pair', 'P', PAIR_ROWS, `The Pair: ${PAIRS.length} takes`, true)}
 ${wild ? panel('wild', 'W', WILD_ROWS, `The Wildcards: ${WN} ideas`, true) : ''}
-${panel('menu', 'M', MENU_ROWS, 'The menu button: fifty ideas', true)}
+${panel('menu', 'M', MENU_ROWS, `The menu button: ${MENU_ROWS.reduce((t, r) => t + r.items.length, 0)} ideas`, true)}
 ${panel('font', 'F', FONT_ROWS, 'The font: twelve faces', true)}
 <div class="mx-nudge" data-mx-nudge role="status" hidden><span data-mx-nudge-text></span><a href="#menu" data-mx-go="menu" class="mx-btn" data-mx-nudge-go>Go to step 2 →</a><button type="button" class="mx-btn mx-btn-quiet" data-mx-nudge-close aria-label="Close">✕</button></div>
 <p class="mx-fine">Nothing changes on the sites until a logo wins. <a href="/brand">Today&rsquo;s logo</a>.</p>
