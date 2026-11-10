@@ -60,7 +60,7 @@ const balance = { read: async () => ({ currency: 'USD', balance_usd: 2, held_usd
             assert.ok(signedOutOptions.kinds.some((k) => k.id === 'component' && k.frames.includes('desktop')));
             assert.ok(signedOutOptions.frames.some((f) => f.id === 'email' && f.width === 600));
             assert.ok(signedOutOptions.looks.some((l) => l.source === 'theme' && l.id === 'paper'));
-            const alpha = signedOutOptions.models.find((m) => m.id === 'alpha:one');
+            const alpha = signedOutOptions.models.find((m) => m.id === 'alpha/one');
             assert.ok(alpha, 'the runnable catalogue model is listed');
             assert.equal(alpha.price_in, 1);
             assert.equal(alpha.price_out, 2);
@@ -74,14 +74,14 @@ const balance = { read: async () => ({ currency: 'USD', balance_usd: 2, held_usd
             const r = await t.get('/api/create/options', { as: user });
             assert.equal(r.status, 200, r.text);
             const body = r.json();
-            assert.ok(body.models.some((m) => m.id === 'secret:abliterated' && m.adult === true), 'AI says this person may use 18+');
+            assert.ok(body.models.some((m) => m.id === 'secret/abliterated' && m.adult === true), 'AI says this person may use 18+');
             assert.ok(body.models.some((m) => m.id === 'keys:my/model' && m.price_in === 0));
             assert.ok(body.models.some((m) => m.id === 'machines:dev_1:local/model' && m.price_in === 0));
         });
 
         await check('the estimate prices the chosen models and says whether Balance covers it', async () => {
             const r = await t.get('/api/create/estimate', { as: user, origin: 'https://openvibe.design',
-                json: { prompt: 'A pricing card', kind: 'component', frame: 'desktop', models: ['alpha:one', 'beta:two'] } });
+                json: { prompt: 'A pricing card', kind: 'component', frame: 'desktop', models: ['alpha/one', 'beta/two'] } });
             assert.equal(r.status, 200, r.text);
             const body = r.json();
             assert.equal(body.currency, 'USD');
@@ -95,7 +95,7 @@ const balance = { read: async () => ({ currency: 'USD', balance_usd: 2, held_usd
         });
 
         await check('two takes per model doubles the estimate through the same function', async () => {
-            const body = { prompt: 'A pricing card', kind: 'component', frame: 'desktop', models: ['alpha:one', 'beta:two'] };
+            const body = { prompt: 'A pricing card', kind: 'component', frame: 'desktop', models: ['alpha/one', 'beta/two'] };
             const one = (await t.get('/api/create/estimate', { as: user, origin: 'https://openvibe.design', json: body })).json();
             const two = (await t.get('/api/create/estimate', { as: user, origin: 'https://openvibe.design',
                 json: { ...body, takes: 2 } })).json();
@@ -105,7 +105,7 @@ const balance = { read: async () => ({ currency: 'USD', balance_usd: 2, held_usd
 
         await check('signed out estimate answers without a Balance', async () => {
             const r = await t.get('/api/create/estimate', { origin: 'https://openvibe.design',
-                json: { prompt: 'A pricing card', kind: 'component', models: ['alpha:one'] } });
+                json: { prompt: 'A pricing card', kind: 'component', models: ['alpha/one'] } });
             assert.equal(r.status, 200, r.text);
             const body = r.json();
             assert.ok(body.total_usd > 0);
@@ -117,11 +117,11 @@ const balance = { read: async () => ({ currency: 'USD', balance_usd: 2, held_usd
         await check('a component with two models returns two takes that record their model', async () => {
             const r = await t.get('/api/create', { as: user, origin: 'https://openvibe.design',
                 json: { prompt: 'A pricing card', kind: 'component', frame: 'desktop', look: 'paper',
-                    models: ['alpha:one', 'beta:two'] } });
+                    models: ['alpha/one', 'beta/two'] } });
             assert.equal(r.status, 201, r.text);
             created = r.json();
             assert.equal(created.takes.length, 2);
-            assert.deepEqual(created.takes.map((x) => x.modelId).sort(), ['alpha:one', 'beta:two']);
+            assert.deepEqual(created.takes.map((x) => x.modelId).sort(), ['alpha/one', 'beta/two']);
             assert.deepEqual(created.takes.map((x) => x.model).sort(), ['one', 'two']);
             const row = await t.store.db.maybe('SELECT * FROM designs WHERE id=$1', [created.design.id]);
             assert.equal(row.kind, 'component');

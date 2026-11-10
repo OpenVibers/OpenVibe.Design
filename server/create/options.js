@@ -85,13 +85,14 @@ function createCreateOptions({ config = {}, ai = null, catalog, fetchImpl = glob
      */
     function join(routes, docs) {
         const models = Array.isArray(docs && docs.models) ? docs.models.filter((m) => !m.kind || m.kind === 'chat') : [];
-        const byOffer = new Map();
-        const byModel = new Map();
-        for (const doc of models) {
-            for (const offer of (doc.offers || [])) {
-                byOffer.set(`${offer.provider}|${offer.model || ''}`, { doc, offer });
-                if (offer.model) byModel.set(String(offer.model), { doc, offer });
-            }
+        const routeList = Array.isArray(routes) ? routes.filter((r) => r && r.provider) : [];
+        const routeByOffer = new Map();
+        const routeByModel = new Map();
+        for (const route of routeList) {
+            const provider = String(route.provider).trim();
+            const model = route.model != null ? String(route.model).trim() : '';
+            routeByOffer.set(`${provider}|${model}`, { provider, model: model || null });
+            if (model) routeByModel.set(model, { provider, model });
         }
         const out = [];
         const seen = new Set();
@@ -100,50 +101,50 @@ function createCreateOptions({ config = {}, ai = null, catalog, fetchImpl = glob
             seen.add(entry.id);
             out.push(entry);
         };
-        const list = Array.isArray(routes) ? routes : [];
-        if (list.length) {
-            for (const route of list) {
-                const provider = String((route && route.provider) || '').trim();
-                const model = route && route.model != null ? String(route.model).trim() : null;
-                if (!provider) continue;
-                const match = byOffer.get(`${provider}|${model || ''}`) || (model ? byModel.get(model) : null) || null;
-                const doc = match && match.doc;
-                const offer = (match && match.offer) || (doc && bestOfferOf(doc)) || null;
-                const prices = priceOf(offer);
-                add({
-                    id: model ? `${provider}:${model}` : provider,
-                    name: (doc && doc.name) || model || provider,
-                    provider,
-                    model,
-                    price_in: prices.price_in,
-                    price_out: prices.price_out,
-                    note: noteOf(offer, provider),
-                    exchange_url: doc ? `${EXCHANGE_ORIGIN}/models/${String(doc.slug).split('/').map(encodeURIComponent).join('/')}` : null,
-                    adult: Boolean(doc && doc.uncensored),
-                    source: 'exchange',
-                    pin: true,
-                });
-            }
-        }
-        if (!out.length) {
-            // AI's route list is the authority; when it cannot be read, the catalogue still gives the page
-            // something truthful to show (the run may re-route, and the take records what actually answered).
-            for (const doc of models) {
-                const offer = bestOfferOf(doc);
+        const pageOf = (doc) => `${EXCHANGE_ORIGIN}/models/${String(doc.slug).split('/').map(encodeURIComponent).join('/')}`;
+
+        // The Exchange catalogue is the list. A doc whose offer AI's route lists can be pinned to that offer;
+        // one AI does not list is still offered, as a soft preference (the run may re-route, and the take
+        // records the model that actually answered).
+        for (const doc of models) {
+            const offers = Array.isArray(doc.offers) ? doc.offers.filter(Boolean) : [];
+            const best = bestOfferOf(doc);
+            let pin = null;
+            for (const offer of [best, ...offers]) {
                 if (!offer) continue;
-                const prices = priceOf(offer);
+                pin = routeByOffer.get(`${offer.provider}|${offer.model || ''}`) || (offer.model ? routeByModel.get(String(offer.model)) : null) || null;
+                if (pin) break;
+            }
+            const used = pin || best;
+            if (!used) continue;
+            const prices = priceOf(best);
+            add({
+                id: doc.slug || doc.canonical || `${used.provider}:${used.model || ''}`,
+                name: doc.name || used.model || used.provider,
+                provider: pin ? pin.provider : (used.provider || null),
+                model: pin ? pin.model : (used.model || null),
+                price_in: prices.price_in,
+                price_out: prices.price_out,
+                note: noteOf(best, pin ? pin.provider : used.provider),
+                exchange_url: doc.slug ? pageOf(doc) : null,
+                adult: Boolean(doc.uncensored),
+                source: 'exchange',
+                pin: Boolean(pin),
+                prefer: pin ? { provider: pin.provider, model: pin.model } : (used.model ? { model: used.model } : null),
+            });
+        }
+        // No catalogue (AI did not answer): the runnable route offers still give the page something truthful.
+        if (!out.length) {
+            for (const route of routeList) {
                 add({
-                    id: `${offer.provider}:${offer.model || ''}`,
-                    name: doc.name || offer.model,
-                    provider: offer.provider,
-                    model: offer.model || null,
-                    price_in: prices.price_in,
-                    price_out: prices.price_out,
-                    note: noteOf(offer, offer.provider),
-                    exchange_url: `${EXCHANGE_ORIGIN}/models/${String(doc.slug).split('/').map(encodeURIComponent).join('/')}`,
-                    adult: Boolean(doc.uncensored),
-                    source: 'exchange',
-                    pin: true,
+                    id: `${route.provider}:${route.model || ''}`,
+                    name: route.model || route.provider,
+                    provider: route.provider,
+                    model: route.model || null,
+                    price_in: null, price_out: null,
+                    note: 'Managed by OpenVibe.AI', exchange_url: null, adult: false,
+                    source: 'exchange', pin: true,
+                    prefer: route.model ? { provider: route.provider, model: route.model } : { provider: route.provider },
                 });
             }
         }
