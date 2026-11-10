@@ -97,7 +97,7 @@ async function resolvePlan(body = {}, ctx = {}) {
     let legacy = false;
     const slots = [];
 
-    const preferOf = (model) => (model.provider && model.model ? { provider: model.provider, model: model.model } : model.model ? { model: model.model } : null);
+    const preferOf = (model) => model.prefer || (model.provider && model.model ? { provider: model.provider, model: model.model } : model.model ? { model: model.model } : null);
 
     if (ids.length) {
         if (ids.length > options.limits.models) throw fail(422, 'create.models', `Choose at most ${options.limits.models} models.`);
