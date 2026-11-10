@@ -110,6 +110,22 @@
             own.forEach(function (c) { if (c.hasAttribute('data-mx-hid')) { c.style.display = c.getAttribute('data-mx-hid'); c.removeAttribute('data-mx-hid'); } });
             return null;
         }
+        // A class is set only when it changes (this page watches these elements; an unchanged write would call it back).
+        function flag(el, cls, on) { if (el.classList.contains(cls) !== !!on) el.classList.toggle(cls, !!on); }
+        // The close buttons the menu button becomes (the owner, 11-10: "it should change the close button and on the
+        // other… then I can choose which one I like most"): the menu's own and the Dock's wear the pick, open, over
+        // their own drawing, which stays in place unseen (the Dock measures it to start on the bar's button).
+        function wearClose(src, code) {
+            all('.ovs-orb, .ovdk-orbx').forEach(function (host) {
+                var mine = host.querySelector(':scope > .mx-navmenu');
+                if (!src) { if (mine) mine.parentNode.removeChild(mine); flag(host, 'mx-skinned', false); return; }
+                if (!mine) { mine = document.createElement('span'); mine.className = 'mx-navmenu mb-btn'; host.appendChild(mine); }
+                if (mine.getAttribute('data-code') !== code) { mine.innerHTML = src.outerHTML; mine.setAttribute('data-code', code); }
+                flag(host, 'mx-skinned', true);
+                var dock = host.closest('.ovdk');
+                flag(mine, 'is-open', dock ? !dock.hidden && !host.classList.contains('is-from') : host.classList.contains('is-x'));
+            });
+        }
         function navPreview() {
             var bar = document.querySelector('.openvibe-navbar');
             var brand = bar && bar.querySelector('.openvibe-navbar-brand');
@@ -125,18 +141,24 @@
                 } : null);
                 if (mark) mark.firstChild.setAttribute('href', '#' + navRef);
             }
-            var orb = bar.querySelector('.ovnav-orb');
+            // Every menu button the bar has wears the pick (a phone shows the one at the bar's right end, a computer the
+            // one by the name; the owner, 11-10: "when you select an icon, it sets that as the icon in your nav bar
+            // actively"), open when its menu is. So do the two close buttons that button becomes (wearClose).
+            var orbs = all('.ovnav-orb', bar), orb = orbs[0] || null;
             var src = menu && document.getElementById(menu) && document.getElementById(menu).querySelector('.mb-nav .mb-btn svg');
-            if (orb) {
-                var box = swapIn(orb, 'mx-navmenu', src ? function () { var b = document.createElement('span'); b.className = 'mx-navmenu mb-btn'; return b; } : null);
-                if (box && box.getAttribute('data-code') !== menu) { box.innerHTML = src.outerHTML; box.setAttribute('data-code', menu); }
-            }
+            orbs.forEach(function (o) {
+                var box = swapIn(o, 'mx-navmenu', src ? function () { var b = document.createElement('span'); b.className = 'mx-navmenu mb-btn'; return b; } : null);
+                if (!box) return;
+                if (box.getAttribute('data-code') !== menu) { box.innerHTML = src.outerHTML; box.setAttribute('data-code', menu); }
+                flag(box, 'is-open', o.getAttribute('aria-expanded') === 'true' || o.classList.contains('is-dock'));
+            });
+            wearClose(src, menu);
             var name = brand.querySelector('.name');
             var word = font && document.getElementById(font) && document.getElementById(font).querySelector('.fx-word');
             if (name) name.style.fontFamily = word && word.style.fontFamily ? word.style.fontFamily : '';
             // A short glow on what changed, so the eye goes to the bar.
             var now = [navRef, menu, font].join('|');
-            if (navSeen && now !== navSeen) { brand.classList.remove('mx-nav-flash'); if (orb) orb.classList.remove('mx-nav-flash'); void brand.offsetWidth; brand.classList.add('mx-nav-flash'); if (orb && menu) orb.classList.add('mx-nav-flash'); }
+            if (navSeen && now !== navSeen) { brand.classList.remove('mx-nav-flash'); orbs.forEach(function (o) { o.classList.remove('mx-nav-flash'); }); void brand.offsetWidth; brand.classList.add('mx-nav-flash'); if (menu) orbs.forEach(function (o) { o.classList.add('mx-nav-flash'); }); }
             navSeen = now;
         }
         (function watchNav() {
@@ -146,6 +168,16 @@
                 if (!bar) { if (++tries < 40) setTimeout(hook, 250); return; }
                 navPreview();
                 if (obs || !window.MutationObserver) return;
+                // The menu and the Dock are built when first opened, and their buttons change as they open and close: the
+                // pick follows them, once a frame at most.
+                var due = 0, WATCH = '.ovnav-orb, .ovs-orb, .ovdk-orbx, .ovdk';
+                new MutationObserver(function (ms) {
+                    if (due || !lastPick('M')) return;
+                    for (var i = 0; i < ms.length; i++) {
+                        var m = ms[i], hit = m.type === 'attributes' ? (m.target.matches && m.target.matches(WATCH)) : Array.prototype.some.call(m.addedNodes, function (n) { return n.nodeType === 1 && (n.matches(WATCH) || n.querySelector(WATCH)); });
+                        if (hit) { due = requestAnimationFrame(function () { due = 0; navPreview(); }); return; }
+                    }
+                }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden', 'aria-expanded'] });
                 // The navbar redraws its brand on sign-in and account changes: put the picks back when it does.
                 obs = new MutationObserver(function () {
                     if ((navRef && !bar.querySelector('.mx-navmark')) || (lastPick('M') && !bar.querySelector('.mx-navmenu'))) navPreview();
@@ -467,9 +499,13 @@
             var mb = e.target.closest('[data-mb]');
             if (mb) {
                 var open = !mb.classList.contains('is-open');
-                mb.classList.toggle('is-open', open);
-                mb.setAttribute('aria-pressed', open ? 'true' : 'false');
-                if (!open) play(mb);
+                // One press opens it everywhere on its card: the big one (with the menu it opens behind it) and both bars.
+                var card = mb.closest('.mb-card');
+                (card ? all('[data-mb]', card) : [mb]).forEach(function (b) {
+                    b.classList.toggle('is-open', open);
+                    b.setAttribute('aria-pressed', open ? 'true' : 'false');
+                    if (!open) play(b);
+                });
                 return;
             }
             var p = e.target.closest('[data-pick]');

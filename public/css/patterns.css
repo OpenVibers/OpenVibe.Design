@@ -116,7 +116,7 @@ html[data-ov-motion=off] .pcard:hover{transform:none}html[data-ov-motion=off] .d
 .line-act{margin-left:auto;font-size:13px;color:var(--text-secondary)}
 .line-work{position:relative;display:grid;place-items:center;height:110px;margin:0 10px 10px;border-radius:12px;background:var(--bg-secondary);color:var(--text-secondary)}
 .line-work.covered::after{content:"Building\u2026";position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--bg-primary) 88%,transparent);backdrop-filter:blur(4px);color:var(--text-primary);font-weight:700}
-@media (prefers-reduced-motion:no-preference){.line-demo[data-state=running] i{animation:line-live 1.8s ease-out infinite}}
+.line-demo[data-state=running] i{animation:line-live 1.8s ease-out infinite}
 @keyframes line-live{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent)}70%,100%{box-shadow:0 0 0 6px transparent}}
 .even-demo{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:8px;padding:10px}
 .even-demo span{display:grid;place-items:center;height:44px;border-radius:10px;background:var(--bg-secondary);font-weight:800}

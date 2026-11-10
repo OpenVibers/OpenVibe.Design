@@ -12,12 +12,24 @@ const explore = require('../server/views/marks-explore');
 (async () => {
     await check('fifty distinct takes in each family: no two share their whole recipe', () => {
         for (const [name, list] of [['Loop', explore.LOOPS], ['Pair', explore.PAIRS], ['menu', explore.MENUS]]) {
-            const want = { Loop: 72, Pair: 60, menu: 50 }[name];
+            const want = { Loop: 72, Pair: 60, menu: 61 }[name];
             assert.strictEqual(list.length, want, `${name}: ${want}`);
             const recipes = list.map((x) => JSON.stringify(x.slice(2)));
             assert.strictEqual(new Set(recipes).size, want, `${name}: every recipe differs`);
             assert.strictEqual(new Set(list.map((x) => x[0])).size, want, `${name}: every name differs`);
         }
+    });
+
+    await check('the bar is the preview: every menu button it has wears the pick, so do the two close buttons, and it stays in view', () => {
+        const fs = require('fs'), path = require('path');
+        const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'marks.js'), 'utf8');
+        const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'marks.css'), 'utf8');
+        assert.ok(js.includes("var orbs = all('.ovnav-orb', bar)"), 'every menu button in the bar (a phone shows the one at its right end)');
+        assert.ok(js.includes("all('.ovs-orb, .ovdk-orbx').forEach"), 'the menu\'s own close button and the Dock\'s wear it too');
+        assert.ok(js.includes("flag(mine, 'is-open', dock ? !dock.hidden && !host.classList.contains('is-from') : host.classList.contains('is-x'))"), 'open when the sheet is, at rest while it is still on the bar\'s button');
+        assert.ok(/\.mx-skinned > svg\{opacity:0\}/.test(css) && /\.mx-skinned > \.mx-navmenu\{all:unset;grid-area:1\/1;/.test(css), 'over their own drawing, which keeps its place (the Dock measures it)');
+        assert.ok(css.includes('html:has(.mx-wrap) .openvibe-navbar.ovnav-hide{transform:none!important}'), 'on this page a phone\'s bar does not hide as you scroll');
+        assert.ok(!/prefers-reduced-motion:\s*no-preference/.test(css), 'no move is kept only for people who have not asked for less motion');
     });
 
     const t = await boot();
@@ -26,9 +38,19 @@ const explore = require('../server/views/marks-explore');
             const r = await t.get('/brand/explore');
             assert.strictEqual(r.status, 200);
             const codes = [...r.text.matchAll(/<li class="mx-card(?: mb-card| fx-card| mx-wild)?" id="([LPMFW]\d{2})" data-code="\1"/g)].map((m) => m[1]);
-            assert.strictEqual(codes.length, 194, 'the Loop, the Pair, the menu buttons and the fonts: the Wildcards are off the vote');
-            assert.strictEqual(new Set(codes).size, 194, 'each number once');
-            assert.deepStrictEqual(['L', 'P', 'W', 'M', 'F'].map((k) => codes.filter((c) => c[0] === k).length), [72, 60, 0, 50, 12]);
+            assert.strictEqual(codes.length, 205, 'the Loop, the Pair, the menu buttons and the fonts: the Wildcards are off the vote');
+            assert.strictEqual(new Set(codes).size, 205, 'each number once');
+            // Eleven more menu buttons (2026-11-10), made for this button: drawn from the logo, and the menu in small. They
+            // are shown first and numbered last, so M01–M50 and the votes cast for them stay where they were.
+            const menus = codes.filter((c) => c[0] === 'M');
+            assert.deepStrictEqual(menus.slice(0, 12), ['M51', 'M52', 'M53', 'M54', 'M55', 'M56', 'M57', 'M58', 'M59', 'M60', 'M61', 'M01'], 'the two new families lead, then the diamond');
+            assert.strictEqual(explore.MENUS[7][0], 'Lit corners', 'M08 is still the idea it was');
+            assert.match(r.text, /<h3>From the logo <small>M51–M56 · 6<\/small>/);
+            assert.match(r.text, /<h3>What it opens <small>M57–M61 · 5<\/small>/);
+            assert.match(r.text, /Tap one: it opens the menu and becomes its close button\./);
+            assert.match(r.text, /<div class="mx-stage"><span class="mb-peek" aria-hidden="true">[\s\S]*?<\/span><button type="button" class="mb-btn mb-big" data-mb/, 'each stage holds the menu it opens, as a picture behind the button');
+            for (const own of ['grow', 'growdot', 'meet', 'gather', 'vgrid']) assert.ok(r.text.includes(`data-own="${own}"`), `a button that opens its own way: ${own}`);
+            assert.deepStrictEqual(['L', 'P', 'W', 'M', 'F'].map((k) => codes.filter((c) => c[0] === k).length), [72, 60, 0, 61, 12]);
             // The owner, 11-01: "I've changed my mind on them… keep them, they're cool to look at": ?wild=1 still shows them.
             const withWild = await t.get('/brand/explore?wild=1');
             assert.strictEqual((withWild.text.match(/<li class="mx-card mx-wild" id="W\d\d"/g) || []).length, 40, 'the Wildcards, to look at');
