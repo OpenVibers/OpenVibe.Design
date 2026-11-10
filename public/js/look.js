@@ -49,8 +49,13 @@
     function check(name, value) {
         root.querySelectorAll(`input[name="${name}"]`).forEach((i) => { if (i.type === 'radio') i.checked = i.value === value; });
     }
+    // The device's own setting wins over "On": say so, where the choice is made.
+    const motionNote = $('#lk-motion-note');
+    let lessMotion = null;
+    try { lessMotion = window.matchMedia('(prefers-reduced-motion: reduce)'); lessMotion.addEventListener('change', () => showSettings()); } catch (e) { lessMotion = null; }
     function showSettings() {
         const d = L.display.get();
+        if (motionNote) motionNote.hidden = !(lessMotion && lessMotion.matches);
         check('scheme', L.scheme.get());
         check('text', d.text);
         check('motion', d.motion);

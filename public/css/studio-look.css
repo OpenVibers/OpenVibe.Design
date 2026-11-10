@@ -108,3 +108,6 @@
 /* The theme's colours as four separate dots: two overlapping ones read as a switch. */
 .lk-theme .tk-dots { gap: 5px; }
 .lk-theme .tk-dots .tk-dot + .tk-dot { margin-left: 0; }
+/* Under the Motion choice, when the device itself asks for less motion. */
+.lk-motion-note { margin: -4px 14px 12px; color: var(--ovk-muted); font-size: .86rem; line-height: 1.4; }
+.lk-motion-note[hidden] { display: none; }

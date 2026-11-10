@@ -1,5 +1,9 @@
-.ov-demo-motion-notice { display: grid; gap: 10px; margin: 12px auto 20px; width: min(100%, 1080px); padding: 12px 14px; border: 1px solid var(--ovk-line, var(--border)); border-radius: 14px; background: var(--ovk-panel, var(--bg-card)); color: var(--ovk-text, var(--text-primary)); }
+/* The line above a page of motion demos when motion is reduced (public/js/demo-motion-controls.js): why nothing moves,
+   and the button that plays the demos on this page only. The words and the buttons share one row where there is room. */
+.ov-demo-motion-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin: 0 auto 20px; width: min(100%, 1080px); padding: 12px 14px; border: 1px solid var(--ovk-line, var(--border)); border-left: 4px solid var(--warning, #f59e0b); border-radius: 14px; background: var(--ovk-panel, var(--bg-card)); color: var(--ovk-text, var(--text-primary)); }
 .ov-demo-motion-notice[hidden] { display: none; }
-.ov-demo-motion-notice > span { font-weight: 700; }
+.ov-demo-motion-notice.is-playing { border-left-color: var(--success, #22c55e); }
+.ov-demo-motion-notice > p { flex: 1 1 260px; margin: 0; font-weight: 650; line-height: 1.4; }
 .ov-demo-motion-notice > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .ov-demo-motion-notice button { min-height: 44px; }
+.ov-demo-motion-notice button[hidden] { display: none; }
