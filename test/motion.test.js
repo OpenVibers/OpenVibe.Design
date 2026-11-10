@@ -22,7 +22,7 @@ const { EFFECTS, CURVES, curvePath } = require('../server/views/motion');
                 assert.ok(new RegExp(`<code>data-fx=("|&quot;|&#34;)${e.fx}("|&quot;|&#34;)</code>`).test(html), `${e.name}: the words to copy`);
             }
             assert.ok(/data-fx="[^"]*"/.test(html), 'the navbar loads ov-fx.js for this page');
-            assert.ok(html.includes('Nothing spins.') && html.includes('Calm wins.') && html.includes('Never hide to animate.'), 'the rules');
+            assert.ok(html.includes('The wait is the mark\u2019s own.') && html.includes('Calm is gentler. Off is still.') && html.includes('Never hide to animate.'), 'the rules');
             assert.ok(/\/shared\/ov-fx\.js(&quot;|&#34;) defer&gt;&lt;\/script&gt;/.test(html) && html.includes('OVFx.confetti'), 'the code');
             assert.ok(html.includes('css/motion.css') && html.includes('js/motion.js'), 'its own style and script');
         });

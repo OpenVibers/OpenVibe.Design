@@ -49,7 +49,7 @@ function loadingPage({ base = 'https://openvibe.design' } = {}) {
         ['A list shows its shape at once.', 'Its placeholders are in the first HTML, the same size as what replaces them, so filling in moves nothing (each demo above measures it).'],
         ['A picture sits on its own colour first.', 'Its dominant colour, or a tiny blurred copy, until it arrives. The first picture asks for itself first (fetchpriority="high"); the rest wait until they are near (loading="lazy").'],
         ['Moving between pages feels like one app.', 'The mark works in the navbar with a two-pixel line under it. Links are fetched when pointed at (speculation rules), and the navbar and app bar stay still while the page cross-fades (view transitions).'],
-        ['Nothing spins.', 'The mark bobs and breathes, a line fills. Calm and reduced motion keep everything still.'],
+        ['The wait is the mark\u2019s own.', 'Its O goes round as dots while it works, three dots rise inside it while an agent thinks, and a line fills when the length is known. Calm plays it slower; only motion off keeps it still.'],
         ['Slow says so.', 'After a few seconds a load explains itself and offers what to do. A failure says what happened and offers Retry, never an endless wait.'],
         ['Off screen costs nothing.', 'Long lists skip the work for what is not on screen yet (content-visibility: auto).'],
     ];
@@ -57,7 +57,7 @@ function loadingPage({ base = 'https://openvibe.design' } = {}) {
     const body = `<article class="ld">
 <header class="ld-hero">
   <p class="ld-eye">Loading</p>
-  <h1 class="ld-h1">Nothing spins. Everything has its shape.</h1>
+  <h1 class="ld-h1">Everything has its shape. The wait is the mark&rsquo;s own.</h1>
   <p class="ld-lede">How OpenVibe waits: the page arrives drawn, a list shows its own shape until it fills in, the mark works while a page moves, and a slow load says so. The same parts on every site, from <code>openvibe-shared</code>.</p>
   <nav class="ld-jump" aria-label="On this page"><a href="#shapes">Placeholders</a><a href="#mark">The mark at work</a><a href="#nav">Between pages</a><a href="#rules">The rules</a><a href="#use">Use it</a></nav>
 </header>
@@ -103,8 +103,8 @@ function loadingPage({ base = 'https://openvibe.design' } = {}) {
 </section>
 </article>`;
     return layout({
-        title: 'Loading: nothing spins',
-        description: 'How OpenVibe waits: placeholders shaped like the content, the mark at work instead of a spinner, the navbar while a page moves, and the rules. Live demos and the code, free.',
+        title: 'Loading: everything has its shape',
+        description: 'How OpenVibe waits: placeholders shaped like the content, the mark at work instead of a borrowed spinner, the navbar while a page moves, and the rules. Live demos and the code, free.',
         path: '/loading', active: '/loading', styles: ['css/icons.css', 'css/loading.css'], scripts: ['js/loading-page.js'], shared: ['loading.js'], body,
     });
 }

@@ -22,7 +22,7 @@ const { SHAPES } = require('../server/views/loading');
             assert.match(html, /\/shared\/loading\.js/, 'the shared loader');
             assert.match(html, /\/js\/loading-page\.js/);
             assert.ok(html.includes('data-ld-do="start"') && html.includes('data-ld-busy'));
-            assert.ok(html.includes('Nothing spins.') && html.includes('content-visibility: auto'), 'the rules');
+            assert.ok(html.includes('The wait is the mark\u2019s own.') && html.includes('content-visibility: auto'), 'the rules');
             assert.ok(!/fa-spin|class="[^"]*spinner/i.test(html), 'no spinner anywhere');
         });
         await check('the page script: Fill in measures the move, the loader runs its states, the navbar shows busy', async () => {
