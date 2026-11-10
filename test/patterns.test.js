@@ -25,6 +25,16 @@ const { patterns, TOKENS, nativeSpecs, esc } = require('../server/patterns/catal
             assert.equal(res.status, 200);
             for (const name of ['Ribbon', 'Breadcrumb', 'Porthole', 'Liquid', 'Seal']) assert.ok(res.text.includes(name), name);
         });
+        await check('the one-menu pattern draws the menu button at the top of the page, not the old burger', async () => {
+            const res = await t.get('/patterns/one-menu');
+            assert.equal(res.status, 200);
+            assert.ok(res.text.includes('The menu button at the top of the page'), 'the rule names the button');
+            assert.ok(!/burger/i.test(res.text), 'no burger in the rule');
+            const js = await t.get('/js/patterns.js');
+            assert.ok(js.text.includes('window.OpenVibeOrb ? window.OpenVibeOrb.svg(20, open)'), 'drawn by the shared orb');
+            assert.ok(js.text.includes('x="4" y="5.2" width="16" height="5.6"'), 'the inline fallback is the same shapes');
+            assert.ok(!js.text.includes('☰'), 'no three-line button');
+        });
         await check('the live demo assets are served', async () => {
             for (const asset of ['/js/pattern-kit.js', '/js/patterns.js', '/css/patterns.css']) {
                 const res = await t.get(asset);
