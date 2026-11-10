@@ -93,5 +93,6 @@
   .mo-durs li{grid-template-columns:96px minmax(0,1fr) 56px}
   .mo-durs small{display:none}
 }
-@media (prefers-reduced-motion:reduce){.mo-race.is-run i{transition:none}}
-html[data-ov-motion=reduced] .mo-race.is-run i{transition:none}
+/* Still under reduced motion, except while the person plays the demos on this page ([data-fx-demo], demo-motion-controls.js). */
+@media (prefers-reduced-motion:reduce){.mo-race.is-run:not([data-fx-demo] *) i{transition:none}}
+html[data-ov-motion=reduced] .mo-race.is-run:not([data-fx-demo] *) i{transition:none}
