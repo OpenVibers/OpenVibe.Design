@@ -19,7 +19,7 @@ assert.ok(
 );
 // The /create submit button was white on the plain accent (3.67:1). The accent strong pair is text-safe.
 assert.ok(
-    css.includes('.dv-create form button { display: block; margin: 0 0 2px auto; border: 0; border-radius: 9px; background: var(--accent-strong, var(--accent)); color: var(--on-accent-strong, #fff);'),
+    /\.dv-go \{[^}]*background: var\(--accent-strong, var\(--accent\)\); color: var\(--on-accent-strong, #fff\);/.test(css),
     'the create submit button uses the accent strong pair'
 );
 // The arena's small lines were muted text on a tint (4.1-4.4:1); the secondary text is the readable pair.

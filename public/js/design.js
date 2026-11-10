@@ -2,8 +2,38 @@
     'use strict';
     const prompt = document.getElementById('dv-prompt');
     if (prompt) {
+        const form = prompt.form, KEY = 'dv-composer';
+        const kindOf = () => (form.querySelector('input[name="kind"]:checked') || {}).value || 'page';
+        const setKind = (id) => { const k = form.querySelector(`input[name="kind"][value="${CSS.escape(id)}"]`); if (k) { k.checked = true; prompt.placeholder = k.dataset.placeholder || prompt.placeholder; } };
+        // What a choice in the tray shows: the name of what is chosen (and, for the look, its colours).
+        const show = (input) => {
+            const mod = input.closest('.dv-mod'); if (!mod) return;
+            const v = mod.querySelector('[data-mod-v]'); if (v) v.textContent = input.dataset.label || input.value;
+            const sw = mod.querySelector('[data-mod-sw]'); if (sw && input.dataset.sw) sw.setAttribute('style', input.dataset.sw);
+        };
+        const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ kind: kindOf(), who: (form.querySelector('input[name="who"]:checked') || {}).value, themeId: (form.querySelector('input[name="themeId"]:checked') || {}).value })); } catch { /* a private window */ } };
+        // The last choices come back (they are this person's habits, kept in this browser only).
+        try {
+            const last = JSON.parse(localStorage.getItem(KEY) || '{}');
+            if (last.kind) setKind(last.kind);
+            ['who', 'themeId'].forEach((name) => { const el = last[name] && form.querySelector(`input[name="${name}"][value="${CSS.escape(last[name])}"]`); if (el) { el.checked = true; show(el); } });
+        } catch { /* nothing kept */ }
+        const mods = [...form.querySelectorAll('.dv-mod')];
+        const closeMods = (except) => mods.forEach((m) => { if (m !== except) m.open = false; });
+        form.addEventListener('change', (event) => {
+            const input = event.target;
+            if (input.name === 'kind') setKind(input.value);
+            else if (input.closest('.dv-mod')) { show(input); setTimeout(() => closeMods(null), 160); }
+            save();
+        });
+        mods.forEach((m) => m.addEventListener('toggle', () => { if (m.open) closeMods(m); }));
+        document.addEventListener('click', (event) => { const open = mods.find((m) => m.open); if (open && !open.contains(event.target)) closeMods(null); else if (open && event.target === open) closeMods(null); });
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const open = mods.find((m) => m.open); if (open) { closeMods(null); open.querySelector('summary').focus(); } } });
+        prompt.addEventListener('keydown', (event) => { if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) form.requestSubmit(); });
+        form.addEventListener('submit', () => { const go = form.querySelector('.dv-go'); if (go) { go.setAttribute('aria-busy', 'true'); const t = go.querySelector('span'); if (t) t.textContent = 'Drawing three takes…'; } });
         document.querySelectorAll('[data-example]').forEach(button => button.addEventListener('click', () => {
             prompt.value = button.dataset.example;
+            if (button.dataset.kind) { setKind(button.dataset.kind); save(); }
             prompt.focus();
         }));
         return;

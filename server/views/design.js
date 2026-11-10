@@ -5,7 +5,37 @@ const ovServe = require('openvibe-shared/serve');
 const { attrEscape } = require('../arena/sanitize');
 const { themeCss } = require('../designs');
 
-const examples = ['Landing page for a coffee roaster', 'Dashboard for a fitness app', 'Pricing section', 'Mobile onboarding'];
+// The composer's choices. The server takes kind, themeId and who (designs.create); each is a choice a person can see.
+const G = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const MAKES = [
+    { id: 'page', name: 'Page', glyph: G('<rect x="3" y="4.5" width="18" height="15" rx="3"/><path d="M3 9h18M7 13h6M7 16h10"/>'),
+        placeholder: 'Describe the page: who it is for and what it should get them to do…',
+        examples: ['Landing page for a coffee roaster', 'Pricing page with three plans', 'Portfolio for a photographer'] },
+    { id: 'screen', name: 'App screen', glyph: G('<rect x="7" y="2.5" width="10" height="19" rx="3"/><path d="M10.5 5.5h3M10 17.5h4"/>'),
+        placeholder: 'Describe the screen: what the app does and what this screen is for…',
+        examples: ['Mobile onboarding', 'Dashboard for a fitness app', 'A music player, now playing'] },
+    { id: 'component', name: 'Component', glyph: G('<rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="3.5" y="13" width="17" height="7.5" rx="2"/>'),
+        placeholder: 'Describe the part: what it shows and the states it has…',
+        examples: ['Pricing section', 'Sign-up form with its errors', 'A stat card with a small chart'] },
+];
+const WHO = [
+    { id: 'claude', name: 'Claude Opus 5.5', line: 'Three takes from one designer, the strongest' },
+    { id: 'sonnet', name: 'Claude Sonnet 5.5', line: 'Three takes from one designer, sooner' },
+    { id: 'any', name: 'Top three', line: 'One take each from the three best models you can use, your own keys first' },
+    { id: 'compare', name: 'Three makers', line: 'One take each from three different companies, side by side' },
+];
+const SPARK = G('<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>');
+const ARROW = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+// A theme's colours, only when they are plain colours (they go into a style attribute).
+const colour = (v, fallback) => (/^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\))$/i.test(String(v || '')) ? String(v) : fallback);
+const swatch = (t) => { const v = (t && t.variables) || {}; return `--b:${colour(v['--bg-primary'], '#0b0f19')};--c:${colour(v['--bg-card'], '#151b28')};--a:${colour(v['--accent'], '#3b82f6')};--t:${colour(v['--text-primary'], '#e6edf7')}`; };
+function ago(iso, now = Date.now()) {
+    const t = Date.parse(iso); if (!isFinite(t)) return '';
+    const m = Math.max(0, Math.round((now - t) / 60000));
+    if (m < 2) return 'just now'; if (m < 60) return `${m} min ago`;
+    const h = Math.round(m / 60); if (h < 24) return `${h} h ago`;
+    const d = Math.round(h / 24); return d < 30 ? `${d} ${d === 1 ? 'day' : 'days'} ago` : new Date(t).toISOString().slice(0, 10);
+}
 
 /**
  * The page somebody who is not on a Specific-people design's list sees. It never shows the prompt,
@@ -21,16 +51,28 @@ function gate({ id, signedInAs = null, signInUrl = '/auth/login' }) {
     return layout({ title: 'A design on OpenVibe.Design', path: '/d', robots: 'noindex, nofollow', body, scripts: [] });
 }
 
-function create({ recent = [] } = {}) {
+function create({ recent = [], themes = [] } = {}) {
+    const looks = themes.slice(0, 12), look = looks[0] || null;
+    const kinds = `<fieldset class="dv-kinds"><legend class="dv-visually-hidden">What you are making</legend>${MAKES.map((m, i) => `<label><input type="radio" name="kind" value="${m.id}" data-placeholder="${esc(m.placeholder)}"${i ? '' : ' checked'}><span>${m.glyph}<b>${m.name}</b></span></label>`).join('')}</fieldset>`;
+    const lookMod = look ? `<details class="dv-mod" data-mod="look"><summary><i class="dv-sw" style="${swatch(look)}" data-mod-sw></i><span class="dv-mod-k">Look</span><b data-mod-v>${esc(look.name)}</b></summary>
+<div class="dv-mod-sheet" role="group" aria-label="Look"><header><b>Look</b><small>Every take wears this theme. You can change it on the canvas.</small></header>
+<div class="dv-looks">${looks.map((t, i) => `<label class="dv-look"><input type="radio" name="themeId" value="${esc(t.id)}" data-label="${esc(t.name)}" data-sw="${swatch(t)}"${i ? '' : ' checked'}><span style="${swatch(t)}"><i aria-hidden="true"></i><b>${esc(t.name)}</b></span></label>`).join('')}</div>
+<a class="dv-mod-more" href="/themes">All ${themes.length} themes, or make your own</a></div></details>` : '';
+    const whoMod = `<details class="dv-mod" data-mod="who"><summary>${SPARK}<span class="dv-mod-k">Designer</span><b data-mod-v>${WHO[0].name}</b></summary>
+<div class="dv-mod-sheet" role="group" aria-label="Designer"><header><b>Designer</b><small>Who draws the three takes.</small></header>
+${WHO.map((w, i) => `<label class="dv-opt"><input type="radio" name="who" value="${w.id}" data-label="${esc(w.name)}"${i ? '' : ' checked'}><span><b>${esc(w.name)}</b><small>${esc(w.line)}</small></span></label>`).join('')}
+<a class="dv-mod-more" href="https://openvibe.exchange/models">Compare these models on OpenVibe Exchange</a></div></details>`;
+    const kindName = Object.fromEntries(MAKES.map((m) => [m.id, m]));
+    const themeName = Object.fromEntries(themes.map((t) => [t.id, t.name]));
     const body = `<section class="dv-create"><h1>What will you design?</h1>
-<form method="post" action="/create"><label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
-<textarea id="dv-prompt" name="prompt" required maxlength="4000" placeholder="Describe a page, an app screen or a component…"></textarea>
-<div class="dv-foot"><fieldset class="dv-who"><legend class="dv-visually-hidden">Who designs it</legend>
-<label><input type="radio" name="who" value="claude" checked><span><b>Claude Opus 5.5</b><small>three takes, Claude first</small></span></label>
-<label><input type="radio" name="who" value="compare"><span><b>Compare models</b><small>three providers side by side</small></span></label>
-</fieldset><button type="submit">Create designs</button></div></form>
-<div class="dv-examples" aria-label="Try an example">${examples.map(x => `<button type="button" data-example="${esc(x)}">${esc(x)}</button>`).join('')}</div>
-${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map(d => `<li><a href="${esc(d.url)}">${esc(d.prompt)}</a></li>`).join('')}</ul></section>` : ''}</section>`;
+<form method="post" action="/create" class="dv-composer" data-dv-composer>
+${kinds}
+<label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
+<textarea id="dv-prompt" name="prompt" required maxlength="4000" placeholder="${esc(MAKES[0].placeholder)}"></textarea>
+<div class="dv-tray">${lookMod}${whoMod}<button type="submit" class="dv-go"><span>Create three takes</span>${ARROW}</button></div></form>
+<div class="dv-examples" aria-label="Try an example">${MAKES.map((m) => m.examples.map((x) => `<button type="button" data-example="${esc(x)}" data-kind="${m.id}">${m.glyph}<span>${esc(x)}</span></button>`).join('')).join('')}</div>
+${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map((d) => { const k = kindName[d.kind] || MAKES[0]; const bits = [k.name, themeName[d.themeId], d.status === 'running' ? 'Drawing now' : d.status === 'failed' ? 'Did not finish' : ago(d.createdAt)].filter(Boolean);
+        return `<li><a class="dv-rc" href="${esc(d.url)}"><span class="dv-rc-k" aria-hidden="true">${k.glyph}</span><span class="dv-rc-t"><b>${esc(d.prompt)}</b><small>${esc(bits.join(' · '))}</small></span></a></li>`; }).join('')}</ul></section>` : ''}</section>`;
     return layout({ title: 'Create a design', path: '/create', body, active: '/create', scripts: ['js/design.js'] });
 }
 
