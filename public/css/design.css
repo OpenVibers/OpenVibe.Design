@@ -14,6 +14,10 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds-kicker { margin: 0 0 4px; font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--room-strong); }
 .ds-lede { margin: 8px 0 0; max-width: 720px; color: var(--text-secondary, #96a7c2); line-height: 1.55; }
 .ds-fine { color: var(--text-muted, #7386a3); font-size: .84rem; line-height: 1.5; }
+/* Where a page sits, above its h1: plain text and one link, the same on every page (the four doors, 2026-11-10). */
+.ds-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; font-size: .86rem; color: var(--text-muted, #7386a3); }
+.ds-crumbs a { color: var(--text-secondary, #96a7c2); text-decoration: none; font-weight: 700; }
+.ds-crumbs a:hover { color: var(--room-strong); }
 .ds-head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .ds-more { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; font-size: .9rem; text-decoration: none; color: var(--room-strong); }
 .ds-more .ovk-i { width: 1em; height: 1em; }

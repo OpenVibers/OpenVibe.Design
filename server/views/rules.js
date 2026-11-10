@@ -37,6 +37,8 @@ function rulesPage() {
   ${kit.stats([[RULES.length, 'rules'], [areas.length, 'areas'], [day(newest), 'last decided']], { label: 'The register in numbers' })}
   <form class="rl-find" role="search" action="#" data-rl-find hidden><label for="rl-q" class="ovk-sr">Find a rule</label>${kit.icon('search')}<input id="rl-q" type="search" placeholder="Find a rule: tabs, spinner, price, phone…" autocomplete="off"><output data-rl-count></output></form>
 </header>`;
+    // The Rules door's two pages: this register, then the System map (the owner, 2026-11-10).
+    const door = `<p class="rl-links rl-door"><span class="rl-label">Rules</span><span class="rl-chip rl-chip--check" aria-current="page">The register</span><a class="rl-chip" href="/system">The system map</a></p>`;
     const index = `<nav class="rl-areas" aria-label="Areas"><ul>${areas.map((a) => `<li><a href="#area-${esc(a.id)}">${esc(a.title)}<span>${a.rules.length}</span></a></li>`).join('')}</ul></nav>`;
     const latestBlock = `<section class="rl-sec rl-recent" aria-labelledby="rl-recent-h"><div class="rl-sec-head"><h2 id="rl-recent-h">Decided lately</h2><p>The newest rules first; each links to its place below.</p></div>
   <ol class="rl-recent-list">${recent.map((r) => `<li><a href="#${esc(r.id)}"><time datetime="${esc(r.decided)}">${esc(day(r.decided))}</time><b>${esc(r.rule)}</b></a></li>`).join('')}</ol></section>`;
@@ -55,7 +57,7 @@ function rulesPage() {
         styles: ['css/rules.css'],
         scripts: ['js/rules.js'],
         jsonLd,
-        body: `<article class="rl">${hero}${index}${latestBlock}${sections}${data}</article>`,
+        body: `<article class="rl">${hero}${door}${index}${latestBlock}${sections}${data}</article>`,
     });
 }
 

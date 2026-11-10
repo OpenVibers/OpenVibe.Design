@@ -22,7 +22,8 @@ const unescape = (s) => s.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace
             assert.ok(html.includes(themePrompt('{your prompt}', ["{the theme's colour variables}"])), 'the theme prompt');
             assert.ok(html.includes(editPrompt('{your instruction}', '{the current page}', "{the theme's colour variables}")), 'the edit prompt');
             assert.ok(html.includes(SYSTEM.slice(0, 200)), 'the icon prompt');
-            assert.match(r.text, /href="\/prompts"/, 'linked from the navigation');
+            assert.match(r.text, /<a href="\/make">Make<\/a>[\s\S]*?aria-current="page">Prompts</, 'it sits under the Make door');
+            assert.match((await t.get('/make')).text, /href="\/prompts"/, 'the Make door lists it');
         });
         await check('the same list as JSON, cacheable', async () => {
             const r = await t.get('/api/v1/prompts');

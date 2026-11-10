@@ -13,39 +13,18 @@ const shell = require('openvibe-shared/shell');
 const ovServe = require('openvibe-shared/serve');
 const appIcon = require('openvibe-shared/app-icon');
 const kit = require('openvibe-shared/kit');
+const seo = require('openvibe-shared/seo');
 const rooms = require('openvibe-shared/rooms');
 const { asset, assetVersion } = require('../assets');
+const { DOORS, breadcrumbOf, doorHrefOf } = require('../site/doors');
 
 const NAME = 'OpenVibe.Design';
 const NETWORK = 'https://openvibe.network';
 const ROOM = rooms.get('design');
 const esc = kit.esc;
 
-const NAV = [
-    // Six places in the bar (the six-places rule); everything else under More, in the System page's order.
-    { label: 'Home', href: '/', icon: 'fa-house' },
-    { label: 'Create', href: '/create', icon: 'fa-wand-magic-sparkles' },
-    { label: 'Themes', href: '/themes', icon: 'fa-palette' },
-    { label: 'Your look', href: '/look', icon: 'fa-circle-half-stroke' },
-    { label: 'Arena', href: '/arena', icon: 'fa-crown' },
-    { label: 'System', href: '/system', icon: 'fa-layer-group' },
-    { label: 'Tokens', href: '/tokens', icon: 'fa-code', more: true },
-    { label: 'Fonts', href: '/fonts', icon: 'fa-font', more: true },
-    { label: 'Icons', href: '/icons', icon: 'fa-shapes', more: true },
-    { label: 'The mark', href: '/brand', icon: 'fa-star', more: true },
-    { label: 'Motion', href: '/motion', icon: 'fa-wind', more: true },
-    { label: 'Components', href: '/components', icon: 'fa-puzzle-piece', more: true },
-    { label: 'Kit', href: '/kit', icon: 'fa-cubes', more: true },
-    { label: 'Forms', href: '/forms', icon: 'fa-list-check', more: true },
-    { label: 'Loading', href: '/loading', icon: 'fa-hourglass-half', more: true },
-    { label: 'Progress', href: '/progress', icon: 'fa-gauge-high', more: true },
-    { label: 'Uploader', href: '/uploader', icon: 'fa-upload', more: true },
-    { label: 'Rules', href: '/rules', icon: 'fa-scale-balanced', more: true },
-    { label: 'Patterns', href: '/patterns', icon: 'fa-table-cells', more: true },
-    { label: 'Prompts', href: '/prompts', icon: 'fa-quote-left', more: true },
-    { label: 'Apps (Android, iOS)', href: '/native', icon: 'fa-mobile-screen', more: true },
-    { label: 'Developers', href: '/developers', icon: 'fa-terminal', more: true },
-];
+// Four doors, in this order, are the site's whole bar (the owner, 2026-11-10). The brand is the way home.
+const NAV = DOORS.map((door) => ({ label: door.name, href: door.href, icon: { eye: 'fa-eye', spark: 'fa-wand-magic-sparkles', scale: 'fa-scale-balanced', terminal: 'fa-terminal' }[door.icon] }));
 
 let RELEASE = 'dev';
 let BASE = 'https://openvibe.design';
@@ -58,11 +37,25 @@ const canonical = (p) => `${BASE}${p || '/'}`;
 function layout({ title, description, canonical, path, robots = 'index, follow', body, active = '/', scripts = [], styles = [], jsonLd = [], inlineStyles = [], preloads = [], image, imageAlt, shared = [], sharedStyles = [] } = {}) {
     const pathNow = path || active || '/';
     canonical = canonical || (path ? `${BASE}${path}` : undefined);
+    // The bar marks the door a page sits under, not the page itself (there are four places now).
+    const barActive = doorHrefOf(pathNow) || active;
+    // Where this page sits, above its own h1. A page that already carries its own local breadcrumb keeps it.
+    const found = breadcrumbOf(pathNow);
+    const crumb = found && !/aria-label="Breadcrumb"/.test(String(body || '')) ? found : null;
+    if (crumb) {
+        const html = `<nav class="ds-crumbs" aria-label="Breadcrumb"><a href="${esc(crumb.door.href)}">${esc(crumb.door.name)}</a><span aria-hidden="true">›</span><span aria-current="page">${esc(crumb.name)}</span></nav>`;
+        const at = String(body || '').indexOf('<h1');
+        body = at === -1 ? `${html}${body || ''}` : `${String(body).slice(0, at)}${html}${String(body).slice(at)}`;
+        jsonLd = [...(jsonLd || []), seo.jsonLd.breadcrumbs([
+            { name: crumb.door.name, url: `${BASE}${crumb.door.href}` },
+            { name: crumb.name, url: `${BASE}${pathNow}` },
+        ])];
+    }
     const navbar = {
         service: 'design',
         apiBase: NETWORK,
-        links: NAV.map((l) => ({ ...l, active: l.href === active || (l.href !== '/' && String(active).startsWith(`${l.href}/`)) })),
-        appBar: [{ label: 'Home', href: '/', icon: 'fa-house' }, { label: 'Create', href: '/create', icon: 'fa-wand-magic-sparkles' }, { label: 'Themes', href: '/themes', icon: 'fa-palette' }, { label: 'Arena', href: '/arena', icon: 'fa-crown' }, { label: 'System', href: '/system', icon: 'fa-layer-group' }],
+        links: NAV.map((l) => ({ ...l, active: l.href === barActive || (l.href !== '/' && String(barActive).startsWith(`${l.href}/`)) })),
+        appBar: NAV.map(({ label, href, icon }) => ({ label, href, icon })),
         history: { type: 'document', title: title || NAME, image_url: image || null },
         silentLogin: `${BASE}/auth/login?silent=1&next={url}`,
         sessionUrl: '/auth/me',

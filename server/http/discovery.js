@@ -4,8 +4,8 @@
  * Crawl artifacts for openvibe.design, built with openvibe-shared/seo: robots.txt, sitemap.xml and llms.txt.
  * The public pages are for search engines and AI crawlers; the studio's writes, the API and sign-in are not.
  *
- * The sitemap is /, /themes and one page per public theme in the catalogue. A Network failure leaves the static
- * pages in place rather than failing the crawl artifact.
+ * The sitemap leads with the four doors (/see, /make, /rules, /use), then /, /themes and one page per public theme in
+ * the catalogue. A Network failure leaves the static pages in place rather than failing the crawl artifact.
  */
 const fs = require('fs');
 const path = require('path');
@@ -29,10 +29,14 @@ function siteUpdated() {
 /** Every public page, in the order a crawler should read them. */
 function publicPages(themes = []) {
     const static_ = [
+        // The four doors lead (the owner, 2026-11-10): the bar, and the first thing a crawler reads.
+        { path: '/see', changefreq: 'weekly', priority: 1.0, title: 'See: how OpenVibe looks and moves', text: 'Look, tokens, the mark, components, the kit, forms, patterns, motion, loading, progress and native apps: how OpenVibe looks and moves.' },
+        { path: '/make', changefreq: 'weekly', priority: 0.9, title: 'Make: what you make with it', text: 'Create, themes, icons, fonts, the uploader, prompts and the Arena: what you make with OpenVibe\'s design system.' },
+        { path: '/rules', changefreq: 'weekly', priority: 0.9, title: 'How OpenVibe decides', text: 'Every style, design and organization rule behind OpenVibe, with the day it was decided, why, and what carries it out. Also as data at /api/v1/rules.' },
+        { path: '/use', changefreq: 'weekly', priority: 0.8, title: 'Use: building with it', text: 'The SDK, the API, the files and the versions, and how to install and call them in your own app.' },
         { path: '/', changefreq: 'weekly', priority: 1.0, title: 'OpenVibe.Design', text: 'Browse OpenVibe\'s themes, try them on a preview, edit one with contrast checks, use it, and roll back to any earlier setting.' },
         { path: '/themes', changefreq: 'weekly', priority: 0.9, title: 'Themes', text: 'Try a theme on a preview, edit its variables with contrast checks, use it across the network, submit it to the gallery, and roll back.' },
         { path: '/system', changefreq: 'weekly', priority: 0.8, title: 'The design system', text: 'Everything OpenVibe is made of in one map: themes, tokens, fonts, icons, the mark and motion; components, the kit and forms; the rules and patterns; apps and developer tools.' },
-        { path: '/rules', changefreq: 'weekly', priority: 0.8, title: 'How OpenVibe decides', text: 'Every style, design and organization rule behind OpenVibe, with the day it was decided, why, and what carries it out. Also as data at /api/v1/rules.' },
         { path: '/look', changefreq: 'monthly', priority: 0.6, title: 'Your look', text: 'Your theme, light or dark, text size, motion and seasonal themes for every OpenVibe site, in one place.' },
         { path: '/kit', changefreq: 'weekly', priority: 0.7, title: 'The OpenVibe Kit', text: 'Every part an OpenVibe page is made of, one function call each: drawn, with its code for the server and the page, and what its CSS weighs.' },
         { path: '/components', changefreq: 'weekly', priority: 0.7, title: 'Components', text: 'The component registry as one plain list: every Shared kit component as a design.component@1 entry with its props, states, example markup and Android and iOS notes.' },
@@ -100,6 +104,13 @@ function createDiscoveryRoutes(ctx) {
             markdown: true,
             base: config.baseUrl,
             sections: [
+                // The four doors come first: the bar, and the map every page says it sits in.
+                { title: 'The four doors', links: [
+                    { title: 'See', url: abs('/see'), note: 'how OpenVibe looks and moves: look, tokens, the mark, components, the kit, forms, patterns, motion, loading, progress and native apps' },
+                    { title: 'Make', url: abs('/make'), note: 'what you make with it: create, themes, icons, fonts, uploader, prompts and the Arena' },
+                    { title: 'Rules', url: abs('/rules'), note: 'the register of every style, design and organization decision, then the system map at /system' },
+                    { title: 'Use', url: abs('/use'), note: 'building with it: the SDK, the API, the files and the versions' },
+                ] },
                 { title: 'Start here', links: [
                     { title: 'OpenVibe.Design', url: abs('/'), note: 'the theme catalogue' },
                     { title: 'Themes', url: abs('/themes'), note: 'try, edit, use, submit and roll back a theme' },

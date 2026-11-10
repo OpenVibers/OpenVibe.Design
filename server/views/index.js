@@ -14,6 +14,7 @@
 const layoutLib = require('../render/layout');
 const kit = require('openvibe-shared/kit');
 const seo = require('openvibe-shared/seo');
+const { homeDoors } = require('./doors');
 // The short home (the owner's rule, 2026-10-30): pick blocks and folds.
 const { pickBlock, foldAround } = require('../render/short');
 const sc = require('openvibe-shared/showcase');
@@ -189,7 +190,7 @@ function home({ themes } = {}) {
     body = foldAround(body, '>Questions</h2>', 'faq', '<h2 id="ds-faq-h">Questions</h2>');
     return layout({
         title: null, description: 'Your look, everywhere: one theme across every OpenVibe site, the same theme as code for the web, Android and iOS, and AI design on it, ranked honestly by the Design Arena.',
-        path: '/', body: `<div class="ds-wrap">${body}</div>`, active: '/',
+        path: '/', body: `<div class="ds-wrap">${homeDoors()}${body}</div>`, active: '/',
         jsonLd: [seo.jsonLd.website({ name: 'OpenVibe.Design', url: 'https://openvibe.design/', description: 'Your look, everywhere: one theme across every OpenVibe site, the same theme as code for the web, Android and iOS, and AI design on it, ranked honestly by the Design Arena.' }), seo.jsonLd.organization()],
         // The rule that shows the picked scene of the pick block: one per scene, written for this page.
     });
@@ -248,6 +249,29 @@ ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
     return layout({ title: `${t.name}: an OpenVibe theme`, description: t.description || `${t.name}, a ${t.mode === 'light' ? 'light' : 'dark'} OpenVibe theme: its colours and how Live, Chat and a shop look in it.`, path: `/t/${encodeURIComponent(t.slug || t.id)}`, body: `<div class="ds-wrap">${body}</div>`, active: '/themes' });
 }
 
+// The SDK and the versions this site installs, read from its own package.json so the page never states a stale pin.
+const DESIGN_PACKAGE = require('../../package.json');
+function pinOf(name) {
+    const m = String((DESIGN_PACKAGE.dependencies || {})[name] || '').match(/refs\/tags\/v([^/]+)$/);
+    return m ? m[1] : null;
+}
+function sdkSection() {
+    const sdk = pinOf('openvibe-sdk');
+    const versions = [['openvibe-contracts', pinOf('openvibe-contracts')], ['openvibe-sdk', sdk], ['openvibe-shared', pinOf('openvibe-shared')], ['openvibe-publishing', pinOf('openvibe-publishing')]]
+        .filter(([, v]) => v);
+    const pin = sdk ? `"openvibe-sdk": "https://codeload.github.com/OpenVibers/OpenVibe.SDK/tar.gz/refs/tags/v${sdk}"` : '';
+    return `<section aria-labelledby="ds-sdk-h" id="sdk"><h2 id="ds-sdk-h">The SDK, the files and the versions</h2>
+<p>openvibe-sdk is the supported client for this platform: the server client, the browser client, their ES modules and their TypeScript declarations. It ships from the OpenVibers/OpenVibe.SDK repository by tag, so a service pins a version rather than floating on a branch.</p>
+${pin ? `<p class="ds-fine">Add the pin to <code>package.json</code>, then install:</p>${kit.snippet({ code: `{ "dependencies": {\n    ${pin}\n} }`, label: 'Copy the pin' })}` : ''}
+<dl class="ds-eps">
+<div><dt><code>index.js</code></dt><dd>The server client: auth, accounts, the async PostgreSQL data layer, events, media, AI runs and tools.</dd></div>
+<div><dt><code>browser.js</code></dt><dd>The browser client, with the same subpath modules where the browser has them.</dd></div>
+<div><dt><code>esm/*.mjs</code>, <code>types/*.d.ts</code></dt><dd>The ES module entry points and the TypeScript declarations, one pair per subpath export.</dd></div>
+${versions.map(([name, v]) => `<div><dt><code>${esc(name)}</code></dt><dd>v${esc(v)}, pinned by this site.</dd></div>`).join('')}
+</dl>
+<p class="ds-fine">The deployed release and its file hashes are at <a href="/release.json">/release.json</a>; the whole HTTP API is described by <a href="/openapi.json">/openapi.json</a>; an AI assistant can call it through the MCP server at <code>POST /mcp</code>.</p></section>`;
+}
+
 function developers() {
     const rows = [
         ['POST /api/v1/designs', 'Create three variants with {prompt, kind, themeId?, who?}: Claude Opus 5.5 first by default, or who: "compare" for three providers; guests receive a secret edit link.'],
@@ -269,6 +293,7 @@ function developers() {
         ['GET /api/me/theme/history', 'Your earlier looks, newest first; POST /api/me/theme/history/:id/restore brings one back.'],
     ];
     const body = `<header class="ds-page-h"><p class="ds-kicker">For developers</p><h1>The Design API</h1><p class="ds-lede">The theme catalog is open JSON. A theme is a set of CSS custom properties every OpenVibe site reads; Network keeps which one each person uses.</p></header>
+${sdkSection()}
 <section aria-labelledby="ds-ep-h" id="tokens"><span id="mcp"></span><h2 id="ds-ep-h">Endpoints</h2><dl class="ds-eps">${rows.map(([ep, what]) => `<div><dt><code>${esc(ep)}</code></dt><dd>${esc(what)}</dd></div>`).join('')}</dl></section>
 <p class="ds-fine">Themes also export and import as <code>openvibe-theme@1</code> files through <a href="https://openvibe.network/api/themes">Network's theme API</a>.</p>`;
     return layout({ title: 'The Design API', path: '/developers', body: `<div class="ds-wrap">${body}</div>`, active: '/developers' });

@@ -53,7 +53,8 @@ const { FILES, STATES } = require('../server/views/brand');
             const pattern = await t.get('/patterns/mark-system');
             assert.ok(pattern.text.includes('href="/brand"'), 'the mark pattern links it');
             const page = await t.get('/brand');
-            assert.ok(/"href":"\/brand"[^}]*"active":true/.test(page.text), 'the navbar marks it');
+            assert.ok(/"href":"\/see"[^}]*"active":true/.test(page.text), 'the bar marks the See door');
+            assert.match(page.text, /<a href="\/see">See<\/a>[\s\S]*?aria-current="page">Brand</, 'and the breadcrumb says where it sits');
         });
     } finally {
         await t.close();

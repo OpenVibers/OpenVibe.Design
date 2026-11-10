@@ -7,6 +7,7 @@ const { boot, check, done } = require('./helpers/boot');
 const { AREAS, RULES } = require('../server/rules/register');
 const { patterns } = require('../server/patterns/catalog');
 const { NAV } = require('../server/render/layout');
+const rulesView = require('../server/views/rules');
 
 (async () => {
     const t = await boot();
@@ -92,12 +93,18 @@ const { NAV } = require('../server/render/layout');
             assert.ok((await t.get('/patterns/tabs-not-folds')).text.includes('never split content'), 'tabs are for settings, never content');
         });
 
-        await check('the bar holds six places, the rest under More, and no two share an icon', async () => {
-            const bar = NAV.filter((l) => !l.more);
-            assert.equal(bar.length, 6, bar.map((l) => l.label).join(', '));
-            assert.deepEqual(bar.map((l) => l.href), ['/', '/create', '/themes', '/look', '/arena', '/system']);
+        await check('the register names the Rules door and its second page', async () => {
+            const html = rulesView.rulesPage();
+            assert.match(html, /class="rl-chip rl-chip--check" aria-current="page">The register</);
+            assert.match(html, /class="rl-chip" href="\/system">The system map</);
+        });
+
+        await check('the bar is the four doors, in order, and no two share an icon', async () => {
+            assert.equal(NAV.length, 4, NAV.map((l) => l.label).join(', '));
+            assert.deepEqual(NAV.map((l) => l.href), ['/see', '/make', '/rules', '/use']);
+            assert.ok(NAV.every((l) => !l.more), 'nothing under More: the four doors are the whole bar');
             const icons = NAV.map((l) => l.icon);
-            assert.equal(new Set(icons).size, icons.length, 'one icon per place');
+            assert.equal(new Set(icons).size, icons.length, 'one icon per door');
             assert.ok(NAV.every((l) => l.label.length <= 22), 'labels stay short');
         });
     } finally {

@@ -1,7 +1,7 @@
 'use strict';
 // /native (11-07): the road from the web to Android and iOS, without a frame. The page renders whole without
 // JavaScript, links each shared layer, says every size class, every platform difference and every road step, is in
-// the sitemap, and is reachable from the bar's More.
+// the sitemap, and sits under the See door (its breadcrumb leads back).
 const assert = require('node:assert/strict');
 const { boot, check, done } = require('./helpers/boot');
 const { LAYERS, CLASSES, PLATFORM, ROAD, CHECKLIST } = require('../server/views/native');
@@ -22,10 +22,12 @@ const { NAV } = require('../server/render/layout');
             assert.ok(r.text.includes('/css/native.css'), 'its stylesheet');
             assert.ok(!/<script[^>]*native/.test(r.text), 'no page script: whole without JavaScript');
         });
-        await check('it is in the sitemap and under More', async () => {
+        await check('it is in the sitemap and under the See door', async () => {
             const map = await t.get('/sitemap.xml');
             assert.match(map.text, /\/native</);
-            assert.ok(NAV.some((l) => l.href === '/native' && l.more), 'More lists it');
+            const page = await t.get('/native');
+            assert.match(page.text, /<a href="\/see">See<\/a>[\s\S]*?aria-current="page">Native</, 'its breadcrumb is See › Native');
+            assert.ok(NAV.some((l) => l.href === '/see'), 'See is a door in the bar');
             const css = await t.get('/css/native.css');
             assert.equal(css.status, 200);
         });
