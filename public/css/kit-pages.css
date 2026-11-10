@@ -103,7 +103,6 @@
   .kt-pn { grid-template-columns: 1fr 1fr; }
   .kt-pn .kt-pn-all { grid-column: 1 / -1; grid-row: 2; }
 }
-@media (prefers-reduced-motion: reduce) { .kt-tile { transition: none; } }
 
 /* ── /kit/layout: the fluid scale, the eight primitives (each in a box the reader can drag narrower) and the base ── */
 .kt-layout-card { display: grid; gap: 4px; margin: 18px 0 0; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--room-strong) 45%, var(--border, #26344d)); border-radius: 16px;

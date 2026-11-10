@@ -197,7 +197,8 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             assert.equal(css.headers.get('access-control-allow-origin'), '*');
             for (const id of ['draw', 'pop', 'nudge', 'ring', 'beat', 'shake']) assert.ok(css.text.includes(`.ovm-${id}`), id);
             assert.ok(!/infinite|rotate\(360deg\)|turn\)/.test(css.text), 'nothing loops or spins');
-            assert.match(css.text, /@media \(prefers-reduced-motion: reduce\)/);
+            assert.match(css.text, /html\[data-ov-motion=off\]/, 'only motion off stops an icon; Calm plays it');
+            assert.doesNotMatch(css.text, /prefers-reduced-motion/);
             assert.match(css.text, /html\[data-ov-motion="reduced"\]/, 'OpenVibe\'s calm setting stops them too');
             const wc = (await t.get('/ov-icon.js')).text;
             for (const k of ['ovm-draw', 'ovm-ring', 'ovm-beat', 'ovm-shake']) assert.ok(wc.includes(`@keyframes ${k}{`) && css.text.includes(`@keyframes ${k} {`), `${k} in both`);

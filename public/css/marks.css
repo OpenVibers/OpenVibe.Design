@@ -196,9 +196,8 @@
 @keyframes mxDot{0%,100%{transform:scale(1)}50%{transform:scale(1.28)}}
 @keyframes mxPulse{0%,100%{opacity:.4}50%{opacity:.95}}
 @keyframes mxPeek{0%,100%{transform:none}34%{transform:translateX(-68px)}58%{transform:translateX(6px)}76%{transform:translateX(-16px)}}
-@media (prefers-reduced-motion:reduce){.mx-wrap.mx-live .mx-card,.mx-wrap.mx-live .mx-stage :is(.mx-s,.mx-f){transition:none!important}.mx-wrap.mx-live .mx-card:not(.is-in){opacity:1;transform:none}.mx-wrap.mx-live .mx-card:not(.is-in) .mx-stage :is(.mx-s,.mx-f){stroke-dashoffset:0;opacity:1}}
-html[data-ov-motion=reduced] .mx-wrap .mx-card,html[data-ov-motion=reduced] .mx-wrap .mx-card *,html[data-ov-motion=reduced] .mx-ta{animation:none!important;transition:none!important}
-html[data-ov-motion=reduced] .mx-wrap .mx-card:not(.is-in){opacity:1!important;transform:none!important}
+html[data-ov-motion=off] .mx-wrap.mx-live .mx-card:not(.is-in){opacity:1;transform:none}html[data-ov-motion=off] .mx-wrap.mx-live .mx-card:not(.is-in) .mx-stage :is(.mx-s,.mx-f){stroke-dashoffset:0;opacity:1}
+html[data-ov-motion=off] .mx-wrap .mx-card:not(.is-in){opacity:1!important;transform:none!important}
 
 /* ── The menu buttons ───────────────────────────────────────────────────────────────────────────────────────────
    Drawn in currentColor with the accent (mb-a fills, mb-sa strokes); hovered, tapped or scrolled in (is-play) they
@@ -260,7 +259,6 @@ html[data-ov-motion=reduced] .mx-wrap .mx-card:not(.is-in){opacity:1!important;t
 @keyframes mbPop{0%,100%{transform:scale(1)}40%{transform:scale(.8)}75%{transform:scale(1.12)}}
 @keyframes mbTilt{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}55%{transform:rotate(9deg)}80%{transform:rotate(-4deg)}}
 @keyframes mbNod{0%,100%{transform:translateY(0)}30%{transform:translateY(2.4px)}60%{transform:translateY(-.6px)}80%{transform:translateY(1.2px)}}
-html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mb-card .mx-stage{color:#e8edf3}
 .mb-big{width:auto;height:auto;padding:14px;border-radius:24px}
 .mb-big::before{inset:8px}
@@ -328,7 +326,6 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .mx-nudge{position:fixed;left:50%;bottom:calc(16px + var(--ovnav-appbar-h,0px) + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:calc(100vw - 20px);padding:10px 12px;border-radius:16px;border:1px solid #8b5cf6;background:color-mix(in srgb,var(--mx-card) 95%,transparent);backdrop-filter:blur(10px);box-shadow:0 14px 34px rgba(0,0,0,.4);font-size:14px;animation:mxNudgeIn var(--ov-dur-3, .4s) var(--ov-ease-spring, cubic-bezier(.2,.9,.25,1.1))}
 .mx-nudge a.mx-btn{text-decoration:none;display:inline-grid;place-items:center}
 @keyframes mxNudgeIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translateX(-50%)}}
-@media (prefers-reduced-motion:reduce){.mx-step.is-call,.mx-nudge{animation:none}}
 @media (max-width:640px){.mx-steps .mx-stepn{width:18px;height:18px;font-size:10.5px}.mx-steps .mx-steps-sep{display:none}}
 
 /* The menu buttons beside the chosen mark; on a phone the mock bar is just the mark and the button, to compare at a
@@ -414,7 +411,6 @@ html[data-ov-motion=reduced] .mb-btn *{animation:none!important}
 .openvibe-navbar .ovnav-orb .mx-navmenu svg{width:22px;height:22px}
 .openvibe-navbar .mx-nav-flash{animation:mxNavFlash 1.1s var(--ov-ease-out, ease-out)}
 @keyframes mxNavFlash{0%{box-shadow:0 0 0 0 color-mix(in srgb,#8b5cf6 70%,transparent);border-radius:12px}60%{box-shadow:0 0 0 10px transparent;border-radius:12px}100%{box-shadow:none}}
-@media (prefers-reduced-motion:reduce){.openvibe-navbar .mx-nav-flash{animation:none}}
 
 /* The tally counts both families (a person can like both), and every vote sits in a fold under it. */
 .mx-both{margin:-2px 0 0;font-size:12.5px;color:var(--mx-muted);text-align:center}

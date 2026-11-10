@@ -35,9 +35,6 @@
 .ovm-shake.is-no, .ovm-shake.ovm-demo:hover, :hover > .ovm-shake.ovm-demo { animation: ovm-shake var(--ov-dur-4, .5s) var(--ov-ease-out, cubic-bezier(.36, .07, .19, .97)); }
 @keyframes ovm-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(1px); } }
 
-@media (prefers-reduced-motion: reduce) {
-    .ovm-draw :is(path, circle, rect, ellipse, line, polyline) { animation: none; stroke-dashoffset: 0; }
-    .ovm-pop, .ovm-nudge, .ovm-ring, .ovm-beat, .ovm-shake { animation: none !important; transition: none !important; transform: none !important; }
-}
-html[data-ov-motion="reduced"] .ovm-draw :is(path, circle, rect, ellipse, line, polyline) { animation: none; stroke-dashoffset: 0; }
-html[data-ov-motion="reduced"] :is(.ovm-pop, .ovm-nudge, .ovm-ring, .ovm-beat, .ovm-shake) { animation: none !important; transition: none !important; transform: none !important; }
+html[data-ov-motion=off] .ovm-draw :is(path, circle, rect, ellipse, line, polyline){stroke-dashoffset: 0}html[data-ov-motion=off] .ovm-pop,html[data-ov-motion=off] .ovm-nudge,html[data-ov-motion=off] .ovm-ring,html[data-ov-motion=off] .ovm-beat,html[data-ov-motion=off] .ovm-shake{transform: none !important}
+html[data-ov-motion=off] .ovm-draw :is(path, circle, rect, ellipse, line, polyline){stroke-dashoffset: 0}
+html[data-ov-motion=off] :is(.ovm-pop, .ovm-nudge, .ovm-ring, .ovm-beat, .ovm-shake){transform: none !important}

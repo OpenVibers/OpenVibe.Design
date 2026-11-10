@@ -50,10 +50,11 @@ function lookPage({ themes = [], me = {} } = {}) {
         note: signedIn ? 'Each change applies at once and is saved to your account, so every OpenVibe site follows.' : 'Each change applies at once on this device. Sign in and it follows you to every OpenVibe site.',
         body: kit.seg({ name: 'scheme', label: 'Light or dark', options: [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Automatic']], value: 'auto' })
             + kit.seg({ name: 'text', label: 'Text size', options: [['100', 'Standard'], ['112', 'Larger'], ['125', 'Largest']], value: '100' })
-            // "On" is what the device allows (theme-loader's 'auto'), so the line under it says when the device itself
-            // asks for less motion: "Full" claimed motion that a phone set to reduce it never showed.
-            + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'On'], ['reduced', 'Calm']], value: 'auto' })
-            + '<p class="lk-motion-note" id="lk-motion-note" hidden>This device asks for less motion, so OpenVibe keeps still on it whichever you choose.</p>'
+            // Motion (openvibe-shared 4.183.0; the owner, 2026-11-10: "it should still have full motion but actually
+            // just reduce it instead of getting rid of it"): Automatic follows the device, Full outranks it, Calm keeps
+            // every effect smaller and slower, Off alone stops motion. The line under it says what the chosen one does.
+            + kit.seg({ name: 'motion', label: 'Motion', options: [['auto', 'Automatic'], ['full', 'Full'], ['reduced', 'Calm'], ['off', 'Off']], value: 'auto' })
+            + '<p class="lk-motion-note" id="lk-motion-note" aria-live="polite">Follows your device.</p>'
             // Icons (openvibe-shared 4.71.0, plan L56; the owner, 2026-11-01: "a setting to prefer a certain icon type…
             // configurable for users in most cases"): the sample under it is ordinary page markup, drawn by ov-glyphs.js, so
             // it changes as the choice does.

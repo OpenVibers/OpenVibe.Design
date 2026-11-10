@@ -11,10 +11,8 @@
     function load(key, fallback) { try { var v = JSON.parse(localStorage.getItem(key) || 'null'); return v == null ? fallback : v; } catch (e) { return fallback; } }
     function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* a private window keeps it for the page only */ } }
     function all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-    function calm() {
-        try { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true; } catch (e) { /* */ }
-        return document.documentElement.getAttribute('data-ov-motion') === 'reduced';
-    }
+    // Only motion off keeps the page still; Calm plays it (openvibe-shared 4.183.0).
+    function calm() { return document.documentElement.getAttribute('data-ov-motion') === 'off'; }
 
     function init() {
         var root = document.querySelector('[data-mx]');
