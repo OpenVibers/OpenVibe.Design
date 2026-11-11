@@ -117,7 +117,7 @@ function createApi(ctx) {
     r.get('/v1/changes', (req, res) => {
         res.set('Cache-Control', 'public, max-age=3600');
         res.set('Access-Control-Allow-Origin', '*');
-        return res.json(changesView.changesJson());
+        return res.json(changesView.changesJson(req.query));
     });
 
     r.get('/v1/components', async (req, res) => {
