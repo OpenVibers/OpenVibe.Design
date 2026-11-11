@@ -77,14 +77,14 @@ function load(env = process.env) {
 
         // A deep dive (contract ai.deep-dive@1): an AI run on the person's behalf, priced per depth before it starts.
         // The workflow and the prices are AI's; DESIGN_DEEP_DIVE_PRICES is only the fallback for a deployment whose
-        // options endpoint does not answer yet (quick=0.25,thorough=0.65,expert=1.5).
+        // options endpoint does not answer yet (quick=0.2,thorough=0.5,expert=1.2).
         deepDive: {
             url: trim(env.DESIGN_DEEP_DIVE_URL || env.OV_AI_INTERNAL_URL || aiUrl),
             workflow: env.DESIGN_DEEP_DIVE_WORKFLOW || 'design.deep_dive',
             optionsPath: env.DESIGN_DEEP_DIVE_OPTIONS_PATH || '',
             startPath: env.DESIGN_DEEP_DIVE_START_PATH || '',
             deepDivesPath: env.DESIGN_DEEP_DIVE_START_PATH ? '' : '',
-            prices: env.DESIGN_DEEP_DIVE_PRICES || 'quick=0.25,thorough=0.65,expert=1.5',
+            prices: env.DESIGN_DEEP_DIVE_PRICES || 'quick=0.2,thorough=0.5,expert=1.2',
             reportPath: env.DESIGN_DEEP_DIVE_REPORT_PATH || '/deep-dive/:id',
             cropPath: env.DESIGN_DEEP_DIVE_CROP_PATH || '/api/v1/deep-dives/:runId/shots/:cropId',
             publicReportBase: trim(env.OV_EXCHANGE_URL || 'https://openvibe.exchange'),

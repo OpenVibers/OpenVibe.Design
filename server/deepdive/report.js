@@ -175,7 +175,7 @@ function findsFor(report, component, limit = 6) {
     for (const a of list(object(report).analysis)) {
         if (!a || typeof a !== 'object') continue;
         const ev = evidenceOf(a);
-        for (const text of [a.summary, ...list(a.strengths), ...list(a.weaknesses)]) {
+        for (const text of [a.summary, a.first_impression, a.hierarchy, a.density, a.type, a.colour, a.motion, a.words, ...list(a.strengths), ...list(a.weaknesses)]) {
             if (text && wordy.test(String(text))) push(text, ev, { sourceUrl: a.url || null });
         }
     }

@@ -45,7 +45,7 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
         const chosen = depthOf(opts, depth);
         if (!chosen) throw Object.assign(new Error('The deep dive depths are not available right now.'), { status: 503, code: 'deep_dive.depths', detail: 'The deep dive depths are not available right now.' });
         const estimate = { depth: chosen.id, price_usd: chosen.price_usd, currency: chosen.currency || 'USD', priced: chosen.price_usd != null, sites: chosen.sites || null };
-        const research = await db.create({ owner, question, depth: chosen.id, sites, estimate, status: 'starting' });
+        const research = await db.create({ owner, question: String(question || '').slice(0, 500), depth: chosen.id, sites, estimate, status: 'starting' });
         let run;
         try {
             run = await client.start({

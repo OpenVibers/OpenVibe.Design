@@ -129,7 +129,7 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
     }
 
     function normalizeOptions(body) {
-        const root = body && (body.deep_dive || body.deepDive) ? (body.deep_dive || body.deepDive) : body;
+        const root = Array.isArray(body) ? { depths: body } : (body && (body.deep_dive || body.deepDive) ? (body.deep_dive || body.deepDive) : body);
         const raw = root && (root.depths || root.options || root.depth_options || root.levels);
         if (!Array.isArray(raw) || !raw.length) {
             // A prices-only answer: { prices: { quick: 0.25, … } } or { quick: { price_usd } }.
@@ -187,7 +187,11 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         const paths = [];
         if (dd.startPath) paths.push({ path: dd.startPath, body });
         paths.push({ path: '/api/v1/runs?wait=0', body });
+        // The feature's own door: it takes the input plus who the run is for, or the input nested, depending on
+        // whether the deployment wraps the run body. The unused shape is refused by its schema, never charged.
         if (dd.deepDivesPath) paths.push({ path: dd.deepDivesPath, body: body.input });
+        paths.push({ path: '/api/v1/deep-dives', body: { ...body.input, ...(body.on_behalf_of ? { on_behalf_of: body.on_behalf_of } : {}), ...(body.target ? { target: body.target } : {}) } });
+        paths.push({ path: '/api/v1/deep-dives', body });
         paths.push({ path: '/api/v1/deep-dives', body: body.input });
         let last = null;
         for (const p of paths) {
@@ -213,26 +217,29 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         if (!doc || typeof doc !== 'object') throw new DeepDiveError(502, 'deep_dive.bad_answer', 'OpenVibe.AI answered without a deep dive.');
         const status = doc.status || (out && out.run && out.run.status) || 'succeeded';
         return { run: { id, status, output: doc.report || doc.output || doc, input: doc.input,
-            usage: doc.receipt || null, explain: { deep_dive: { steps: doc.steps || [] } } }, citations: [] };
+            usage: doc.receipt || null, explain: { deep_dive: { steps: doc.steps || [], progress: doc.progress, current: doc.step || doc.current || null } } }, citations: [] };
     }
 
     /** One run, with the person's own token when attaching a dive they ran on Exchange. */
     async function getRun(runId, { token = null } = {}) {
         const id = String(runId || '');
         if (!/^[A-Za-z0-9._~-]{1,160}$/.test(id)) throw new DeepDiveError(422, 'deep_dive.invalid_id', 'That is not a deep dive id.');
+        // The feature's own state is the live one: it has the seven steps and the report beside the run. A
+        // deployment without it falls back to the run API, whose output is the same report.
+        try {
+            return await deepDiveDoc(id, { token });
+        } catch (err) {
+            if (![403, 404, 405].includes(err.status)) throw err;
+        }
         let out;
         try {
             out = await call('GET', `/api/v1/runs/${encodeURIComponent(id)}`, null, { token });
         } catch (err) {
-            if (err.status === 404) return await deepDiveDoc(id, { token });
+            if (err.status === 404) throw new DeepDiveError(404, 'deep_dive.not_found', 'That deep dive was not found.');
             throw err;
         }
         const run = out && (out.run || out);
         if (!run || typeof run !== 'object') throw new DeepDiveError(502, 'deep_dive.bad_answer', 'OpenVibe.AI answered without a run.');
-        // A deployment that keeps the report beside the run (its own table) answers the run without its output.
-        if (run.status === 'succeeded' && (run.output == null || typeof run.output !== 'object')) {
-            try { return await deepDiveDoc(id, { token }); } catch { /* the run stays the answer */ }
-        }
         return { run, citations: out && out.citations || [] };
     }
 

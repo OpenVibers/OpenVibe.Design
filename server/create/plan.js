@@ -119,7 +119,7 @@ async function resolvePlan(body = {}, ctx = {}) {
             try { depths = (await ctx.deepDive.options()).depths || []; } catch { depths = []; }
             const chosen = depths.find((d) => d.id === wanted) || null;
             const sites = Array.isArray(value.sites) ? value.sites : String(value.sites || '').split(/\r?\n|,/).map((x) => x.trim()).filter(Boolean);
-            research = { mode: 'new', depth: wanted, question: String(value.question || prompt || start.title || 'A design').slice(0, 2000),
+            research = { mode: 'new', depth: wanted, question: String(value.question || prompt || start.title || 'A design').slice(0, 500),
                 sites: sites.filter((x) => /^https?:\/\//i.test(x)).slice(0, 30),
                 price_usd: chosen && chosen.price_usd != null ? Number(chosen.price_usd) : null,
                 currency: (chosen && chosen.currency) || 'USD', sites_count: chosen && chosen.sites || null, points: 0 };
