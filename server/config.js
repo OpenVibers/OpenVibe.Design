@@ -64,6 +64,17 @@ function load(env = process.env) {
             maxHtmlBytes: 200 * 1024,
         },
 
+        // OpenVibe.Exchange's icon reference search (the Exchange platform API at api.openvibe.exchange, served by
+        // OpenVibe.AI): Design mints its own client-credentials token (audience openvibe.ai, scope
+        // exchange.search.icons) and needs no Exchange key. EXCHANGE_SEARCH_KEY is the owner's override.
+        exchange: {
+            url: trim(env.EXCHANGE_API_URL || 'https://api.openvibe.exchange'),
+            audience: env.DESIGN_EXCHANGE_AUDIENCE || 'openvibe.ai',
+            scope: env.DESIGN_EXCHANGE_SCOPE || 'exchange.search.icons',
+            key: String(env.EXCHANGE_SEARCH_KEY || ''),
+            timeoutMs: Math.max(1000, int(env.DESIGN_EXCHANGE_TIMEOUT_MS, 5000)),
+        },
+
         // OpenVibe.Media: a starting picture is uploaded there by the page and the create request carries its id;
         // Design names its public file address in the prompt and never takes raw image bytes.
         media: {
