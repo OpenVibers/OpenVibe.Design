@@ -121,11 +121,22 @@ function proposedRulesOf(report) {
         if (!(rule.status === 'would_change' || item.proposed_rule || item.proposes_rule)) continue;
         const text = str(item.proposed_rule || item.rule_text || item.what || (typeof item === 'string' ? item : ''), 300);
         if (!text) continue;
+        // Keep the row in one of the register's areas, or the page's grouping would drop it. The cited rule's
+        // own area is the best answer; a new rule lands in products, where most product rules live.
+        let area = str(item.area || item.group, 40);
+        if (!area) {
+            try {
+                const { RULES } = require('../rules/register');
+                const cited = RULES.find((x) => (rule.id && x.id === rule.id) || (rule.text && x.rule === rule.text));
+                if (cited && cited.area) area = cited.area;
+            } catch { /* the register is not readable here; the default below is fine */ }
+        }
+        if (!area) area = 'products';
         out.push({
             rule: text,
             detail: str(rule.text || item.detail || item.description || item.what, 1200),
             why: str(item.why || item.reason || item.evidence_note, 1200),
-            area: str(item.area || item.group, 40),
+            area: area.slice(0, 40),
             evidence: evidenceOf(item),
             ruleId: str(rule.id, 120) || null,
         });

@@ -111,7 +111,19 @@
             else if (input.name === 'models' || input.name === 'takes') fitModels();
             else if (input.name === 'start_url') setText('start', startUrl() ? (() => { try { return new URL(startUrl()).hostname; } catch { return 'A page'; } })() : 'Blank');
             else if (input.name === 'who') { all('input[name="models"]').forEach((x) => { x.checked = false; }); fitModels(); show(input); setTimeout(() => closeMods(null), 160); }
-            else if (input.name === 'research' || input.name === 'research_depth' || input.name === 'research_id' || input.name === 'research_ref') { fitResearch(); }
+            else if (input.name === 'research') {
+                if (input.checked) { const id = q('select[name="research_id"]'); if (id) id.value = ''; const ref = q('input[name="research_ref"]'); if (ref) ref.value = ''; }
+                fitResearch();
+            }
+            else if (input.name === 'research_id') {
+                if (input.value) { const tick = q('input[name="research"]'); if (tick) tick.checked = false; const ref = q('input[name="research_ref"]'); if (ref) ref.value = ''; }
+                fitResearch();
+            }
+            else if (input.name === 'research_ref') {
+                if (input.value.trim()) { const tick = q('input[name="research"]'); if (tick) tick.checked = false; const id = q('select[name="research_id"]'); if (id) id.value = ''; }
+                fitResearch();
+            }
+            else if (input.name === 'research_depth') fitResearch();
             else if (input.closest('.dv-mod')) { show(input); setTimeout(() => closeMods(null), 160); }
             save(); askCost();
         });
@@ -121,7 +133,10 @@
         });
         prompt.addEventListener('blur', askCost);
         const researchRef = q('input[name="research_ref"]');
-        if (researchRef) researchRef.addEventListener('input', () => { fitResearch(); save(); askCost(); });
+        if (researchRef) researchRef.addEventListener('input', () => {
+            if (researchRef.value.trim()) { const tick = q('input[name="research"]'); if (tick) tick.checked = false; const id = q('select[name="research_id"]'); if (id) id.value = ''; }
+            fitResearch(); save(); askCost();
+        });
         mods.forEach((m) => m.addEventListener('toggle', () => { if (m.open) closeMods(m); }));
         document.addEventListener('click', (event) => { const open = mods.find((m) => m.open); if (open && (!open.contains(event.target) || event.target === open)) closeMods(null); });
         document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const open = mods.find((m) => m.open); if (open) { closeMods(null); open.querySelector('summary').focus(); } } });
