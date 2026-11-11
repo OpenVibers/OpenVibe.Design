@@ -116,7 +116,7 @@ function load(env = process.env) {
         // to their channel; Design never holds a Live token of its own for this.
         live: {
             url: trim(env.OV_LIVE_URL || 'https://openvibe.live'),
-            elementsPath: env.OV_LIVE_ELEMENTS_PATH || '/api/v1/me/elements',
+            elementsPath: env.OV_LIVE_ELEMENTS_PATH || '/api/me/elements',
             timeoutMs: Math.max(1000, int(env.DESIGN_LIVE_TIMEOUT_MS, 15_000)),
         },
 

@@ -45,7 +45,7 @@ function createElementHandoff({ config = {}, fetchImpl = globalThis.fetch, log =
     async function addToChannel({ element, token }) {
         const base = String(live.url || '').replace(/\/+$/, '');
         if (!base) throw Object.assign(new Error('Live is not configured, so the element cannot be added.'), { status: 503, code: 'design.live_unconfigured' });
-        const out = await call('OpenVibe.Live', `${base}${live.elementsPath || '/api/v1/me/elements'}`, token, { element }, live.timeoutMs);
+        const out = await call('OpenVibe.Live', `${base}${live.elementsPath || '/api/me/elements'}`, token, element, live.timeoutMs);
         const id = out.id || (out.element && out.element.id) || null;
         return { id, url: out.url || (id ? `${base}/elements/${encodeURIComponent(id)}` : `${base}/elements`), name: element.name };
     }

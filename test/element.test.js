@@ -59,7 +59,7 @@ const fakeAi = (state, doc = ELEMENT) => ({
         liveCalls.push({ url: req.url, auth: Boolean(req.headers.authorization), body });
         answer(201, { id: 'el_LIVE0000000000000000000000', url: 'https://openvibe.live/elements/el_LIVE0000000000000000000000' });
     });
-    const t = await boot({ ai, env: { OV_LIVE_URL: live.url, OV_LIVE_ELEMENTS_PATH: '/api/v1/me/elements' } });
+    const t = await boot({ ai, env: { OV_LIVE_URL: live.url } });
     const alice = t.network.addUser('alice');
     const bob = t.network.addUser('bob');
     const mod = t.network.addUser('mod', { role: 'global_mod' });
@@ -135,9 +135,9 @@ const fakeAi = (state, doc = ELEMENT) => ({
             const channel = await t.get(`/d/${t.designId}/element/channel`, { headers: token(alice), body: 'key=' });
             assert.strictEqual(channel.status, 303, channel.text);
             assert.strictEqual(liveCalls.length, 1);
-            assert.strictEqual(liveCalls[0].url, '/api/v1/me/elements');
-            assert.strictEqual(liveCalls[0].body.element.author.name, 'alice');
-            assert.strictEqual(liveCalls[0].body.element.sharing, 'private');
+            assert.strictEqual(liveCalls[0].url, '/api/me/elements');
+            assert.strictEqual(liveCalls[0].body.author.name, 'alice');
+            assert.strictEqual(liveCalls[0].body.sharing, 'private');
             const published = await t.get(`/d/${t.designId}/element/gallery`, { headers: token(alice), body: 'key=' });
             assert.strictEqual(published.status, 303, published.text);
             const page = await t.get(`/d/${t.designId}/element/preview`, { as: alice });
@@ -155,7 +155,7 @@ const fakeAi = (state, doc = ELEMENT) => ({
         await check('another person installs it, rates it and remixes it with credit', async () => {
             const install = await t.get('/gallery/big-red-button/install', { headers: token(bob), body: 'key=' });
             assert.strictEqual(install.status, 303, install.text);
-            assert.ok(liveCalls.some((c) => c.url === '/api/v1/me/elements'), 'the install goes to Live too');
+            assert.ok(liveCalls.some((c) => c.url === '/api/me/elements'), 'the install goes to Live too');
             const page = await t.get('/gallery/big-red-button', { as: bob });
             assert.ok(page.text.includes('Installed'));
             const rate = await t.get('/gallery/big-red-button/rating', { headers: { ...token(bob), 'content-type': 'application/x-www-form-urlencoded' }, body: 'stars=5&note=It+spins' });
