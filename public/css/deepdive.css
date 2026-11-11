@@ -37,3 +37,8 @@
 .dv-take-research { font-size: .8rem; color: var(--text-secondary); margin: .3rem 0 0; }
 .dv-take-research a { color: inherit; text-decoration: underline; }
 @media (max-width: 480px) { .dd-find-list { grid-template-columns: 1fr; } .dd-page { padding-left: .8rem; padding-right: .8rem; } }
+/* The composer hides the module's word on a phone; Research first keeps it, because "Off" alone says nothing. */
+@media (max-width: 640px) {
+    .dv-mod[data-mod="research"] > summary .dv-mod-k { display: inline; }
+    .dv-mod[data-mod="research"] > summary b { min-width: 0; }
+}

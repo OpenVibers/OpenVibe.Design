@@ -100,8 +100,8 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         const seen = new Set();
         const candidates = [];
         if (dd.optionsPath) candidates.push({ baseUrl: base, path: dd.optionsPath });
-        candidates.push({ baseUrl: base, path: '/api/v1/deep-dives/options' }, { baseUrl: base, path: '/api/v1/deep-dive/options' },
-            { baseUrl: base, path: '/api/v1/deep-dives/prices' }, { baseUrl: base, path: '/api/v1/deep-dives/depths' });
+        candidates.push({ baseUrl: base, path: '/api/v1/deep-dives/depths' }, { baseUrl: base, path: '/api/v1/deep-dives/options' },
+            { baseUrl: base, path: '/api/v1/deep-dive/options' }, { baseUrl: base, path: '/api/v1/deep-dives/prices' });
         if (exchangeBase) candidates.push({ baseUrl: exchangeBase, path: '/api/v1/deep-dives/options' }, { baseUrl: exchangeBase, path: '/api/v1/exchange/deep-dives/options' });
         for (const c of candidates) {
             const key = `${c.baseUrl}${c.path}`;
@@ -157,7 +157,7 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
                 minutes: Number(d.minutes || d.minutes_about) || null,
                 price_usd: Number(d.price_usd != null ? d.price_usd : d.price) || 0,
                 currency: String(d.currency || 'USD'),
-                line: String(d.line || d.description || '') || null,
+                line: String(d.line || d.description || d.analysis || '') || null,
             };
         }).filter(Boolean);
         if (!depths.length) return null;
@@ -186,12 +186,14 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         if (idempotencyKey) body.idempotency_key = String(idempotencyKey).slice(0, 200);
         const paths = [];
         if (dd.startPath) paths.push({ path: dd.startPath, body });
-        paths.push({ path: '/api/v1/runs?wait=0', body });
-        // The feature's own door: it takes the input plus who the run is for, or the input nested, depending on
-        // whether the deployment wraps the run body. The unused shape is refused by its schema, never charged.
-        if (dd.deepDivesPath) paths.push({ path: dd.deepDivesPath, body: body.input });
-        paths.push({ path: '/api/v1/deep-dives', body: { ...body.input, ...(body.on_behalf_of ? { on_behalf_of: body.on_behalf_of } : {}), ...(body.target ? { target: body.target } : {}) } });
+        // The feature's own door (OpenVibe.AI's /api/v1/deep-dives) takes the dive's input and the person it is for.
+        // It is preferred over the generic run API: it computes the depth's price and hold itself, and its route is
+        // what the Exchange page and Design share.
+        paths.push({ path: '/api/v1/deep-dives', body: { ...body.input, ...(body.idempotency_key ? { idempotency_key: body.idempotency_key } : {}),
+            ...(body.on_behalf_of ? { on_behalf_of: body.on_behalf_of } : {}), ...(body.target ? { target: body.target } : {}) } });
         paths.push({ path: '/api/v1/deep-dives', body });
+        paths.push({ path: '/api/v1/runs?wait=0', body });
+        if (dd.deepDivesPath) paths.push({ path: dd.deepDivesPath, body: body.input });
         paths.push({ path: '/api/v1/deep-dives', body: body.input });
         let last = null;
         for (const p of paths) {
@@ -216,7 +218,9 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         const doc = out && (out.deep_dive || out.deepDive || out.report || out.run || out);
         if (!doc || typeof doc !== 'object') throw new DeepDiveError(502, 'deep_dive.bad_answer', 'OpenVibe.AI answered without a deep dive.');
         const status = doc.status || (out && out.run && out.run.status) || 'succeeded';
-        return { run: { id, status, output: doc.report || doc.output || doc, input: doc.input,
+        const report = doc.report && typeof doc.report === 'object' ? doc.report : null;
+        return { run: { id, status, output: doc.report || doc.output || doc, error: doc.error || null,
+            input: doc.input || (report && report.input) || { question: doc.question, depth: doc.depth, max_sites: doc.site_limit, sites: [] },
             usage: doc.receipt || null, explain: { deep_dive: { steps: doc.steps || [], progress: doc.progress, current: doc.step || doc.current || null } } }, citations: [] };
     }
 

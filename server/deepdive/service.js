@@ -170,9 +170,10 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
         if (!token) throw Object.assign(new Error('Sign in to attach a deep dive you ran on OpenVibe Exchange.'), { status: 401, code: 'deep_dive.sign_in', detail: 'Sign in to attach a deep dive you ran on OpenVibe Exchange.' });
         const got = await client.getRun(runId, { token });
         const run = got.run || {};
-        const input = run.input && typeof run.input === 'object' ? run.input : {};
-        const question = input.question || input.query || (run.output && (run.output.question || run.output.query)) || 'A deep dive';
-        const depth = input.depth || (run.output && run.output.depth) || 'thorough';
+        const output = run.output && typeof run.output === 'object' ? run.output : {};
+        const input = run.input && typeof run.input === 'object' ? run.input : (output.input && typeof output.input === 'object' ? output.input : {});
+        const question = input.question || input.query || output.question || output.query || 'A deep dive';
+        const depth = input.depth || output.depth || 'thorough';
         const status = client.statusOf(run);
         const report = status === 'done' ? client.reportOf(run, { question, depth }) : null;
         const row = await db.create({ owner, question, depth, sites: Array.isArray(input.sites) ? input.sites : [], runId, status: status === 'done' ? 'done' : status,

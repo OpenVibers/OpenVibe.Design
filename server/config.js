@@ -68,11 +68,15 @@ function load(env = process.env) {
         // owner guard uses, with the owner role as the other accepted claim.
         ownerUsername: String(env.DESIGN_OWNER_USERNAME || env.OWNER_USERNAME || 'goosely'),
 
-        // OpenVibe.Exchange is the front door to a deep dive for people; the report page and the depths' prices
-        // are read there when AI does not answer them. Design calls AI for the run itself.
+        // OpenVibe.Exchange's icon reference search (the Exchange platform API at api.openvibe.exchange, served by
+        // OpenVibe.AI): Design mints its own client-credentials token (audience openvibe.ai, scope
+        // exchange.search.icons) and needs no Exchange key. EXCHANGE_SEARCH_KEY is the owner's override.
         exchange: {
-            url: trim(env.OV_EXCHANGE_INTERNAL_URL || 'http://127.0.0.1:5150'),
-            publicUrl: trim(env.OV_EXCHANGE_URL || 'https://openvibe.exchange'),
+            url: trim(env.EXCHANGE_API_URL || 'https://api.openvibe.exchange'),
+            audience: env.DESIGN_EXCHANGE_AUDIENCE || 'openvibe.ai',
+            scope: env.DESIGN_EXCHANGE_SCOPE || 'exchange.search.icons',
+            key: String(env.EXCHANGE_SEARCH_KEY || ''),
+            timeoutMs: Math.max(1000, int(env.DESIGN_EXCHANGE_TIMEOUT_MS, 5000)),
         },
 
         // A deep dive (contract ai.deep-dive@1): an AI run on the person's behalf, priced per depth before it starts.
@@ -101,6 +105,7 @@ function load(env = process.env) {
             registerPath: env.DESIGN_RULES_PATH || 'server/rules/register.js',
             branchPrefix: env.DESIGN_RULES_BRANCH_PREFIX || 'rules/research',
             ownerUsername: String(env.DESIGN_OWNER_USERNAME || env.OWNER_USERNAME || 'goosely'),
+
         },
 
         // OpenVibe.Media: a starting picture is uploaded there by the page and the create request carries its id;

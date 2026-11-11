@@ -69,7 +69,7 @@ async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.00
         return st.models[i] || { provider: 'stub', model: 'stub-1' };
     }
 
-    const srv = await listen(async (req, raw, json) => {
+    const srv = await listen(async (req, raw, json, res) => {
         const url = new URL(req.url, 'http://x');
         const text = raw.toString('utf8');
         let body = {};
@@ -146,6 +146,17 @@ async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.00
             return json(201, { run });
         }
 
+        const shot = /^\/api\/v1\/deep-dives\/([^/]+)\/shots\/([^/]+)$/.exec(url.pathname);
+        if (shot && req.method === 'GET') {
+            st.requests.push({ method: 'GET', path: url.pathname, claims });
+            const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl1sAAAAASUVORK5CYII=', 'base64');
+            st.lastShot = { path: url.pathname, status: 200 };
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'image/png');
+            res.setHeader('Cache-Control', 'private, no-store');
+            res.end(png);
+            return;
+        }
         const one = /^\/api\/v1\/runs\/([^/]+)$/.exec(url.pathname);
         if (one && req.method === 'GET') {
             st.requests.push({ method: 'GET', path: url.pathname, claims });

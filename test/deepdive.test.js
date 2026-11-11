@@ -206,6 +206,15 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
             assert.equal((await t.get(`/research/${researchId}`)).status, 303);
         });
 
+        await check('a crop is proxied from the dive, owner only, never a public Media address', async () => {
+            const png = await t.get(`/research/${researchId}/crop/crop_acme`, { as: owner });
+            assert.equal(png.status, 200, png.text);
+            assert.equal(png.headers.get('content-type'), 'image/png');
+            assert.equal(png.headers.get('x-content-type-options'), 'nosniff');
+            assert.equal((await t.get(`/research/${researchId}/crop/crop_acme`, { as: kim })).status, 404);
+            assert.equal((await t.get(`/research/${researchId}/crop/crop_acme`)).status, 401);
+        });
+
         await check('a component page gains How others do it only when a finished dive has a finding', async () => {
             const before = await t.get('/components/button');
             assert.equal(before.status, 200);
