@@ -76,6 +76,45 @@ function createDesignApi(ctx) {
             color: body.color, spacing: body.spacing, align: body.align, owner: owner(req), key: keyOf(req), subject: owner(req), viewer: viewer(req) });
         return priv(res, 201, result);
     }));
+    // ── Elements (OpenVibe Elements stage 2) ────────────────
+    // A design of kind Element keeps a ui.element@1 document instead of an HTML take. These routes move its
+    // generated sliders, run it on sample data, add it to the maker's Live channel, and publish it to
+    // Exchange's free gallery. In every one the person's own token is the credential.
+    const authorNameOf = (req) => (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker';
+    routes.get('/:id/element/simulate', safe(async (req, res) => priv(res, 200,
+        await ctx.designs.simulate(req.params.id, { owner: owner(req), key: keyOf(req), viewer: viewer(req) }))));
+    routes.post('/:id/element/tweak', sameOrigin, safe(async (req, res) => priv(res, 200,
+        await ctx.designs.tweakElement({ id: req.params.id, values: req.body || {}, owner: owner(req), key: keyOf(req), viewer: viewer(req) }))));
+    routes.post('/:id/element/channel', sameOrigin, safe(async (req, res) => {
+        if (!owner(req)) return priv(res, 401, { error: 'design.sign_in', detail: 'Sign in to add an element to your channel.' });
+        const { element } = await ctx.designs.elementOf({ id: req.params.id, owner: owner(req), key: keyOf(req), viewer: viewer(req), authorName: authorNameOf(req), sharing: 'private' });
+        let channel;
+        try {
+            channel = await ctx.elementHandoff.addToChannel({ element, token: token(req) });
+            channel.at = new Date().toISOString();
+        } catch (err) {
+            channel = { error: String(err.message || 'Live did not accept the element.').slice(0, 300), at: new Date().toISOString() };
+            await ctx.designs.rememberHandoff({ id: req.params.id, owner: owner(req), key: keyOf(req), viewer: viewer(req), kind: 'channel', value: channel });
+            return priv(res, err.status || 502, { error: err.code || 'design.handoff_refused', detail: channel.error, channel });
+        }
+        const data = await ctx.designs.rememberHandoff({ id: req.params.id, owner: owner(req), key: keyOf(req), viewer: viewer(req), kind: 'channel', value: channel });
+        return priv(res, 200, { channel, ...data });
+    }));
+    routes.post('/:id/element/gallery', sameOrigin, safe(async (req, res) => {
+        if (!owner(req)) return priv(res, 401, { error: 'design.sign_in', detail: 'Sign in to publish an element to the gallery.' });
+        const { design, element } = await ctx.designs.elementOf({ id: req.params.id, owner: owner(req), key: keyOf(req), viewer: viewer(req),
+            authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker', sharing: 'gallery' });
+        try {
+            const listing = await ctx.gallery.publish({ subject: owner(req), authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker',
+                authorUsername: (req.viewer && req.viewer.username) || null, document: element, source: 'design', sourceId: req.params.id, remixOf: design.elementRemixOf || null });
+            const value = { id: listing.id, slug: listing.slug, url: `/gallery/${encodeURIComponent(listing.slug)}`, at: new Date().toISOString() };
+            const data = await ctx.designs.rememberHandoff({ id: req.params.id, owner: owner(req), key: keyOf(req), viewer: viewer(req), kind: 'listing', value });
+            return priv(res, 201, { listing: value, ...data });
+        } catch (err) {
+            return priv(res, err.status || 502, { error: err.code || 'design.gallery_refused', detail: String(err.message || 'The gallery did not accept the element.').slice(0, 300) });
+        }
+    }));
+
     routes.get('/:id/versions', safe(async (req, res) => priv(res, 200,
         await ctx.designs.versions(req.params.id, owner(req), keyOf(req), viewer(req)))));
     routes.post('/:id/undo', sameOrigin, safe(async (req, res) => priv(res, 200,

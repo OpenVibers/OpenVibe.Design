@@ -7,6 +7,7 @@ const { vocabulary } = require('./components/registry');
 const { kindOf, instructionFor, categoryFor } = require('./create/kinds');
 const { makeThumbnail } = require('./create/thumbnail');
 const { publicStart, startPrompt } = require('./create/start');
+const elements = require('./create/element');
 
 const random = () => crypto.randomBytes(24).toString('base64url');
 const hash = (key) => crypto.createHash('sha256').update(key).digest();
@@ -111,6 +112,9 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
                 ? d.variants.some(v => v.status === 'done') ? 'done' : 'failed' : 'running',
             createdAt: d.created_at, updatedAt: d.updated_at,
             published: d.space_url ? { url: d.space_url, at: d.published_at || null } : null,
+            elementChannel: d.element_channel || null,
+            elementListing: d.element_listing || null,
+            elementRemixOf: d.element_remix_of || null,
         };
     };
     function allowed(d, owner, key) {
@@ -217,7 +221,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             model: slot.model, model_id: slot.model_id || null, name: slot.name || null,
             price_in: slot.price_in == null ? null : Number(slot.price_in), price_out: slot.price_out == null ? null : Number(slot.price_out),
             source: slot.source || null, status: 'pending', html: '', ms: 0, costUsd: 0, error: null,
-            paid_by: null, prefer: slot.prefer || null, pin: slot.pin === true }));
+            paid_by: null, prefer: slot.prefer || null, pin: slot.pin === true,
+            element: null, element_error: null, element_price: null, tweaks: null }));
         const id = s.newId('dsn'), editKey = owner ? null : random();
         const startRecord = start && typeof start === 'object' && !Array.isArray(start) ? start : {};
         const thumbnail = makeThumbnail({ kind, kindName: kindEntry.name, prompt,
@@ -242,6 +247,42 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         await db.exec('UPDATE designs SET variants=jsonb_set(variants, ARRAY[$2::text], $3::jsonb, false), updated_at=$4::timestamptz WHERE id=$1',
             [id, String(index), JSON.stringify(variant), s.iso()]);
     }
+    /**
+     * One Element take: the AI writes the look and the recipe together as JSON. The SDK (or, before the release
+     * that carries it, the contracts schema) validates it; one refusal is sent back with its reasons and asked
+     * once more. A second refusal marks the take failed with those reasons in plain words.
+     */
+    async function runElement(d, running, index, theme) {
+        const variables = theme.variables || {};
+        const base = elements.elementPrompt({ prompt: d.prompt, variables });
+        const system = elements.elementSystemPrompt();
+        let lastReasons = [];
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            const prompt = attempt === 0 ? base
+                : `${base}\n\nYour previous answer was refused for these reasons:\n- ${lastReasons.join('\n- ')}\nReturn the whole JSON object again with every one of them fixed.`;
+            const out = await ai.text({
+                prompt, system, maxTokens: 3000,
+                target: { service: 'design', type: 'element_output', id: `${d.id}_${index}_${attempt}`.slice(0, 128) },
+                prefer: running.prefer || null, person: d.owner || null,
+            });
+            let doc;
+            try { doc = elements.prepareElement(elements.parseElement(out.text), { authorName: 'A maker' }); }
+            catch (err) { lastReasons = [err.message]; continue; }
+            delete doc.id;
+            delete doc.revision;
+            const check = elements.validateElement(doc);
+            if (!check.ok) { lastReasons = check.reasons; continue; }
+            let price = null;
+            try { price = await elements.priceOf(doc, ai); } catch (err) { log.warn('[OpenVibe.Design] element price:', err.message); }
+            return {
+                ...running, status: 'done', html: JSON.stringify(doc), element: doc, element_error: null, element_price: price,
+                tweaks: elements.tweaksFor(doc, variables), provider: out.provider || running.provider, model: out.model || running.model,
+                ms: out.ms || 0, costUsd: Number(out.cost_usd || 0), error: null, paid_by: out.paid_by || null, prefer: out.prefer || running.prefer || null,
+            };
+        }
+        throw fail(422, 'design.element_invalid', `The AI's element was refused: ${lastReasons.join('; ')}`);
+    }
+
     async function run(id) {
         const d = await db.maybe('SELECT * FROM designs WHERE id=$1', [id]);
         if (!d) return;
@@ -251,6 +292,11 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             await updateVariant(id, index, running);
             try {
                 const t = await lookTheme(d);
+                if (d.kind === 'element') {
+                    const done = await runElement(d, running, index, t);
+                    await updateVariant(id, index, done);
+                    return;
+                }
                 const prompt = [themePrompt(d.prompt, Object.keys(t.variables || {})),
                     instructionFor(d.kind, d.frame), startPrompt(d.start || {})].filter(Boolean).join('\n\n');
                 const out = await ai.generate({ prompt, category: categoryFor(d.kind),
@@ -407,6 +453,15 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             // `pin` is how the run was asked to route, not part of the frame; `prefer` is the request before the run
             // and the run's explain (with `honoured`) after it.
             const { pin, ...v } = full;
+            if (d.kind === 'element') {
+                // An element is stored as a JSON document, not a document to wrap. Its look is drawn from the
+                // component and the theme's tokens; the sliders are generated from its own look.
+                const doc = full.element || null;
+                return { ...v, html: '', element: doc, element_error: full.element_error || null,
+                    element_price: full.element_price || null, look: doc ? elements.renderLook(doc) : null,
+                    tweaks: doc ? elements.tweaksFor(doc, selected.variables || {}) : null,
+                    currentSeq: p && index === Number(p.variant_index) && current ? Number(current.seq) : null };
+            }
             if (p && index === Number(p.variant_index) && current) {
                 return { ...v, html: wrap(current.html, selected.variables || {}), currentSeq: Number(current.seq), edited: current.kind !== 'generated' };
             }
@@ -466,6 +521,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         if (!instruction || instruction.length > CHAT_INSTRUCTION_MAX)
             throw fail(422, 'design.invalid_instruction', `Write an instruction up to ${CHAT_INSTRUCTION_MAX} characters.`);
         const { d, p, selected, variant } = await currentForEdit(id, owner, key, viewer);
+        if (d.kind === 'element') throw fail(409, 'design.element_no_chat', 'An element is changed with its sliders, not a chat edit.');
         const used = await db.maybe('UPDATE design_picks SET chat_edits=chat_edits+1, updated_at=$2 WHERE design_id=$1 AND chat_edits < $3 RETURNING chat_edits',
             [d.id, s.iso(), chatEditLimit]);
         if (!used) throw fail(429, 'design.edit_limit', `This design has used its ${chatEditLimit} AI edits. Click edits and undo still work.`);
@@ -491,6 +547,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
 
     async function clickEdit({ id, path, text, color, spacing, align, owner, key, subject = null, viewer = null }) {
         const { d, p, selected, variant } = await currentForEdit(id, owner, key, viewer);
+        if (d.kind === 'element') throw fail(409, 'design.element_no_click', 'An element is changed with its sliders, not a click edit.');
         const current = await versionRow(id, p.current_seq);
         let change;
         try {
@@ -607,6 +664,87 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         const pending = await db.many("SELECT id FROM designs WHERE variants @> '[{\"status\":\"pending\"}]'::jsonb OR variants @> '[{\"status\":\"running\"}]'::jsonb ORDER BY created_at LIMIT 20");
         for (const d of pending) run(d.id).catch(err => log.warn('[OpenVibe.Design] resume:', err.message));
     }
+    /** The picked element of an element design, through the same access check every read uses. */
+    async function elementDraft({ id, owner, key, viewer = null }) {
+        const { d, p, selected, variant } = await currentForEdit(id, owner, key, viewer);
+        if (d.kind !== 'element') throw fail(409, 'design.not_element', 'This design is not an element.');
+        if (!variant || !variant.element) throw fail(409, 'design.element_not_ready', 'The element is not ready yet.');
+        return { d, p, selected, variant, element: variant.element };
+    }
+
+    /** Move the generated tweak sliders: size, tint and label, applied to the look only. */
+    async function tweakElement({ id, values = {}, owner, key, viewer = null }) {
+        const { d, p, selected, variant } = await elementDraft({ id, owner, key, viewer });
+        let doc;
+        try { doc = elements.applyTweaks(variant.element, values || {}, selected.variables || {}); }
+        catch (err) { throw fail(err.status || 422, err.code || 'design.invalid_tweak', err.detail || err.message); }
+        const check = elements.validateElement(doc);
+        if (!check.ok) throw fail(422, 'design.element_invalid', `The change was refused: ${check.reasons.join('; ')}`);
+        let price = variant.element_price || null;
+        try { price = await elements.priceOf(doc, ai); } catch { /* the price line says unknown */ }
+        await updateVariant(d.id, Number(p.variant_index), { ...variant, element: doc, html: JSON.stringify(doc),
+            element_price: price, tweaks: elements.tweaksFor(doc, selected.variables || {}) });
+        return read(id, owner, key, viewer);
+    }
+
+    /** The element to hand to Live or Exchange: the picked document with the maker's own display name. */
+    async function elementOf({ id, owner, key, viewer = null, authorName = null, sharing = 'gallery' }) {
+        const { d, variant } = await elementDraft({ id, owner, key, viewer });
+        const doc = JSON.parse(JSON.stringify(variant.element));
+        if (authorName) doc.author = { name: String(authorName).slice(0, 80) };
+        doc.sharing = sharing;
+        return { design: publicRow(d), element: doc };
+    }
+
+    /** Run the picked element on sample data: fake presses of every role, a fake chat, and no robot or AI call. */
+    async function simulate(id, { owner, key, viewer = null } = {}) {
+        const { d, variant } = await elementDraft({ id, owner, key, viewer });
+        let price = variant.element_price || null;
+        try { price = await elements.priceOf(variant.element, ai); } catch { /* said as unknown */ }
+        return { designId: d.id, prompt: d.prompt, element: variant.element, price, ...elements.simulateElement(variant.element, { price }) };
+    }
+
+    /**
+     * A remix opens as an editable copy: a Design of kind Element whose one take is the gallery listing's
+     * document, credited to the original. It runs no AI and spends nothing; the person tweaks and publishes.
+     */
+    async function importElement({ element, owner, listing, remixOf = null } = {}) {
+        if (!owner) throw fail(401, 'auth.required', 'Sign in to remix an element.');
+        if (!element || typeof element !== 'object') throw fail(422, 'design.invalid_element', 'The listing does not carry an element document.');
+        const selected = await theme(null);
+        const variables = selected.variables || {};
+        const id = s.newId('dsn');
+        const doc = JSON.parse(JSON.stringify(element));
+        if (doc.name && !/\(remix\)$/i.test(doc.name)) doc.name = `${doc.name} (remix)`;
+        const variant = {
+            id: s.newId('dva'), slot: 0, provider: 'gallery', model: (listing && listing.author && listing.author.name) || 'gallery',
+            model_id: null, name: null, price_in: null, price_out: null, source: 'gallery', status: 'done', html: JSON.stringify(doc),
+            ms: 0, costUsd: 0, error: null, paid_by: null, prefer: null, pin: false,
+            element: doc, element_error: null, element_price: null, tweaks: elements.tweaksFor(doc, variables),
+        };
+        const prompt = `Remix of ${listing.name}`;
+        const thumbnail = makeThumbnail({ kind: 'element', kindName: 'Element', prompt, model: variant.model, variables });
+        await db.exec(`INSERT INTO designs(id,prompt,kind,theme_id,variants,owner,guest_hash,guest_ip,created_at,updated_at,
+                frame,look,look_variables,models,start,source_design_id,estimate,thumbnail_svg,element_remix_of)
+            VALUES($1,$2,$3,$4,$5::jsonb,$6,NULL,NULL,$7::timestamptz,$7::timestamptz,$8,$9,$10::jsonb,NULL,$11::jsonb,NULL,NULL,$12,$13)`,
+        [id, prompt, 'element', selected.id, JSON.stringify([variant]), owner, s.iso(), 'phone', selected.id,
+            JSON.stringify(variables), JSON.stringify({ from_listing: listing.id, by: listing.author && listing.author.name || null }),
+            thumbnail, remixOf || listing.id]);
+        await db.exec(`INSERT INTO design_picks(design_id,variant_index,variant_id,created_at,updated_at)
+            VALUES($1,0,$2,$3::timestamptz,$3::timestamptz) ON CONFLICT (design_id) DO NOTHING`, [id, variant.id, s.iso()]);
+        if (sharing) await sharing.register(id, owner).catch((err) => log.warn('[OpenVibe.Design] share row not registered:', err.message));
+        return { design: { id, prompt, kind: 'element' }, editUrl: `/d/${id}` };
+    }
+
+    /** Remember a hand-off's outcome beside the element, so the canvas can say what happened after a reload. */
+    async function rememberHandoff({ id, owner, key, viewer = null, kind, value }) {
+        if (!['channel', 'listing'].includes(kind)) throw fail(422, 'design.invalid_handoff', 'Choose channel or listing.');
+        await row(id, owner, key, viewer, true);
+        const column = kind === 'channel' ? 'element_channel' : 'element_listing';
+        await db.exec(`UPDATE designs SET ${column}=$2::jsonb, updated_at=$3::timestamptz WHERE id=$1`, [id, JSON.stringify(value || null), s.iso()]);
+        return read(id, owner, key, viewer);
+    }
+
     /**
      * Publish the working frame on openvibe.space (publish.js): its owner only (a guest's private link cannot), and
      * only once a frame is picked. The site is remembered, so publishing again updates the same address.
@@ -614,6 +752,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
     async function publish({ id, owner, name = '', publisher, viewer = null }) {
         if (!owner) throw fail(401, 'auth.required', 'Sign in to publish a design on openvibe.space.');
         const d = await row(id, owner, null, viewer, true);
+        if (d.kind === 'element') throw fail(409, 'design.element_not_site', 'An element is added to your Live channel or published to the Elements and packs gallery, not to a Space site.');
         if (d.owner !== owner) throw fail(403, 'design.forbidden', 'Only the person who made this design can publish it.');
         const data = await read(id, owner, null);
         const index = data.pick ? Number(data.pick.variantIndex) : -1;
@@ -623,7 +762,8 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         return out;
     }
 
-    return { create, read, setTheme, recent, thumbnail, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit, publish };
+    return { create, read, setTheme, recent, thumbnail, resume, theme, pick, chatEdit, clickEdit, versions, undo, redo, chatEditLimit, publish,
+        elementDraft, tweakElement, elementOf, simulate, rememberHandoff, importElement };
 }
 
 module.exports = { createDesigns, wrap, tokenCss, themeCss, themePrompt, editPrompt };

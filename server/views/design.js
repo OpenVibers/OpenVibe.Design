@@ -29,6 +29,9 @@ const MAKES = [
     { id: 'mark', name: 'Mark', glyph: G('<circle cx="12" cy="12" r="8.2"/><path d="M8.4 12.4l2.4 2.4 4.8-5.4"/>'),
         placeholder: 'Describe the mark: the name, what it stands for and where it will be used…',
         examples: ['A mark for a robotics club', 'An app icon for a notes app', 'A monogram, two letters'] },
+    { id: 'element', name: 'Element', glyph: G('<rect x="4" y="6" width="16" height="12" rx="6"/><circle cx="12" cy="12" r="2.4"/>'),
+        placeholder: 'Describe an element: what it looks like and what it does…',
+        examples: ['A big red button that makes the robot spin, once a minute, costs 100 points', 'A meter that fills when chat reacts', 'A button that turns the headlights on'] },
 ];
 const MAKE = Object.fromEntries(MAKES.map((m) => [m.id, m]));
 const FRAME_ICON = G('<rect x="3.5" y="5" width="12" height="9" rx="2"/><rect x="14" y="9.5" width="6.5" height="10" rx="2"/>');
@@ -115,6 +118,7 @@ ${models.length ? `<p class="dv-group-h">Or choose the models yourself<small>Up 
     const kindName = Object.fromEntries(kinds.map((k) => [k.id, k]));
     const lookName = Object.fromEntries(looksAll.map((t) => [t.id, t.name]));
     const body = `<section class="dv-create"><h1>What will you design?</h1>
+<p class="dv-create-gallery"><a href="/gallery">Elements and packs gallery →</a> Free controls people made with AI: install one on your channel or remix it.</p>
 <form method="post" action="/create" class="dv-composer" data-dv-composer${options ? ' data-api="/api/create"' : ''}>
 ${kindRow}
 <label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
@@ -208,13 +212,19 @@ function canvas({ data, themes = [], editKey = '', viewer = null, publishing = {
     const cards = variants.map((v, index) => {
         const picked = index === pickedIndex;
         const done = v.status === 'done';
+        const isElement = design.kind === 'element';
         return `<article class="dv-card" data-status="${esc(v.status)}" data-index="${index}" data-picked="${picked ? 'true' : 'false'}" data-variant-id="${esc(v.id || '')}">
-<div class="dv-frame">${done ? frame(v.html, `${v.model || 'Design'} frame`, { interactive: picked }) :
+<div class="dv-frame${isElement ? ' dv-frame--element' : ''}">${isElement
+        ? (done && v.look ? `<div class="dv-el-look">${v.look}</div>`
+            : `<div class="dv-skeleton" role="status"><span>${esc(v.status === 'failed' ? 'Could not make the element' : 'Writing the element…')}</span><small>${esc(v.status === 'failed' ? String(v.element_error || v.error || 'The AI did not return a valid element.').slice(0, 240) : 'A look and a recipe together')}</small></div>`)
+        : done ? frame(v.html, `${v.model || 'Design'} frame`, { interactive: picked }) :
         `<div class="dv-skeleton" role="status"><span>${esc(v.model || 'Designer')}</span><small>${esc(v.status === 'failed' ? 'Could not generate' : 'Creating…')}</small></div>`}</div>
 <div class="dv-label"><span class="dv-model">${esc(v.model || 'Designer')}</span>${done ?
         `<span>${(Number(v.ms || 0) / 1000).toFixed(1)} s · $${Number(v.costUsd || 0).toFixed(4)}</span>` : ''}</div>
 <div class="dv-card-actions">${picked
-        ? `<span class="dv-picked">Working frame</span><span class="dv-fine">Click any element to edit it</span>`
+        ? (design.kind === 'element'
+            ? `<span class="dv-picked">Working element</span><a class="dv-fine" href="/d/${encodeURIComponent(design.id)}/element/preview${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">Preview, tweak and publish →</a>`
+            : `<span class="dv-picked">Working frame</span><span class="dv-fine">Click any element to edit it</span>`)
         : done ? (pick ? '<span class="dv-fine">Not the working frame</span>'
             : `<form method="post" action="/d/${encodeURIComponent(design.id)}/pick"><input type="hidden" name="key" value="${esc(editKey)}"><input type="hidden" name="variantIndex" value="${index}"><button type="submit" class="dv-pick" data-pick="${index}">Use this design</button></form>`)
             : '<span class="dv-fine">Waiting for this designer…</span>'}</div>
@@ -244,29 +254,32 @@ ${versionDetail(v)}</span></li>`).join('');
         : design.status === 'done' ? 'Three designs ready. Pick one to start editing.'
             : design.status === 'failed' ? 'Generation failed.' : 'Designers are working…';
     const keyInput = `<input type="hidden" name="key" value="${esc(editKey)}">`;
-    const body = `<section class="dv-canvas" data-id="${esc(design.id)}" data-key="${esc(editKey)}" data-picked="${pick ? pickedIndex : ''}" data-variant-id="${esc(pickedVariant && pickedVariant.id || '')}">
-<header class="dv-heading"><a href="/create">← New design</a><h1>${esc(design.prompt)}</h1>
-<p id="dv-status" role="status">${esc(statusText)}</p>
-<p class="dv-share"><button type="button" data-ov-share-sheet data-kind="design" data-id="${esc(design.id)}"
-  data-title="${esc(design.prompt)}" data-url="${esc(`/d/${encodeURIComponent(design.id)}`)}">Share</button></p></header>
-<form class="dv-chat" id="dv-chat-form" method="post" action="/d/${encodeURIComponent(design.id)}/edit">
-${keyInput}
-<label for="dv-instruction">Edit with AI</label>
-<div class="dv-chat-row"><input id="dv-instruction" name="instruction" maxlength="1000" placeholder="${pick ? 'Make the hero bolder, add a pricing section…' : 'Pick a frame first'}"${canChat ? '' : ' disabled'}>
-<button type="submit"${canChat ? '' : ' disabled'}>Send</button></div>
-<p class="dv-chat-status" id="dv-edit-status" role="status" aria-live="polite"></p>
-<p class="dv-fine">${pick ? `${chatLeft} of ${pick.chatEditLimit} AI edits left on this design. Click edits and undo are free.` : 'Chat edits work on the picked frame.'}</p>
-</form>
-<div class="dv-rail" id="dv-rail">${cards}</div>
-${publishPanel({ design, pick, viewer, editKey, publishing })}
-<details class="dv-versions" id="dv-versions" open>
+    const versionsPanel = design.kind === 'element' ? '' : `<details class="dv-versions" id="dv-versions" open>
 <summary>Versions <span>${versions.length}</span></summary>
 <div class="dv-vcontrols">
 <form method="post" action="/d/${encodeURIComponent(design.id)}/undo">${keyInput}<button type="submit"${pick && pick.canUndo ? '' : ' disabled'}>Undo</button></form>
 <form method="post" action="/d/${encodeURIComponent(design.id)}/redo">${keyInput}<button type="submit"${pick && pick.canRedo ? '' : ' disabled'}>Redo</button></form>
 </div>
 ${versions.length ? `<ol class="dv-vlist" id="dv-vlist">${versionRows}</ol>` : '<p class="dv-fine">Pick a frame; its HTML becomes version 1. Every accepted edit adds a version and nothing is deleted.</p>'}
-</details>
+</details>`;
+    const chatPanel = design.kind === 'element' ? '' : `<form class="dv-chat" id="dv-chat-form" method="post" action="/d/${encodeURIComponent(design.id)}/edit">
+${keyInput}
+<label for="dv-instruction">Edit with AI</label>
+<div class="dv-chat-row"><input id="dv-instruction" name="instruction" maxlength="1000" placeholder="${pick ? 'Make the hero bolder, add a pricing section…' : 'Pick a frame first'}"${canChat ? '' : ' disabled'}>
+<button type="submit"${canChat ? '' : ' disabled'}>Send</button></div>
+<p class="dv-chat-status" id="dv-edit-status" role="status" aria-live="polite"></p>
+<p class="dv-fine">${pick ? `${chatLeft} of ${pick.chatEditLimit} AI edits left on this design. Click edits and undo are free.` : 'Chat edits work on the picked frame.'}</p>
+</form>`;
+    const body = `<section class="dv-canvas" data-kind="${esc(design.kind || 'page')}" data-id="${esc(design.id)}" data-key="${esc(editKey)}" data-picked="${pick ? pickedIndex : ''}" data-variant-id="${esc(pickedVariant && pickedVariant.id || '')}">
+<header class="dv-heading"><a href="/create">← New design</a><h1>${esc(design.prompt)}</h1>
+<p id="dv-status" role="status">${esc(statusText)}</p>
+<p class="dv-share"><button type="button" data-ov-share-sheet data-kind="design" data-id="${esc(design.id)}"
+  data-title="${esc(design.prompt)}" data-url="${esc(`/d/${encodeURIComponent(design.id)}`)}">Share</button></p></header>
+${design.kind === 'element' ? `<section class="dv-el-panel"><h2>Element</h2><p>The AI wrote the look and the recipe together. The preview runs it on sample data and moves the size, tint and label sliders; the same page adds it to your Live channel or publishes it to the Elements and packs gallery.</p><p><a class="ovk-btn ovk-btn--primary" href="/d/${encodeURIComponent(design.id)}/element/preview${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">Open the element preview</a></p></section>` : ''}
+${chatPanel}
+<div class="dv-rail" id="dv-rail">${cards}</div>
+${design.kind === 'element' ? '' : publishPanel({ design, pick, viewer, editKey, publishing })}
+${versionsPanel}
 <nav class="dv-toolbar" aria-label="Canvas tools"><label>Device <select id="dv-device"><option value="390">Phone · 390</option><option value="834">Tablet · 834</option><option value="1280">Desktop · 1280</option></select></label>
 <form method="post" action="/d/${encodeURIComponent(design.id)}/theme" id="dv-theme-form">${keyInput}<label>Theme <select id="dv-theme" name="themeId">${themeOptions}</select></label><button type="submit">Apply</button></form></nav>
 </section>
