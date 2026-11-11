@@ -123,6 +123,7 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
             assert.ok(!/<style|<html|class=/.test(n.brief), 'the brief is words, never a site\'s markup');
             assert.equal(n.proposedRules.length, 2);
             assert.match(n.proposedRules[0].rule, /pressed state|48 px/);
+            assert.ok(n.proposedRules.every((p) => p.area), 'a proposed rule keeps one of the register\'s areas');
             assert.match(findsFor(report, 'button')[0].title, /button/i);
             assert.equal(findsFor(report, 'carousel').length, 0);
         });

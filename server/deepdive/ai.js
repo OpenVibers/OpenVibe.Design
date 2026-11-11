@@ -82,7 +82,8 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
             throw new DeepDiveError(502, 'deep_dive.unreachable', err && err.name === 'TimeoutError'
                 ? 'OpenVibe.AI did not answer in time.' : 'OpenVibe.AI could not be reached.');
         }
-        if (res.status === 401 && !token && !retried) {
+        if ((res.status === 401 || res.status === 403) && !token && !retried) {
+            // A grant that just changed (or a revoked token): ask Network for a fresh one once.
             tokenClient.invalidate();
             return call(method, path, body, { token, retried: true, baseUrl });
         }

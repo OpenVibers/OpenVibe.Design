@@ -222,8 +222,10 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
         if (!owner) return { component, count: 0, finds: [], reports: 0 };
         const reports = await db.allDone({ limit: 60, owner });
         const out = [];
+        const contributed = new Set();
         for (const row of reports) {
             const found = findsFor(row.report, component, limit);
+            if (found.length) contributed.add(row.id);
             for (const find of found) {
                 const key = `${find.n || ''}|${find.title}|${find.crop || find.url || ''}`;
                 if (out.some((x) => x.key === key)) continue;
@@ -231,7 +233,7 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
                     reportUrl: row.report_url || null, depth: row.depth, readAt: row.updated_at });
             }
         }
-        return { component, count: out.length, finds: out.slice(0, limit), reports: reports.length };
+        return { component, count: out.length, finds: out.slice(0, limit), reports: contributed.size };
     }
 
     async function resume() {
