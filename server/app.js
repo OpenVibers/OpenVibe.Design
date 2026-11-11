@@ -300,6 +300,7 @@ async function createApp(opts = {}) {
     }
     // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
+    app.use('/api/v1/gallery', require('./http/gallery-api').createGalleryApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
     app.use('/api/create', createCreateApi(ctx));
     app.use('/api/v1/arena', createArenaApi(ctx));

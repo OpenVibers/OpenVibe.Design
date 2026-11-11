@@ -138,8 +138,18 @@ function createGallery({ s, now = () => Date.now(), log = console } = {}) {
             source = 'remix';
             sourceId = original.id;
         }
-        const checked = validateDocument(document);
         const author = official ? 'OpenVibe' : (plain(authorName) || (authorUsername ? `@${authorUsername}` : 'A maker'));
+        if (!official) {
+            // A product hands over a draft: the author and the public sharing are the publisher's, not the model's.
+            document = JSON.parse(JSON.stringify(document));
+            const fill = (doc) => {
+                if (!doc.author || !plain(doc.author.name)) doc.author = { name: author };
+                if (!doc.sharing) doc.sharing = 'gallery';
+            };
+            if (document.pack === 'ui.element-pack@1') (document.items || []).forEach((item) => { if (item && typeof item === 'object') fill(item); });
+            else fill(document);
+        }
+        const checked = validateDocument(document);
         const id = s.newId('del');
         const row = await s.db.maybe(
             `INSERT INTO design_element_listings

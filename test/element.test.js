@@ -206,6 +206,16 @@ const fakeAi = (state, doc = ELEMENT) => ({
             assert.match(priced.text, /\$1\/M in/);
         });
 
+        await check('Live can hand a validated element to the gallery with the person\'s own token', async () => {
+            const doc = { ...ELEMENT, name: 'Live sent button' };
+            const r = await t.get('/api/v1/gallery/listings', { headers: token(alice), json: { document: doc, source: 'live', source_id: 'live_1' } });
+            assert.strictEqual(r.status, 201, r.text);
+            assert.strictEqual(r.json().slug, 'live-sent-button');
+            assert.strictEqual(r.json().source, 'live');
+            const one = await t.get('/api/v1/gallery/listings/live-sent-button');
+            assert.strictEqual(one.status, 200, one.text);
+        });
+
         await check('the official LOOI pack is published by OpenVibe once', async () => {
             const { seedOfficial } = require('../server/elements/official');
             const first = await seedOfficial(t.ctx.gallery, { log() {}, warn() {} });

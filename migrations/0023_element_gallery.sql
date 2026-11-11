@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS design_element_listings (
     created_at      timestamptz NOT NULL DEFAULT now(),
     updated_at      timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT design_element_listings_kind CHECK (kind IN ('element', 'pack')),
-    CONSTRAINT design_element_listings_source CHECK (source IN ('design', 'gallery', 'remix', 'official')),
+    CONSTRAINT design_element_listings_source CHECK (source IN ('design', 'gallery', 'remix', 'official', 'live')),
     CONSTRAINT design_element_listings_status CHECK (status IN ('published', 'hidden')),
     CONSTRAINT design_element_listings_name CHECK (length(name) BETWEEN 2 AND 120),
     CONSTRAINT design_element_listings_summary CHECK (summary IS NULL OR length(summary) <= 600),
