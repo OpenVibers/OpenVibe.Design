@@ -236,6 +236,13 @@ const fakeAi = (state, doc = ELEMENT) => ({
             assert.strictEqual(page.status, 200, page.text);
             assert.ok(page.text.includes('LOOI pack'));
             assert.ok(page.text.includes('Headlights on'));
+            const remix = await t.get('/gallery/looi-pack/remix', { headers: token(bob), body: 'key=' });
+            assert.strictEqual(remix.status, 303, remix.text);
+            const copySlug = /\/gallery\/([^?]+)/.exec(remix.headers.get('location') || '')?.[1];
+            assert.strictEqual(copySlug, 'looi-pack-remix');
+            const copy = await t.ctx.gallery.get(copySlug);
+            assert.strictEqual(copy.remix_of, first.id, 'a pack remix credits the original');
+            assert.strictEqual(copy.kind, 'pack');
         });
     } finally {
         await t.close();

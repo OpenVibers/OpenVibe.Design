@@ -625,6 +625,17 @@ function createPageRoutes(ctx) {
         try {
             const listing = await ctx.gallery.get(req.params.slug);
             if (!listing || listing.status !== 'published') return res.sendStatus(404);
+            // An element remix opens as an editable copy in the canvas; a pack is copied as a pack listing that
+            // credits the original (a pack's items are edited one at a time, after stage 2).
+            if (listing.kind === 'pack') {
+                const document = JSON.parse(JSON.stringify(listing.document));
+                document.name = `${listing.name} (remix)`;
+                const copy = await ctx.gallery.publish({ subject: subjectOf(req),
+                    authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker',
+                    authorUsername: (req.viewer && req.viewer.username) || null,
+                    document, remixOf: listing.id });
+                return res.redirect(303, galleryNext(copy.slug));
+            }
             const out = await ctx.designs.importElement({ element: listing.document, owner: subjectOf(req), listing, remixOf: listing.id });
             return res.redirect(303, out.editUrl);
         } catch (err) { return galleryListing(req, res, { error: err.message, status: err.status || 422 }); }
