@@ -10,6 +10,7 @@
 const kit = require('openvibe-shared/kit');
 const { layout, esc, baseUrl } = require('../render/layout');
 const { AREAS, RULES, byArea, latest } = require('../rules/register');
+const deepDiveView = require('./deepdive');
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = (iso) => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? `${d} ${MONTHS[m - 1]} ${y}` : ''; };
@@ -26,7 +27,7 @@ function rule(r) {
 </article>`;
 }
 
-function rulesPage() {
+function rulesPage({ proposals = [], owner = false, notice = null, error = null } = {}) {
     const areas = byArea();
     const newest = latest();
     const recent = [...RULES].sort((a, b) => (a.decided < b.decided ? 1 : -1)).slice(0, 5);
@@ -48,6 +49,8 @@ function rulesPage() {
 </section>`).join('');
     const data = `<section class="rl-sec rl-data" aria-labelledby="rl-data-h"><div class="rl-sec-head"><h2 id="rl-data-h">Use the rules</h2><p>The register is data too: read it from code, hand it to an AI assistant before it designs for OpenVibe, or link one rule by its address.</p></div>
   <p class="rl-links">${kit.button({ href: '/api/v1/rules', label: 'As JSON', kind: 'quiet', icon: 'code' })}${kit.button({ href: '/rules.md', label: 'As Markdown', kind: 'quiet', icon: 'file' })}${kit.button({ href: '/patterns', label: 'The patterns', kind: 'quiet', icon: 'forward' })}</p></section>`;
+    const proposed = owner ? deepDiveView.proposalsSection(proposals) : '';
+    const noticeBar = notice || error ? `<p class="dd-notice${error ? ' is-error' : ''}" role="status">${esc(error || notice)}</p>` : '';
     const jsonLd = [{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'How OpenVibe decides', url: `${baseUrl()}/rules`, dateModified: newest, hasPart: RULES.map((r) => ({ '@type': 'CreativeWork', name: r.rule, url: `${baseUrl()}/rules#${r.id}`, dateCreated: r.decided })) }];
     return layout({
         title: 'Rules: how OpenVibe decides',
@@ -57,7 +60,7 @@ function rulesPage() {
         styles: ['css/rules.css'],
         scripts: ['js/rules.js'],
         jsonLd,
-        body: `<article class="rl">${hero}${door}${index}${latestBlock}${sections}${data}</article>`,
+        body: `<article class="rl">${hero}${noticeBar}${door}${proposed}${index}${latestBlock}${sections}${data}</article>`,
     });
 }
 

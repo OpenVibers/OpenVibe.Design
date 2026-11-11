@@ -14,7 +14,10 @@ const TABLES = [
     { table: 'arena_rounds', subject: 'created_by', file: 'arena_rounds.json', erase: 'delete' },
     { table: 'arena_votes', subject: 'voter_subject', file: 'arena_votes.json', erase: 'delete' },
     // The designs a signed-in person asked for; a guest's design has no owner and matches nobody. Versions cascade.
-    { table: 'designs', subject: 'owner', file: 'designs.json', order: 'created_at', columns: ['id', 'kind', 'prompt', 'theme_id', 'variants', 'frame', 'look', 'look_variables', 'models', 'start', 'source_design_id', 'estimate', 'thumbnail_svg', 'space_url', 'published_at', 'element_remix_of', 'created_at', 'updated_at'] },
+    { table: 'designs', subject: 'owner', file: 'designs.json', order: 'created_at', columns: ['id', 'kind', 'prompt', 'theme_id', 'variants', 'frame', 'look', 'look_variables', 'models', 'start', 'source_design_id', 'research_id', 'element_remix_of', 'estimate', 'thumbnail_svg', 'space_url', 'published_at', 'created_at', 'updated_at'] },
+    // The deep dives a person ran and the rules they proposed: their research, its report, and their decisions.
+    { table: 'design_research', subject: 'owner', file: 'deep_dives.json', order: 'created_at', columns: ['id', 'question', 'depth', 'sites', 'run_id', 'status', 'progress', 'report', 'points', 'brief', 'report_url', 'estimate', 'error', 'created_at', 'updated_at'], erase: 'delete' },
+    { table: 'rule_proposals', subject: 'owner', file: 'rule_proposals.json', order: 'created_at', columns: ['id', 'research_id', 'rule', 'detail', 'why', 'area', 'evidence', 'state', 'pr_url', 'pr_branch', 'decided_at', 'created_at', 'updated_at'], erase: 'delete' },
     // The icons a person asked OpenVibe.AI to draw (/icons). Who reviewed one is not theirs to export. An approved
     // drawing already taken into openvibe-shared stays there: it is a drawing, it names nobody.
     // The marks a signed-in person picked on /brand/explore (a guest's picks name nobody).

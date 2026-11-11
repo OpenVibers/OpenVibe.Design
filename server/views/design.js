@@ -4,6 +4,7 @@ const { layout, esc } = require('../render/layout');
 const ovServe = require('openvibe-shared/serve');
 const { attrEscape } = require('../arena/sanitize');
 const { themeCss } = require('../designs');
+const deepDiveView = require('./deepdive');
 
 // The composer's choices. The server takes kind, themeId and who (designs.create); each is a choice a person can see.
 const G = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -82,7 +83,7 @@ const maker = (p) => { const k = String(p || '').toLowerCase(); return MAKER[k] 
  * designer, and the form posts as it always did. With a script, the form is sent to POST /api/create and the cost is
  * asked from POST /api/create/estimate as the choices change.
  */
-function create({ recent = [], themes = [], options = null } = {}) {
+function create({ recent = [], themes = [], options = null, research = null } = {}) {
     const o = options || {};
     const kinds = (o.kinds && o.kinds.length ? o.kinds : MAKES.slice(0, 3).map((m) => ({ id: m.id, name: m.name, frames: [] })))
         .map((k) => ({ ...k, ...(MAKE[k.id] || { glyph: MAKES[0].glyph, placeholder: 'Describe what you need…', examples: [] }), name: k.name || (MAKE[k.id] || {}).name || k.id }));
@@ -111,6 +112,7 @@ ${models.length ? `<p class="dv-group-h">Or choose the models yourself<small>Up 
 <div class="dv-models" data-max="${Number(limits.models) || 4}">${modelRows}</div>
 <div class="dv-takes"><span><b>Takes from each</b><small>${Number(limits.takes_total) || 8} takes at most in one run</small></span><span class="dv-step"><button type="button" data-step="-1" aria-label="One take fewer">−</button><input type="number" name="takes" inputmode="numeric" min="${Number(takes.min) || 1}" max="${Number(takes.max) || 4}" value="${Number(takes.default) || 3}" data-total="${Number(limits.takes_total) || 8}" aria-label="Takes from each model"><button type="button" data-step="1" aria-label="One take more">+</button></span></div>` : ''}
 <a class="dv-mod-more" href="https://openvibe.exchange/models">Compare these models on OpenVibe Exchange</a></div></details>`;
+    const researchMod = deepDiveView.researchModule({ options: research && research.options, recent: research && research.recent, signedIn: Boolean(research && research.signedIn) });
     const startMod = options ? `<details class="dv-mod" data-mod="start"><summary>${LINK_ICON}<span class="dv-mod-k">Start</span><b data-mod-v>Blank</b></summary>
 <div class="dv-mod-sheet" role="group" aria-label="Start from"><header><b>Start from a page</b><small>Paste a public address and the takes begin from what that page says and how it is laid out. Leave it empty to start blank.</small></header>
 <label class="dv-start"><span class="dv-visually-hidden">The page's address</span><input type="url" name="start_url" inputmode="url" autocomplete="off" placeholder="https://example.com/page" maxlength="2000"></label>
@@ -123,12 +125,12 @@ ${models.length ? `<p class="dv-group-h">Or choose the models yourself<small>Up 
 ${kindRow}
 <label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
 <textarea id="dv-prompt" name="prompt" required maxlength="${Number(limits.prompt) || 4000}" placeholder="${esc((kinds[0] || MAKES[0]).placeholder)}"></textarea>
-<div class="dv-tray">${frameMod}${lookMod}${whoMod}${startMod}<button type="submit" class="dv-go"><span data-go-label>Create three takes</span>${ARROW}</button></div>
+<div class="dv-tray">${frameMod}${lookMod}${whoMod}${startMod}${researchMod}<button type="submit" class="dv-go"><span data-go-label>Create three takes</span>${ARROW}</button></div>
 <p class="dv-cost" data-dv-cost role="status" hidden></p></form>
 <div class="dv-examples" aria-label="Try an example">${kinds.map((k) => (k.examples || []).map((x) => `<button type="button" data-example="${esc(x)}" data-kind="${esc(k.id)}">${k.glyph}<span>${esc(x)}</span></button>`).join('')).join('')}</div>
 ${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map((d) => { const k = kindName[d.kind] || MAKE[d.kind] || MAKES[0]; const bits = [k.name, lookName[d.look] || lookName[d.themeId], d.model, d.status === 'running' ? 'Drawing now' : d.status === 'failed' ? 'Did not finish' : ago(d.createdAt)].filter(Boolean);
         return `<li><a class="dv-rc" href="${esc(d.url)}"><span class="dv-rc-k" aria-hidden="true">${d.thumbnail ? `<img src="${esc(d.thumbnail)}" alt="" loading="lazy" decoding="async">` : k.glyph}</span><span class="dv-rc-t"><b>${esc(d.prompt)}</b><small>${esc(bits.join(' · '))}</small></span></a></li>`; }).join('')}</ul></section>` : ''}</section>`;
-    return layout({ title: 'Create a design', path: '/create', body, active: '/create', scripts: ['js/design.js'] });
+    return layout({ title: 'Create a design', path: '/create', body, active: '/create', styles: ['css/deepdive.css'], scripts: ['js/design.js'] });
 }
 
 const themeListener = `<script data-dv-theme="1">(function(){addEventListener('message',function(event){if(event.source!==parent||!event.data||event.data.type!=='design-theme')return;var style=document.getElementById('design-tokens');if(style&&typeof event.data.css==='string')style.textContent=event.data.css;});})();</script>`;
@@ -221,6 +223,7 @@ function canvas({ data, themes = [], editKey = '', viewer = null, publishing = {
         `<div class="dv-skeleton" role="status"><span>${esc(v.model || 'Designer')}</span><small>${esc(v.status === 'failed' ? 'Could not generate' : 'Creating…')}</small></div>`}</div>
 <div class="dv-label"><span class="dv-model">${esc(v.model || 'Designer')}</span>${done ?
         `<span>${(Number(v.ms || 0) / 1000).toFixed(1)} s · $${Number(v.costUsd || 0).toFixed(4)}</span>` : ''}</div>
+${deepDiveView.takePoints(v.research_points || v.researchPoints, design.research)}
 <div class="dv-card-actions">${picked
         ? (design.kind === 'element'
             ? `<span class="dv-picked">Working element</span><a class="dv-fine" href="/d/${encodeURIComponent(design.id)}/element/preview${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">Preview, tweak and publish →</a>`
@@ -275,6 +278,7 @@ ${keyInput}
 <p id="dv-status" role="status">${esc(statusText)}</p>
 <p class="dv-share"><button type="button" data-ov-share-sheet data-kind="design" data-id="${esc(design.id)}"
   data-title="${esc(design.prompt)}" data-url="${esc(`/d/${encodeURIComponent(design.id)}`)}">Share</button></p></header>
+${deepDiveView.researchPanel(design.research)}
 ${design.kind === 'element' ? `<section class="dv-el-panel"><h2>Element</h2><p>The AI wrote the look and the recipe together. The preview runs it on sample data and moves the size, tint and label sliders; the same page adds it to your Live channel or publishes it to the Elements and packs gallery.</p><p><a class="ovk-btn ovk-btn--primary" href="/d/${encodeURIComponent(design.id)}/element/preview${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">Open the element preview</a></p></section>` : ''}
 ${chatPanel}
 <div class="dv-rail" id="dv-rail">${cards}</div>
@@ -297,7 +301,7 @@ ${versionsPanel}
 </aside>
 <script type="application/json" id="dv-theme-css">${cssJson}</script>`;
     return layout({ title: 'Design canvas', path: `/d/${encodeURIComponent(design.id)}`, robots: 'noindex, nofollow',
-        body, scripts: ['js/design.js'] });
+        body, styles: ['css/deepdive.css'], scripts: ['js/design.js'] });
 }
 
 module.exports = { create, canvas, gate, frame, overlayScript };

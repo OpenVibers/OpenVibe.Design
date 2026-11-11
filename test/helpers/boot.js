@@ -29,6 +29,8 @@ async function boot(opts = {}) {
         DESIGN_AI_POLL_MS: '10',
         DESIGN_AI_WAIT_MS: '5000',
         DESIGN_ARENA_JOB_INTERVAL_MS: '100000',
+        DESIGN_DEEP_DIVE_POLL_MS: '10',
+        ...(opts.ai && opts.ai.url ? { DESIGN_DEEP_DIVE_URL: opts.ai.url } : {}),
         ...(opts.env || {}),
     };
     for (const [k, v] of Object.entries(opts.env || {})) if (v === null) delete env[k];
@@ -47,7 +49,8 @@ async function boot(opts = {}) {
     const config = configLib.load(env);
     const testdb = opts.store ? null : await require('./db').testDb({ store: opts.testStore });
     const store = opts.store || createStore(testdb.db, { now: opts.now });
-    const built = await createApp({ config, store, log, now: opts.now, accountSend: opts.accountSend, random: opts.random, ai: opts.ai, publisher: opts.publisher, balance: opts.balance, createOptions: opts.createOptions });
+    const built = await createApp({ config, store, log, now: opts.now, accountSend: opts.accountSend, random: opts.random, ai: opts.ai, publisher: opts.publisher, balance: opts.balance, createOptions: opts.createOptions,
+        deepDive: opts.deepDive, deepDiveStore: opts.deepDiveStore, deepDiveAi: opts.deepDiveAi, proposals: opts.proposals, rulePr: opts.rulePr });
     await built.ctx.keys.ensure();
     const server = await new Promise((resolve) => { const s = http.createServer(built.app); s.listen(0, '127.0.0.1', () => resolve(s)); });
     const base = `http://127.0.0.1:${server.address().port}`;

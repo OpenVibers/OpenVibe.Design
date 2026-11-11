@@ -64,6 +64,50 @@ function load(env = process.env) {
             maxHtmlBytes: 200 * 1024,
         },
 
+        // Who alone may decide a rule a report proposes (the Network owner account). A username, as Network's own
+        // owner guard uses, with the owner role as the other accepted claim.
+        ownerUsername: String(env.DESIGN_OWNER_USERNAME || env.OWNER_USERNAME || 'goosely'),
+
+        // OpenVibe.Exchange's icon reference search (the Exchange platform API at api.openvibe.exchange, served by
+        // OpenVibe.AI): Design mints its own client-credentials token (audience openvibe.ai, scope
+        // exchange.search.icons) and needs no Exchange key. EXCHANGE_SEARCH_KEY is the owner's override.
+        exchange: {
+            url: trim(env.EXCHANGE_API_URL || 'https://api.openvibe.exchange'),
+            audience: env.DESIGN_EXCHANGE_AUDIENCE || 'openvibe.ai',
+            scope: env.DESIGN_EXCHANGE_SCOPE || 'exchange.search.icons',
+            key: String(env.EXCHANGE_SEARCH_KEY || ''),
+            timeoutMs: Math.max(1000, int(env.DESIGN_EXCHANGE_TIMEOUT_MS, 5000)),
+        },
+
+        // A deep dive (contract ai.deep-dive@1): an AI run on the person's behalf, priced per depth before it starts.
+        // The workflow and the prices are AI's; DESIGN_DEEP_DIVE_PRICES is only the fallback for a deployment whose
+        // options endpoint does not answer yet (quick=0.2,thorough=0.5,expert=1.2).
+        deepDive: {
+            url: trim(env.DESIGN_DEEP_DIVE_URL || env.OV_AI_INTERNAL_URL || aiUrl),
+            workflow: env.DESIGN_DEEP_DIVE_WORKFLOW || 'design.deep_dive',
+            optionsPath: env.DESIGN_DEEP_DIVE_OPTIONS_PATH || '',
+            startPath: env.DESIGN_DEEP_DIVE_START_PATH || '',
+            deepDivesPath: env.DESIGN_DEEP_DIVE_START_PATH ? '' : '',
+            prices: env.DESIGN_DEEP_DIVE_PRICES || 'quick=0.2,thorough=0.5,expert=1.2',
+            reportPath: env.DESIGN_DEEP_DIVE_REPORT_PATH || '/deep-dive/:id',
+            cropPath: env.DESIGN_DEEP_DIVE_CROP_PATH || '/api/v1/deep-dives/:runId/shots/:cropId',
+            publicReportBase: trim(env.OV_EXCHANGE_URL || 'https://openvibe.exchange'),
+            exchangeUrl: trim(env.OV_EXCHANGE_INTERNAL_URL || 'http://127.0.0.1:5150'),
+            timeoutMs: Math.max(1000, int(env.DESIGN_DEEP_DIVE_TIMEOUT_MS, 30_000)),
+            pollMs: Math.max(200, int(env.DESIGN_DEEP_DIVE_POLL_MS, 4000)),
+            waitMs: Math.max(0, int(env.DESIGN_DEEP_DIVE_WAIT_MS, 0)),
+            maxWaitMs: Math.max(30_000, int(env.DESIGN_DEEP_DIVE_MAX_WAIT_MS, 15 * 60_000)),
+            // The owner approves a proposed rule on /rules; the approval opens a pull request on the register with
+            // this token. Without one the approval is recorded and the page says a PR needs the token: nothing is
+            // added to the register by itself.
+            githubToken: env.DESIGN_RULES_GITHUB_TOKEN || '',
+            repo: env.DESIGN_RULES_REPO || 'OpenVibers/OpenVibe.Design',
+            registerPath: env.DESIGN_RULES_PATH || 'server/rules/register.js',
+            branchPrefix: env.DESIGN_RULES_BRANCH_PREFIX || 'rules/research',
+            ownerUsername: String(env.DESIGN_OWNER_USERNAME || env.OWNER_USERNAME || 'goosely'),
+
+        },
+
         // OpenVibe.Media: a starting picture is uploaded there by the page and the create request carries its id;
         // Design names its public file address in the prompt and never takes raw image bytes.
         media: {

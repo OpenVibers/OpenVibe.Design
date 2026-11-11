@@ -7,6 +7,22 @@
         const picked = (name) => (q(`input[name="${name}"]:checked`) || {}).value || '';
         const chosenModels = () => all('input[name="models"]:checked').map((x) => x.value);
         const takesEl = q('input[name="takes"]'), cost = q('[data-dv-cost]'), goLabel = q('[data-go-label]'), go = q('.dv-go');
+        const researchOn = () => { const tick = q('input[name="research"]'); const id = q('select[name="research_id"]'); const ref = q('input[name="research_ref"]'); return Boolean((tick && tick.checked) || (id && id.value) || (ref && ref.value.trim())); };
+        const researchValue = () => {
+            const id = q('select[name="research_id"]'), ref = q('input[name="research_ref"]');
+            if (ref && ref.value.trim()) return { ref: ref.value.trim() };
+            if (id && id.value) return { id: id.value };
+            const d = q('input[name="research_depth"]:checked');
+            return { depth: d ? d.value : 'thorough' };
+        };
+        const fitResearch = () => {
+            const on = researchOn(); const tick = q('input[name="research"]'); const id = q('select[name="research_id"]'), ref = q('input[name="research_ref"]');
+            const fresh = q('[data-research-new]');
+            if (fresh) fresh.hidden = !(tick && tick.checked) || Boolean((id && id.value) || (ref && ref.value.trim()));
+            const attached = Boolean((id && id.value) || (ref && ref.value.trim()));
+            const depth = q('input[name="research_depth"]:checked');
+            if (tick) setText('research', attached ? 'Attached dive' : on ? (depth && depth.dataset.label ? `Research: ${depth.dataset.label}` : 'Research first') : 'Off');
+        };
         const setText = (mod, text) => { const v = q(`.dv-mod[data-mod="${mod}"] [data-mod-v]`); if (v) v.textContent = text; };
         // What a choice in the tray shows: the name of what is chosen (and, for the look, its colours).
         const show = (input) => {
@@ -47,9 +63,10 @@
             if (picked('look')) b.look = picked('look');
             const m = chosenModels(); if (m.length) { b.models = m; b.takes = takesNow(); }
             if (startUrl()) b.start = { url: startUrl() };
+            if (researchOn()) b.research = researchValue();
             return b;
         };
-        const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ kind: picked('kind'), who: picked('who'), look: picked('look'), frame: picked('frame'), models: chosenModels(), takes: takesNow() })); } catch { /* a private window */ } };
+        const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ kind: picked('kind'), who: picked('who'), look: picked('look'), frame: picked('frame'), models: chosenModels(), takes: takesNow(), research: researchOn() ? researchValue() : null })); } catch { /* a private window */ } };
         // What the run will cost, asked from the server as the choices settle (the same plan the run uses).
         const usd = (n) => (n >= 0.995 ? `$${n.toFixed(2)}` : n >= 0.01 ? `${Math.round(n * 100)}¢` : n > 0 ? 'under 1¢' : 'nothing');
         let costTimer = 0, costSeq = 0;
@@ -78,8 +95,14 @@
             ['who', 'look', 'frame'].forEach((name) => { const el = last[name] && q(`input[name="${name}"][value="${CSS.escape(last[name])}"]`); if (el && !(el.closest('.dv-opt') && el.closest('.dv-opt').hidden)) { el.checked = true; show(el); } });
             (last.models || []).forEach((id) => { const el = q(`input[name="models"][value="${CSS.escape(id)}"]`); if (el) el.checked = true; });
             if (takesEl && last.takes) takesEl.value = String(last.takes);
+            if (last.research) {
+                if (last.research.depth) { const d = q(`input[name="research_depth"][value="${CSS.escape(last.research.depth)}"]`); if (d) d.checked = true; }
+                if (last.research.id) { const sel = q('select[name="research_id"]'); if (sel) sel.value = last.research.id; }
+                if (last.research.ref) { const r = q('input[name="research_ref"]'); if (r) r.value = last.research.ref; }
+                const tick = q('input[name="research"]'); if (tick) tick.checked = !last.research.id && !last.research.ref;
+            }
         } catch { fitFrames(); fitExamples(); }
-        fitModels();
+        fitModels(); fitResearch();
         const mods = all('.dv-mod');
         const closeMods = (except) => mods.forEach((m) => { if (m !== except) m.open = false; });
         form.addEventListener('change', (event) => {
@@ -88,6 +111,19 @@
             else if (input.name === 'models' || input.name === 'takes') fitModels();
             else if (input.name === 'start_url') setText('start', startUrl() ? (() => { try { return new URL(startUrl()).hostname; } catch { return 'A page'; } })() : 'Blank');
             else if (input.name === 'who') { all('input[name="models"]').forEach((x) => { x.checked = false; }); fitModels(); show(input); setTimeout(() => closeMods(null), 160); }
+            else if (input.name === 'research') {
+                if (input.checked) { const id = q('select[name="research_id"]'); if (id) id.value = ''; const ref = q('input[name="research_ref"]'); if (ref) ref.value = ''; }
+                fitResearch();
+            }
+            else if (input.name === 'research_id') {
+                if (input.value) { const tick = q('input[name="research"]'); if (tick) tick.checked = false; const ref = q('input[name="research_ref"]'); if (ref) ref.value = ''; }
+                fitResearch();
+            }
+            else if (input.name === 'research_ref') {
+                if (input.value.trim()) { const tick = q('input[name="research"]'); if (tick) tick.checked = false; const id = q('select[name="research_id"]'); if (id) id.value = ''; }
+                fitResearch();
+            }
+            else if (input.name === 'research_depth') fitResearch();
             else if (input.closest('.dv-mod')) { show(input); setTimeout(() => closeMods(null), 160); }
             save(); askCost();
         });
@@ -96,6 +132,11 @@
             takesEl.value = String(takesNow() + Number(step.dataset.step)); fitModels(); save(); askCost();
         });
         prompt.addEventListener('blur', askCost);
+        const researchRef = q('input[name="research_ref"]');
+        if (researchRef) researchRef.addEventListener('input', () => {
+            if (researchRef.value.trim()) { const tick = q('input[name="research"]'); if (tick) tick.checked = false; const id = q('select[name="research_id"]'); if (id) id.value = ''; }
+            fitResearch(); save(); askCost();
+        });
         mods.forEach((m) => m.addEventListener('toggle', () => { if (m.open) closeMods(m); }));
         document.addEventListener('click', (event) => { const open = mods.find((m) => m.open); if (open && (!open.contains(event.target) || event.target === open)) closeMods(null); });
         document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const open = mods.find((m) => m.open); if (open) { closeMods(null); open.querySelector('summary').focus(); } } });
@@ -307,12 +348,18 @@
     if ([...canvas.querySelectorAll('.dv-card')].every(card => ['done', 'failed'].includes(card.dataset.status))) return;
     const url = `/api/v1/designs/${encodeURIComponent(designId)}${designKey ? `?key=${encodeURIComponent(designKey)}` : ''}`;
     const initial = [...canvas.querySelectorAll('.dv-card')].map(card => card.dataset.status).join(',');
+    const researchState = () => {
+        const box = canvas.querySelector('[data-dd-state]');
+        return box ? box.dataset.ddState : '';
+    };
+    const stateOf = (research) => research ? `${research.status}|${((research.progress && research.progress.steps) || []).map((s) => s.state).join(',')}` : '';
+    const initialResearch = researchState();
     const timer = setInterval(async () => {
         try {
             const response = await fetch(url, { cache: 'no-store' });
             if (!response.ok) return;
             const data = await response.json();
-            if (data.variants.map(v => v.status).join(',') !== initial) {
+            if (data.variants.map(v => v.status).join(',') !== initial || stateOf(data.design && data.design.research) !== initialResearch) {
                 clearInterval(timer);
                 location.reload();
             }

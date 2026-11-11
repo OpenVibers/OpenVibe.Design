@@ -83,7 +83,9 @@ const { PUBLIC_DIR } = require('../server/assets');
         await check('every screenshot path named exists, and 4.195.0 through 4.200.0 each have plates', async () => {
             const r = await t.get('/changes');
             const paths = [...new Set([...r.text.matchAll(/\/changes\/(\d+\.\d+\.\d+)\/([a-z0-9-]+-(?:390|1280)-(?:dark|light)\.webp)/g)].map((m) => m[0]))];
-            assert.ok(paths.length >= 40, `${paths.length} plates named`);
+            // 24 plates (2026-11-11, was 40): /changes renders the newest twelve releases; the 4.211.0 pin
+            // pushed 4.195.0 and 4.196.0 past that fold, and each still shows its plates on its own page below.
+            assert.ok(paths.length >= 24, `${paths.length} plates named`);
             for (const p of paths) assert.ok(fs.existsSync(path.join(PUBLIC_DIR, p)), p);
             for (const v of ['4.195.0', '4.196.0', '4.197.0', '4.198.0', '4.199.0', '4.200.0']) {
                 // /changes keeps the newest releases as cards; an older one still names its plates on its own page.
