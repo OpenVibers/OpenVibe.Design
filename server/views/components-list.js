@@ -10,6 +10,8 @@
  */
 const kit = require('openvibe-shared/kit');
 const { layout, esc } = require('../render/layout');
+const { RULES } = require('../rules/register');
+const FLOAT_RULE = RULES.find((r) => r.id === 'pip-goes-anywhere');
 
 /** What each component is for. A name not listed here lands in Other, so a new kit part is never dropped. */
 const GROUPS = [
@@ -18,7 +20,7 @@ const GROUPS = [
     ['layout', 'Page and layout', 'The frame of a page: heads, sections, sidebars, rails and tabs.', ['page', 'page-head', 'head', 'section', 'fold', 'sidebar', 'rail', 'tabs', 'steps']],
     ['content', 'Lists and content', 'Rows, cards and what shows while there is nothing yet.', ['list', 'row', 'card', 'empty', 'snippet', 'skeleton']],
     ['choosing', 'Choosing and settings', 'Switches, ranges, selects, segmented controls, chips and saving.', ['switch-row', 'range-row', 'select-row', 'seg', 'segmented', 'chips', 'find', 'save-bar', 'drop']],
-    ['surfaces', 'Surfaces', 'What opens over the page.', ['sheet', 'dock']],
+    ['surfaces', 'Surfaces', 'What opens over the page.', ['sheet', 'dock', 'float']],
     ['data', 'Numbers and data', 'Stats, tables, charts and receipts.', ['stats', 'num', 'table', 'chart', 'rank', 'meter', 'receipt']],
     ['tools', 'Tools', 'The parts of an OpenVibe tool page.', ['tool', 'tool-head', 'tool-input', 'answer', 'family', 'tries']],
     ['home', 'Home', 'The menu\'s Home screen.', ['home-grid', 'home-edit']],
@@ -85,6 +87,36 @@ function examples(entry) {
     return `<section class="crl-sec" aria-labelledby="crl-ex-h"><h2 id="crl-ex-h">Markup</h2>${withMarkup.map((x, i) => `${x.title ? `<p class="crl-ex-t">${esc(x.title)}</p>` : ''}${kit.snippet({ code: String(x.markup), id: `crl-ex-${i}` })}`).join('')}</section>`;
 }
 
+/** The one component whose page needs a live demo: the move engine is behaviour, not markup. */
+function floatDemo() {
+    const href = '/rules#pip-goes-anywhere';
+    const rule = FLOAT_RULE ? `Rule ${FLOAT_RULE.n}: ${esc(FLOAT_RULE.rule)}` : 'A picture-in-picture goes anywhere, tucks aside and waits with the mark';
+    return `<section class="crl-sec crf" id="crf" aria-labelledby="crf-h">
+<h2 id="crf-h">Live demo</h2>
+<p>Drag the box by its body; let go over the frame and it docks, anywhere else it floats. Throw it past a side to tuck it, drag its corner to size it, or use the keys with it focused: arrows move, <kbd>+</kbd> and <kbd>−</kbd> size, <kbd>T</kbd> tucks, <kbd>F</kbd> docks or floats, <kbd>Home</kbd> puts it back.</p>
+<div class="crf-stage" id="crf-frame" aria-label="A player frame; the box docks in it or floats over the page">
+  <div class="crf-box" id="crf-box" tabindex="0" aria-label="A floating box: drag it anywhere">
+    <span class="crf-tag">LIVE</span><b>Picture-in-picture</b><small>Drag me anywhere</small>
+  </div>
+</div>
+<div class="crf-bar" role="group" aria-label="The floating panel's actions">
+  <button type="button" class="ovk-btn ovk-btn--quiet" data-crf="tuck">Tuck</button>
+  <button type="button" class="ovk-btn ovk-btn--quiet" data-crf="untuck">Bring it back</button>
+  <button type="button" class="ovk-btn ovk-btn--quiet" data-crf="mode">Dock / float</button>
+  <button type="button" class="ovk-btn ovk-btn--quiet" data-crf="size">Small / large</button>
+  <button type="button" class="ovk-btn ovk-btn--quiet" data-crf="reset">Home</button>
+  <output id="crf-state" class="crf-state" aria-live="polite">docked</output>
+</div>
+<dl class="crf-options">
+  <div><dt><code>frame</code></dt><dd>The element it docks in and measures its fractions against. Without one it only floats over the page.</dd></div>
+  <div><dt><code>key</code> and <code>defaults</code></dt><dd>The place kept in this browser, and the streamer's starting x, y and width as fractions of the frame.</dd></div>
+  <div><dt><code>aspect</code> and <code>minPx</code></dt><dd>The source's own shape, and the smallest 16:9 width on a phone-sized frame (150 px for the PiP).</dd></div>
+  <div><dt><code>onChange</code></dt><dd>Every saved place, with the geometry and the instance. <code>OVFloat.store</code> is the account plug; <code>OVFloat.layout()</code> and <code>ov:float</code> say where everything is.</dd></div>
+</dl>
+<p class="ds-fine"><a href="${href}">${rule}</a>. The same engine moves Live's picture-in-picture and a panel window; on a site with <code>GET/PATCH /api/me/layout</code> the place also follows the person to another device.</p>
+</section>`;
+}
+
 /** /components/<name>: one entry, laid out like the designed interface pages. */
 function componentEntryPage(entry) {
     const c = entry.definition || {};
@@ -95,6 +127,7 @@ function componentEntryPage(entry) {
     const body = `<div class="ds-wrap tk cr crl">
 <header class="ds-page-h"><p class="ds-kicker"><a href="/components${group ? `#crl-${group[0]}` : ''}">${esc(group ? group[1] : 'Component registry')}</a></p><h1>${esc(c.title || entry.name)}</h1><p class="ds-lede">${esc(c.summary || '')}</p>
 <p class="crl-where">${web.module ? `<code>${esc(web.module)}</code>` : ''}<a href="/api/v1/components/${encodeURIComponent(entry.name)}">JSON</a></p></header>
+${entry.name === 'float' ? floatDemo() : ''}
 ${web.markup ? `<section class="crl-sec crl-build" aria-labelledby="crl-build-h"><h2 id="crl-build-h">Build it</h2>${kit.snippet({ code: String(web.markup), id: 'crl-build' })}</section>` : ''}
 <div class="cr-layout">
 <section class="crl-sec" aria-labelledby="crl-props-h"><h2 id="crl-props-h">Props</h2>${props.length ? `<dl class="cr-props">${props.map(([k, t]) => `<div><dt><code>${esc(k)}</code></dt><dd>${esc(t)}</dd></div>`).join('')}</dl>` : '<p class="crl-none">No props.</p>'}
@@ -116,6 +149,8 @@ ${examples(entry)}
         path: `/components/${entry.name}`,
         active: '/components',
         styles: ['css/component-registry.css'],
+        shared: entry.name === 'float' ? ['ov-float.js'] : [],
+        scripts: entry.name === 'float' ? ['js/ov-float-demo.js'] : [],
         body,
     });
 }
