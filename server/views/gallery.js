@@ -60,7 +60,7 @@ ${kit.button({ label: myRating ? 'Update rating' : 'Rate it', type: 'submit', ki
         : (signedIn ? '<p class="dv-fine">Install it to rate it.</p>' : '');
     const remixForm = signedIn && canRemix
         ? `<form method="post" action="${next}/remix" class="el-g-remix"><p>${kit.button({ label: 'Remix', type: 'submit', kind: 'quiet' })}</p><p class="dv-fine">A copy of your own that credits ${esc(l.author && l.author.name || 'the original')}.</p></form>`
-        : (signedIn ? '' : `<p class="dv-fine"><a href="/auth/login?next=${encodeURIComponent(next)}">Sign in</a> to remix it.</p>`);
+        : (signedIn ? '<p class="dv-fine">Your own element; other people can remix it and credit you.</p>' : `<p class="dv-fine"><a href="/auth/login?next=${encodeURIComponent(next)}">Sign in</a> to remix it.</p>`);
     const reportForm = signedIn
         ? `<details class="el-g-report"><summary>Report this ${l.kind}</summary><form method="post" action="${next}/report">
 <label>Reason <select name="reason"><option value="unsafe">Unsafe</option><option value="broken">Broken</option><option value="spam">Spam</option><option value="other">Other</option></select></label>
@@ -72,7 +72,7 @@ ${kit.button({ label: 'Send report', type: 'submit', kind: 'quiet' })}</form><p 
         robots: l.status === 'published' ? 'index, follow' : 'noindex, nofollow',
         active: '/gallery',
         body: `<section class="el-page el-listing">
-${kit.head({ title: l.name, sub: `${l.kind === 'pack' ? 'Pack' : 'Element'} by ${l.author && l.author.name || 'a maker'} · ${l.installs} install${l.installs === 1 ? '' : 's'} · ${ratingText(l.rating)}`, back: { href: '/gallery', label: 'Elements and packs' }, actions: [kit.badge('Free', 'ok')] })}
+${kit.head({ title: l.name, sub: `${l.kind === 'pack' ? 'Pack' : 'Element'} by ${l.author && l.author.name || 'a maker'} · ${l.installs} install${l.installs === 1 ? '' : 's'}`, back: { href: '/gallery', label: 'Elements and packs' }, actions: [kit.badge('Free', 'ok')] })}
 ${notice ? `<p class="dv-ok" role="status">${esc(notice)}</p>` : ''}${error ? `<p class="dv-err" role="alert">${esc(error)}</p>` : ''}
 <div class="el-g-detail">
 <div class="el-g-preview">${lookOf(l)}</div>
