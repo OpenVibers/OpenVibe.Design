@@ -96,7 +96,7 @@ function editPrompt(instruction, html, names) {
     ].join('\n\n');
 }
 
-function createDesigns({ s, ai, bench = null, catalog, config = {}, log = console, now = () => Date.now(), sharing = null }) {
+function createDesigns({ s, ai, bench = null, catalog, config = {}, log = console, now = () => Date.now(), sharing = null, deepDive = null }) {
     const db = s.db;
     const chatEditLimit = Math.max(1, Number(config.studio && config.studio.chatEditsPerDesign) || CHAT_EDITS_DEFAULT);
     const publicRow = d => {
@@ -105,7 +105,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             id: d.id, prompt: d.prompt, kind: d.kind, themeId: d.theme_id,
             frame: d.frame || null, look: d.look || d.theme_id || null,
             model: names[0] || null, models: names,
-            start: publicStart(d.start || {}), sourceDesignId: d.source_design_id || null,
+            start: publicStart(d.start || {}), sourceDesignId: d.source_design_id || null, researchId: d.research_id || null,
             estimate: d.estimate || null,
             status: d.variants.every(v => v.status === 'done' || v.status === 'failed')
                 ? d.variants.some(v => v.status === 'done') ? 'done' : 'failed' : 'running',
@@ -157,7 +157,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
         return await theme(d && d.theme_id);
     }
     async function create({ prompt, kind = 'page', themeId, look = null, lookVariables = null, frame: frameId = null,
-        models = null, takes = null, start = null, sourceDesignId = null, estimate = null,
+        models = null, takes = null, start = null, sourceDesignId = null, estimate = null, research = null,
         owner = null, ip = '', who = 'claude' }) {
         prompt = String(prompt || '').trim();
         const kindEntry = kindOf(kind);
@@ -219,21 +219,36 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             source: slot.source || null, status: 'pending', html: '', ms: 0, costUsd: 0, error: null,
             paid_by: null, prefer: slot.prefer || null, pin: slot.pin === true }));
         const id = s.newId('dsn'), editKey = owner ? null : random();
+        // "Research first": start the dive now, on the person's behalf, and point the design at it. The takes
+        // wait for the report in run(); an attached dive is not run or charged again.
+        let researchId = null;
+        if (research) {
+            if (!deepDive) throw fail(503, 'design.research_unavailable', 'Deep dives are not available here.');
+            if (research.mode === 'attach' && research.id) {
+                researchId = String(research.id);
+            } else if (owner) {
+                const started = await deepDive.create({ owner, question: research.question || prompt, depth: research.depth,
+                    sites: research.sites || [], targetId: id });
+                researchId = started.research.id;
+            } else {
+                throw fail(401, 'design.research_sign_in', 'Sign in to start a deep dive for this design.');
+            }
+        }
         const startRecord = start && typeof start === 'object' && !Array.isArray(start) ? start : {};
         const thumbnail = makeThumbnail({ kind, kindName: kindEntry.name, prompt,
             model: variants[0] ? (variants[0].name || variants[0].model) : null, variables: selected.variables || {} });
         await db.exec(`INSERT INTO designs(id,prompt,kind,theme_id,variants,owner,guest_hash,guest_ip,created_at,updated_at,
-                frame,look,look_variables,models,start,source_design_id,estimate,thumbnail_svg)
-            VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9::timestamptz,$9::timestamptz,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17)`,
+                frame,look,look_variables,models,start,source_design_id,estimate,thumbnail_svg,research_id)
+            VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9::timestamptz,$9::timestamptz,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17,$18)`,
         [id, prompt, kind, selected.id, JSON.stringify(variants), owner, editKey ? hash(editKey).toString('hex') : null,
             owner ? null : ip, s.iso(), frame, lookId || selected.id, JSON.stringify(selected.variables || {}),
             requested ? JSON.stringify(requested) : null, JSON.stringify(startRecord), sourceDesignId || null,
-            estimate ? JSON.stringify(estimate) : null, thumbnail]);
+            estimate ? JSON.stringify(estimate) : null, thumbnail, researchId]);
         // A signed-in maker's new design is Only me until its Share sheet says otherwise (a guest's is its key).
         if (sharing && owner) await sharing.register(id, owner).catch((err) => log.warn('[OpenVibe.Design] share row not registered:', err.message));
         run(id).catch(err => log.warn('[OpenVibe.Design] generation:', err.message));
         return { design: publicRow({ id, prompt, kind, theme_id: selected.id, frame, look: lookId || selected.id,
-            look_variables: selected.variables || {}, models: requested, start: startRecord, source_design_id: sourceDesignId || null,
+            look_variables: selected.variables || {}, models: requested, start: startRecord, source_design_id: sourceDesignId || null, research_id: researchId || null,
             estimate, variants, created_at: s.iso(), updated_at: s.iso() }),
         takes: variants.map(v => ({ id: v.id, slot: v.slot, provider: v.provider, model: v.model, modelId: v.model_id, name: v.name, status: v.status })),
         editKey, editUrl: editKey ? `/d/${id}?key=${encodeURIComponent(editKey)}` : null };
@@ -251,7 +266,21 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             await updateVariant(id, index, running);
             try {
                 const t = await lookTheme(d);
-                const prompt = [themePrompt(d.prompt, Object.keys(t.variables || {})),
+                // The dive's report is part of the brief for every take. A dive that is still running or failed
+                // does not hold the design forever: the takes are drawn without it and the canvas says so.
+                let report = null;
+                if (d.research_id && deepDive) {
+                    try {
+                        const research = await deepDive.wait(d.research_id, { timeoutMs: Number(config.deepDive && config.deepDive.maxWaitMs) || 15 * 60_000 });
+                        if (research && research.status === 'done') {
+                            report = { brief: String(research.brief || '').slice(0, 12000), points: Array.isArray(research.points) ? research.points : [], url: research.report_url || null };
+                        }
+                    } catch (err) { log.warn('[OpenVibe.Design] design research:', err.message); }
+                }
+                const points = report && deepDive ? deepDive.pointsForTake(report.points, index, d.variants.length) : [];
+                const withResearch = report && report.brief ? `${d.prompt}\n\n${report.brief}` : d.prompt;
+                const prompt = [themePrompt(withResearch, Object.keys(t.variables || {})),
+                    report && deepDive ? deepDive.pointLine(points, report) : '',
                     instructionFor(d.kind, d.frame), startPrompt(d.start || {})].filter(Boolean).join('\n\n');
                 const out = await ai.generate({ prompt, category: categoryFor(d.kind),
                     slot: { provider: v.provider, model: v.model }, roundId: id, index,
@@ -260,7 +289,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
                 const currentTheme = await lookTheme(current);
                 await updateVariant(id, index, { ...running, status: 'done', html: wrap(out.html, currentTheme.variables || {}),
                     provider: out.provider, model: out.model, ms: out.ms, costUsd: out.cost_usd, error: null,
-                    paid_by: out.paid_by || null, prefer: out.prefer || v.prefer || null });
+                    research_points: points, paid_by: out.paid_by || null, prefer: out.prefer || v.prefer || null });
             } catch (err) {
                 await updateVariant(id, index, { ...running, status: 'failed', error: String(err.message).slice(0, 300) });
             }
@@ -400,6 +429,9 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
 
     async function read(id, owner, key, viewer = null) {
         const d = await row(id, owner, key, viewer), selected = await lookTheme(d);
+        const research = d.research_id && deepDive
+            ? await (owner && d.owner === owner ? deepDive.get(d.research_id, owner) : deepDive.summary(d.research_id)).catch(() => null)
+            : null;
         const p = await pickRow(id);
         const versions = p ? await db.many('SELECT * FROM design_versions WHERE design_id=$1 ORDER BY seq', [id]) : [];
         const current = p ? versions.find(v => Number(v.seq) === Number(p.current_seq)) : null;
@@ -412,7 +444,7 @@ function createDesigns({ s, ai, bench = null, catalog, config = {}, log = consol
             }
             return v.status === 'done' ? { ...v, html: wrap(v.html, selected.variables || {}) } : v;
         });
-        return { design: publicRow(d), variants, pick: pickPublic(p, current), versions: versions.map(v => versionPublic(v, p ? p.current_seq : 1)) };
+        return { design: { ...publicRow(d), research }, variants, pick: pickPublic(p, current), versions: versions.map(v => versionPublic(v, p ? p.current_seq : 1)) };
     }
 
     async function pick({ id, variantIndex, variantId, owner, key, subject = null, token = null, viewer = null }) {

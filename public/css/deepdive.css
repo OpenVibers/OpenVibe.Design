@@ -1,0 +1,44 @@
+/* Research first (2026-11-11): the plain, usable parts of a deep dive. The look is the main session's; this
+   only makes the composer's module, one report and a component's findings readable at 390 and 1280. */
+.dd-page { max-width: 74rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.dd-status { color: var(--text-secondary); font-size: .9rem; margin: .4rem 0 1rem; }
+.dd-notice { padding: .6rem .8rem; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.dd-notice.is-error { border-color: color-mix(in srgb, #e5484d 50%, var(--border)); }
+.dd-steps { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: .8rem 0 1.2rem; }
+.dd-step { padding: .3rem .65rem; border: 1px solid var(--border); border-radius: 999px; font-size: .82rem; color: var(--text-secondary); }
+.dd-step.is-done { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); color: var(--text-primary); }
+.dd-step.is-running { border-color: var(--accent); color: var(--text-primary); font-weight: 650; }
+.dd-step.is-failed { border-color: #e5484d; }
+.dd-sec { margin: 2rem 0; }
+.dd-points { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.dd-points--page > li { display: flex; gap: .6rem; border-top: 1px solid var(--border); padding-top: .55rem; }
+.dd-points--page p { margin: 0 0 .3rem; }
+.dd-n { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 1.55rem; height: 1.55rem; border-radius: 50%; background: color-mix(in srgb, var(--accent) 18%, transparent); font-size: .76rem; font-weight: 700; }
+.dd-evidence { list-style: none; padding: 0; margin: .3rem 0; display: grid; gap: .3rem; }
+.dd-ev { font-size: .82rem; color: var(--text-secondary); }
+.dd-crop { display: block; max-width: min(100%, 22rem); height: auto; border: 1px solid var(--border); border-radius: 8px; margin: .3rem 0; }
+.dd-find-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
+.dd-find { display: flex; flex-direction: column; gap: .35rem; }
+.dd-find .dd-crop { max-width: 100%; }
+.dd-attrib { font-size: .8rem; color: var(--text-secondary); }
+.dd-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em; }
+.dd-props { display: grid; gap: 1rem; }
+.dd-prop { border: 1px solid var(--border); border-radius: 12px; padding: .9rem; }
+.dd-prop h3 { margin: .2rem 0 .4rem; font-size: 1rem; }
+.dd-prop-state { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-secondary); }
+.dd-prop-state.is-approved { color: #2f9e44; }
+.dd-prop-acts { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .6rem; }
+.dd-why span { font-weight: 700; color: var(--text-secondary); }
+.dd-proposed { border-top: 1px solid var(--border); }
+.dv-deep { display: grid; gap: .5rem; margin: .5rem 0; }
+.dv-research { margin: 1.2rem 0; padding: .9rem; border: 1px solid var(--border); border-radius: 14px; }
+.dv-research h2 { font-size: 1rem; margin: 0 0 .3rem; }
+.dv-research-q { color: var(--text-secondary); font-size: .86rem; margin: 0 0 .5rem; }
+.dv-take-research { font-size: .8rem; color: var(--text-secondary); margin: .3rem 0 0; }
+.dv-take-research a { color: inherit; text-decoration: underline; }
+@media (max-width: 480px) { .dd-find-list { grid-template-columns: 1fr; } .dd-page { padding-left: .8rem; padding-right: .8rem; } }
+/* The composer hides the module's word on a phone; Research first keeps it, because "Off" alone says nothing. */
+@media (max-width: 640px) {
+    .dv-mod[data-mod="research"] > summary .dv-mod-k { display: inline; }
+    .dv-mod[data-mod="research"] > summary b { min-width: 0; }
+}

@@ -65,7 +65,7 @@ function createCreateApi(ctx) {
     routes.post('/estimate', sameOrigin, safe(async (req, res) => {
         const all = await ctx.createOptions.options({ token: token(req) });
         const plan = await resolvePlan(req.body || {}, {
-            options: all, designs: ctx.designs, ai: ctx.ai, owner: owner(req), key: requestKey(req), viewer: viewer(req), config: ctx.config,
+            options: all, designs: ctx.designs, ai: ctx.ai, deepDive: ctx.deepDive, owner: owner(req), key: requestKey(req), viewer: viewer(req), config: ctx.config,
         });
         const estimate = estimatePlan(plan);
         const signedIn = Boolean(owner(req));
@@ -81,7 +81,7 @@ function createCreateApi(ctx) {
     routes.post('/', sameOrigin, safe(async (req, res) => {
         const all = await ctx.createOptions.options({ token: token(req) });
         const plan = await resolvePlan(req.body || {}, {
-            options: all, designs: ctx.designs, ai: ctx.ai, owner: owner(req), key: requestKey(req), viewer: viewer(req), config: ctx.config,
+            options: all, designs: ctx.designs, ai: ctx.ai, deepDive: ctx.deepDive, owner: owner(req), key: requestKey(req), viewer: viewer(req), config: ctx.config,
         });
         const estimate = estimatePlan(plan);
         const out = await ctx.designs.create({
@@ -97,6 +97,7 @@ function createCreateApi(ctx) {
             sourceDesignId: plan.start.source_design_id || null,
             estimate,
             who: (req.body || {}).who,
+            research: plan.research,
             owner: owner(req), ip: req.ip,
         });
         if (out.editKey) {

@@ -121,7 +121,32 @@ function createPageRoutes(ctx) {
         // What can be made, in which sizes and looks, by which models at what price (the same answer /api/create/options
         // gives). Without it the composer shows the themes and the four ways, and posts the old form.
         const options = ctx.createOptions ? await ctx.createOptions.options({ token: tokenOf(req) }).then((all) => ctx.createOptions.publicOptions(all), () => null) : null;
-        return page(res, 200, designView.create({ recent, themes, options }), req.viewer, { cacheControl: 'private, no-store' });
+        // "Research first": the depths and their price, and the person's finished dives to attach. A failure
+        // leaves the module showing the link to OpenVibe Exchange rather than failing the page.
+        const signedIn = Boolean(subjectOf(req));
+        const diveOptions = ctx.deepDive ? await ctx.deepDive.options().catch(() => null) : null;
+        const dives = signedIn && ctx.deepDive ? await ctx.deepDive.list(subjectOf(req), { limit: 8 }).catch(() => []) : [];
+        return page(res, 200, designView.create({ recent, themes, options,
+            research: { options: diveOptions, recent: dives.filter((x) => x.status === 'done' || x.status === 'running'), signedIn } }), req.viewer, { cacheControl: 'private, no-store' });
+    });
+    // One deep dive's report, read on Design: the numbered points with their evidence and the rules it proposes.
+    // It is the person's own dive, so only the person who started or attached it can open it.
+    r.get('/research/:id/crop/:cropId', async (req, res) => {
+        if (!subjectOf(req)) return res.status(401).type('text/plain').send('Sign in to see this deep dive.');
+        const research = await ctx.deepDive.get(req.params.id, subjectOf(req)).catch(() => null);
+        if (!research || !research.runId) return res.status(404).type('text/plain').send('Not found.');
+        try {
+            const out = await ctx.deepDiveAi.crop(research.runId, req.params.cropId);
+            return res.set({ 'Content-Type': out.contentType, 'Cache-Control': 'private, max-age=86400', 'X-Content-Type-Options': 'nosniff' }).send(out.body);
+        } catch (err) {
+            return res.status(err.status || 502).type('text/plain').send(err.detail || 'The crop could not be read.');
+        }
+    });
+    r.get('/research/:id', async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(req.originalUrl)}`);
+        const research = await ctx.deepDive.get(req.params.id, subjectOf(req)).catch(() => null);
+        if (!research) return page(res, 404, views.notFound(), req.viewer);
+        return page(res, 200, require('../views/deepdive').researchPage({ research, viewer: req.viewer }), req.viewer, { cacheControl: 'private, no-store' });
     });
     r.post('/create', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
@@ -241,7 +266,30 @@ function createPageRoutes(ctx) {
 
     // The decision register and the system map.
     const rulesView = require('../views/rules');
-    r.get('/rules', (req, res) => page(res, 200, rulesView.rulesPage(), req.viewer));
+    // "Proposed from research": only the owner sees the rules a deep dive proposes, and only the owner decides.
+    // An approval opens a pull request on the register; the register itself is never written by this page.
+    const ruleNotice = (req) => ({ notice: req.query.notice ? String(req.query.notice).slice(0, 300) : null,
+        error: req.query.error ? String(req.query.error).slice(0, 300) : null });
+    r.get('/rules', async (req, res) => {
+        const owner = Boolean(ctx.proposals && ctx.proposals.isOwner(req.viewer));
+        const proposals = owner ? await ctx.proposals.list({ state: null }).catch((err) => { log.warn('[OpenVibe.Design] rule proposals:', err.message); return []; }) : [];
+        const { notice, error } = ruleNotice(req);
+        return page(res, 200, rulesView.rulesPage({ proposals, owner, notice, error }), req.viewer);
+    });
+    for (const action of ['approve', 'dismiss']) {
+        r.post(`/rules/proposals/:id/${action}`, express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+            if (!writeAllowed(req, config)) return res.status(403).send('Approve a rule from openvibe.design itself.');
+            try {
+                const out = await ctx.proposals.decide(req.params.id, action, req.viewer);
+                const q = action === 'approve' && out.pull && out.pull.url
+                    ? `notice=${encodeURIComponent(`Approved: the pull request is open at ${out.pull.url}`)}`
+                    : `notice=${encodeURIComponent(action === 'dismiss' ? 'Dismissed.' : 'Approved.')}`;
+                return res.redirect(303, `/rules?${q}#proposal-${encodeURIComponent(req.params.id)}`);
+            } catch (err) {
+                return res.redirect(303, `/rules?error=${encodeURIComponent(String(err.detail || err.message || 'That decision could not be made.').slice(0, 300))}#proposal-${encodeURIComponent(req.params.id)}`);
+            }
+        });
+    }
     // Every openvibe-shared release, read from the pinned package (server/changes.js).
     r.get('/changes/:version', (req, res) => {
         const html = changesView.releasePage(req.params.version);
@@ -311,7 +359,8 @@ function createPageRoutes(ctx) {
         if (note) return page(res, 200, note, req.viewer);
         try {
             const entry = await registry.get(req.params.name);
-            return entry ? page(res, 200, componentsListView.componentEntryPage(entry), req.viewer)
+            const findings = entry && ctx.deepDive && subjectOf(req) ? await ctx.deepDive.finds(entry.name, { limit: 6, owner: subjectOf(req) }).catch(() => null) : null;
+            return entry ? page(res, 200, componentsListView.componentEntryPage(entry, { findings }), req.viewer)
                 : page(res, 404, views.notFound(), req.viewer);
         } catch (err) {
             log.error('[OpenVibe.Design] component registry entry failed:', (err && err.message) || err);

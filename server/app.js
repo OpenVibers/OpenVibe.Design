@@ -40,6 +40,12 @@ const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
+const { createDeepDiveAi } = require('./deepdive/ai');
+const { createDeepDiveStore } = require('./deepdive/store');
+const { createDeepDiveService } = require('./deepdive/service');
+const { createDeepDiveApi } = require('./deepdive/api');
+const { createRuleProposals } = require('./deepdive/proposals');
+const { createRulePr } = require('./deepdive/github');
 const { createCreateOptions } = require('./create/options');
 const { createCreateApi } = require('./create/api');
 const { createBalanceReader } = require('./create/billing');
@@ -102,7 +108,14 @@ async function createApp(opts = {}) {
     // Sharing (openvibe-sdk/share): the shares row next to each signed-in maker's design, the one access
     // check every read path asks, and the uniform API below. Guest designs keep their secret edit key.
     const sharing = opts.sharing || createSharing({ db: s.db, config, log, now });
-    const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now, sharing });
+    // "Research first": the dives Design follows, their reports' points, and the rules they propose. This is
+    // created before the designs because a design's takes wait for its dive's brief.
+    const deepDiveStore = opts.deepDiveStore || createDeepDiveStore({ s, log });
+    const deepDiveAi = opts.deepDiveAi || createDeepDiveAi({ config, fetchImpl, log });
+    const deepDive = opts.deepDive || createDeepDiveService({ s, config, fetchImpl, log, store: deepDiveStore, ai: deepDiveAi, now });
+    const rulePr = opts.rulePr || createRulePr({ config, fetchImpl, log });
+    const proposals = opts.proposals || createRuleProposals({ store: deepDiveStore, rulePr, config, log });
+    const designs = opts.designs || createDesigns({ s, ai, bench, catalog, config, log, now, sharing, deepDive });
     // The create page's options, its estimate and its person's Balance, read from the services that own them
     // (AI's Exchange catalogue and choices, Network's themes, Billing's Balance), never a second hand-kept list.
     const balance = opts.balance || createBalanceReader({ config, fetchImpl, log });
@@ -122,7 +135,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker, registry, createOptions, balance,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker, registry, createOptions, balance, deepDive, deepDiveStore, deepDiveAi, proposals, rulePr,
         random: opts.random || Math.random,
     };
 
@@ -295,6 +308,7 @@ async function createApp(opts = {}) {
     // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
+    app.use('/api', createDeepDiveApi(ctx));
     app.use('/api/create', createCreateApi(ctx));
     app.use('/api/v1/arena', createArenaApi(ctx));
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
@@ -334,7 +348,7 @@ async function createApp(opts = {}) {
         app.get('/openapi.json', require('./http/openapi-routes').openapiRoute(app, {
             title: `${d.name} API`, description: d.purpose, version: require('../package.json').version, baseUrl: site,
             docs: `${site}/developers`,
-            files: ['http/api.js', 'http/arena-api.js', 'http/brand-api.js', 'http/design-api.js', 'http/fonts.js'].map((f) => require('path').join(__dirname, f)),
+            files: ['http/api.js', 'http/arena-api.js', 'http/brand-api.js', 'http/design-api.js', 'http/fonts.js', 'deepdive/api.js'].map((f) => require('path').join(__dirname, f)),
         }));
     }
     app.use('/api', (req, res) => contracts.http.sendProblem(res, 404, 'route.not_found', {

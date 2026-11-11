@@ -11,6 +11,7 @@
 const kit = require('openvibe-shared/kit');
 const { layout, esc } = require('../render/layout');
 const { RULES } = require('../rules/register');
+const deepDiveView = require('./deepdive');
 const FLOAT_RULE = RULES.find((r) => r.id === 'pip-goes-anywhere');
 
 /** What each component is for. A name not listed here lands in Other, so a new kit part is never dropped. */
@@ -118,7 +119,7 @@ function floatDemo() {
 }
 
 /** /components/<name>: one entry, laid out like the designed interface pages. */
-function componentEntryPage(entry) {
+function componentEntryPage(entry, { findings = null } = {}) {
     const c = entry.definition || {};
     const group = GROUPS.find(([id]) => id === GROUP_OF.get(entry.name));
     const p = c.platforms || {}, web = p.web || {}, android = p.android || {}, ios = p.ios || {};
@@ -128,6 +129,7 @@ function componentEntryPage(entry) {
 <header class="ds-page-h"><p class="ds-kicker"><a href="/components${group ? `#crl-${group[0]}` : ''}">${esc(group ? group[1] : 'Component registry')}</a></p><h1>${esc(c.title || entry.name)}</h1><p class="ds-lede">${esc(c.summary || '')}</p>
 <p class="crl-where">${web.module ? `<code>${esc(web.module)}</code>` : ''}<a href="/api/v1/components/${encodeURIComponent(entry.name)}">JSON</a></p></header>
 ${entry.name === 'float' ? floatDemo() : ''}
+${findings && findings.finds && findings.finds.length ? deepDiveView.componentFinds({ component: entry.name, finds: findings.finds, reports: findings.reports }) : ''}
 ${web.markup ? `<section class="crl-sec crl-build" aria-labelledby="crl-build-h"><h2 id="crl-build-h">Build it</h2>${kit.snippet({ code: String(web.markup), id: 'crl-build' })}</section>` : ''}
 <div class="cr-layout">
 <section class="crl-sec" aria-labelledby="crl-props-h"><h2 id="crl-props-h">Props</h2>${props.length ? `<dl class="cr-props">${props.map(([k, t]) => `<div><dt><code>${esc(k)}</code></dt><dd>${esc(t)}</dd></div>`).join('')}</dl>` : '<p class="crl-none">No props.</p>'}
@@ -148,7 +150,7 @@ ${examples(entry)}
         description: c.summary || 'One design.component@1 entry.',
         path: `/components/${entry.name}`,
         active: '/components',
-        styles: ['css/component-registry.css'],
+        styles: ['css/component-registry.css', 'css/deepdive.css'],
         shared: entry.name === 'float' ? ['ov-float.js'] : [],
         scripts: entry.name === 'float' ? ['js/ov-float-demo.js'] : [],
         body,
