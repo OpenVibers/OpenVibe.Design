@@ -94,7 +94,7 @@
 
 /* The floating panel's live demo (/components/float, 4.208.0): a player-shaped frame the box docks in, and the same
    box over the page when it is dragged out. The engine injects its behaviour CSS; this is the look of the demo only. */
-.crf-stage { position: relative; height: clamp(280px, 48vh, 440px); margin: 4px 0 0; border: 1px solid var(--ovk-line); border-radius: 18px; overflow: hidden;
+.crf-stage { position: relative; height: auto; aspect-ratio: 16 / 9; min-height: 210px; max-height: 460px; margin: 4px 0 0; border: 1px solid var(--ovk-line); border-radius: 18px; overflow: hidden;
   background: radial-gradient(ellipse at 30% 20%, #1d2c44, #080c14 70%); }
 .crf-stage::before { content: "PLAYER"; position: absolute; left: 14px; top: 12px; color: rgba(255, 255, 255, .35); font: 700 .68rem/1 system-ui, sans-serif; letter-spacing: .14em; }
 .crf-box { display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; padding: 10px 12px; overflow: hidden; cursor: grab;
@@ -106,6 +106,10 @@
 .crf-box small { color: rgba(255, 255, 255, .66); font-size: .68rem; }
 .crf-tag { align-self: flex-start; margin-bottom: 3px; padding: 2px 6px; border-radius: 999px; background: #e5484d; color: #fff; font: 800 .58rem/1.6 system-ui, sans-serif; letter-spacing: .06em; }
 .crf-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+/* The demo's actions as one compact row of small buttons (Opus, 2026-11-11): they were page-sized buttons in two rows. */
+.crf-bar .ovk-btn { min-height: 36px; padding: 0 12px; font-size: .86rem; }
+@media (pointer: coarse) { .crf-bar .ovk-btn { min-height: 44px; } }
+@media (max-width: 520px) { .crf-state { flex-basis: 100%; margin-left: 0; } }
 .crf-state { margin-left: auto; color: var(--ovk-muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
 .crf-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 14px 0 0; }
 .crf-options div { padding: 10px 12px; border: 1px solid var(--ovk-line); border-radius: 12px; background: var(--ovk-panel); }

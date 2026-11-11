@@ -113,7 +113,7 @@ function floatDemo() {
   <div><dt><code>aspect</code> and <code>minPx</code></dt><dd>The source's own shape, and the smallest 16:9 width on a phone-sized frame (150 px for the PiP).</dd></div>
   <div><dt><code>onChange</code></dt><dd>Every saved place, with the geometry and the instance. <code>OVFloat.store</code> is the account plug; <code>OVFloat.layout()</code> and <code>ov:float</code> say where everything is.</dd></div>
 </dl>
-<p class="ds-fine"><a href="${href}">${rule}</a>. The same engine moves Live's picture-in-picture and a panel window; on a site with <code>GET/PATCH /api/me/layout</code> the place also follows the person to another device.</p>
+<p class="ds-fine"><a href="${href}">${rule.replace(/\.$/, '')}</a>. The same engine moves Live's picture-in-picture and a panel window; on a site with <code>GET/PATCH /api/me/layout</code> the place also follows the person to another device.</p>
 </section>`;
 }
 
