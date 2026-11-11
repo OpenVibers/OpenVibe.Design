@@ -16,6 +16,10 @@ const harness = require('openvibe-shared/browser-harness');
                 base: t.base,
                 routes,
                 widths: [390, 1280],
+                // The pages are local and settle in one round of requests: a 300 ms quiet window is enough after the
+                // last one, and the default 600 ms added 7 s to this file's 24 page loads (11-11: it ran at ~50 s
+                // against the runner's 60 s).
+                settleMs: 300,
                 checks: { status: true, errors: true, overflow: true, scripts: true, nojs: false, canonical: false, jsonld: false, axe: false, text: false, navigation: false },
                 ignoreErrors: [
                     // The shared Frame asks the live Network for the person's theme, the site record, the online strip
