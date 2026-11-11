@@ -392,10 +392,56 @@ function buildHomeEdit() {
     return { name: part.id, source: `${HOME_MODULE}#home`, definition, markup };
 }
 
-/** Every entry: the /kit builders, then the two Home parts that are not kit builders. */
+/** The floating panel: OVFloat, the move engine behind a PiP or a panel (openvibe-shared/ov-float.js, 4.208.0). */
+function buildFloat() {
+    const part = {
+        id: 'float', fn: 'attach', name: 'Floating panel', group: 'layout',
+        line: 'A box that can be dragged anywhere: docked in its frame or floating over the page, tucked into a side, sized and kept where you left it.',
+        code: `OVFloat.attach(el, { frame, key, defaults, aspect, minPx, onChange })`,
+    };
+    const definition = {
+        schema: 'design.component@1',
+        name: part.id,
+        title: part.name,
+        summary: text(part.line, MAX.summary),
+        anatomy: [
+            { part: 'box', role: 'The thing that moves: any element, with its own look and children.' },
+            { part: 'frame', role: 'The element it docks in and measures its fractions against; without one it only floats over the page.' },
+            { part: 'tab', role: 'What stays on screen when the box is tucked into a side; a press brings it back.' },
+            { part: 'grip', role: 'The corner that sizes it, and two fingers that pinch it; a double tap toggles small and large.' },
+        ],
+        props: {
+            frame: 'element?', key: 'string?', defaults: 'object?', aspect: 'number?', minPx: 'number?', onChange: 'function?',
+            handle: 'element?', tab: 'boolean?', resize: 'boolean?', store: 'object?', legacyKeys: 'list?', viewport: 'string?',
+        },
+        states: ['docked', 'floating', 'lifted', 'dragging', 'tucked-left', 'tucked-right', 'resizing', 'active'],
+        tokens: ['--ov-float-tab', '--ov-ease-spring', '--ov-dur-3', 'color.accent.strong'],
+        behaviors: { keyboardAware: true, outsideTapCloses: false, scrollLock: false, reducedMotion: 'No spring, lift or scrub; it is simply where it goes.' },
+        accessibility: {
+            name: 'A floating panel; its tab says Bring it back',
+            target: 'At least 44 × 44 px for the tab and the corner grip',
+            focus: 'With focus: arrows move, + and − size, T tucks, F docks or floats, Home puts it back where it started.',
+        },
+        platforms: {
+            web: { module: 'openvibe-shared/ov-float', markup: part.code, demo: '/components/float' },
+            android: {
+                toolkit: 'Jetpack Compose', material3: 'Surface',
+                specification: 'A draggable Surface in a Box: a remembered fraction of its frame, a spring landing, edge snapping, a tucked tab, pinch and corner size, and the place kept per key.',
+            },
+            ios: {
+                toolkit: 'SwiftUI',
+                specification: 'A draggable view in a GeometryReader with a spring, edge snapping, a tucked tab, pinch and corner size, and a fraction place kept per key.',
+            },
+        },
+        examples: [{ title: 'Default', props: { key: 'design:float-demo', defaults: { x: 0.62, y: 0.2, w: 0.3 }, aspect: 16 / 9, minPx: 150 } }],
+    };
+    return { name: part.id, source: 'openvibe-shared/ov-float', definition, markup: `<div class="ov-float" data-ov-float-demo>Drag me anywhere</div>` };
+}
+
+/** Every entry: the /kit builders, the two Home parts that are not kit builders, and the float engine. */
 function buildEntries() {
     const entries = PARTS.map(buildPart);
-    entries.push(buildHomeGrid(), buildHomeEdit());
+    entries.push(buildHomeGrid(), buildHomeEdit(), buildFloat());
     for (const entry of entries) {
         const check = contracts.validate('design.component', entry.definition);
         if (!check.valid) {

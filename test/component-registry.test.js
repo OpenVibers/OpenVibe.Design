@@ -14,7 +14,7 @@ const { boot, check, done } = require('./helpers/boot');
             const rows = await t.ctx.registry.list();
             const names = new Set(rows.map((row) => row.name));
             assert.ok(rows.length >= 50, `${rows.length} entries imported`);
-            for (const name of ['button', 'card', 'page-head', 'head', 'tabs', 'sheet', 'seg', 'segmented', 'empty', 'switch-row', 'home-grid', 'home-edit']) {
+            for (const name of ['button', 'card', 'page-head', 'head', 'tabs', 'sheet', 'seg', 'segmented', 'empty', 'switch-row', 'home-grid', 'home-edit', 'float']) {
                 assert.ok(names.has(name), `${name} is in the registry`);
             }
             for (const row of rows) {
@@ -73,6 +73,8 @@ const { boot, check, done } = require('./helpers/boot');
             assert.match(page.text, /component-registry\.css/);
             assert.match(page.text, /id="crl-layout"/, 'the layout group');
             assert.match(page.text, /id="crl-home"/, 'the Home group');
+            assert.match(page.text, /id="crl-surfaces"/, 'the surfaces group');
+            assert.match(page.text, /href="\/components\/float"><b>Floating panel<\/b>/, 'the move engine is in the registry');
             assert.match(page.text, /href="\/components\/page-head"><b>Page head<\/b>/);
             assert.match(page.text, /href="\/components\/home-grid"><b>Home grid<\/b>/);
             assert.match(page.text, /class="crl-jump"/, 'a chip row jumps between groups');
@@ -86,6 +88,14 @@ const { boot, check, done } = require('./helpers/boot');
             // The earlier kit-document and designed interface pages keep their own routes.
             assert.match((await t.get('/components?c=card')).text, /One design system/);
             assert.match((await t.get('/components/sheet')).text, /data-ov-component="sheet"/);
+
+            // The one behaviour page carries a live demo and links the rule it comes from.
+            const float = await t.get('/components/float');
+            assert.strictEqual(float.status, 200);
+            assert.match(float.text, /id="crf-box"/, 'a box to drag');
+            assert.match(float.text, /id="crf-frame"/, 'a frame to dock in');
+            assert.match(float.text, /js\/ov-float-demo\.js/, 'the demo script');
+            assert.match(float.text, /href="\/rules#pip-goes-anywhere"/, 'the rule is linked');
         });
 
         await check('an import adds new entries and leaves an edited entry alone unless forced', async () => {

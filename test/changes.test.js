@@ -86,7 +86,10 @@ const { PUBLIC_DIR } = require('../server/assets');
             assert.ok(paths.length >= 40, `${paths.length} plates named`);
             for (const p of paths) assert.ok(fs.existsSync(path.join(PUBLIC_DIR, p)), p);
             for (const v of ['4.195.0', '4.196.0', '4.197.0', '4.198.0', '4.199.0', '4.200.0']) {
-                assert.ok(paths.some((p) => p.startsWith(`/changes/${v}/`)), `${v} has plates`);
+                // /changes keeps the newest releases as cards; an older one still names its plates on its own page.
+                const one = await t.get(`/changes/${v}`);
+                assert.strictEqual(one.status, 200);
+                assert.match(one.text, new RegExp(`/changes/${v.replace(/\./g, '\\.')}/[a-z0-9-]+-(390|1280)-(dark|light)\\.webp`), `${v} has plates`);
                 assert.ok(fs.existsSync(path.join(PUBLIC_DIR, 'changes', v)), `${v} folder`);
             }
             const { screenshots } = changes;
