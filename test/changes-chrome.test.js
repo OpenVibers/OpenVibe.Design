@@ -10,7 +10,7 @@ const harness = require('openvibe-shared/browser-harness');
     const t = await boot();
     try {
         await check('the component pages and /changes render with no console errors at 390 and 1280', async () => {
-            const routes = ['/changes', '/components/registry', '/components/brand', '/components/menu', '/components/search-pill',
+            const routes = ['/changes', '/changes/4.200.0', '/components/registry', '/components/brand', '/components/menu', '/components/search-pill',
                 '/components/quest-card', '/components/avatar', '/components/player', '/components/soft-pages', '/components/icon-ink', '/components/footer'];
             const report = await harness.run({
                 base: t.base,

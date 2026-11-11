@@ -243,6 +243,10 @@ function createPageRoutes(ctx) {
     const rulesView = require('../views/rules');
     r.get('/rules', (req, res) => page(res, 200, rulesView.rulesPage(), req.viewer));
     // Every openvibe-shared release, read from the pinned package (server/changes.js).
+    r.get('/changes/:version', (req, res) => {
+        const html = changesView.releasePage(req.params.version);
+        return html ? page(res, 200, html, req.viewer) : page(res, 404, views.notFound(), req.viewer);
+    });
     r.get('/changes', (req, res) => page(res, 200, changesView.changesPage(), req.viewer));
     // The tokens of one built-in theme with !important: scripts/capture-release.js wears them for a light or dark plate.
     r.get('/scheme.css', (req, res) => {

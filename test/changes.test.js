@@ -22,17 +22,42 @@ const { PUBLIC_DIR } = require('../server/assets');
         await check('/changes lists every release in the pinned CHANGELOG, newest first, in its own words', async () => {
             const r = await t.get('/changes');
             assert.strictEqual(r.status, 200);
+            assert.ok(Buffer.byteLength(r.text) < 120 * 1024, `${Buffer.byteLength(r.text)} bytes`);
             assert.match(r.text, /Every shared release, and where it shows/);
             assert.match(r.text, new RegExp(`openvibe-shared@${changes.SHARED_VERSION.replace(/\./g, '\\.')}`));
-            assert.strictEqual((r.text.match(/data-release="/g) || []).length, all.length, `${all.length} releases`);
+            assert.strictEqual((r.text.match(/data-release="/g) || []).length, 12, 'exactly twelve full releases');
+            const folded = [...r.text.matchAll(/<summary>([^<]+) · (\d+) releases?<\/summary>/g)];
+            assert.strictEqual(folded.reduce((n, m) => n + Number(m[2]), 0), all.length - 12, 'fold counts cover every remaining release');
+            assert.strictEqual((r.text.match(/<details class="chg-month">/g) || []).length, folded.length);
             let last = -1;
-            for (const release of all) {
-                const at = r.text.indexOf(`data-release="${release.version}"`);
+            for (const [i, release] of all.entries()) {
+                const marker = i < 12 ? `data-release="${release.version}"` : `href="/changes/${release.version}"`;
+                const at = r.text.indexOf(marker);
                 assert.ok(at > last, `${release.version} is in order`);
                 last = at;
             }
             assert.ok(r.text.includes('The button becomes its tab; Vibe holds Chat and Agents'), '4.200.0 as written');
-            assert.ok(r.text.includes('navbar.js no longer ships every glyph'), '1.0.0 as written');
+            assert.ok(r.text.includes('/changes/1.0.0'), 'the oldest release has its own page');
+            assert.ok(r.text.includes('navbar.js no longer ships every glyph'), 'older release title is in the compact archive');
+        });
+
+        await check('each version page renders its full release, canonical, TechArticle date, neighbors, and plates', async () => {
+            for (let i = 0; i < all.length; i++) {
+                const release = all[i];
+                const r = await t.get(`/changes/${release.version}`);
+                assert.strictEqual(r.status, 200, release.version);
+                assert.match(r.text, new RegExp(`canonical" href="https://openvibe\\.design/changes/${release.version.replace(/\./g, '\\.')}`));
+                assert.match(r.text, new RegExp(`"datePublished":"${release.date}"`));
+                assert.match(r.text, new RegExp(`data-release="${release.version.replace(/\./g, '\\.')}`));
+                if (i + 1 < all.length) assert.ok(r.text.includes(`/changes/${all[i + 1].version}`), `${release.version} previous`);
+                if (i > 0) assert.ok(r.text.includes(`/changes/${all[i - 1].version}`), `${release.version} next`);
+                for (const shot of changes.screenshots(release.version).flatMap((g) => g.files)) {
+                    const image = await t.get(shot.href);
+                    assert.strictEqual(image.status, 200, shot.href);
+                }
+            }
+            assert.strictEqual((await t.get('/changes/not-a-release')).status, 404);
+            assert.strictEqual((await t.get('/changes/specimen-player.mp4')).status, 200);
         });
 
         await check('each release links the component pages it touches, and every link answers', async () => {
@@ -43,7 +68,6 @@ const { PUBLIC_DIR } = require('../server/assets');
             assert.match(r.text, /href="\/components\/menu"/);
             assert.match(r.text, /href="\/components\/brand"/);
             assert.match(r.text, /href="\/components\/player"/);
-            assert.match(r.text, /href="\/components\/quest-card"/);
         });
 
         await check('the rule numbers are the register’s own, and each links to its rule', async () => {
@@ -82,6 +106,19 @@ const { PUBLIC_DIR } = require('../server/assets');
             assert.strictEqual(body.releases[0].version, all[0].version);
             assert.deepStrictEqual(body.releases[0].pages.map((p) => p.key), ['brand', 'menu', 'search-pill', 'dock']);
             assert.ok(body.releases[0].rules.some((x) => x.id === 'button-becomes-its-tab' && x.n > 0));
+        });
+
+        await check('/api/v1/changes supports limit and before without changing the default shape', async () => {
+            const first = (await t.get('/api/v1/changes?limit=2')).json();
+            assert.deepStrictEqual(first.releases.map((x) => x.version), all.slice(0, 2).map((x) => x.version));
+            const next = (await t.get(`/api/v1/changes?limit=2&before=${all[1].version}`)).json();
+            assert.deepStrictEqual(next.releases.map((x) => x.version), all.slice(2, 4).map((x) => x.version));
+            assert.deepStrictEqual((await t.get('/api/v1/changes?before=missing')).json().releases, []);
+        });
+
+        await check('the sitemap includes each release page', async () => {
+            const map = (await t.get('/sitemap.xml')).text;
+            for (const release of all) assert.ok(map.includes(`https://openvibe.design/changes/${release.version}`), release.version);
         });
 
         await check('the home and every component page link the changes archive', async () => {

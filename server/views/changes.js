@@ -8,7 +8,7 @@
  *   changesJson()   the same archive as data (/api/v1/changes)
  */
 const kit = require('openvibe-shared/kit');
-const { layout, esc } = require('../render/layout');
+const { layout, esc, canonical } = require('../render/layout');
 const { releases, markdown, componentsOf, rulesOf, screenshots, pinned } = require('../changes');
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -45,36 +45,73 @@ function releaseCard(r) {
 </article>`;
 }
 
+function releaseRow(r) {
+    const hasShots = screenshots(r.version).length > 0;
+    return `<a href="/changes/${esc(r.version)}">${esc(r.version)} · ${esc(r.title)} · ${esc(r.date)}${hasShots ? ' ●' : ''}</a>`;
+}
+
+function monthLabel(date) {
+    const [year, month] = String(date || '').split('-').map(Number);
+    return `${MONTHS[month - 1]} ${year}`;
+}
+
+function releasePage(version) {
+    const all = releases();
+    const index = all.findIndex((r) => r.version === String(version || '').replace(/^v/, ''));
+    if (index < 0) return null;
+    const r = all[index];
+    const pin = pinned();
+    const canonicalPath = `/changes/${r.version}`;
+    const navigation = `<nav class="chg-release-nav" aria-label="Release navigation">${index < all.length - 1 ? `<a rel="prev" href="/changes/${esc(all[index + 1].version)}">← ${esc(all[index + 1].version)}</a>` : '<span></span>'}${index > 0 ? `<a rel="next" href="/changes/${esc(all[index - 1].version)}">${esc(all[index - 1].version)} →</a>` : '<span></span>'}</nav>`;
+    return layout({
+        title: `OpenVibe.Shared ${r.version}: ${r.title}`,
+        description: r.title,
+        path: canonicalPath,
+        active: '/components',
+        styles: ['css/changes.css'],
+        jsonLd: [{ '@context': 'https://schema.org', '@type': 'TechArticle', headline: `OpenVibe.Shared ${r.version}: ${r.title}`, datePublished: r.date, mainEntityOfPage: canonical(canonicalPath) }],
+        body: `<article class="chg">${navigation}<header class="ds-page-h chg-hero"><p class="ds-kicker"><a href="/changes">OpenVibe.Shared releases</a></p><h1>Release ${esc(r.version)}</h1><p class="ds-lede">${esc(day(r.date))} · pinned package <code>openvibe-shared@${esc(pin.version)}</code></p></header><div class="chg-list">${releaseCard(r)}</div>${navigation}<p><a href="/changes">All releases</a></p></article>`,
+    });
+}
+
 function changesPage() {
     const all = releases();
     const pin = pinned();
     const counted = all.filter((r) => screenshots(r.version).length).length;
     const hero = `<header class="ds-page-h chg-hero"><p class="ds-kicker">OpenVibe.Shared</p><h1>Every shared release, and where it shows</h1>
-<p class="ds-lede">Each release of the shared package every OpenVibe site loads, newest first, in the words its own changelog uses. The text is read from <code>openvibe-shared@${esc(pin.version)}</code>, the version this site pins; no request is made to GitHub when a person opens this page. Each release links to the component pages it touches, numbers the <a href="/rules">rules</a> it carries out, and shows the screenshots the repo holds for it.</p>
+<p class="ds-lede">Every release of the shared package, newest first, in its changelog's words, with the screens it changed.</p>
 ${kit.stats([[all.length, 'releases'], [counted, 'with screenshots'], [pin.version, 'pinned']], { label: 'The archive in numbers' })}
 <p class="chg-links">${kit.button({ href: '/components/registry', label: 'The components', kind: 'quiet', icon: 'puzzle' })}${kit.button({ href: '/rules', label: 'The rules', kind: 'quiet', icon: 'rules' })}${kit.button({ href: '/api/v1/changes', label: 'As JSON', kind: 'quiet', icon: 'code' })}</p>
-<p class="ds-fine">Older entries name fewer pages: the changelog is old, the component pages are new. The link is left out rather than guessed.</p></header>`;
-    const latest = all.slice(0, 12).map((r) => `<a href="#v${esc(r.version)}"><b>${esc(r.version)}</b><span>${esc(r.title)}</span></a>`).join('');
-    const index = all.length > 12 ? `<nav class="chg-index" aria-label="Newest releases"><p class="chg-label">Newest</p><div class="chg-index-row">${latest}</div><p class="ds-fine">${all.length} releases in all; every one follows, newest first.</p></nav>` : '';
-    const list = all.map(releaseCard).join('');
+ </header>`;
+    const full = all.slice(0, 12).map(releaseCard).join('');
+    const monthGroups = new Map();
+    for (const r of all.slice(12)) {
+        const key = r.date.slice(0, 7);
+        if (!monthGroups.has(key)) monthGroups.set(key, { label: monthLabel(r.date), releases: [] });
+        monthGroups.get(key).releases.push(r);
+    }
+    const folds = [...monthGroups.values()].map((group) => `<details class="chg-month"><summary>${esc(group.label)} · ${group.releases.length} ${group.releases.length === 1 ? 'release' : 'releases'}</summary>${group.releases.map(releaseRow).join('')}</details>`).join('');
     return layout({
         title: `Changes: ${all.length} OpenVibe.Shared releases`,
         description: `Every OpenVibe.Shared release in the pinned changelog, newest first: what changed, the component pages it touches, the rules it carries out, and its screenshots.`,
         path: '/changes',
         active: '/components',
         styles: ['css/changes.css'],
-        body: `<article class="chg">${hero}${index}<div class="chg-list">${list}</div>
+        body: `<article class="chg">${hero}<div class="chg-list">${full}</div>${folds}
 <footer class="chg-foot"><p>Read from <code>openvibe-shared@${esc(pin.version)}</code>. A release is listed in the order the package writes it; the links are the only additions.</p>
 <p>${kit.button({ href: '/components/registry', label: 'Every component', kind: 'quiet' })}${kit.button({ href: '/rules', label: 'How OpenVibe decides', kind: 'quiet' })}</p></footer></article>`,
     });
 }
 
-function changesJson() {
+function changesJson(query = {}) {
     const all = releases();
+    const limit = Number.isInteger(Number(query.limit)) && Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : all.length;
+    const before = query.before ? all.findIndex((r) => r.version === String(query.before).replace(/^v/, '')) : -1;
+    const eligible = before >= 0 ? all.slice(before + 1) : query.before ? [] : all;
     return {
         schema: 'openvibe.changes@1',
         pinned: pinned(),
-        releases: all.map((r) => ({
+        releases: eligible.slice(0, limit).map((r) => ({
             version: r.version,
             date: r.date,
             title: r.title,
@@ -85,4 +122,4 @@ function changesJson() {
     };
 }
 
-module.exports = { changesPage, changesJson };
+module.exports = { changesPage, releasePage, changesJson };

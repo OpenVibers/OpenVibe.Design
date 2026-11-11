@@ -175,7 +175,8 @@ function createDiscoveryRoutes(ctx) {
     r.get('/sitemap.xml', async (_req, res) => {
         const pages = publicPages(await themes());
         const lastmod = siteUpdated();
-        const urls = pages.map((e) => ({ loc: abs(e.path), ...(lastmod ? { lastmod } : {}), changefreq: e.changefreq, priority: e.priority, ...(e.images ? { images: e.images.map(abs) } : {}) }));
+        const changePages = require('../changes').releases().map((release) => ({ path: `/changes/${release.version}`, changefreq: 'monthly', priority: 0.5 }));
+        const urls = [...pages, ...changePages].map((e) => ({ loc: abs(e.path), ...(lastmod ? { lastmod } : {}), changefreq: e.changefreq, priority: e.priority, ...(e.images ? { images: e.images.map(abs) } : {}) }));
         res.type('application/xml').set('Cache-Control', TEXT).send(seo.sitemapXml(urls));
     });
 
