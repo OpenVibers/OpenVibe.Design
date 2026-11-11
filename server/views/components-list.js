@@ -51,7 +51,7 @@ function componentsListPage(entries) {
     const body = `<div class="ds-wrap tk cr crl">
 <header class="ds-page-h"><p class="ds-kicker">Component registry</p><h1>Every part of OpenVibe, defined once</h1>
 <p class="ds-lede">${plural(entries.length, 'component')} from the shared kit, each with its props, states, tokens, behaviour, accessibility and how it is built on the web, Android and iOS.</p>
-<p class="cr-links"><a href="/components/registry">The interface pages</a> · <a href="/api/v1/components">All of it as JSON</a> · <a href="/kit">The kit</a></p></header>
+<p class="cr-links"><a href="/components/registry">The interface pages</a> · <a href="/changes">What shipped</a> · <a href="/api/v1/components">All of it as JSON</a> · <a href="/kit">The kit</a></p></header>
 ${nav}
 ${groups.length ? groups.map((g) => `<section class="cr-group crl-group" id="crl-${g.id}" aria-labelledby="crl-${g.id}-h"><header class="crl-group-h"><h2 id="crl-${g.id}-h">${esc(g.title)}</h2><p>${esc(g.note)}</p></header><ul class="cr-cards">${g.entries.map(card).join('')}</ul></section>`).join('')
         : kit.empty({ icon: 'grid', title: 'No components imported yet', text: 'The registry fills from the installed openvibe-shared when the service starts.' })}
@@ -108,6 +108,7 @@ ${anatomy ? `<h2>Anatomy</h2><ul class="cr-anatomy">${anatomy}</ul>` : ''}</sect
 <section class="cr-native"><h3>iOS${ios.toolkit ? ` · ${esc(ios.toolkit)}` : ''}</h3><p>${esc(ios.specification || 'Not specified yet.')}</p></section>
 </div>
 ${examples(entry)}
+<footer class="cn-foot"><p><a href="/changes">Every Shared release, and the component it changed</a> · <a href="/components/registry">The interface pages</a> · <a href="/rules">How OpenVibe decides</a></p></footer>
 </div>`;
     return layout({
         title: `${c.title || entry.name}: OpenVibe component`,

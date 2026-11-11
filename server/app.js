@@ -261,6 +261,8 @@ async function createApp(opts = {}) {
     app.use('/js', express.static(path.join(PUBLIC_DIR, 'js'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
     // The mark's intro, as the files /brand offers to download.
     app.use('/brand/motion', express.static(path.join(PUBLIC_DIR, 'brand', 'motion'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
+    // The release screenshots (scripts/capture-release.js) and the small player sample the player page shows.
+    app.use('/changes', express.static(path.join(PUBLIC_DIR, 'changes'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
 
     // ── /api/v1/<kind>/<id>/share — the uniform share API (openvibe-sdk/share) ────
     // GET/PUT /api/v1/design/:id/share, .../share/requests, .../share/transfer[/accept|decline|cancel],

@@ -99,6 +99,7 @@ function home({ themes } = {}) {
     const { patterns } = require('../patterns/catalog');
     const glyphNames = (() => { try { return require('openvibe-shared/glyphs').NAMES.length; } catch { return 0; } })();
     const componentCount = (() => { try { return Object.keys(require('./components').SAMPLES).length; } catch { return 0; } })();
+    const releaseCount = (() => { try { return require('../changes').releases().length; } catch { return 0; } })();
     const SYSTEM = [
         { href: '/themes', name: 'Themes', count: all.length, unit: 'themes', text: 'Colour, type and shape for every site at once, each checked for contrast.', glyph: 'palette' },
         { href: '/icons', name: 'Icons', count: glyphNames, unit: 'icons', text: 'One line, one grid, in the text’s colour; draw new ones with AI.', glyph: 'shapes' },
@@ -108,6 +109,7 @@ function home({ themes } = {}) {
         { href: '/motion', name: 'Motion', count: (() => { try { return require('./motion').EFFECTS.length; } catch { return 0; } })(), unit: 'effects', text: 'Glint, glow, lift, press, ripple: one kit of effects and one set of curves.', glyph: 'motion' },
         { href: '/tokens', name: 'Tokens', count: 7, unit: 'formats', text: 'Any theme as CSS, Tailwind, Compose, SwiftUI, Flutter, Figma or DTCG.', glyph: 'code' },
         { href: '/native', name: 'Apps', count: 3, unit: 'platforms', text: 'From the web to Android and iOS, without a frame: the road and the rules.', glyph: 'apps' },
+        { href: '/changes', name: 'Changes', count: releaseCount, unit: 'releases', text: 'Every shared release, newest first, with the pages and rules it touched and the screenshots it left.', glyph: 'rules' },
     ];
     const GLYPH = {
         palette: 'M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-.5-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4.1-4-7.6-9-7.6ZM7.5 12.5h.01M9.5 8h.01M14.5 8h.01M17 11.5h.01',
@@ -156,6 +158,7 @@ function home({ themes } = {}) {
             { title: 'Tokens', text: 'Any theme as CSS, Compose, SwiftUI, Flutter or Figma', href: '/tokens', icon: 'ov:code' },
             { title: 'Create', text: 'Three AI drafts on your theme', href: '/create', icon: 'ov:ai' },
             { title: 'Your look', text: 'Light or dark, text size, motion, seasons and comfort settings, for every site', href: '/look', icon: 'ov:account' },
+            { title: 'Changes', text: 'Every OpenVibe.Shared release, the pages it touched and the rules it names', href: '/changes', icon: 'ov:history' },
         ] },
         html: system + (strip ? `<section aria-labelledby="ds-strip-h"><div class="ds-head-row"><h2 id="ds-strip-h">Themes to wear</h2><a class="ds-more" href="/themes">All ${all.length} in the studio${kit.icon('chevron')}</a></div><ul class="ds-strip">${strip}</ul></section>` : ''),
         faq: { items: [

@@ -32,6 +32,7 @@ const themeTokens = require('../tokens');
 const designView = require('../views/design');
 const patternsView = require('../views/patterns');
 const brandView = require('../views/brand');
+const changesView = require('../views/changes');
 const motionView = require('../views/motion');
 const { baseUrl: layoutBase } = require('../render/layout');
 const { asyncRouter } = require('./router');
@@ -241,6 +242,13 @@ function createPageRoutes(ctx) {
     // The decision register and the system map.
     const rulesView = require('../views/rules');
     r.get('/rules', (req, res) => page(res, 200, rulesView.rulesPage(), req.viewer));
+    // Every openvibe-shared release, read from the pinned package (server/changes.js).
+    r.get('/changes', (req, res) => page(res, 200, changesView.changesPage(), req.viewer));
+    // The tokens of one built-in theme with !important: scripts/capture-release.js wears them for a light or dark plate.
+    r.get('/scheme.css', (req, res) => {
+        const css = require('../changes').schemeCss(req.query.scheme === 'light' ? 'light' : 'dark');
+        res.set('Cache-Control', 'public, max-age=3600').type('text/css').send(css);
+    });
     r.get('/system', async (req, res) => {
         const list = await safe(() => catalog.list());
         const n = list && Array.isArray(list.themes) ? list.themes.length : null;
@@ -295,6 +303,8 @@ function createPageRoutes(ctx) {
     r.get('/components/:name', async (req, res) => {
         const designed = require('../views/component-registry').componentPage(req.params.name);
         if (designed) return page(res, 200, designed, req.viewer);
+        const note = require('../views/component-notes').notePage(req.params.name);
+        if (note) return page(res, 200, note, req.viewer);
         try {
             const entry = await registry.get(req.params.name);
             return entry ? page(res, 200, componentsListView.componentEntryPage(entry), req.viewer)

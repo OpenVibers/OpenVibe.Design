@@ -19,7 +19,7 @@ function rule(r) {
     const see = r.see.map((s) => `<a class="rl-chip" href="${esc(s.href)}"${isExternal(s.href) ? ' rel="noopener"' : ''}>${esc(s.label)}</a>`).join('');
     const checked = r.checked.map((c) => `<span class="rl-chip rl-chip--check">${kit.icon('check')}${esc(c)}</span>`).join('');
     return `<article class="rl-rule" id="${esc(r.id)}" data-rl-text="${esc(`${r.rule} ${r.detail} ${r.why}`.toLowerCase())}">
-  <header class="rl-rule-head"><h3><a href="#${esc(r.id)}">${esc(r.rule)}</a></h3><time datetime="${esc(r.decided)}">${esc(day(r.decided))}</time></header>
+  <header class="rl-rule-head"><h3><a href="#${esc(r.id)}"><span class="rl-num" aria-label="Rule ${esc(String(r.n))}">${esc(String(r.n))}</span>${esc(r.rule)}</a></h3><time datetime="${esc(r.decided)}">${esc(day(r.decided))}</time></header>
   <p class="rl-detail">${esc(r.detail)}</p>
   <p class="rl-why"><span>Why</span> ${esc(r.why)}</p>
   ${see || checked ? `<p class="rl-links">${see ? `<span class="rl-label">See</span>${see}` : ''}${checked ? `<span class="rl-label">Checked by</span>${checked}` : ''}</p>` : ''}
