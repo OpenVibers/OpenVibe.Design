@@ -88,14 +88,15 @@ ${kit.tabs({ base: `${base}`, param: 'p', active: p, label: 'Platform', items: P
 <p class="tk-how">${esc(how)}</p>
 ${kit.snippet({ code, id: 'cp-code-snip', label: 'Copy the code' })}</section>
 <section class="cr"><h2>Shared interfaces</h2><p>Web, Android and iOS definitions for the navigation, composer, sheets, settings and motion used across OpenVibe. <a href="/components/registry">See the whole registry</a>, or read it as JSON at <code>/api/v1/components</code>.</p>${registryLinks()}</section>
-${kit.fold({ id: 'cp-docs', title: 'Kit documents: screens as data', body: `<p>A screen can be sent as a tree of these components, for example <code>{ "type": "rail", "children": [{ "type": "card", … }] }</code>. Every OpenVibe client renders the same document with its own views, so a screen can change without an app release (the server-driven UI pattern of Airbnb and DivKit). Documents are checked strictly: known components and props only, typed values, which children each takes, a size limit, and https or same-site links.</p><p>${kit.button({ href: '/api/v1/components', label: 'The specs as JSON', kind: 'quiet', small: true })} ${kit.button({ href: '/tokens', label: 'The tokens they wear', kind: 'quiet', small: true })}</p>` })}`;
+${kit.fold({ id: 'cp-docs', title: 'Kit documents: screens as data', body: `<p>A screen can be sent as a tree of these components, for example <code>{ "type": "rail", "children": [{ "type": "card", … }] }</code>. Every OpenVibe client renders the same document with its own views, so a screen can change without an app release (the server-driven UI pattern of Airbnb and DivKit). Documents are checked strictly: known components and props only, typed values, which children each takes, a size limit, and https or same-site links.</p><p>${kit.button({ href: '/api/v1/components', label: 'The specs as JSON', kind: 'quiet', small: true })} ${kit.button({ href: '/tokens', label: 'The tokens they wear', kind: 'quiet', small: true })}</p>` })}
+<footer class="cn-foot"><p><a href="/changes">Every Shared release, and the component it changed</a> · <a href="/components/registry">The interface pages</a> · <a href="/rules">How OpenVibe decides</a></p></footer>`;
     return layout({
         title: `${spec.name}: an OpenVibe component for web, Android and iOS`,
         description: `${spec.summary} Its parts, tokens, states and accessibility, with code for the web, Jetpack Compose and SwiftUI.`,
         path: `/components?c=${encodeURIComponent(spec.id)}`,
         body: `<div class="ds-wrap tk">${body}</div>`,
         active: '/components',
-        styles: ['css/component-registry.css'],
+        styles: ['css/component-registry.css', 'css/specimens.css'],
     });
 }
 

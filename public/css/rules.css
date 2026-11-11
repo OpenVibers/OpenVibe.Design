@@ -38,6 +38,7 @@
 .rl-rule h3{margin:0;font-size:1.06rem;line-height:1.35;font-weight:750}
 .rl-rule h3 a{text-decoration:none}
 .rl-rule h3 a:hover{text-decoration:underline;text-underline-offset:3px}
+.rl-num{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;margin-right:.5em;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-size:.72rem;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:.08em}
 .rl-rule time{flex:none;color:var(--text-muted);font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 .rl-detail{margin:0;color:var(--text-secondary);line-height:1.55}
 .rl-why{margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--text-primary) 4%,transparent);color:var(--text-secondary);font-size:.9rem;line-height:1.45}

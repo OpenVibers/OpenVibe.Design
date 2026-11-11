@@ -392,11 +392,14 @@ const RULES = Object.freeze([
         '2026-10-25', 'A phone rule looked right in a preview and lost to a later file in production.'),
 ]);
 
+// The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
+const NUMBERED = Object.freeze(RULES.map((rule, i) => Object.freeze({ ...rule, n: i + 1 })));
+
 function byArea() {
-    return AREAS.map((a) => ({ ...a, rules: RULES.filter((r) => r.area === a.id) })).filter((a) => a.rules.length);
+    return AREAS.map((a) => ({ ...a, rules: NUMBERED.filter((r) => r.area === a.id) })).filter((a) => a.rules.length);
 }
 function latest() {
-    return RULES.map((r) => r.decided).sort().pop() || null;
+    return NUMBERED.map((r) => r.decided).sort().pop() || null;
 }
 
-module.exports = { AREAS, RULES, byArea, latest };
+module.exports = { AREAS, RULES: NUMBERED, byArea, latest };

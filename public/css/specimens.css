@@ -1,0 +1,180 @@
+/* The component note pages and their specimens. Plain tokens; the one scoped copy of a shared part is named (the
+   brand button until the pinned package carries it, the quest card while its module is in review). */
+
+/* ── The note page ─────────────────────────────────────────── */
+.cn { max-width: 78rem; padding-bottom: 56px; }
+.cn .ds-page-h { padding-top: 30px; }
+.cn-meta { margin: 10px 0 0; color: var(--text-muted, #9aa6b8); font-size: 13.5px; }
+.cn-meta a { color: var(--accent, #5b9dff); }
+.cn-spec { margin: 26px 0; }
+.cn-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.cn-head h2 { margin: 0; font-size: 19px; }
+.cn-spec [data-specimen] { margin-top: 12px; }
+.cn-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; margin-top: 8px; }
+.cn-cols h2 { font-size: 17px; margin: 0 0 8px; }
+.cn-cols p { margin: 8px 0; color: var(--text-secondary, #c3ccdb); font-size: 14.5px; line-height: 1.6; }
+.cn-shipped blockquote { margin: 14px 0 0; padding: 10px 14px; border-left: 3px solid var(--accent, #5b9dff); color: var(--text-muted, #9aa6b8); font-size: 13.5px; line-height: 1.55; background: color-mix(in srgb, var(--accent, #3b82f6) 5%, transparent); border-radius: 0 8px 8px 0; }
+.cn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cn-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent, #3b82f6) 28%, transparent); color: var(--text-primary, #e6edf7); background: color-mix(in srgb, var(--accent, #3b82f6) 7%, transparent); font-size: 12.5px; text-decoration: none; }
+.cn-chip:hover { background: color-mix(in srgb, var(--accent, #3b82f6) 15%, transparent); }
+.cn-chip--rule { border-color: color-mix(in srgb, var(--text-muted, #9aa6b8) 28%, transparent); background: color-mix(in srgb, var(--text-muted, #9aa6b8) 7%, transparent); }
+.cn-chip--rule b { color: var(--accent, #5b9dff); font-variant-numeric: tabular-nums; }
+.cn-foot { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--border, #2c2c38); color: var(--text-muted, #9aa6b8); font-size: 13px; }
+.cn-foot a { color: var(--accent, #5b9dff); }
+
+/* ── A specimen ────────────────────────────────────────────── */
+.spec { padding: 20px; border: 1px solid var(--border, #2c2c38); border-radius: 16px; background: var(--bg-card, #141a24); color: var(--text-primary, #e6edf7); }
+.spec-note { max-width: 76ch; margin: 16px 0 0; color: var(--text-muted, #9aa6b8); font-size: 13.5px; line-height: 1.6; }
+.spec-note b, .spec-note code { color: var(--text-primary, #e6edf7); }
+.spec-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; margin-top: 18px; }
+.spec-split b { font-size: 13.5px; }
+.spec-split p { margin: 5px 0 0; color: var(--text-muted, #9aa6b8); font-size: 13px; line-height: 1.55; }
+
+/* The bar's brand. Copied from openvibe-shared/navbar.js's `.ovnav-brand` until the pinned release carries it; scoped
+   to the specimen so it can never leak into the page's own bar. */
+.spec .ovnav-brand { all: unset; box-sizing: border-box; position: relative; display: inline-flex; align-items: center; gap: 7px; min-width: 0; height: 40px; padding: 0 12px 0 4px; border-radius: 12px; cursor: pointer; color: inherit; transition: background-color .15s, box-shadow .26s cubic-bezier(.2,1.4,.3,1); }
+.spec .ovnav-brand::before { content: ""; position: absolute; inset: -3px 0; }
+.spec .ovnav-brand::after { content: ""; flex: none; width: 6px; height: 6px; margin: 0 0 3px 2px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); opacity: .6; transition: transform .2s; }
+.spec .ovnav-brand:hover { background: color-mix(in srgb, var(--accent, #3b82f6) 10%, transparent); }
+.spec .ovnav-brand[aria-expanded="true"] { background: color-mix(in srgb, var(--accent, #3b82f6) 17%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #3b82f6) 32%, transparent); }
+.spec .ovnav-brand[aria-expanded="true"]::after { transform: translateY(2px) rotate(225deg); }
+.spec .ovnav-brand:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: 1px; }
+.spec .ovnav-brand .flame { display: grid; place-items: center; flex: none; width: 42px; height: 42px; }
+.spec .ovnav-brand .flame svg { width: 42px; height: 26px; display: block; }
+.spec .ovnav-brand .name { display: inline-flex; align-items: baseline; min-width: 0; font: 800 16.5px/1 var(--ov-font, system-ui, sans-serif); letter-spacing: -.01em; white-space: nowrap; }
+.spec .ovnav-brand .b-dot { opacity: .55; margin: 0 1px; }
+.spec .ovnav-brand .b-tld { opacity: .78; }
+.spec-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.spec-orb { display: inline-flex; align-items: center; gap: 3px; width: 34px; height: 34px; justify-content: center; border-radius: 11px; border: 1px solid var(--border, #2c2c38); background: var(--bg-secondary, #1a2130); }
+.spec-orb i { width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted, #9aa6b8); }
+.spec-drop { max-width: 300px; margin-top: 14px; padding: 8px; border: 1px solid var(--border, #2c2c38); border-radius: 12px; background: var(--bg-secondary, #1a2130); box-shadow: 0 18px 44px rgba(0, 0, 0, .3); }
+.spec-drop-h { margin: 4px 8px 6px; color: var(--text-muted, #9aa6b8); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+.spec-drop a { display: flex; align-items: center; gap: 9px; min-height: 36px; padding: 0 8px; border-radius: 8px; color: var(--text-primary, #e6edf7); font-size: 14px; text-decoration: none; }
+.spec-drop a:hover, .spec-drop a[aria-current="page"] { background: color-mix(in srgb, var(--accent, #3b82f6) 12%, transparent); }
+.spec-drop a .ovk-i { width: 16px; height: 16px; color: var(--text-muted, #9aa6b8); }
+.spec-drop-all { margin-top: 4px; border-top: 1px solid var(--border, #2c2c38); border-radius: 0 0 8px 8px !important; }
+
+/* The menu and the search pill */
+.spec-sheet { max-width: 620px; margin: 0 auto; padding: 12px; border-radius: 18px; border: 1px solid var(--border, #2c2c38); background: var(--bg-secondary, #1a2130); }
+.spec-places { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 10px; }
+.spec-places button { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 62px; padding: 6px 4px; border-radius: 10px; color: var(--text-muted, #9aa6b8); font: 700 12px/1.15 var(--ov-font, system-ui, sans-serif); text-align: center; cursor: pointer; position: relative; }
+.spec-places button .ovk-i { width: 21px; height: 21px; }
+.spec-places button:hover { background: color-mix(in srgb, var(--text-primary, #e6edf7) 6%, transparent); color: var(--text-primary, #e6edf7); }
+.spec-places button.is-on { color: var(--accent, #6ea8ff); background: color-mix(in srgb, var(--accent, #3b82f6) 12%, transparent); }
+.spec-places small { font-size: 9.5px; font-weight: 600; opacity: .8; white-space: nowrap; }
+.spec-badge { position: absolute; top: 4px; right: calc(50% - 22px); display: grid; place-items: center; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 999px; background: #e5484d; color: #fff; font: 800 10px/1 var(--ov-font, system-ui, sans-serif); font-style: normal; }
+.spec-search { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px 0 12px; border: 1px solid var(--border, #2c2c38); border-radius: 999px; background: var(--bg-primary, #0d131d); }
+.spec-search > .ovk-i { width: 17px; height: 17px; flex: none; color: var(--text-muted, #9aa6b8); }
+.spec-search input { flex: 1; min-width: 0; height: 40px; border: 0; outline: 0; background: transparent; color: var(--text-primary, #e6edf7); font: 500 14px/1 var(--ov-font, system-ui, sans-serif); }
+.spec-search input::placeholder { color: var(--text-muted, #9aa6b8); }
+.spec-actions { display: inline-flex; align-items: center; gap: 2px; flex: none; }
+.spec-actions button { all: unset; box-sizing: border-box; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 999px; color: var(--text-muted, #9aa6b8); cursor: pointer; }
+.spec-actions button .ovk-i { width: 16px; height: 16px; }
+.spec-actions button:hover { background: color-mix(in srgb, var(--text-primary, #e6edf7) 9%, transparent); color: var(--text-primary, #e6edf7); }
+.spec-close { color: var(--text-primary, #e6edf7) !important; }
+.spec-search--big { max-width: 640px; margin: 0 auto; min-height: 54px; padding-left: 16px; }
+.spec-search--big .spec-actions button { width: 40px; height: 40px; }
+
+/* The avatar */
+.spec-avatars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.spec-avatars figure { margin: 0; text-align: center; }
+.spec-avatars figcaption { margin-top: 8px; color: var(--text-muted, #9aa6b8); font-size: 12.5px; line-height: 1.4; }
+.spec-av { display: inline-grid; place-items: center; width: 64px; height: 64px; }
+.spec-av .ovk-mark { width: 64px; height: 64px; font-size: 24px; }
+.spec-av--broken { position: relative; }
+.spec-av-shot { position: absolute; inset: 0; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--text-muted, #9aa6b8) 55%, transparent); }
+.spec-av-init { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: #3b5bdb; color: #fff; font: 800 26px/1 var(--ov-font, system-ui, sans-serif); }
+
+/* The player */
+.spec-player { max-width: 720px; margin: 0 auto; border-radius: 14px; overflow: hidden; background: #000; }
+.spec-player video { display: block; width: 100%; height: auto; }
+
+/* Soft pages */
+.spec-steps { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: softstep; }
+.spec-steps li { display: flex; gap: 12px; align-items: flex-start; }
+.spec-step-n { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 999px; background: color-mix(in srgb, var(--accent, #3b82f6) 16%, transparent); color: var(--accent, #6ea8ff); font: 800 13px/1 var(--ov-font, system-ui, sans-serif); }
+.spec-steps b { font-size: 14px; }
+.spec-steps p { margin: 4px 0 0; color: var(--text-muted, #9aa6b8); font-size: 13.5px; line-height: 1.55; }
+.spec-steps code { color: var(--text-primary, #e6edf7); font-size: 12.5px; }
+
+/* Icon ink */
+.spec-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.spec-tiles figure { margin: 0; text-align: center; }
+.spec-tiles figcaption { margin-top: 10px; color: var(--text-muted, #9aa6b8); font-size: 12.5px; line-height: 1.45; }
+.spec-tile { display: inline-grid; place-items: center; width: 112px; height: 112px; }
+.spec-tile--app svg { width: 112px; height: 112px; border-radius: 26px; }
+.spec-tile--box { border: 1px solid var(--border, #2c2c38); border-radius: 26px; background: var(--bg-primary, #0d131d); }
+.spec-tile--box svg { width: 58%; height: auto; }
+.spec-glyphs { display: grid; grid-template-columns: repeat(3, 44px); gap: 8px; justify-content: center; }
+.spec-glyphs span { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border, #2c2c38); border-radius: 11px; background: var(--bg-primary, #0d131d); }
+.spec-glyphs .ovk-i { width: 22px; height: 22px; }
+
+/* The footer */
+.spec-footer { max-width: 620px; margin: 0 auto; padding: 16px 18px; border: 1px solid var(--border, #2c2c38); border-radius: 14px; background: var(--bg-primary, #0d131d); }
+.spec-online { display: flex; align-items: center; gap: 10px; margin: 0; }
+.spec-online b { font-size: 14px; }
+.spec-faces { display: inline-flex; gap: 3px; }
+.spec-faces .ovk-mark { width: 24px; height: 24px; font-size: 10px; }
+.spec-tip { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--border, #2c2c38); border-radius: 10px; background: var(--bg-secondary, #1a2130); font-size: 13px; }
+.spec-tip b { display: block; font-size: 13px; }
+.spec-tip span { color: var(--text-muted, #9aa6b8); }
+.spec-footer .spec-fine { margin: 10px 0 0; }
+
+/* The player's phone row from the change in review (openvibe-shared/player.css, last-in-file phone block). */
+@media (max-width: 520px) {
+    .spec-player .ov-player-speed, .spec-player .ov-player-pip { display: none !important; }
+    .spec-player .ov-player-volume-slider { width: 64px !important; margin-right: 2px !important; }
+    .spec-player .ov-player-time { padding: 0 8px; font-size: 12px; }
+}
+@media (max-width: 380px) { .spec-player .ov-player-volume-slider { display: none !important; } }
+@media (max-width: 360px) { .spec-player .ov-player-dur { display: none !important; } }
+
+/* The quest card (its markup and CSS are the openvibe-shared/quest design; in review for the next release) */
+.ovq-quest { --ovq-a: var(--ovk-accent, var(--accent, #3b82f6)); --ovq-p: var(--ovk-panel, var(--bg-card, #121826)); --ovq-t: var(--ovk-text, var(--text-primary, #e8ecf3)); --ovq-m: var(--ovk-muted, var(--text-secondary, #93a0b4)); --ovq-ok: var(--ovk-ok, var(--success, #22c55e)); max-width: 520px; margin: 0 auto; border-radius: var(--ov-radius-2, 14px); background: color-mix(in srgb, var(--ovq-a) 7%, var(--ovq-p)); box-shadow: var(--ov-elev-3, 0 8px 24px rgba(0,0,0,.25)); color: var(--ovq-t); text-align: left; overflow: hidden; }
+.ovq-quest[hidden], .ovq-body[hidden], .ovq-chip[hidden] { display: none; }
+.ovq-head { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 12px 14px; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.ovq-head:focus-visible, .ovq-steps a:focus-visible, .ovq-more:focus-visible { outline: 2px solid var(--ovq-a); outline-offset: 2px; }
+.ovq-icon, .ovq-site-icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; color: var(--ovq-a); }
+.ovq-titles { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.ovq-kicker { color: color-mix(in srgb, var(--ovq-a) 78%, var(--ovq-t)); font-size: .66rem; font-weight: 800; letter-spacing: .09em; }
+.ovq-title { font-size: 1rem; font-weight: 800; line-height: 1.3; text-wrap: balance; }
+.ovq-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 160px; margin-top: 7px; }
+.ovq-bar i { height: 4px; border-radius: 999px; background: color-mix(in srgb, var(--ovq-t) 12%, transparent); }
+.ovq-quest[data-progress="1"] .ovq-bar i:first-child, .ovq-quest[data-progress="2"] .ovq-bar i:nth-child(-n+2), .ovq-quest[data-progress="3"] .ovq-bar i { background: var(--ovq-a); }
+.ovq-quest[data-progress="3"] .ovq-bar i { background: var(--ovq-ok); }
+.ovq-chip { display: inline-flex; flex: none; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; background: color-mix(in srgb, #f97316 16%, transparent); color: color-mix(in srgb, #f97316 78%, var(--ovq-t)); font-size: .78rem; font-weight: 800; }
+.ovq-chev { color: var(--ovq-m); transition: transform .2s; }
+.ovq-quest.open .ovq-chev { transform: rotate(180deg); }
+.ovq-body { padding: 0 10px 10px; }
+.ovq-story { margin: -2px 4px 8px; color: var(--ovq-m); font-size: .82rem; line-height: 1.45; }
+.ovq-steps { display: grid; gap: 2px; list-style: none; padding: 0; margin: 0 0 8px; }
+.ovq-steps a { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px; border-radius: 12px; color: inherit; text-decoration: none; }
+.ovq-steps a:hover { background: color-mix(in srgb, var(--ovq-t) 6%, transparent); }
+.ovq-steps .is-next a { background: color-mix(in srgb, var(--ovq-a) 13%, transparent); }
+.ovq-step { display: flex; flex: 1; flex-direction: column; min-width: 0; font-size: .88rem; font-weight: 650; line-height: 1.3; }
+.ovq-step small { color: var(--ovq-m); font-size: .72rem; font-weight: 600; }
+.ovq-steps .is-next small, .ovq-more > i { color: color-mix(in srgb, var(--ovq-a) 78%, var(--ovq-t)); }
+.ovq-steps .is-done .ovq-step > span { color: var(--ovq-m); }
+.ovq-go { color: var(--ovq-m); font-size: .72rem; }
+.ovq-check { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--ovq-ok); color: #fff; font-size: .75rem; font-weight: 900; }
+.ovq-more { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--ovq-a) 15%, var(--ovq-p)); color: inherit; text-decoration: none; }
+.ovq-more:hover { background: color-mix(in srgb, var(--ovq-a) 22%, var(--ovq-p)); }
+.ovq-more-text { display: flex; flex: 1; flex-direction: column; min-width: 0; color: var(--ovq-m); font-size: .78rem; line-height: 1.35; }
+.ovq-more-text b { color: var(--ovq-t); font-size: .88rem; }
+.ovq-arrow { color: var(--ovk-accent, var(--accent, #60a5fa)); }
+
+@media (max-width: 700px) {
+    .cn-cols, .spec-split { grid-template-columns: 1fr; }
+    .spec-avatars, .spec-tiles { grid-template-columns: 1fr 1fr; }
+    .spec-avatars figure:last-child, .spec-tiles figure:last-child { grid-column: 1 / -1; }
+    .spec { padding: 14px; }
+    .spec-sheet { padding: 8px; }
+    .spec-places button { min-height: 54px; font-size: 11px; }
+    .spec-places button .ovk-i { width: 19px; height: 19px; }
+}
+
+/* The "what shipped" cards on /components/registry: the same shape as a definition card, but a note, not a contract. */
+.crl-note-link { display: grid; gap: 4px; color: var(--ovk-text, var(--text-primary, #e6edf7)); text-decoration: none; }
+.crl-note-link b { font-size: 1rem; }
+.crl-note-link span { color: var(--ovk-muted, var(--text-muted, #9aa6b8)); font-size: .87rem; line-height: 1.35; }
+.crl-note-link:hover b, .crl-note-link:focus-visible b { text-decoration: underline; }

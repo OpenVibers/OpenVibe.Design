@@ -69,7 +69,9 @@
     "Design Studio chat edit",
     "Design Studio click edit",
     "Design Studio versions and undo/redo",
-    "Design tokens as files (JSON, CSS, Tailwind, Style Dictionary, Swift, Kotlin, Android XML)"
+    "Design tokens as files (JSON, CSS, Tailwind, Style Dictionary, Swift, Kotlin, Android XML)",
+    "The changes archive: every openvibe-shared release from the pinned changelog, its component pages and rule numbers",
+    "Component pages for the bar's brand, the search pill, the quest card, the avatar, the player, soft pages, icon ink and the footer"
   ],
   "updated": "2026-11-10"
 }

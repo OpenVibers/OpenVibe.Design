@@ -4,11 +4,12 @@ const kit = require('openvibe-shared/kit');
 const thread = require('openvibe-shared/thread');
 const { COMPONENTS, get } = require('../components/registry');
 const { layout, esc } = require('../render/layout');
+const { shippedSection, specimen, list: noteList } = require('./component-notes');
 
 const link = (name) => `/components/${name}`;
 const demo = {
     navbar: () => `<nav class="cr-mini-nav" aria-label="Demo navigation"><a href="/">${kit.icon('home')} OpenVibe</a><a href="/themes">Themes</a><details><summary>More</summary><a href="/look">Your look</a><a href="/components">Components</a></details></nav>`,
-    menu: () => `<details class="cr-menu"><summary class="ovk-btn ovk-btn--quiet">${kit.icon('menu')} Open menu</summary>${kit.row({ href: '/look', title: 'You', sub: 'Your look and settings', mark: kit.mark({ name: 'You' }) })}${kit.row({ href: '/themes', title: 'Studio', sub: 'Choose a theme', mark: kit.mark({ name: 'Studio' }) })}</details>`,
+    menu: () => specimen('menu'),
     'you-home': () => kit.section({ title: 'You', note: 'Your places in one menu', body: kit.list([kit.row({ href: '/look', title: 'Your look', sub: 'Theme and comfort settings', mark: kit.mark({ name: 'You' }) }), kit.row({ href: '/themes', title: 'Theme studio', sub: 'Make it yours', mark: kit.mark({ name: 'Studio' }) })]) }),
     dock: () => kit.dock({ action: '#', id: 'cr-dock', label: 'Message', placeholder: 'Write a message' }),
     'dock-tabs': () => `<nav class="cr-dock-tabs" aria-label="Demo app tabs"><a href="/">${kit.icon('home')} Home</a><a href="/themes" aria-current="page">${kit.icon('palette')} Studio</a><a href="/look">${kit.icon('user')} You</a></nav>`,
@@ -51,11 +52,15 @@ function registryPage() {
         return `<li class="cr-card"><a class="cr-card-link" href="${link(name)}"><b>${esc(c.title)}</b><span>${esc(c.summary)}</span></a><div class="cr-card-meta"><span class="cr-card-platforms">${platforms}</span><a href="/api/v1/components/${esc(name)}" aria-label="${esc(c.title)} as JSON">JSON</a></div></li>`;
     }).join('');
     const sections = GROUPS.map(([title, names]) => `<section class="cr-group"><h2>${esc(title)}</h2><ul class="cr-cards">${cards(names)}</ul></section>`).join('');
+    const notes = noteList();
+    const shipped = notes.length ? `<section class="cr-group cr-group--shipped" id="crl-shipped"><h2>Changed lately: what shipped</h2><p class="crl-group-l">The bar's brand, the search pill, the quest card, the avatar, the player, soft pages, icon ink and the footer: one specimen and the release behind each.</p><ul class="cr-cards">${notes.map((n) => `<li class="cr-card crl-card"><a class="crl-note-link" href="/components/${esc(n.name)}"><b>${esc(n.title)}</b><span>${esc(n.summary)}</span></a><div class="cr-card-meta"><span class="crl-counts">Shared release</span><a href="/changes">Changes</a></div></li>`).join('')}</ul></section>` : '';
     const body = `<header class="ds-page-h"><p class="ds-kicker">Component registry</p><h1>One vocabulary, three platforms</h1><p class="ds-lede">Every shared OpenVibe interface as one definition: its anatomy, props, states, tokens, keyboard and dismissal rules, accessibility, and how it is built on the web, in Jetpack Compose and in SwiftUI. The same definitions are the vocabulary Design and Space give their AI generators.</p>
 <p class="cr-links"><a href="/api/v1/components">All definitions as JSON</a> · <a href="/llms.txt">llms.txt</a> · <a href="/api/v1/components/sheet">Example: sheet</a></p></header>
 ${sections}
-<p class="ds-fine">A definition is a promise about behaviour, not a screenshot: the live demo on each page is the web implementation, and the Android and iOS sections name the container role and the interaction each platform owns.</p>`;
-    return layout({ title: 'Component registry: OpenVibe design system', description: 'Platform-neutral definitions of the OpenVibe navbar, menu, You home, Dock and tabs, thread composer, sheets, pop-overs, keyboard behaviour, kit rows, cards, sections, empty states, switches, segmented controls, uploads, the model chip and motion: web, Android and iOS.', path: '/components/registry', body: `<div class="ds-wrap tk cr">${body}</div>`, active: '/components', styles: ['css/component-registry.css'] });
+${shipped}
+<p class="ds-fine">A definition is a promise about behaviour, not a screenshot: the live demo on each page is the web implementation, and the Android and iOS sections name the container role and the interaction each platform owns.</p>
+<footer class="cn-foot"><p><a href="/changes">Every Shared release, and the component it changed</a> · <a href="/rules">How OpenVibe decides</a></p></footer>`;
+    return layout({ title: 'Component registry: OpenVibe design system', description: 'Platform-neutral definitions of the OpenVibe navbar, menu, You home, Dock and tabs, thread composer, sheets, pop-overs, keyboard behaviour, kit rows, cards, sections, empty states, switches, segmented controls, uploads, the model chip and motion: web, Android and iOS.', path: '/components/registry', body: `<div class="ds-wrap tk cr">${body}</div>`, active: '/components', styles: ['css/component-registry.css', 'css/specimens.css'] });
 }
 
 function componentPage(name) {
@@ -74,13 +79,15 @@ function componentPage(name) {
     const details = `<dl class="cr-facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
     const native = (platform) => `<section class="cr-native"><h3>${platform === 'android' ? 'Android · Jetpack Compose' : 'iOS · SwiftUI'}</h3><p>${esc(platform === 'android' ? c.platforms.android.specification : c.platforms.ios.specification)}</p>${platform === 'android' ? `<p>Material 3 container: <code>${esc(c.platforms.android.material3)}</code></p>` : ''}</section>`;
     const body = `<header class="ds-page-h"><p class="ds-kicker">Component registry</p><h1>${esc(c.title)}</h1><p class="ds-lede">${esc(c.summary)}</p><p><a href="/components/registry">All components</a> · <a href="/components">Kit documents</a> · <a href="/api/v1/components/${esc(c.name)}">Definition as JSON</a></p></header>
-<div class="cr-layout"><section><h2>Live web demo</h2><div class="cr-demo cr-demo--${esc(c.name)}" data-ov-component="${esc(c.name)}">${demo[c.name]()}</div><p class="ds-fine">Web source: <code>${esc(c.platforms.web.module)}</code> · ${esc(c.platforms.web.markup)}</p></section>
+${shippedSection(c.name)}
+<div class="cr-layout"><section><h2>Live web demo</h2><div class="cr-demo cr-demo--${esc(c.name)}" data-ov-component="${esc(c.name)}" data-specimen>${demo[c.name]()}</div><p class="ds-fine">Web source: <code>${esc(c.platforms.web.module)}</code> · ${esc(c.platforms.web.markup)}</p></section>
 <section><h2>Anatomy</h2><ul class="cr-anatomy">${anatomy}</ul><h2>Props</h2><dl class="cr-props">${Object.entries(c.props).map(([key, type]) => `<div><dt><code>${esc(key)}</code></dt><dd>${esc(type)}</dd></div>`).join('')}</dl></section></div>
 <section><h2>Behavior and accessibility</h2>${details}</section>
 <div class="cr-layout">${native('android')}${native('ios')}</div>
 <section><h2>Example definition</h2>${kit.snippet({ code: JSON.stringify({ schema: c.schema, name: c.name, props: c.examples[0].props }, null, 2), id: 'cr-example' })}</section>
-<h2>Other components</h2>${registryLinks()}`;
-    return layout({ title: `${c.title}: OpenVibe component`, description: c.summary, path: link(c.name), body: `<div class="ds-wrap tk cr">${body}</div>`, active: '/components', styles: ['css/component-registry.css'], scripts: ['js/component-registry.js'], sharedStyles: c.name === 'thread-composer' ? ['thread.css'] : [], shared: c.name === 'thread-composer' ? ['ov-thread.js'] : [] });
+<h2>Other components</h2>${registryLinks()}
+<footer class="cn-foot"><p><a href="/changes">Every Shared release, and the component it changed</a> · <a href="/rules">How OpenVibe decides</a></p></footer>`;
+    return layout({ title: `${c.title}: OpenVibe component`, description: c.summary, path: link(c.name), body: `<div class="ds-wrap tk cr">${body}</div>`, active: '/components', styles: ['css/component-registry.css', 'css/specimens.css'], scripts: ['js/component-registry.js'], sharedStyles: c.name === 'thread-composer' ? ['thread.css'] : [], shared: c.name === 'thread-composer' ? ['ov-thread.js'] : [] });
 }
 
 module.exports = { componentPage, registryPage, registryLinks };

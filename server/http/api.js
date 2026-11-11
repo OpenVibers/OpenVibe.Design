@@ -33,6 +33,7 @@ const { ownOrigin, bearer, requireSameOrigin } = require('./same-origin');
 const themeTokens = require('../tokens');
 const components = require('openvibe-shared/components');
 const legacyRegistry = require('../components/registry');
+const changesView = require('../views/changes');
 
 /** A Network 4xx answer, with its own status and body. A 2xx answer is passed through the same way. */
 function passThrough(res, r) {
@@ -112,6 +113,13 @@ function createApi(ctx) {
     });
 
     // ── Components: the registry as JSON, and a kit document checked against it (public; read-only) ──
+    // Every release in the pinned openvibe-shared, with the pages and rules it touches (server/changes.js).
+    r.get('/v1/changes', (req, res) => {
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.set('Access-Control-Allow-Origin', '*');
+        return res.json(changesView.changesJson());
+    });
+
     r.get('/v1/components', async (req, res) => {
         const entries = await registry.list();
         res.set('Cache-Control', 'public, max-age=3600');
