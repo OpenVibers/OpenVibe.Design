@@ -37,6 +37,7 @@ const aliases = require('../glyphs/aliases');
 const kits = require('../glyphs/kits');
 const ex = require('../glyphs/export');
 const { createGlyphDrafts } = require('../glyphs/drafts');
+const { createReferenceSearch } = require('../glyphs/references');
 const formats = require('../glyphs/formats');
 const fs = require('fs');
 const path = require('path');
@@ -49,7 +50,8 @@ const OPEN = { 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy
 function createIconRoutes(ctx) {
     const { config, s, ai, log = console } = ctx;
     const guestCaps = config.glyphGuests || { perGuest: 2, perAddress: 4, daily: 25 };
-    const drafts = ctx.glyphDrafts || createGlyphDrafts({ db: s.db, ai, guests: guestCaps });
+    const referenceSearch = ctx.referenceSearch || createReferenceSearch({ config });
+    const drafts = ctx.glyphDrafts || createGlyphDrafts({ db: s.db, ai, guests: guestCaps, referenceSearch });
     // A guest (L50 step 5): a random id in an httpOnly cookie, stored only as a keyed hash; the address only as a hash
     // salted with the day. The key is the service's own secret (a new one each start where none is set: development).
     const GUEST_COOKIE = 'ovd_guest';
