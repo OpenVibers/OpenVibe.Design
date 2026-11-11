@@ -89,6 +89,43 @@ async function resolvePlan(body = {}, ctx = {}) {
     }
     if (!prompt && !containsStart(start)) throw fail(422, 'create.prompt', 'Describe the design first.');
 
+    // "Research first": a deep dive's report becomes part of the generation brief. Attaching an existing dive
+    // adds nothing to the price; starting one is priced from AI's own depths before the plan is returned.
+    let research = null;
+    const rawResearch = raw.research;
+    if (rawResearch != null && rawResearch !== false && rawResearch !== '' && rawResearch !== 'off') {
+        if (!ctx.deepDive) throw fail(503, 'create.research', 'Deep dives are not available here.');
+        const value = typeof rawResearch === 'string' ? { ref: rawResearch } : (typeof rawResearch === 'object' ? rawResearch : {});
+        const ref = value.id || value.ref || value.run_id || null;
+        if (ref) {
+            // A dive Design already follows, or one the person ran on OpenVibe Exchange and pasted here. Attaching
+            // is a read: it starts no run and adds nothing to the price.
+            let row;
+            try {
+                const attached = await ctx.deepDive.attach({ owner, token: ctx.viewer && ctx.viewer.token, ref: String(ref) });
+                row = attached.research;
+            } catch (err) {
+                if (err.status === 401 || err.status === 403) throw fail(err.status, 'create.research', err.detail || 'That deep dive is not yours to attach.');
+                throw fail(err.status || 404, 'create.research', err.detail || 'That deep dive was not found.');
+            }
+            if (!row) throw fail(404, 'create.research', 'That deep dive was not found.');
+            if (['failed', 'cancelled'].includes(row.status)) throw fail(409, 'create.research', 'That deep dive did not finish; attach one with a report.');
+            research = { mode: 'attach', id: row.id, runId: row.runId || null, depth: row.depth, question: row.question,
+                status: row.status, price_usd: 0, currency: 'USD', points: row.pointsCount || 0 };
+        } else {
+            const wanted = String(value.depth || value.mode || 'thorough').toLowerCase();
+            if (!['quick', 'thorough', 'expert'].includes(wanted)) throw fail(422, 'create.research', 'Choose Quick, Thorough or Expert for the deep dive.');
+            let depths = [];
+            try { depths = (await ctx.deepDive.options()).depths || []; } catch { depths = []; }
+            const chosen = depths.find((d) => d.id === wanted) || null;
+            const sites = Array.isArray(value.sites) ? value.sites : String(value.sites || '').split(/\r?\n|,/).map((x) => x.trim()).filter(Boolean);
+            research = { mode: 'new', depth: wanted, question: String(value.question || prompt || start.title || 'A design').slice(0, 2000),
+                sites: sites.filter((x) => /^https?:\/\//i.test(x)).slice(0, 30),
+                price_usd: chosen && chosen.price_usd != null ? Number(chosen.price_usd) : null,
+                currency: (chosen && chosen.currency) || 'USD', sites_count: chosen && chosen.sites || null, points: 0 };
+        }
+    }
+
     const catalogue = Array.isArray(options.models) ? options.models : [];
     const wanted = Array.isArray(raw.models) ? raw.models.map((id) => String(id == null ? '' : id).trim()).filter(Boolean) : [];
     const ids = [...new Set(wanted)];
@@ -150,7 +187,7 @@ async function resolvePlan(body = {}, ctx = {}) {
         look: look.id, lookName: look.name, lookSource: look.source, lookVariables: look.variables || {},
         themeId: look.themeId || (look.source === 'theme' ? look.id : null),
         start, startText,
-        models, takes, slots, legacy,
+        models, takes, slots, legacy, research,
         input_tokens, output_tokens,
     };
 }
@@ -185,18 +222,28 @@ function estimatePlan(plan) {
         entry.priced = entry.priced || isPriced;
     }
     const perModel = [...per.values()];
-    const total = micro(perModel.reduce((sum, entry) => sum + entry.cost_usd, 0));
-    const cost = { currency: 'USD', per_model: perModel, total_usd: total, total };
+    const modelTotal = micro(perModel.reduce((sum, entry) => sum + entry.cost_usd, 0));
+    const research = plan.research ? {
+        mode: plan.research.mode, depth: plan.research.depth, question: plan.research.question,
+        id: plan.research.id || null, status: plan.research.status || null,
+        price_usd: plan.research.price_usd == null ? null : micro(Number(plan.research.price_usd)),
+        currency: plan.research.currency || 'USD', priced: plan.research.price_usd != null,
+        sites: plan.research.sites_count || null,
+    } : null;
+    const researchCost = research && research.price_usd != null ? Number(research.price_usd) : 0;
+    const total = micro(modelTotal + researchCost);
+    const cost = { currency: 'USD', per_model: perModel, research, total_usd: total, total };
     return {
         currency: 'USD',
         per_model: perModel,
+        research,
         total_usd: total,
         cost,
         takes: (plan.slots || []).length,
         models: perModel.length,
         input_tokens: plan.input_tokens,
         output_tokens: plan.output_tokens,
-        priced,
+        priced: priced || (research ? research.priced : false),
     };
 }
 

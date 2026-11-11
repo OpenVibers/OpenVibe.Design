@@ -45,13 +45,15 @@ function listen(handler) {
     });
 }
 
-async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.0012, ms = 321, tokensIn = 120, tokensOut = 480, failModels = [], asyncMode = false, routesStatus = 200 } = {}) {
+async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.0012, ms = 321, tokensIn = 120, tokensOut = 480, failModels = [], asyncMode = false, routesStatus = 200, deepDive = null } = {}) {
     const st = {
         models: models.map((m) => ({ ...m })),
         requests: [], routeRequests: 0, lastAuth: null, tokenClaims: null,
         costUsd, ms, tokensIn, tokensOut,
         failModels: new Set(failModels), asyncMode, routesStatus,
         delayMs: 0, runCount: 0, runs: new Map(), htmlFor: null,
+        deepDiveReports: [], deepDives: new Map(), deepDiveOptions: deepDive && deepDive.options ? deepDive.options : null, deepDiveReport: deepDive && deepDive.report ? deepDive.report : null,
+        deepDiveStatus: deepDive && deepDive.status ? deepDive.status : 'succeeded', deepDiveReads: 0,
     };
 
     function routeFor(body) {
@@ -81,6 +83,24 @@ async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.00
         }
         if (st.delayMs) await new Promise((r) => setTimeout(r, st.delayMs));
 
+        // A deep dive (workflow design.deep_dive): the run API when the client asks there, and the feature's own
+        // door as a second path. The report is the run's output; a test can make the first read still running.
+        if ((url.pathname === '/api/v1/runs' || url.pathname === '/api/v1/deep-dives') && req.method === 'POST' &&
+            (body.workflow === 'design.deep_dive' || url.pathname === '/api/v1/deep-dives')) {
+            st.requests.push({ method: 'POST', path: url.pathname, query: Object.fromEntries(url.searchParams), body, claims });
+            const id = `run_dd_${crypto.randomBytes(6).toString('hex')}`;
+            const input = body.input || body;
+            const report = typeof st.deepDiveOptions === 'function' ? st.deepDiveOptions(input) : st.deepDiveReport;
+            const run = { id, status: 'running', workflow: { key: 'design.deep_dive', version: 1 }, input,
+                on_behalf_of: body.on_behalf_of || null, target: body.target || null, output: null, created_at: new Date().toISOString() };
+            st.deepDives.set(id, { run, report });
+            st.deepDiveReports.push(report);
+            return json(202, { run });
+        }
+        if (url.pathname === '/api/v1/deep-dives/options' && req.method === 'GET') {
+            const options = st.deepDiveOptions && st.deepDiveOptions.depths ? st.deepDiveOptions : { depths: [] };
+            return json(200, options);
+        }
         if (url.pathname === '/api/v1/routes' && req.method === 'GET') {
             st.routeRequests++;
             if (st.routesStatus !== 200) return json(st.routesStatus, { code: 'route.unavailable', detail: 'routes are down' });
@@ -129,7 +149,17 @@ async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.00
         const one = /^\/api\/v1\/runs\/([^/]+)$/.exec(url.pathname);
         if (one && req.method === 'GET') {
             st.requests.push({ method: 'GET', path: url.pathname, claims });
-            const run = st.runs.get(decodeURIComponent(one[1]));
+            const id = decodeURIComponent(one[1]);
+            const dive = st.deepDives.get(id);
+            if (dive) {
+                st.deepDiveReads++;
+                const done = st.deepDiveStatus === 'succeeded' || st.deepDiveReads > 1;
+                const run = done
+                    ? { ...dive.run, status: st.deepDiveStatus, output: dive.report, usage: { cost_usd: 0.25, tokens_in: 100, tokens_out: 200 } }
+                    : dive.run;
+                return json(200, { run });
+            }
+            const run = st.runs.get(id);
             if (!run) return json(404, { code: 'run.not_found' });
             return json(200, { run });
         }

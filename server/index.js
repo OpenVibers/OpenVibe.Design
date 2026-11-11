@@ -46,6 +46,7 @@ async function start() {
         // The icon and theme pages in OpenVibe.Search: a sweep a minute after boot and every six hours.
         if (!config.drill) ctx.searchIndex.start();
         ctx.designs.resume().catch((err) => console.warn('[OpenVibe.Design] resume designs:', err.message));
+        if (ctx.deepDive) ctx.deepDive.resume().catch((err) => console.warn('[OpenVibe.Design] resume deep dives:', err.message));
     });
     server.keepAliveTimeout = 65_000;
     createLifecycle({ server, ctx });
