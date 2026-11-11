@@ -1,0 +1,12 @@
+[
+  {"id":"search","style":"line","prompt":"A magnifying glass with a round lens and a short handle, as a simple interface icon"},
+  {"id":"settings","style":"line","prompt":"A gear with a circular center, as a simple interface icon"},
+  {"id":"upload","style":"line","prompt":"An upward arrow entering a tray, as a simple interface icon"},
+  {"id":"calendar","style":"line","prompt":"A calendar page with two top tabs and one marked day, as a simple interface icon"},
+  {"id":"audio","style":"line","prompt":"A speaker with two sound waves, as a simple interface icon"},
+  {"id":"shield","style":"solid","prompt":"A shield with a clear checkmark cut out of its center, as a simple interface icon"},
+  {"id":"cloud","style":"solid","prompt":"A cloud with an upward arrow cut out of it, as a simple interface icon"},
+  {"id":"compass","style":"solid","prompt":"A compass needle pointing northeast inside a circle, as a simple interface icon"},
+  {"id":"chat","style":"line","prompt":"A speech bubble with two short lines of text, as a simple interface icon"},
+  {"id":"bookmark","style":"line","prompt":"A bookmark ribbon with a V-shaped notch at the bottom, as a simple interface icon"}
+]
