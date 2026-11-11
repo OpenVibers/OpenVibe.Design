@@ -47,7 +47,8 @@ function releaseCard(r) {
 
 function releaseRow(r) {
     const hasShots = screenshots(r.version).length > 0;
-    return `<a href="/changes/${esc(r.version)}">${esc(r.version)} · ${esc(r.title)} · ${esc(r.date)}${hasShots ? ' ●' : ''}</a>`;
+    // Lean on purpose (328 rows): the fold's styles read the parts by element, so no class or attribute per row.
+    return `<a href="/changes/${esc(r.version)}"><b>${esc(r.version)}</b><span>${esc(r.title)}</span><small>${esc(r.date)}</small>${hasShots ? '<i title="Has screenshots"></i>' : ''}</a>`;
 }
 
 function monthLabel(date) {
@@ -90,7 +91,7 @@ ${kit.stats([[all.length, 'releases'], [counted, 'with screenshots'], [pin.versi
         if (!monthGroups.has(key)) monthGroups.set(key, { label: monthLabel(r.date), releases: [] });
         monthGroups.get(key).releases.push(r);
     }
-    const folds = [...monthGroups.values()].map((group) => `<details class="chg-month"><summary>${esc(group.label)} · ${group.releases.length} ${group.releases.length === 1 ? 'release' : 'releases'}</summary>${group.releases.map(releaseRow).join('')}</details>`).join('');
+    const folds = [...monthGroups.values()].map((group) => `<details class="chg-month"><summary><b>${esc(group.label)}</b><span class="chg-month-n">${group.releases.length} ${group.releases.length === 1 ? 'release' : 'releases'}</span></summary><div class="chg-month-rows">${group.releases.map(releaseRow).join('')}</div></details>`).join('');
     return layout({
         title: `Changes: ${all.length} OpenVibe.Shared releases`,
         description: `Every OpenVibe.Shared release in the pinned changelog, newest first: what changed, the component pages it touches, the rules it carries out, and its screenshots.`,
