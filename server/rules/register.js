@@ -445,6 +445,12 @@ const RULES = Object.freeze([
     R("ai-text-sounds-like-a-person", "agents", "AI text about a person reads as a person wrote it.",
         "A card line is what a friend who watches would say in one breath: one sentence, specific to this channel, starting with the thing itself (not \"Streams\", \"A channel\", \"Join\"), without the name the card already shows. The stock words that make every channel sound the same stay out: focus, content, engaging, various, a mix of, dive into, showcasing, vibrant, dynamic, journey, immersive, a blend of. A line that fails falls back to the overview reshaped.",
         '2026-11-11', "The owner: \"improve the AI description so they’re not all so generic sounding, make it a little more human feeling and nice\" (the cards read \"Streams a multi-camera, tech-robot focus …\")."),
+    R("lists-fold-by-state", "length", "A long list of work folds by its state, with counts.",
+        "A dashboard of jobs, tasks or runs groups them by state (running, queued, needs attention, today, earlier), each group a fold with its count: what is happening and what needs you open, the rest folded, the choice kept. A long group shows ten and a \"Show N more\"; what is running always shows whole. A search or a filter opens every group. Rows are one line of what and one of where it is.",
+        '2026-11-11', "The owner, on the agent portal: the page was long; \"collapsible elements … improve openvibe.design as well.\""),
+    R("ai-shows-who-did-what", "agents", "An AI task shows which model did what, and the person can change it.",
+        "A task that uses several models says so on its record: each role (plan, build, review, verify) with its model, its reasoning level, its time and its cost, as steps in the one step view. The plan behind it is a setting a person can read, copy and edit (presets first, then every role), the same plan through the page, the API and the SDK.",
+        '2026-11-11', "The owner: \"a really sophisticated multi-model system with enhanced reasoning … modular configuration … SDK API … OpenVibe.design connected.\""),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
