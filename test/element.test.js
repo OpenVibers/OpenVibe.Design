@@ -197,6 +197,13 @@ const fakeAi = (state, doc = ELEMENT) => ({
             assert.strictEqual((await t.get('/gallery/big-red-button')).status, 404, 'a hidden listing is not public');
         });
 
+        await check('a look prop cannot smuggle a colour or a URL into the gallery', async () => {
+            const bad = { ...ELEMENT, name: 'Prop colour', look: { ...ELEMENT.look, props: { size: 'large', colour: '#ff0000' } } };
+            const r = await t.get('/api/v1/gallery/listings', { headers: token(alice), json: { document: bad } });
+            assert.strictEqual(r.status, 422, r.text);
+            assert.match(r.json().detail, /literal colour/);
+        });
+
         await check('the price line names the AI an element calls, from the live catalogue', async () => {
             const elementLib = require('../server/create/element');
             const priced = await elementLib.priceOf({ recipe: { actions: [{ kind: 'ai.ask', product: 'ai', prompt: 'Is it good?', model: 'acme/alpha-1' }] } }, ai);

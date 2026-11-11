@@ -44,6 +44,11 @@ function contentReasons(doc, path = 'element') {
     if (!COMPONENT.has(look.component)) reasons.push(`${path}'s look uses a component that is not in the gallery's control set (${COMPONENT_NAMES.join(', ')}).`);
     if (look.label && (String(look.label).length > 40 || TEXT.test(String(look.label)))) reasons.push(`${path}'s label is longer than 40 characters or carries a link.`);
     if (look.style && look.style.tint && !/^[a-z][a-z0-9-]{0,39}$/.test(String(look.style.tint))) reasons.push(`${path}'s tint must be a theme token, never a colour.`);
+    for (const value of Object.values(look.props || {})) {
+        if (typeof value !== 'string') continue;
+        if (TEXT.test(value)) reasons.push(`${path}'s look props carry a URL or markup.`);
+        if (/(?:^|[\s"';:(])(?:#[0-9a-f]{3,8}|rgba?\s*\(|hsla?\s*\()/i.test(value)) reasons.push(`${path}'s look props carry a literal colour; use the theme's tokens.`);
+    }
     for (const text of stringsIn(doc.recipe)) {
         if (text.length > 2000) reasons.push(`${path}'s recipe has a value longer than 2000 characters.`);
         if (TEXT.test(text)) reasons.push(`${path}'s recipe carries a URL or markup.`);
