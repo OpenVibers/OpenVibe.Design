@@ -105,8 +105,12 @@ const { PUBLIC_DIR } = require('../server/assets');
             assert.strictEqual(body.pinned.version, changes.SHARED_VERSION);
             assert.strictEqual(body.releases.length, all.length);
             assert.strictEqual(body.releases[0].version, all[0].version);
-            assert.deepStrictEqual(body.releases[0].pages.map((p) => p.key), ['brand', 'menu', 'search-pill', 'dock']);
-            assert.ok(body.releases[0].rules.some((x) => x.id === 'button-becomes-its-tab' && x.n > 0));
+            // 4.200.0 is the curated release here: a new pin adds a release at the head, it does not change
+            // the pages and rules that release already names. Read it by version, not by its index.
+            const curated = body.releases.find((r) => r.version === '4.200.0');
+            assert.ok(curated, '4.200.0 is in the archive');
+            assert.deepStrictEqual(curated.pages.map((p) => p.key), ['brand', 'menu', 'search-pill', 'dock']);
+            assert.ok(curated.rules.some((x) => x.id === 'button-becomes-its-tab' && x.n > 0));
         });
 
         await check('/api/v1/changes supports limit and before without changing the default shape', async () => {
