@@ -22,11 +22,12 @@ const { PUBLIC_DIR } = require('../server/assets');
         await check('/changes lists every release in the pinned CHANGELOG, newest first, in its own words', async () => {
             const r = await t.get('/changes');
             assert.strictEqual(r.status, 200);
-            assert.ok(Buffer.byteLength(r.text) < 120 * 1024, `${Buffer.byteLength(r.text)} bytes`);
+            // 136 KB (2026-11-11, was 120): each folded release is a row with its version, title and date as parts.
+            assert.ok(Buffer.byteLength(r.text) < 136 * 1024, `${Buffer.byteLength(r.text)} bytes`);
             assert.match(r.text, /Every shared release, and where it shows/);
             assert.match(r.text, new RegExp(`openvibe-shared@${changes.SHARED_VERSION.replace(/\./g, '\\.')}`));
             assert.strictEqual((r.text.match(/data-release="/g) || []).length, 12, 'exactly twelve full releases');
-            const folded = [...r.text.matchAll(/<summary>([^<]+) · (\d+) releases?<\/summary>/g)];
+            const folded = [...r.text.matchAll(/<summary><b>([^<]+)<\/b><span class="chg-month-n">(\d+) releases?<\/span><\/summary>/g)];
             assert.strictEqual(folded.reduce((n, m) => n + Number(m[2]), 0), all.length - 12, 'fold counts cover every remaining release');
             assert.strictEqual((r.text.match(/<details class="chg-month">/g) || []).length, folded.length);
             let last = -1;
