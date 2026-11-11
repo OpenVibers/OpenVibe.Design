@@ -33,7 +33,7 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds-dots { display: inline-flex; }
 .ds-dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--bg-card, #0f1729); margin-left: -5px; }
 .ds-dots i:first-child { margin-left: 0; }
-.ds-swatch-name { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-swatch-name { font-weight: 700; min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }  /* a theme's name wraps, never "Catppuccin La…" (rule names-are-never-cut) */
 .ds-swatch-mode { font-size: .75rem; color: var(--text-muted, #7386a3); }
 .ds-strip { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
 
@@ -540,7 +540,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
     .ds-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .ds-strip .ds-swatch { grid-template-columns: auto minmax(0, 1fr); }
     .ds-strip .ds-swatch-mode { display: none; }
-    .ds-strip .ds-swatch-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ds-strip .ds-swatch-name { overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 }
 .ds .sc-room-devlinks a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 .ds .sc-room-devlinks a:hover { text-decoration: underline; }
