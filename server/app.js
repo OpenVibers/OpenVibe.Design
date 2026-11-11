@@ -40,6 +40,8 @@ const { createMcpRoutes } = require('./http/mcp');
 const { createArenaApi } = require('./http/arena-api');
 const { createDesignApi } = require('./http/design-api');
 const { createDesigns } = require('./designs');
+const { createElementHandoff } = require('./elements/handoff');
+const { createGallery } = require('./elements/gallery');
 const { createDeepDiveAi } = require('./deepdive/ai');
 const { createDeepDiveStore } = require('./deepdive/store');
 const { createDeepDiveService } = require('./deepdive/service');
@@ -122,6 +124,10 @@ async function createApp(opts = {}) {
     const createOptions = opts.createOptions || createCreateOptions({ config, ai, catalog, fetchImpl, log, now });
     // Publishing a design on openvibe.space (open item D8).
     const publisher = opts.publisher || require('./publish').createPublisher({ config, fetchImpl, log });
+    // Elements stage 2: add a made element to Live as the person; the gallery itself is here on Design.
+    const elementHandoff = opts.elementHandoff || createElementHandoff({ config, fetchImpl, log });
+    // Elements and packs: the free gallery beside /create (owner correction: it lives here, not on Exchange).
+    const gallery = opts.gallery || createGallery({ s, now, log });
     const accountData = accountDataLib.create({ db: s.db, log });
     const picks = opts.picks || require('./brand-picks').createBrandPicks({ db: s.db, now });
     const fonts = opts.fonts || createFontCatalog({ db: s.db, fetchImpl, now, log });
@@ -135,7 +141,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, log, picks, fonts, aiStore, maker, registry, createOptions, balance, deepDive, deepDiveStore, deepDiveAi, proposals, rulePr,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, elementHandoff, gallery, log, picks, fonts, aiStore, maker, registry, createOptions, balance, deepDive, deepDiveStore, deepDiveAi, proposals, rulePr,
         random: opts.random || Math.random,
     };
 
@@ -307,6 +313,7 @@ async function createApp(opts = {}) {
     }
     // ── API: the Arena, the glyphs (with their pages), then the theme proxy ──
     app.use('/api/v1/designs', express.json({ limit: '256kb' }), createDesignApi(ctx));
+    app.use('/api/v1/gallery', require('./http/gallery-api').createGalleryApi(ctx));
     app.use('/api', express.json({ limit: '64kb' }));
     app.use('/api', createDeepDiveApi(ctx));
     app.use('/api/create', createCreateApi(ctx));

@@ -51,6 +51,10 @@ const KINDS = [
         id: 'mark', name: 'Mark', hint: 'A logo or small brand mark sheet', frames: ['mark'],
         instruction: 'Build one brand mark sheet: the mark, a wordmark, a small palette and two or three lockups. The mark must stay recognisable at 16 px and be drawn with inline SVG, not a remote image.',
     },
+    {
+        id: 'element', name: 'Element', hint: 'A control or stream widget with a recipe', frames: ['phone', 'desktop'],
+        instruction: 'Write one ui.element@1 element as JSON: its look (a control component and the theme tokens) and its recipe (triggers, conditions and actions from the fixed catalogs). Return the JSON object only.',
+    },
 ];
 
 const BY_ID = new Map(KINDS.map((kind) => [kind.id, kind]));
@@ -93,6 +97,7 @@ function categoryFor(kindId) {
         case 'email': return 'email';
         case 'social-card': return 'social';
         case 'mark': return 'mark';
+        case 'element': return 'component';
         default: return 'landing';
     }
 }

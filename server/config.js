@@ -156,6 +156,14 @@ function load(env = process.env) {
             chatEditsPerDesign: Math.max(1, int(env.DESIGN_CHAT_EDITS_PER_DESIGN, 5)),
         },
 
+        // OpenVibe.Live's element library (OpenVibe Elements stage 2): the person's own token adds the element
+        // to their channel; Design never holds a Live token of its own for this.
+        live: {
+            url: trim(env.OV_LIVE_URL || 'https://openvibe.live'),
+            elementsPath: env.OV_LIVE_ELEMENTS_PATH || '/api/me/elements',
+            timeoutMs: Math.max(1000, int(env.DESIGN_LIVE_TIMEOUT_MS, 15_000)),
+        },
+
         // The typefaces and vectors a person makes with the model (plan R1 item 8): how many model runs
         // one person may make a day. A typeface is several runs (the letters are drawn a batch at a time),
         // so the cap counts runs, not pages.

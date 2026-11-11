@@ -84,7 +84,8 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
             // what is made, who designs it, and the recent designs as cards that say what each is.
             const kindsShown = [...recent.text.matchAll(/name="kind" value="([a-z-]+)"/g)].map((m) => m[1]);
             assert.deepEqual(kindsShown.slice(0, 3), ['page', 'screen', 'component'], 'the things that can be made, the first three first');
-            assert.ok(kindsShown.length === 3 || kindsShown.length === 7, 'three without the options, seven with them');
+            assert.ok(kindsShown.length === 3 || kindsShown.length === 8, 'three without the options, eight with them (Element included)');
+            if (kindsShown.length === 8) assert.ok(kindsShown.includes('element'), 'Element is one of the things that can be made');
             assert.deepEqual([...recent.text.matchAll(/name="who" value="([a-z]+)"/g)].map((m) => m[1]), ['claude', 'sonnet', 'any', 'compare'], 'the four ways to pick who designs');
             assert.match(recent.text, /href="https:\/\/openvibe\.exchange\/models">Compare these models on OpenVibe Exchange<\/a>/, 'the models are compared on Exchange');
             assert.match(recent.text, /<a class="dv-rc" href="\/d\/[^"]+"><span class="dv-rc-k" aria-hidden="true"><(?:svg|img src="\/api\/create\/designs\/)/, 'a recent design is a card with its picture (or its kind drawn where there is none)');

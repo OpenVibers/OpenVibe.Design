@@ -7,6 +7,7 @@
  */
 const { createApp } = require('./app');
 const { gracefulStop } = require('openvibe-sdk/service');
+const { seedOfficial } = require('./elements/official');
 
 /**
  * The process stop (openvibe-sdk/service): stop taking connections, drain the requests in flight, stop the Arena
@@ -33,6 +34,8 @@ function createLifecycle({ server, ctx, exit, signals } = {}) {
 async function start() {
     const { app, ctx } = await createApp();
     const { config } = ctx;
+    // The first official pack (LOOI), free and published by OpenVibe itself, once; a failure never blocks boot.
+    await seedOfficial(ctx.gallery, ctx.log || console);
     // Socket activation (2026-10-31): systemd's .socket unit holds the listener across restarts, so a deploy
     // queues requests in the kernel instead of answering 502. Without the socket unit, the usual listen.
     const socketActivated = process.env.LISTEN_FDS === '1' && Number(process.env.LISTEN_PID) === process.pid;

@@ -30,6 +30,10 @@ const componentsListView = require('../views/components-list');
 const kitView = require('../views/kit');
 const themeTokens = require('../tokens');
 const designView = require('../views/design');
+const elementPreviewView = require('../views/element-preview');
+const elementLib = require('../create/element');
+const galleryView = require('../views/gallery');
+const { isStaff } = require('../identity/staff');
 const patternsView = require('../views/patterns');
 const brandView = require('../views/brand');
 const changesView = require('../views/changes');
@@ -190,6 +194,76 @@ function createPageRoutes(ctx) {
             return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not read the design.');
         }
     });
+    // ── Elements (OpenVibe Elements stage 2, 2026-11-11) ─────
+    // The canvas's element panel and the gallery's "Try it" share one preview view: the look, the recipe on
+    // sample data, the price line, the generated sliders and the hand-offs.
+    const elementBack = (req, res, query = '') => res.redirect(303, `/d/${encodeURIComponent(req.params.id)}/element/preview${query}`);
+    r.get('/d/:id/element/preview', async (req, res) => {
+        res.set('Cache-Control', 'private, no-store');
+        try {
+            const key = req.query.key || '';
+            const data = await ctx.designs.read(req.params.id, subjectOf(req), key, req.viewer);
+            if (data.design.kind !== 'element') return res.redirect(303, `/d/${encodeURIComponent(req.params.id)}${key ? `?key=${encodeURIComponent(key)}` : ''}`);
+            if (!data.pick) return res.redirect(303, `/d/${encodeURIComponent(req.params.id)}${key ? `?key=${encodeURIComponent(key)}` : ''}`);
+            const variant = data.variants[Number(data.pick.variantIndex)];
+            if (!variant || !variant.element) return page(res, 409, views.notFound(), req.viewer);
+            const sim = await ctx.designs.simulate(req.params.id, { owner: subjectOf(req), key, viewer: req.viewer });
+            return page(res, 200, elementPreviewView.elementPreview({
+                design: data.design, variant, element: variant.element, sim, price: sim.price, editKey: key, viewer: req.viewer, mode: 'canvas',
+                notice: req.query.channel === 'ok' ? 'Added to your Live element library.' : req.query.listing === 'ok' ? 'Published to the Elements and packs gallery.' : null,
+                error: req.query.channel_error ? String(req.query.channel_error).slice(0, 300) : req.query.listing_error ? String(req.query.listing_error).slice(0, 300) : null,
+            }), req.viewer, { cacheControl: 'private, no-store' });
+        } catch (err) {
+            return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not open the element preview.');
+        }
+    });
+    r.post('/d/:id/element/tweak', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try {
+            await ctx.designs.tweakElement({ id: req.params.id, values: { size: req.body.size, tint: req.body.tint,
+                label: req.body.label, show_label: req.body.show_label === '1' }, owner: subjectOf(req), key: req.body.key || '', viewer: req.viewer });
+            return elementBack(req, res, req.body.key ? `?key=${encodeURIComponent(req.body.key)}` : '');
+        } catch (err) { return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not apply the tweak.'); }
+    });
+    r.post('/d/:id/element/channel', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(`/d/${req.params.id}/element/preview`)}`);
+        const key = req.body.key || '';
+        const suffix = key ? `?key=${encodeURIComponent(key)}&channel=` : '?channel=';
+        try {
+            const { element } = await ctx.designs.elementOf({ id: req.params.id, owner: subjectOf(req), key, viewer: req.viewer,
+                authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker', sharing: 'private' });
+            const channel = await ctx.elementHandoff.addToChannel({ element, token: tokenOf(req) });
+            channel.at = new Date().toISOString();
+            await ctx.designs.rememberHandoff({ id: req.params.id, owner: subjectOf(req), key, viewer: req.viewer, kind: 'channel', value: channel });
+            return elementBack(req, res, suffix + 'ok');
+        } catch (err) {
+            await ctx.designs.rememberHandoff({ id: req.params.id, owner: subjectOf(req), key, viewer: req.viewer, kind: 'channel',
+                value: { error: String(err.message || 'Live did not accept the element.').slice(0, 300), at: new Date().toISOString() } }).catch(() => {});
+            return elementBack(req, res, suffix + `error=${encodeURIComponent(String(err.message || 'Could not add it.').slice(0, 300))}`);
+        }
+    });
+    r.post('/d/:id/element/gallery', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(`/d/${req.params.id}/element/preview`)}`);
+        const key = req.body.key || '';
+        const suffix = key ? `?key=${encodeURIComponent(key)}&listing=` : '?listing=';
+        try {
+            const { design, element } = await ctx.designs.elementOf({ id: req.params.id, owner: subjectOf(req), key, viewer: req.viewer,
+                authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker', sharing: 'gallery' });
+            const listing = await ctx.gallery.publish({ subject: subjectOf(req),
+                authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker', authorUsername: (req.viewer && req.viewer.username) || null,
+                document: element, source: 'design', sourceId: req.params.id, remixOf: design.elementRemixOf || null });
+            const value = { id: listing.id, slug: listing.slug, url: `/gallery/${encodeURIComponent(listing.slug)}`, at: new Date().toISOString() };
+            await ctx.designs.rememberHandoff({ id: req.params.id, owner: subjectOf(req), key, viewer: req.viewer, kind: 'listing', value });
+            return elementBack(req, res, suffix + 'ok');
+        } catch (err) {
+            await ctx.designs.rememberHandoff({ id: req.params.id, owner: subjectOf(req), key, viewer: req.viewer, kind: 'listing',
+                value: { error: String(err.message || 'The gallery did not accept the element.').slice(0, 300), at: new Date().toISOString() } }).catch(() => {});
+            return elementBack(req, res, suffix + `error=${encodeURIComponent(String(err.message || 'Could not publish it.').slice(0, 300))}`);
+        }
+    });
+
     r.post('/d/:id/theme', express.urlencoded({ extended: false }), async (req, res) => {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
         try {
@@ -505,6 +579,122 @@ function createPageRoutes(ctx) {
         }
         if (!round) return page(res, 404, views.notFound(), req.viewer);
         return page(res, 200, views.arenaRound({ round, me: meOf(req.viewer) }), req.viewer);
+    });
+
+    // ── Elements and packs gallery (owner correction: on Design, beside /create) ──
+    const galleryNext = (slug) => `/gallery/${encodeURIComponent(slug)}`;
+    const galleryStaff = (req) => isStaff(req.viewer);
+    async function addListingToChannel(listing, token, channel) {
+        const docs = listing.kind === 'pack' ? (Array.isArray(listing.document.items) ? listing.document.items : []) : [listing.document];
+        const items = [];
+        for (const doc of docs) {
+            try { items.push({ name: doc.name, ...(await ctx.elementHandoff.addToChannel({ element: doc, token })) }); }
+            catch (err) { return { items, error: String(err.message || 'Live did not accept the element.').slice(0, 300) }; }
+        }
+        return { items };
+    }
+    async function galleryListing(req, res, { notice = null, error = null, status = 200 } = {}) {
+        const listing = await ctx.gallery.get(req.params.slug);
+        const who = req.viewer && req.viewer.kind === 'user' ? req.viewer : null;
+        if (!listing || (listing.status !== 'published' && !galleryStaff(req) && !(who && who.subject === listing.author.subject))) return page(res, 404, views.notFound(), req.viewer);
+        const [installed, myRating] = who ? await Promise.all([ctx.gallery.installedBy(listing.id, who.subject), ctx.gallery.ratingBy(listing.id, who.subject)]) : [null, null];
+        return page(res, status, galleryView.listingPage({ listing, viewer: req.viewer || {}, installed, myRating,
+            canRemix: Boolean(who && listing.author.subject !== who.subject && listing.status === 'published'), notice, error }), req.viewer,
+        { cacheControl: status === 200 && listing.status === 'published' ? 'public, max-age=60' : 'private, no-store' });
+    }
+    r.get('/gallery', async (req, res) => {
+        const q = typeof req.query.q === 'string' ? req.query.q.slice(0, 120) : '';
+        const kind = req.query.kind === 'element' || req.query.kind === 'pack' ? req.query.kind : '';
+        const sort = ['new', 'installs', 'rating'].includes(String(req.query.sort)) ? String(req.query.sort) : 'new';
+        const [listings, count] = await Promise.all([ctx.gallery.list({ q, kind, sort, limit: 60 }), ctx.gallery.count({ q, kind })]);
+        return page(res, 200, galleryView.galleryPage({ listings, count, q, kind, sort, viewer: req.viewer || {},
+            notice: req.query.published === '1' ? 'Published to the gallery.' : null }), req.viewer, { cacheControl: 'public, max-age=60' });
+    });
+    r.get('/gallery/moderation', async (req, res) => {
+        if (!galleryStaff(req)) return page(res, 403, views.notFound(), req.viewer);
+        const reports = await ctx.gallery.reports({ status: 'pending' });
+        return page(res, 200, galleryView.moderationPage({ reports, notice: req.query.done ? 'Saved.' : null }), req.viewer, { cacheControl: 'private, no-store' });
+    });
+    r.post('/gallery/moderation/reports/:id', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!galleryStaff(req)) return res.sendStatus(403);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const decision = (req.body || {}).decision === 'reject' ? 'rejected' : 'accepted';
+        await ctx.gallery.reviewReport({ id: req.params.id, decision, reviewer: subjectOf(req) });
+        return res.redirect(303, '/gallery/moderation?done=1');
+    });
+    r.post('/gallery/moderation/:id', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!galleryStaff(req)) return res.sendStatus(403);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const listing = await ctx.gallery.get(req.params.id);
+        if (!listing) return res.sendStatus(404);
+        await ctx.gallery.setStatus({ id: listing.id, status: listing.status === 'published' ? 'hidden' : 'published', reviewer: subjectOf(req) });
+        return res.redirect(303, galleryNext(listing.slug));
+    });
+    r.get('/gallery/:slug/try', async (req, res) => {
+        const listing = await ctx.gallery.get(req.params.slug);
+        if (!listing || listing.status !== 'published') return page(res, 404, views.notFound(), req.viewer);
+        const doc = listing.kind === 'pack' ? (listing.document.items || [])[0] : listing.document;
+        if (!doc) return page(res, 404, views.notFound(), req.viewer);
+        const sim = elementLib.simulateElement(doc);
+        let price = null;
+        try { price = await elementLib.priceOf(doc, ctx.ai); } catch { /* the price line says unknown */ }
+        return page(res, 200, elementPreviewView.elementPreview({ design: null, element: doc, sim, price, viewer: req.viewer, mode: 'try',
+            listingId: listing.id, path: `/gallery/${encodeURIComponent(listing.slug)}/try`, listingUrl: galleryNext(listing.slug) }), req.viewer,
+        { cacheControl: 'public, max-age=60' });
+    });
+    r.get('/gallery/:slug', (req, res) => galleryListing(req, res, {
+        notice: req.query.installed === '1' ? 'Installed on your channel.'
+            : req.query.rated === '1' ? 'Your rating is saved.'
+                : req.query.remixed === '1' ? 'Your remix is open in the canvas.'
+                    : req.query.reported === '1' ? 'Thank you. Staff will read the report.' : null,
+        error: req.query.library_error ? String(req.query.library_error).slice(0, 300) : null,
+    }));
+    r.post('/gallery/:slug/install', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(galleryNext(req.params.slug))}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try {
+            const listing = await ctx.gallery.get(req.params.slug);
+            if (!listing) return res.sendStatus(404);
+            const library = await addListingToChannel(listing, tokenOf(req), (req.viewer && req.viewer.username) || null);
+            await ctx.gallery.install({ listingId: listing.id, subject: subjectOf(req), channel: (req.viewer && req.viewer.username) || null, library });
+            const suffix = library.error ? `?installed=1&library_error=${encodeURIComponent(library.error)}` : '?installed=1';
+            return res.redirect(303, galleryNext(req.params.slug) + suffix);
+        } catch (err) { return galleryListing(req, res, { error: err.message, status: err.status || 422 }); }
+    });
+    r.post('/gallery/:slug/rating', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(galleryNext(req.params.slug))}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try { await ctx.gallery.rate({ listingId: req.params.slug, subject: subjectOf(req), stars: (req.body || {}).stars, note: (req.body || {}).note }); }
+        catch (err) { return galleryListing(req, res, { error: err.message, status: err.status || 422 }); }
+        return res.redirect(303, `${galleryNext(req.params.slug)}?rated=1`);
+    });
+    r.post('/gallery/:slug/remix', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(galleryNext(req.params.slug))}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try {
+            const listing = await ctx.gallery.get(req.params.slug);
+            if (!listing || listing.status !== 'published') return res.sendStatus(404);
+            // An element remix opens as an editable copy in the canvas; a pack is copied as a pack listing that
+            // credits the original (a pack's items are edited one at a time, after stage 2).
+            if (listing.kind === 'pack') {
+                const document = JSON.parse(JSON.stringify(listing.document));
+                document.name = `${listing.name} (remix)`;
+                const copy = await ctx.gallery.publish({ subject: subjectOf(req),
+                    authorName: (req.viewer && (req.viewer.displayName || req.viewer.username)) || 'A maker',
+                    authorUsername: (req.viewer && req.viewer.username) || null,
+                    document, remixOf: listing.id });
+                return res.redirect(303, galleryNext(copy.slug));
+            }
+            const out = await ctx.designs.importElement({ element: listing.document, owner: subjectOf(req), listing, remixOf: listing.id });
+            return res.redirect(303, out.editUrl);
+        } catch (err) { return galleryListing(req, res, { error: err.message, status: err.status || 422 }); }
+    });
+    r.post('/gallery/:slug/report', express.urlencoded({ extended: false, limit: '4kb' }), async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(galleryNext(req.params.slug))}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        try { await ctx.gallery.report({ listingId: req.params.slug, subject: subjectOf(req), reason: (req.body || {}).reason, detail: (req.body || {}).detail }); }
+        catch (err) { return galleryListing(req, res, { error: err.message, status: err.status || 422 }); }
+        return res.redirect(303, `${galleryNext(req.params.slug)}?reported=1`);
     });
 
     r.get('/developers', (req, res) => page(res, 200, views.developers(), req.viewer));
