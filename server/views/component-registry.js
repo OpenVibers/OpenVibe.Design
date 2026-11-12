@@ -54,7 +54,7 @@ function registryLinks() {
 
 const GROUPS = [
     ['Navigation', ['navbar', 'menu', 'you-home', 'dock', 'dock-tabs']],
-    ['Writing and choosing', ['chat', 'thread-composer', 'sheet', 'popover', 'keyboard']],
+    ['Writing and choosing', ['chat', 'thread-composer', 'search-field', 'form-controls', 'sheet', 'popover', 'keyboard']],
     ['Content', ['kit-row', 'kit-card', 'kit-section', 'empty-state']],
     ['Settings', ['switch-row', 'segmented-control']],
     ['Files and AI', ['upload-progress', 'ai-choice']],
