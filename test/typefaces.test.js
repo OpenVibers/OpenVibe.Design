@@ -17,6 +17,21 @@ const { clean } = require('../server/typefaces/glyph');
 const { compile } = require('../server/typefaces/compile');
 const { sanitize } = require('../server/vectors/svg');
 
+/**
+ * Compile with the clock frozen. opentype.js stamps the font's head table with the build time when it writes
+ * the file, so two compiles either side of a second would differ in those bytes alone; freezing the clock
+ * makes the determinism check about the glyphs, the metrics and the names, which is what must not change.
+ */
+async function compileAt(fixedNow, input) {
+    const RealDate = Date;
+    class FrozenDate extends RealDate {
+        constructor(...args) { super(...(args.length ? args : [fixedNow])); }
+        static now() { return fixedNow; }
+    }
+    global.Date = FrozenDate;
+    try { return await compile(input); } finally { global.Date = RealDate; }
+}
+
 /** The letters the fake model draws. Every one of them is a closed path inside the em box. */
 const LETTERS = {
     A: 'M100 0 L300 700 L500 0 L420 0 L340 180 L160 180 L80 0 Z',
@@ -115,8 +130,8 @@ function fakeAi(overrides = {}) {
     // ── The compiler, on fixed fixtures ──
     await check('the same glyphs always compile to the same font', async () => {
         const glyphs = Object.entries(LETTERS).map(([char, d]) => ({ char, d }));
-        const first = await compile({ familyName: 'Fixture Sans', glyphs, model: 'claude-opus-5-5', designer: 'Made on OpenVibe.Design' });
-        const second = await compile({ familyName: 'Fixture Sans', glyphs, model: 'claude-opus-5-5', designer: 'Made on OpenVibe.Design' });
+        const first = await compileAt(Date.UTC(2026, 10, 12), { familyName: 'Fixture Sans', glyphs, model: 'claude-opus-5-5', designer: 'Made on OpenVibe.Design' });
+        const second = await compileAt(Date.UTC(2026, 10, 12), { familyName: 'Fixture Sans', glyphs, model: 'claude-opus-5-5', designer: 'Made on OpenVibe.Design' });
         assert.ok(first.ok, first.why);
         assert.ok(second.ok);
         assert.deepEqual(first.otf, second.otf);
