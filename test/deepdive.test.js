@@ -39,7 +39,7 @@ const report = {
         ],
         comparison: { columns: ['Site', 'Density'], rows: [['acme.example', 'dense']] },
         best: { source_id: 'src_acme', what: 'The Stop disc stays in the same place at every size.', evidence: [ev('https://acme.example/controls', 'acme.example')] },
-        mistakes: [{ what: 'A menu hides the emergency stop.', evidence: [ev('https://acme.example/controls', 'acme.example')] }],
+        mistakes: [{ what: 'A menu hides the Stop button.', evidence: [ev('https://acme.example/controls', 'acme.example')] }],
         gap: 'No one shows the robot’s state beside the controls.',
         reference_tokens: {
             palettes: [{ source_id: 'src_acme', colours: ['#0b0f19', '#e6edf7', '#e5484d'] }],
