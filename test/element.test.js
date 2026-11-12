@@ -186,7 +186,8 @@ const fakeAi = (state, doc = ELEMENT) => ({
             const tryPage = await t.get('/gallery/big-red-button/try');
             assert.strictEqual(tryPage.status, 200, tryPage.text);
             assert.ok(tryPage.text.includes('On sample data'));
-            assert.ok(tryPage.text.includes('See it in the Elements and packs gallery'));
+            assert.ok(tryPage.text.includes('href="/gallery/big-red-button"'), 'Try it leads back to its listing');
+            assert.ok(tryPage.text.includes('class="el-turns"'), 'the sample run reads as turns: who pressed, then what happened');
             const report = await t.get('/gallery/big-red-button/report', { headers: { ...token(bob), 'content-type': 'application/x-www-form-urlencoded' }, body: 'reason=broken&detail=The+button+does+nothing' });
             assert.strictEqual(report.status, 303, report.text);
             const queue = await t.get('/gallery/moderation', { as: mod });
@@ -236,6 +237,20 @@ const fakeAi = (state, doc = ELEMENT) => ({
             assert.strictEqual(page.status, 200, page.text);
             assert.ok(page.text.includes('LOOI pack'));
             assert.ok(page.text.includes('Headlights on'));
+            // The pack's page shows its whole deck, each element a door to Try it on that element.
+            const items = first.document.items;
+            assert.strictEqual((page.text.match(/class="el-deck-tile"/g) || []).length, items.length, 'every element of the pack is on its page');
+            assert.ok(page.text.includes('href="/gallery/looi-pack/try?item=2"'));
+            const third = await t.get('/gallery/looi-pack/try?item=2');
+            assert.strictEqual(third.status, 200, third.text);
+            assert.ok(third.text.includes(`<h1`) && third.text.includes(items[2].name), 'Try it opens the element asked for');
+            assert.ok(third.text.includes('aria-current="page"') && third.text.includes('class="el-pack-pick"'), 'the pack\'s other elements are one tap away');
+            const far = await t.get('/gallery/looi-pack/try?item=99');
+            assert.ok(far.text.includes(items[items.length - 1].name), 'an item past the end opens the last one');
+            // The gallery's kind chips carry their counts.
+            const gallery = await t.get('/gallery');
+            assert.match(gallery.text, /Packs<\/span><span class="el-g-n">\d+<\/span>/);
+            assert.ok(gallery.text.includes('class="el-g-mini"'), 'a pack card shows its first elements, not one button');
             const remix = await t.get('/gallery/looi-pack/remix', { headers: token(bob), body: 'key=' });
             assert.strictEqual(remix.status, 303, remix.text);
             const copySlug = /\/gallery\/([^?]+)/.exec(remix.headers.get('location') || '')?.[1];

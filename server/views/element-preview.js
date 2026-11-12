@@ -12,23 +12,42 @@ const kit = require('openvibe-shared/kit');
 const { layout, esc } = require('../render/layout');
 const { renderLook } = require('../create/element');
 
-const ICON = { press: '●', chat: '💬', refused: '✕', cost: '◆', chance: '?', robot: '▸', screen: '▣', state: '▤', stream: '▶', ai: '✦', money: '¤', unknown: '·' };
+// Each kind of outcome has a kit icon; the row's tint says the same thing in colour (design.css .el-out--*).
+const ICON = { refused: 'ban', cost: 'coin', chance: 'help', robot: 'robot', screen: 'grid', state: 'chart', stream: 'live', ai: 'spark', money: 'coin', chat: 'chat', unknown: 'info' };
 
 const money = (n) => (n == null ? '–' : `$${Number(n) < 0.1 ? Number(n).toPrecision(2) : Number(n).toFixed(2)}`);
 
 function priceLine({ design = null, price = null }) {
     const making = design && design.estimate && Number.isFinite(Number(design.estimate.total))
-        ? `Making it: ${money(design.estimate.total)}${design.estimate.priced === false ? ' (some models unpriced)' : ''}.`
+        ? `Making it cost ${money(design.estimate.total)}${design.estimate.priced === false ? ' (some models unpriced)' : ''}. `
         : '';
     const calls = price && price.calls && price.calls.length
         ? (price.calls.map((c) => `${c.available ? `${c.model}: ${money(c.price_in)} in / ${money(c.price_out)} out per million${c.max_cost_usd != null ? `, at most ${money(c.max_cost_usd)} a press` : ''}` : `${c.model || 'The model'}: not on the live catalogue, price unknown`}`).join(' · '))
-        : 'No AI it calls: it runs from the recipe alone.';
-    return `<p class="el-price"><b>Price</b> ${esc(making)} ${esc(calls)} Elements are free: an AI action is paid for by the person whose channel runs it, through their own Balance.</p>`;
+        : null;
+    const lead = calls ? `Each press asks an AI. ${calls}.` : 'Free to run: no AI in it, only its recipe.';
+    return `<p class="el-price">${kit.icon(calls ? 'spark' : 'check')}<span><b>${esc(lead)}</b> ${esc(making)}<small>An AI action is paid by the person whose channel runs it, from their own Balance; the element itself is free.</small></span></p>`;
 }
 
+/**
+ * The sample run as turns: who pressed (or what was said in chat), then what happened, indented under it. Six
+ * people pressing read as twelve equal boxes before; a turn keeps the cause and its result together.
+ */
 function timeline(sim) {
     if (!sim || !Array.isArray(sim.events) || !sim.events.length) return '<p class="dv-fine">No sample events.</p>';
-    return `<ol class="el-events">${sim.events.map((e) => `<li class="el-event el-event--${esc(e.kind)}"><span class="el-event-icon" aria-hidden="true">${ICON[e.kind] || '·'}</span><span class="el-event-text">${esc(e.text)}</span>${e.person ? `<small>${esc(e.person)}</small>` : ''}</li>`).join('')}</ol>`;
+    const turns = [];
+    for (const e of sim.events) {
+        if (e.kind === 'press' || e.kind === 'chat' || !turns.length) turns.push({ start: e, out: [] });
+        else turns[turns.length - 1].out.push(e);
+    }
+    const plain = (t) => String(t || '').replace(/\s*\(simulated\)/g, '');
+    const who = (e) => {
+        if (e.kind === 'press') return `<b>${esc(e.person || 'Someone')}</b>${e.role ? ` <small>${esc(e.role)}</small>` : ''} <span>presses</span>`;
+        if (e.kind === 'chat') return `${kit.icon('chat')}<span class="el-turn-chat">${esc(plain(e.text).replace(/^Chat:\s*/, ''))}</span>`;
+        return `<span>${esc(plain(e.text))}</span>`;
+    };
+    const out = (e) => `<li class="el-out el-out--${esc(e.kind)}">${kit.icon(ICON[e.kind] || 'info')}<span>${esc(plain(e.text))}</span></li>`;
+    return `<ol class="el-turns">${turns.map((t) => `<li class="el-turn${t.out.some((e) => e.kind === 'refused') ? ' is-refused' : ''}">
+<p class="el-turn-who">${who(t.start)}</p>${t.out.length ? `<ul class="el-turn-out">${t.out.map(out).join('')}</ul>` : ''}</li>`).join('')}</ol>`;
 }
 
 /** The robot actions only, in the shape public/js/element-sim.js plays. */
@@ -87,7 +106,13 @@ function elementPreview(o) {
     const listing = design && design.elementListing;
     const variant = design && o.variant ? o.variant : null;
     const prompts = design ? `<p class="dv-fine">Made from: “${esc(design.prompt)}”</p>${design.elementRemixOf ? `<p class="dv-fine">Remixed from <a href="/gallery/${encodeURIComponent(design.elementRemixOf)}">the original</a>.</p>` : ''}` : '';
-    const back = design ? `<a href="/d/${encodeURIComponent(design.id)}${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">← Back to the design</a>` : '<a href="/gallery">Elements and packs</a>';
+    const back = design
+        ? { href: `/d/${encodeURIComponent(design.id)}${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}`, label: 'Back to the design' }
+        : { href: o.listingUrl || '/gallery', label: o.listingName || 'Elements and packs' };
+    // A pack's Try it: its elements as chips, the open one marked; each is its own page (?item=N), no script.
+    const pack = o.pack && o.pack.items.length > 1
+        ? `<nav class="el-pack-pick" aria-label="${esc(o.listingName || 'The pack')}: its elements">${o.pack.items.map((name, i) => `<a class="el-g-chip" href="${esc(o.pack.href)}${i ? `?item=${i}` : ''}"${i === o.pack.index ? ' aria-current="page"' : ''}>${esc(name)}</a>`).join('')}</nav>`
+        : '';
     const handoffs = mine ? `<div class="el-handoffs">
 ${channel && !channel.error ? `<p class="dv-ok" role="status">On your channel${channel.url ? `: <a href="${esc(channel.url)}">${esc(channel.url.replace(/^https?:\/\//, ''))}</a>` : '.'}</p>` : ''}
 ${channel && channel.error ? `<p class="dv-err" role="alert">${esc(channel.error)}</p>` : ''}
@@ -97,23 +122,25 @@ ${listing && listing.error ? `<p class="dv-err" role="alert">${esc(listing.error
 <form method="post" action="/d/${encodeURIComponent(design.id)}/element/gallery"><input type="hidden" name="key" value="${esc(editKey)}">${kit.button({ label: listing && !listing.error ? 'Publish again to the gallery' : 'Publish to the gallery', type: 'submit', kind: 'quiet' })}</form>
 <p class="dv-fine">Add to my channel puts it in your Live element library. Publish puts it in the Elements and packs gallery here on Design as a free listing under your name.${signedIn ? '' : ' Sign in to use either.'}</p>
 </div>` : (mode === 'canvas' ? '<p class="dv-fine">Sign in at OpenVibe to add this element to your channel or publish it.</p>' : '');
-    const share = o.listingUrl ? `<p><a href="${esc(o.listingUrl)}">See it in the Elements and packs gallery →</a></p>` : '';
+    // The listing's own page is the back link on Try it, so no second "see it in the gallery" link.
+    const share = o.listingUrl && mode !== 'try' ? `<p><a href="${esc(o.listingUrl)}">See it in the Elements and packs gallery →</a></p>` : '';
     const tryIt = o.tryUrl ? `<p><a class="ovk-btn ovk-btn--quiet" href="${esc(o.tryUrl)}">Try it again</a></p>` : '';
-    const body = `<section class="el-page">
-<header class="el-head">${back}<h1>${esc(element.name)}</h1>
-<p>${esc(element.description || 'An element made with OpenVibe.Design.')}</p>${prompts}
-${notice ? `<p class="dv-ok" role="status">${esc(notice)}</p>` : ''}${error ? `<p class="dv-err" role="alert">${esc(error)}</p>` : ''}</header>
+    const hasRobot = robotActions(sim).length > 0;
+    const body = `<section class="el-page el-preview">
+${kit.head({ title: element.name, sub: element.description || 'An element made with OpenVibe.Design.', back })}
+${prompts}${pack}
+${notice ? kit.notice({ kind: 'ok', text: notice }) : ''}${error ? kit.notice({ kind: 'error', text: error }) : ''}
 <div class="el-grid">
 <div class="el-look-panel">
-${renderLook(element)}
-<p class="dv-fine">${esc(element.look.component)} · ${esc(element.look.label || '')}${element.look.style && element.look.style.tint ? ` · tint ${esc(element.look.style.tint)}` : ''}</p>
-<canvas id="el-sim" width="320" height="240" aria-label="OpenVibe.Bot's simulated arena with the element's robot actions played on a local rover"></canvas>
-<p class="dv-fine" id="el-sim-state" role="status">Bot's simulated arena. This is a picture; no robot is connected.</p>
+<div class="el-look-stage">${renderLook(element)}</div>
+${mode === 'canvas' ? `<p class="dv-fine">${esc(element.look.component)} · ${esc(element.look.label || '')}${element.look.style && element.look.style.tint ? ` · tint ${esc(element.look.style.tint)}` : ''}</p>` : ''}
+${hasRobot ? `<canvas id="el-sim" width="320" height="240" aria-label="OpenVibe.Bot's simulated arena with the element's robot actions played on a local rover"></canvas>
+<p class="dv-fine" id="el-sim-state" role="status">Bot's simulated arena: a picture, no robot connected.</p>` : ''}
 <script type="application/json" id="el-sim-data">${JSON.stringify({ actions: robotActions(sim) }).replace(/</g, '\\u003c')}</script>
 </div>
 <div class="el-run">
 <h2>On sample data</h2>
-<p class="dv-fine">${esc(sim && sim.note || 'The recipe is run against sample people and a fake chat.')}</p>
+<p class="dv-fine">${sim && Array.isArray(sim.events) && sim.events.some((e) => e.kind === 'chat') ? 'Sample people type in a sample chat.' : 'Six sample people, one of each role, press it.'} No robot, Live channel, chat or AI is touched.</p>
 ${timeline(sim)}
 ${priceLine({ design, price })}
 </div></div>
