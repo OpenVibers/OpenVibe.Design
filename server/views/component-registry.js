@@ -7,6 +7,11 @@ const { layout, esc } = require('../render/layout');
 const { shippedSection, specimen, list: noteList } = require('./component-notes');
 
 const link = (name) => `/components/${name}`;
+// A live demo built from openvibe-shared's own files loads them, as a site does.
+const PAGE_EXTRA = {
+    'thread-composer': { shared: ['ov-thread.js'], sharedStyles: ['thread.css'] },
+    chat: { shared: ['messages.js', 'ov-composer.js'], sharedStyles: ['messages.css'], scripts: ['js/component-chat.js'] },
+};
 const demo = {
     navbar: () => `<nav class="cr-mini-nav" aria-label="Demo navigation"><a href="/">${kit.icon('home')} OpenVibe</a><a href="/themes">Themes</a><details><summary>More</summary><a href="/look">Your look</a><a href="/components">Components</a></details></nav>`,
     menu: () => specimen('menu'),
@@ -14,6 +19,7 @@ const demo = {
     dock: () => kit.dock({ action: '#', id: 'cr-dock', label: 'Message', placeholder: 'Write a message' }),
     'dock-tabs': () => `<nav class="cr-dock-tabs" aria-label="Demo app tabs"><a href="/">${kit.icon('home')} Home</a><a href="/themes" aria-current="page">${kit.icon('palette')} Studio</a><a href="/look">${kit.icon('user')} You</a></nav>`,
     'thread-composer': () => thread.composer({ action: '#', method: 'get', placeholder: 'Ask anything', tools: kit.sheetButton({ sheet: 'cr-options', label: 'Options', icon: 'more', iconOnly: false }), attach: { name: 'files' }, id: 'cr-composer' }) + kit.sheet({ id: 'cr-options', title: 'Options', body: kit.seg({ name: 'cr-model', label: 'Model', options: [['auto', 'Auto'], ['fast', 'Fast']], value: 'auto' }) }),
+    chat: () => `<div class="cr-chat"><div class="cr-chat-views" role="group" aria-label="How messages look"><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-chat-view="room" aria-pressed="true">Room lines</button><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-chat-view="bubbles" aria-pressed="false">Bubbles</button></div><ol class="ovm-messages" id="cr-chat-list" aria-label="Demo conversation"></ol><div id="cr-chat-box"></div><p class="ds-fine">Hover a message (on a phone, tap it): reply, edit, translate and copy are one cluster at its corner. Edit puts the words in the box; Enter saves, Esc puts back what was there. The demo keeps its messages on this page.</p></div>`,
     sheet: () => kit.sheetButton({ sheet: 'cr-sheet', label: 'Open sheet', icon: 'plus', iconOnly: false }) + kit.sheet({ id: 'cr-sheet', title: 'Add a site', body: `<p>Pick a site and theme.</p>${kit.seg({ name: 'cr-theme', label: 'Look', options: [['vibe', 'Vibe'], ['daylight', 'Daylight']], value: 'vibe' })}` }),
     popover: () => kit.more({ label: 'More choices', items: [{ href: '/themes', label: 'Themes', icon: 'palette' }, { href: '/look', label: 'Your look', icon: 'user' }] }),
     keyboard: () => `<label class="cr-field">A keyboard-aware field <input type="text" placeholder="Focus this field"></label><p class="ds-fine">Tab moves forward; Escape closes a menu or sheet and returns focus.</p>`,
@@ -37,7 +43,7 @@ function registryLinks() {
 
 const GROUPS = [
     ['Navigation', ['navbar', 'menu', 'you-home', 'dock', 'dock-tabs']],
-    ['Writing and choosing', ['thread-composer', 'sheet', 'popover', 'keyboard']],
+    ['Writing and choosing', ['chat', 'thread-composer', 'sheet', 'popover', 'keyboard']],
     ['Content', ['kit-row', 'kit-card', 'kit-section', 'empty-state']],
     ['Settings', ['switch-row', 'segmented-control']],
     ['Files and AI', ['upload-progress', 'ai-choice']],
@@ -87,7 +93,7 @@ ${shippedSection(c.name)}
 <section><h2>Example definition</h2>${kit.snippet({ code: JSON.stringify({ schema: c.schema, name: c.name, props: c.examples[0].props }, null, 2), id: 'cr-example' })}</section>
 <h2>Other components</h2>${registryLinks()}
 <footer class="cn-foot"><p><a href="/changes">Every Shared release, and the component it changed</a> · <a href="/rules">How OpenVibe decides</a></p></footer>`;
-    return layout({ title: `${c.title}: OpenVibe component`, description: c.summary, path: link(c.name), body: `<div class="ds-wrap tk cr">${body}</div>`, active: '/components', styles: ['css/component-registry.css', 'css/specimens.css'], scripts: ['js/component-registry.js'], sharedStyles: c.name === 'thread-composer' ? ['thread.css'] : [], shared: c.name === 'thread-composer' ? ['ov-thread.js'] : [] });
+    return layout({ title: `${c.title}: OpenVibe component`, description: c.summary, path: link(c.name), body: `<div class="ds-wrap tk cr">${body}</div>`, active: '/components', styles: ['css/component-registry.css', 'css/specimens.css'], scripts: ['js/component-registry.js', ...(PAGE_EXTRA[c.name] || {}).scripts || []], sharedStyles: (PAGE_EXTRA[c.name] || {}).sharedStyles || [], shared: (PAGE_EXTRA[c.name] || {}).shared || [] });
 }
 
 module.exports = { componentPage, registryPage, registryLinks };

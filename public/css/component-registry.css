@@ -117,3 +117,10 @@
 .crf-options dd { margin: 0; color: var(--ovk-muted); font-size: .86rem; line-height: 1.45; }
 .crf kbd { padding: 1px 5px; border: 1px solid var(--ovk-line); border-radius: 5px; background: var(--ovk-panel-2); font-size: .78rem; }
 @media (max-width: 640px) { .crf-stage { height: 300px; } .crf-state { margin-left: 0; } }
+
+/* /components/chat: the shared chat, live (rule 138). */
+.cr-chat { display: grid; gap: 10px; max-width: 620px; }
+.cr-chat-views { display: flex; gap: 6px; }
+.cr-chat-views [aria-pressed="true"] { background: color-mix(in srgb, var(--accent, #3b82f6) 20%, transparent); color: var(--text-primary); }
+.cr-chat .ovm-messages { max-height: 360px; overflow: auto; padding-top: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-primary, #0b0f19); }
+.cr-chat .ovm-messages[data-view="room"] { gap: 4px; }
