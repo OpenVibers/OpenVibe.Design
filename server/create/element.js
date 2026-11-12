@@ -419,13 +419,13 @@ function simulateElement(doc, { price = null } = {}) {
         for (const [i, line] of lines.entries()) {
             at += 5;
             const person = SAMPLE_PEOPLE[(i + 2) % SAMPLE_PEOPLE.length];
-            events.push({ at, kind: 'chat', person: person.name, text: `Chat: ${person.name}: ${line}` });
+            events.push({ at, kind: 'chat', person: person.name, role: person.role, text: `Chat: ${person.name}: ${line}` });
             if (line === command.command) fire(person, 'chat_command');
         }
     } else {
         for (const person of SAMPLE_PEOPLE) {
             at += 2;
-            events.push({ at, kind: 'press', person: person.name, text: `${person.name} (${person.role}) presses.` });
+            events.push({ at, kind: 'press', person: person.name, role: person.role, text: `${person.name} (${person.role}) presses.` });
             fire(person, (recipe.triggers || [])[0] ? recipe.triggers[0].kind : 'press');
         }
     }

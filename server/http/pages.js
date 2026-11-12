@@ -606,8 +606,11 @@ function createPageRoutes(ctx) {
         const q = typeof req.query.q === 'string' ? req.query.q.slice(0, 120) : '';
         const kind = req.query.kind === 'element' || req.query.kind === 'pack' ? req.query.kind : '';
         const sort = ['new', 'installs', 'rating'].includes(String(req.query.sort)) ? String(req.query.sort) : 'new';
-        const [listings, count] = await Promise.all([ctx.gallery.list({ q, kind, sort, limit: 60 }), ctx.gallery.count({ q, kind })]);
-        return page(res, 200, galleryView.galleryPage({ listings, count, q, kind, sort, viewer: req.viewer || {},
+        // The kind chips carry their counts (rule 134), so all three are read whichever one is open.
+        const [listings, all, element, pack] = await Promise.all([ctx.gallery.list({ q, kind, sort, limit: 60 }),
+            ctx.gallery.count({ q }), ctx.gallery.count({ q, kind: 'element' }), ctx.gallery.count({ q, kind: 'pack' })]);
+        const counts = { all, element, pack };
+        return page(res, 200, galleryView.galleryPage({ listings, count: kind ? counts[kind] : all, counts, q, kind, sort,
             notice: req.query.published === '1' ? 'Published to the gallery.' : null }), req.viewer, { cacheControl: 'public, max-age=60' });
     });
     r.get('/gallery/moderation', async (req, res) => {
@@ -633,13 +636,18 @@ function createPageRoutes(ctx) {
     r.get('/gallery/:slug/try', async (req, res) => {
         const listing = await ctx.gallery.get(req.params.slug);
         if (!listing || listing.status !== 'published') return page(res, 404, views.notFound(), req.viewer);
-        const doc = listing.kind === 'pack' ? (listing.document.items || [])[0] : listing.document;
+        // A pack tries one of its elements at a time: ?item=N (0 first), with the others one tap away.
+        const packItems = listing.kind === 'pack' && Array.isArray(listing.document.items) ? listing.document.items : null;
+        const item = packItems ? Math.max(0, Math.min(packItems.length - 1, parseInt(req.query.item, 10) || 0)) : 0;
+        const doc = packItems ? packItems[item] : listing.document;
         if (!doc) return page(res, 404, views.notFound(), req.viewer);
         const sim = elementLib.simulateElement(doc);
         let price = null;
         try { price = await elementLib.priceOf(doc, ctx.ai); } catch { /* the price line says unknown */ }
+        const tryPath = `/gallery/${encodeURIComponent(listing.slug)}/try`;
         return page(res, 200, elementPreviewView.elementPreview({ design: null, element: doc, sim, price, viewer: req.viewer, mode: 'try',
-            listingId: listing.id, path: `/gallery/${encodeURIComponent(listing.slug)}/try`, listingUrl: galleryNext(listing.slug) }), req.viewer,
+            listingId: listing.id, path: item ? `${tryPath}?item=${item}` : tryPath, listingUrl: galleryNext(listing.slug), listingName: listing.name,
+            pack: packItems ? { items: packItems.map((it) => it.name || 'Element'), index: item, href: tryPath } : null }), req.viewer,
         { cacheControl: 'public, max-age=60' });
     });
     r.get('/gallery/:slug', (req, res) => galleryListing(req, res, {

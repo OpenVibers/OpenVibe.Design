@@ -499,6 +499,12 @@ const RULES = Object.freeze([
     R("people-make-their-own-controls", "agents", "Every set of controls can be remade by the person using it.",
         "Controls and panels are built from parts a person can move, resize, restyle, hide and add, by hand or by asking OpenVibe's AI (\"put Stop on the left, make the stick bigger\"). The result is theirs, kept with their account, shareable as a layout others can use, and one tap brings back the default. A layout only arranges and styles the controls that exist; it never adds a power the person does not have.",
         '2026-11-11', 'The owner: "All controls and other interfaces should use a system where the user can make their own completely how they want it using our AI systems."'),
+    R("groups-show-their-members", "honest", "A pack, a set or a playlist shows what is in it.",
+        "A group's card shows its first few members and how many more there are (\"+4 more\"); its page shows every member, each one opening on its own. A group is never drawn as its first member alone: that says one thing where there are eight. When a member's name is already written on it (a \"Look up\" button), the tile does not print the name again.",
+        '2026-11-12', 'The Elements gallery drew the eight-control LOOI pack as one "Look up" button, on its card and on its page.'),
+    R("logs-keep-cause-and-effect", "data", "A log keeps each cause with what it caused.",
+        "Who did it (or what was said) leads a turn, and what happened sits indented under it, each outcome with its own icon and tint; a refused turn is marked as refused. A log is never a run of equal boxes where the reader pairs \"Ada presses\" with the line after it, and words every row already implies (\"(simulated)\" on a page that says it is a sample) are said once, above the log.",
+        '2026-11-12', 'The element preview\'s sample run showed six presses and their six results as twelve equal boxes, cut off by a scroll box.'),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
