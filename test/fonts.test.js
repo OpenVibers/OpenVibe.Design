@@ -27,13 +27,13 @@ const seed = require('../server/fonts/seed.json');
             assert.equal((await t.get('/fonts/no-such-family')).status, 404);
         });
         await check('the API filters by category, script and weight and rejects missing families', async () => {
-            const all = await t.get('/api/v1/fonts');
+            const all = await t.get('/api/v1/fonts/library');
             assert.equal(all.status, 200);
             assert.equal(all.json().count, 38);
             assert.ok(all.json().fonts.every(f => ['OFL-1.1', 'Apache-2.0', 'UFL-1.0'].includes(f.license)));
-            const arabic = (await t.get('/api/v1/fonts?script=arabic&weight=400')).json().fonts;
+            const arabic = (await t.get('/api/v1/fonts/library?script=arabic&weight=400')).json().fonts;
             assert.ok(arabic.length && arabic.every(f => f.subsets.includes('arabic') && f.weights.includes(400)));
-            const serif = (await t.get('/api/v1/fonts?category=serif')).json().fonts;
+            const serif = (await t.get('/api/v1/fonts/library?category=serif')).json().fonts;
             assert.ok(serif.length && serif.every(f => f.category === 'serif'));
             const inter = (await t.get('/api/v1/fonts/inter')).json();
             assert.equal(inter.pairings.length, 3);

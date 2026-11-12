@@ -704,7 +704,7 @@ const FONT_ROWS = [
     ] },
 ];
 const FONTS = FONT_ROWS.flatMap((r) => r.items);
-const FONT_CSS = 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Quicksand:wght@500;700&family=Rubik:wght@500;800&family=Outfit:wght@500;800&family=Sora:wght@500;800&family=Lexend:wght@500;800&family=Poppins:wght@500;800&family=Manrope:wght@500;800&family=Plus+Jakarta+Sans:wght@500;800&family=Space+Grotesk:wght@500;700&family=Unbounded:wght@500;800&display=swap';
+const FONT_CSS = '/fonts/css2?family=Fredoka&family=Quicksand&family=Rubik&family=Outfit&family=Sora&family=Lexend&family=Poppins&family=Manrope&family=Plus+Jakarta+Sans&family=Space+Grotesk&family=Unbounded&display=swap';
 function fontCard(code, [name, line_, stack, weight], i) {
     const face = esc(stack);
     return `<li class="mx-card fx-card" id="${code}" data-code="${code}" style="${delay(i)}">

@@ -1,0 +1,536 @@
+[
+  {
+    "family": "Abril Fatface",
+    "slug": "abril-fatface",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/abril-fatface@5.3.0"
+  },
+  {
+    "family": "Alfa Slab One",
+    "slug": "alfa-slab-one",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/alfa-slab-one@5.3.0"
+  },
+  {
+    "family": "Anton",
+    "slug": "anton",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/anton@5.3.0"
+  },
+  {
+    "family": "Audiowide",
+    "slug": "audiowide",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/audiowide@5.3.0"
+  },
+  {
+    "family": "Bangers",
+    "slug": "bangers",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/bangers@5.3.0"
+  },
+  {
+    "family": "Bebas Neue",
+    "slug": "bebas-neue",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/bebas-neue@5.3.0"
+  },
+  {
+    "family": "Black Ops One",
+    "slug": "black-ops-one",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/black-ops-one@5.3.0"
+  },
+  {
+    "family": "Bungee",
+    "slug": "bungee",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/bungee@5.3.0"
+  },
+  {
+    "family": "Bungee Shade",
+    "slug": "bungee-shade",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/bungee-shade@5.3.0"
+  },
+  {
+    "family": "Caveat",
+    "slug": "caveat",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/caveat@5.3.0"
+  },
+  {
+    "family": "Comfortaa",
+    "slug": "comfortaa",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/comfortaa@5.3.0"
+  },
+  {
+    "family": "Concert One",
+    "slug": "concert-one",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/concert-one@5.3.0"
+  },
+  {
+    "family": "Creepster",
+    "slug": "creepster",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/creepster@5.3.0"
+  },
+  {
+    "family": "Dancing Script",
+    "slug": "dancing-script",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/dancing-script@5.3.0"
+  },
+  {
+    "family": "Fira Sans",
+    "slug": "fira-sans",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/fira-sans@5.3.0"
+  },
+  {
+    "family": "Fredoka",
+    "slug": "fredoka",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/fredoka@5.3.0"
+  },
+  {
+    "family": "Fredoka One",
+    "slug": "fredoka-one",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/fredoka-one@5.3.0"
+  },
+  {
+    "family": "Graduate",
+    "slug": "graduate",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/graduate@5.3.0"
+  },
+  {
+    "family": "Inter",
+    "slug": "inter",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/inter@5.3.0"
+  },
+  {
+    "family": "JetBrains Mono",
+    "slug": "jetbrains-mono",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/jetbrains-mono@5.3.0"
+  },
+  {
+    "family": "Lato",
+    "slug": "lato",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/lato@5.3.0"
+  },
+  {
+    "family": "Lexend",
+    "slug": "lexend",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/lexend@5.3.0"
+  },
+  {
+    "family": "Lobster",
+    "slug": "lobster",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/lobster@5.3.0"
+  },
+  {
+    "family": "Luckiest Guy",
+    "slug": "luckiest-guy",
+    "weights": [
+      400
+    ],
+    "licence": "Apache-2.0",
+    "source": "@fontsource/luckiest-guy@5.3.0"
+  },
+  {
+    "family": "Manrope",
+    "slug": "manrope",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/manrope@5.3.0"
+  },
+  {
+    "family": "Merriweather",
+    "slug": "merriweather",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/merriweather@5.3.0"
+  },
+  {
+    "family": "Montserrat",
+    "slug": "montserrat",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/montserrat@5.3.0"
+  },
+  {
+    "family": "Nunito",
+    "slug": "nunito",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/nunito@5.3.0"
+  },
+  {
+    "family": "Orbitron",
+    "slug": "orbitron",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/orbitron@5.3.0"
+  },
+  {
+    "family": "Oswald",
+    "slug": "oswald",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/oswald@5.3.0"
+  },
+  {
+    "family": "Outfit",
+    "slug": "outfit",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/outfit@5.3.0"
+  },
+  {
+    "family": "Pacifico",
+    "slug": "pacifico",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/pacifico@5.3.0"
+  },
+  {
+    "family": "Permanent Marker",
+    "slug": "permanent-marker",
+    "weights": [
+      400
+    ],
+    "licence": "Apache-2.0",
+    "source": "@fontsource/permanent-marker@5.3.0"
+  },
+  {
+    "family": "Playfair Display",
+    "slug": "playfair-display",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/playfair-display@5.3.0"
+  },
+  {
+    "family": "Plus Jakarta Sans",
+    "slug": "plus-jakarta-sans",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/plus-jakarta-sans@5.3.0"
+  },
+  {
+    "family": "Poppins",
+    "slug": "poppins",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/poppins@5.3.0"
+  },
+  {
+    "family": "Press Start 2P",
+    "slug": "press-start-2p",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/press-start-2p@5.3.0"
+  },
+  {
+    "family": "Quicksand",
+    "slug": "quicksand",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/quicksand@5.3.0"
+  },
+  {
+    "family": "Raleway",
+    "slug": "raleway",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/raleway@5.3.0"
+  },
+  {
+    "family": "Righteous",
+    "slug": "righteous",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/righteous@5.3.0"
+  },
+  {
+    "family": "Roboto",
+    "slug": "roboto",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/roboto@5.3.0"
+  },
+  {
+    "family": "Rubik",
+    "slug": "rubik",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/rubik@5.3.0"
+  },
+  {
+    "family": "Satisfy",
+    "slug": "satisfy",
+    "weights": [
+      400
+    ],
+    "licence": "Apache-2.0",
+    "source": "@fontsource/satisfy@5.3.0"
+  },
+  {
+    "family": "Silkscreen",
+    "slug": "silkscreen",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/silkscreen@5.3.0"
+  },
+  {
+    "family": "Sora",
+    "slug": "sora",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/sora@5.3.0"
+  },
+  {
+    "family": "Source Sans 3",
+    "slug": "source-sans-3",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/source-sans-3@5.3.1"
+  },
+  {
+    "family": "Space Grotesk",
+    "slug": "space-grotesk",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/space-grotesk@5.3.0"
+  },
+  {
+    "family": "Special Elite",
+    "slug": "special-elite",
+    "weights": [
+      400
+    ],
+    "licence": "Apache-2.0",
+    "source": "@fontsource/special-elite@5.3.0"
+  },
+  {
+    "family": "Staatliches",
+    "slug": "staatliches",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/staatliches@5.3.0"
+  },
+  {
+    "family": "Ubuntu",
+    "slug": "ubuntu",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "UFL-1.0",
+    "source": "@fontsource/ubuntu@5.3.0"
+  },
+  {
+    "family": "Unbounded",
+    "slug": "unbounded",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/unbounded@5.3.0"
+  },
+  {
+    "family": "VT323",
+    "slug": "vt323",
+    "weights": [
+      400
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/vt323@5.3.0"
+  },
+  {
+    "family": "Work Sans",
+    "slug": "work-sans",
+    "weights": [
+      400,
+      700,
+      900
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/work-sans@5.3.0"
+  },
+  {
+    "family": "Zilla Slab",
+    "slug": "zilla-slab",
+    "weights": [
+      400,
+      700
+    ],
+    "licence": "OFL-1.1",
+    "source": "@fontsource/zilla-slab@5.3.0"
+  }
+]

@@ -59,6 +59,7 @@ const { createDiscoveryRoutes } = require('./http/discovery');
 const { createIconRoutes } = require('./http/icons');
 const { createFontRoutes } = require('./http/fonts');
 const { createFontCatalog } = require('./fonts/catalog');
+const { allowFontCors } = require('./fonts/vendored');
 const { createServiceReadiness } = require('./observability');
 const { createArenaStore } = require('./arena/store');
 const { createArenaAi } = require('./arena/ai');
@@ -174,8 +175,8 @@ async function createApp(opts = {}) {
                 defaultSrc: ["'self'"],
                 // The OpenVibe Frame (theme-loader, navbar, footer) comes from the Network; the inline init is ours.
                 scriptSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://static.cloudflareinsights.com', ...turnstileSrc],
-                styleSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
-                fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
+                styleSrc: ["'self'", "'unsafe-inline'", 'https://openvibe.network', 'https://cdnjs.cloudflare.com'],
+                fontSrc: ["'self'", 'data:', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
                 // Theme previews may carry inline data: images and any https image the catalogue references.
                 imgSrc: ["'self'", 'data:', 'https:'],
                 // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
@@ -282,6 +283,15 @@ async function createApp(opts = {}) {
     app.use('/brand/motion', express.static(path.join(PUBLIC_DIR, 'brand', 'motion'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
     // The release screenshots (scripts/capture-release.js) and the small player sample the player page shows.
     app.use('/changes', express.static(path.join(PUBLIC_DIR, 'changes'), { index: false, redirect: false, setHeaders: setAssetHeaders }));
+    // The self-hosted fonts (scripts/fetch-fonts.js): a path never changes its bytes, so a woff2 is immutable; the
+    // CSS, licence texts and fonts.json keep the day's cache. CORS only to OpenVibe's own sites.
+    app.use('/fonts', express.static(path.join(PUBLIC_DIR, 'fonts'), {
+        index: false, redirect: false,
+        setHeaders: (res, filePath) => {
+            allowFontCors(res.req, res);
+            res.setHeader('Cache-Control', path.extname(filePath) === '.woff2' ? 'public, max-age=31536000, immutable' : 'public, max-age=86400');
+        },
+    }));
 
     // ── /api/v1/<kind>/<id>/share — the uniform share API (openvibe-sdk/share) ────
     // GET/PUT /api/v1/design/:id/share, .../share/requests, .../share/transfer[/accept|decline|cancel],

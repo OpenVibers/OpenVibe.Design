@@ -1,8 +1,10 @@
 'use strict';
 
 const { layout, esc } = require('../render/layout');
+const { FONTS: VENDORED } = require('../fonts/vendored');
 
 const previewFile = f => f.files['400-normal'] || Object.values(f.files)[0];
+const selfFace = (f) => f.weights.map(w => `@font-face{font-family:${JSON.stringify(f.family)};src:url("/fonts/${f.slug}/${f.slug}-latin-${w}-normal.woff2") format("woff2");font-weight:${w};font-style:normal;font-display:swap}`).join('\n');
 const face = (f, weight = 400, style = 'normal') => {
     const url = f.files[`${weight}-${style}`];
     return url ? `@font-face{font-family:${JSON.stringify(f.family)};src:url(${JSON.stringify(url)}) format("woff2");font-weight:${weight};font-style:${style};font-display:swap}` : '';
@@ -15,21 +17,32 @@ function index(fonts, filters) {
         && (!filters.category || f.category === filters.category)
         && (!filters.script || f.subsets.includes(filters.script))
         && (!filters.weight || f.weights.includes(Number(filters.weight))));
+    // The self-hosted list is one flat set (no categories or scripts); the catalogue filters apply to the library below.
+    const selfShown = filters.category || filters.script ? [] : VENDORED.filter(f =>
+        (!filters.q || `${f.family} ${f.licence}`.toLowerCase().includes(filters.q.toLowerCase()))
+        && (!filters.weight || f.weights.includes(Number(filters.weight))));
     const option = (values, selected, label) => `<label>${label}<select name="${label.toLowerCase()}"><option value="">All ${label.toLowerCase()}s</option>${values.map(v => `<option value="${esc(v)}"${v === selected ? ' selected' : ''}>${esc(String(v))}</option>`).join('')}</select></label>`;
     const cards = shown.map(f => `<article class="fo-card"><a class="fo-card-link" href="/fonts/${encodeURIComponent(f.id)}">
 <h2 style="font-family:${esc(JSON.stringify(f.family))}">${esc(f.family)}</h2>
 <p class="fo-sample" style="font-family:${esc(JSON.stringify(f.family))}">${esc('The quick brown fox jumps over the lazy dog.')}</p>
 <p class="fo-meta"><span>${esc(f.category)}</span> · ${f.weights.length} ${f.weights.length === 1 ? 'weight' : 'weights'} · ${esc(f.license)}</p></a></article>`).join('');
-    return layout({ title: 'Open font library', description: 'Browse open licence typefaces by category, script and weight.',
+    const selfCards = selfShown.map(f => `<article class="fo-card"><div class="fo-card-link">
+<h2 style="font-family:${esc(JSON.stringify(f.family))}">${esc(f.family)}</h2>
+<p class="fo-sample" style="font-family:${esc(JSON.stringify(f.family))}">${esc('The quick brown fox jumps over the lazy dog.')}</p>
+<p class="fo-meta"><span>${esc(f.licence)}</span> · ${f.weights.join(', ')} weight${f.weights.length === 1 ? '' : 's'} · <a href="/fonts/css2?family=${encodeURIComponent(f.family)}">CSS</a></p></div></article>`).join('');
+    const selfHeading = selfShown.length === VENDORED.length ? `${VENDORED.length} families` : `${selfShown.length} of ${VENDORED.length} families`;
+    return layout({ title: 'Open font library', description: 'Browse open licence typefaces, self-hosted by openvibe.design, by category, script and weight.',
         path: '/fonts', active: '/fonts', styles: ['css/fonts.css'], scripts: ['js/fonts.js'],
-        inlineStyles: [shown.map(f => face(f, f.files['400-normal'] ? 400 : f.weights[0], 'normal')).join('\n')],
-        body: `<div class="fo"><header class="fo-hero"><p class="fo-eyebrow">The font library</p><h1>Find a face for your idea.</h1><p>Open licence typefaces with their source and licence beside them.</p></header>
+        inlineStyles: [...selfShown.map(selfFace), ...shown.map(f => face(f, f.files['400-normal'] ? 400 : f.weights[0], 'normal'))],
+        body: `<div class="fo"><header class="fo-hero"><p class="fo-eyebrow">The font library</p><h1>Find a face for your idea.</h1><p>Open licence typefaces with their source and licence beside them. Every self-hosted family is served from openvibe.design itself, with its CSS at <a href="/fonts/css2">/fonts/css2</a>.</p></header>
+<section class="fo-self" aria-labelledby="fo-self-h"><div class="fo-self-head"><h2 id="fo-self-h">Self-hosted by openvibe.design <span class="fo-n">${selfHeading}</span></h2><p>One request for every face: <code>GET /fonts/css2?family=Inter:wght@400;700;900</code>. The woff2 files carry the latin subset and their licence beside them.</p></div>
+<div class="fo-grid">${selfCards || '<p>No self-hosted families match this search.</p>'}</div></section>
 <nav class="fo-chips" aria-label="Category"><a href="/fonts${filters.q ? `?q=${encodeURIComponent(filters.q)}` : ''}"${!filters.category ? ' aria-current="page"' : ''}>All <span>${fonts.length}</span></a>${categories.filter(c => fonts.some(f => f.category === c)).map(c => `<a href="/fonts?category=${encodeURIComponent(c)}${filters.q ? `&q=${encodeURIComponent(filters.q)}` : ''}"${filters.category === c ? ' aria-current="page"' : ''}>${esc(c)} <span>${fonts.filter(f => f.category === c).length}</span></a>`).join('')}</nav>
 <form class="fo-filters" method="get" action="/fonts">${filters.category ? `<input type="hidden" name="category" value="${esc(filters.category)}">` : ''}<label class="fo-q">Search<input type="search" name="q" value="${esc(filters.q || '')}" placeholder="Family or designer"></label>
 ${option(scripts, filters.script, 'Script')}${option([100,200,300,400,500,600,700,800,900], Number(filters.weight) || '', 'Weight')}
 <button type="submit">Filter</button></form>
 <label class="fo-try">Try your own words<input type="text" data-font-sample maxlength="140" placeholder="The quick brown fox jumps over the lazy dog."></label>
-<p class="fo-count">${shown.length} of ${fonts.length} families</p><div class="fo-grid">${cards || '<p>No families match these filters.</p>'}</div></div>` });
+<p class="fo-count">${shown.length} of ${fonts.length} families in the open library</p><div class="fo-grid">${cards || '<p>No families match these filters.</p>'}</div></div>` });
 }
 
 function detail(f) {

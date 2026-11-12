@@ -59,3 +59,11 @@
 .fo .fo-filters select{appearance:none;-webkit-appearance:none;background:var(--bg-primary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2396a7c2' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--text-primary);border:1px solid var(--border);padding-right:32px;box-shadow:none}
 .fo .fo-filters button{background:transparent;color:var(--text-primary);border:1px solid var(--accent)}
 .fo .fo-filters button:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+
+/* The self-hosted families (2026-11-12): the same card, one flat set above the catalogue's chips and filters. */
+.fo-self{margin:24px 0 42px;padding-bottom:34px;border-bottom:1px solid var(--border)}
+.fo-self-head{max-width:78ch;margin:0 0 16px}.fo-self-head h2{margin:0 0 6px;font-size:clamp(22px,3vw,30px)}
+.fo-self-head p{margin:0;color:var(--text-secondary);line-height:1.5}
+.fo-self-head code{font-size:.92em;overflow-wrap:anywhere}
+.fo-self .fo-card-link{cursor:default}
+.fo-self .fo-meta a{color:var(--accent);font-weight:650;text-decoration:none}
