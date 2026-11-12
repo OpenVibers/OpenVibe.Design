@@ -1132,3 +1132,14 @@ html[data-ov-motion=off] .ar-vote-pair[data-pick] .ar-pickable{transform: none}
 .dv-canvas[data-kind="element"] .dv-card { flex: 0 0 min(100%, 420px); min-width: 0; }
 .dv-canvas[data-kind="element"] .dv-frame--element { height: auto; min-height: 170px; display: grid; place-items: center; }
 .dv-canvas[data-kind="element"] .dv-toolbar { display: none; }
+
+/* The element editor's icon picker (L32 I2): a field plus the glyphs suggested by the label's words. */
+.dv-elx-icon{display:inline-grid;place-items:center;width:1.1em;height:1.1em;margin-right:.35em;vertical-align:-.15em}
+.dv-elx-icon svg{width:100%;height:100%}
+.el-tweak--icon{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.el-icon-row{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.el-icon-pick{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font:inherit;font-size:12px;cursor:pointer}
+.el-icon-pick:hover,.el-icon-pick.is-on{border-color:var(--accent);color:var(--accent)}
+.el-icon-pick svg{width:18px;height:18px}
+.el-icon-pick span{color:var(--text-muted);font-size:11px}
+@media (max-width:760px){.el-tweak--icon{grid-template-columns:minmax(0,1fr)}}

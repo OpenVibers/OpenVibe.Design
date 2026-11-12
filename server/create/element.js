@@ -14,6 +14,7 @@
  */
 
 const { vocabulary: designVocabulary } = require('../components/registry');
+const glyphs = require('openvibe-shared/glyphs');
 
 // The control components an element's look may name. Each is data: the component page draws it, the contract
 // only checks the shape. `props` are the values the generated sliders move.
@@ -236,6 +237,7 @@ function tweaksFor(doc, variables = {}) {
         tweaks.push({ name: 'tint', label: 'Tint', kind: 'range', min: 0, max: choices.length - 1, step: 1, value: Math.max(0, choices.indexOf(current)), options: choices });
     }
     tweaks.push({ name: 'label', label: 'Label', kind: 'text', value: look.label || '', maxlength: 40 });
+    tweaks.push({ name: 'icon', label: 'Icon', kind: 'text', value: look.icon && glyphs.path(look.icon) ? look.icon : '', maxlength: 32 });
     tweaks.push({ name: 'show_label', label: 'Show label', kind: 'checkbox', value: !(look.style && look.style.show_label === false) });
     return tweaks;
 }
@@ -267,6 +269,15 @@ function applyTweaks(doc, values = {}, variables = {}) {
         if (/https?:\/\//i.test(label) || /<[a-z!/]/i.test(label)) throw fail('The label cannot carry a link or markup.');
         look.label = label;
     }
+    if (values.icon != null) {
+        const raw = textOf(values.icon).trim().toLowerCase();
+        if (!raw) delete look.icon;
+        else {
+            const icon = glyphs.path(raw) ? raw : glyphs.fromFa(raw);
+            if (!icon) throw fail('Choose an icon from the OpenVibe glyphs, or leave it empty.');
+            look.icon = icon;
+        }
+    }
     if (values.show_label != null) look.style.show_label = values.show_label === true || values.show_label === 'on' || values.show_label === '1';
     return out;
 }
@@ -279,6 +290,7 @@ function renderLook(doc) {
     const shape = style.shape === 'round' ? '50%' : style.shape === 'square' ? '8px' : '999px';
     const opacity = style.opacity != null ? Math.max(0.4, Math.min(1, Number(style.opacity))) : 1;
     const label = style.show_label === false ? '' : String(look.label || '');
+    const icon = look.icon && glyphs.path(look.icon) ? `<span class="dv-elx-icon" aria-hidden="true">${glyphs.svg(look.icon, { size: 18 })}</span>` : '';
     const component = String(look.component || 'button');
     const props = look.props || {};
     let inner = '';
@@ -299,7 +311,7 @@ function renderLook(doc) {
         case 'sound-pad': inner = '<span class="dv-elx-pad" aria-hidden="true">♪</span>'; break;
         default: inner = '';
     }
-    return `<span class="dv-elx" data-component="${component}" style="--el-tint:${tint};--el-radius:${shape};opacity:${opacity}">${inner}${label ? `<span class="dv-elx-label">${esc(label)}</span>` : ''}<small>${component}</small></span>`;
+    return `<span class="dv-elx" data-component="${component}" style="--el-tint:${tint};--el-radius:${shape};opacity:${opacity}">${inner}${icon}${label ? `<span class="dv-elx-label">${esc(label)}</span>` : ''}<small>${component}</small></span>`;
 }
 
 function esc(value) {

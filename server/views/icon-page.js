@@ -49,6 +49,23 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
     const sel = (field, list, cur, label) => `<label class="gp-field"><span>${label}</span><select name="${field}" data-gp="${field}">${list.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
     const range = (field, min, max, step, cur, label, unit) => `<label class="gp-field"><span>${label} <output data-gp-out="${field}">${cur}${unit}</output></span><input type="range" name="${field}" min="${min}" max="${max}" step="${step}" value="${cur}" data-gp="${field}"></label>`;
 
+    const styles = [['thin', 1], ['light', 1.5], ['regular', 2], ['bold', 2.5], ['solid', 2], ['duotone', 2]];
+    const styleRow = styles.map(([style, width]) => {
+        const solidMissing = style === 'solid' && !glyphs.solid(name);
+        return `<figure class="gp-style${solidMissing ? ' is-missing' : ''}"><span>${glyphs.svg(name, { size: 40, style: style === 'solid' && solidMissing ? 'regular' : style })}</span><figcaption>${style}${solidMissing ? ' (line)' : ''}</figcaption></figure>`;
+    }).join('');
+    const tags = (glyphs.META[name] && glyphs.META[name].tags || []).slice(0, 16);
+    const keywords = `<section class="ic-sec gp-keywords" aria-labelledby="gp-keywords">
+  <div class="ic-sec-head"><h2 id="gp-keywords">Names and keywords</h2><p>The names it answers to and the words people search with. <code>${esc(name)}</code> is its registry name${fa.length ? `; it stands in for ${fa.slice(0, 8).map((f) => `<code>fa-${esc(f)}</code>`).join(', ')}${fa.length > 8 ? ` and ${fa.length - 8} more` : ''}` : ''}.</p></div>
+  <div class="gp-styles" aria-label="Every style">${styleRow}</div>
+  <p class="gp-tags">${tags.map((t) => `<span>${esc(t)}</span>`).join('')}</p>
+  <form class="gp-find" action="/icons" method="get" role="search"><label for="gp-q">Find another glyph</label><input id="gp-q" type="search" name="q" placeholder="a name, a keyword or a Font Awesome name" autocomplete="off"><button type="submit" class="ic-btn">Search the set</button></form>
+</section>
+<section class="ic-sec" id="gp-suggest" aria-labelledby="gp-suggest-h">
+  <div class="ic-sec-head"><h2 id="gp-suggest-h">Suggest one for a button</h2><p>Type what the button says. The set&rsquo;s names and keywords answer first; a small model orders the shortlist when the words are new. The API is <code>GET /api/v1/glyphs/suggest?label=</code>.</p></div>
+  <form class="gp-suggest" data-gp-suggest><label class="ic-grow"><span>Button label</span><input name="label" maxlength="120" placeholder="Deep dive, add to cart, go live…" autocomplete="off"></label><button type="submit" class="ic-btn is-go">${kit.icon('spark')} Suggest</button></form>
+  <div class="gp-suggest-out" data-gp-suggest-out hidden></div>
+</section>`;
     const hero = `<nav class="gp-crumbs" aria-label="Breadcrumb"><a href="/icons">Icons</a><span aria-hidden="true">/</span><span>${esc(name)}</span></nav>
 <header class="gp-hero">
   <figure class="gp-stage">${glyph(name, 168, 'gp-big')}<figcaption>On the 24-unit grid, strokes two units wide</figcaption></figure>
@@ -76,7 +93,8 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
         ? `At ${ex.SOLID_BELOW} px and under it switches to its solid drawing, which stays clear when small; above that it is the line. Sites do it with no code, and the files below do it on <code>style=auto</code>.`
         : 'Its lines grow a little heavier when small, so it stays clear; it has no solid drawing because it is made of lines.'}</p>
   ${['light', 'dark'].map((t) => `<div class="gp-sizes is-${t}" role="img" aria-label="${esc(name)} at ${LADDER.join(', ')} pixels, on ${t}">${LADDER.map((sz) => `<span style="font-size:${sz}px">${glyphAt(name, sz)}<i>Aa</i><small>${sz}</small></span>`).join('')}</div>`).join('')}
-</section>`;
+</section>
+${keywords}`;
 
     const maker = `<section class="ic-sec" id="png" aria-labelledby="gp-png">
   <div class="ic-sec-head"><h2 id="gp-png">Make a PNG</h2><p>Any size up to 1024 pixels at 1×, 2× or 3×, in any colour or the mark&rsquo;s two, a lighter or heavier line, flat or with the mark&rsquo;s depth and glow, room around it and a ground behind it. The link rebuilds the same file every time.</p></div>

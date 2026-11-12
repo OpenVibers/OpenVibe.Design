@@ -82,13 +82,16 @@ function tweakForm({ design, variant, editKey }) {
     const tweaks = (variant && variant.tweaks) || [];
     const ranges = tweaks.filter((t) => t.kind === 'range');
     const label = tweaks.find((t) => t.name === 'label');
+    const icon = tweaks.find((t) => t.name === 'icon');
     const show = tweaks.find((t) => t.name === 'show_label');
+    const suggested = icon ? require('../glyphs/suggest').score(label ? label.value : '').slice(0, 5) : [];
     if (!tweaks.length) return '';
     return `<form class="el-tweaks" method="post" action="/d/${encodeURIComponent(design.id)}/element/tweak">
 <input type="hidden" name="key" value="${esc(editKey)}">
 <fieldset><legend>Make it yours</legend>
 ${ranges.map((t) => `<label class="el-tweak"><span>${esc(t.label)}</span><input type="range" name="${esc(t.name)}" min="${Number(t.min)}" max="${Number(t.max)}" step="${Number(t.step)}" value="${Number(t.value)}" list="el-${esc(t.name)}-values"><datalist id="el-${esc(t.name)}-values">${(t.options || []).map((o, i) => `<option value="${i}">${esc(o)}</option>`).join('')}</datalist><small>${esc((t.options || [])[Number(t.value)] || '')}</small></label>`).join('')}
-${label ? `<label class="el-tweak"><span>${esc(label.label)}</span><input type="text" name="label" maxlength="${Number(label.maxlength) || 40}" value="${esc(label.value)}"></label>` : ''}
+${label ? `<label class="el-tweak"><span>${esc(label.label)}</span><input type="text" name="label" maxlength="${Number(label.maxlength) || 40}" value="${esc(label.value)}" data-el-label></label>` : ''}
+${icon ? `<label class="el-tweak el-tweak--icon"><span>${esc(icon.label)}</span><input type="text" name="icon" maxlength="${Number(icon.maxlength) || 32}" value="${esc(icon.value)}" placeholder="compass" autocomplete="off" spellcheck="false" data-el-icon><small>Suggested for “${esc(label ? label.value : '')}”:</small><span class="el-icon-row" data-el-icon-row>${suggested.map((g) => `<button type="button" class="el-icon-pick" data-el-icon-pick="${esc(g.name)}">${kit.icon(g.name)}<span>${esc(g.name)}</span></button>`).join('') || '<span class="dv-fine">Type a label for suggestions.</span>'}</span><small>Any OpenVibe glyph name, or a Font Awesome name. Leave it empty for no icon.</small></label>` : ''}
 ${show ? `<label class="el-tweak el-tweak--check"><input type="checkbox" name="show_label" value="1"${show.value ? ' checked' : ''}> ${esc(show.label)}</label>` : ''}
 ${kit.button({ label: 'Apply', type: 'submit', kind: 'quiet' })}
 </fieldset></form>`;
@@ -153,7 +156,7 @@ ${design ? buildWithCodes({ element, design }) : ''}
         title: `${element.name} · Element`, description: element.description || `A free ${element.look.component} element made with OpenVibe.Design.`,
         path: o.path || (design ? `/d/${design.id}/element/preview` : `/elements/${o.listingId || ''}/try`),
         robots: o.robots || (design ? 'noindex, nofollow' : 'index, follow'),
-        body, scripts: ['js/sim-world.js', 'js/element-sim.js'], active: design ? '/create' : '/gallery',
+        body, scripts: ['js/sim-world.js', 'js/element-sim.js', 'js/element-icon.js'], active: design ? '/create' : '/gallery',
     });
 }
 

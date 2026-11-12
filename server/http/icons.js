@@ -38,6 +38,8 @@ const kits = require('../glyphs/kits');
 const ex = require('../glyphs/export');
 const { createGlyphDrafts } = require('../glyphs/drafts');
 const { createReferenceSearch } = require('../glyphs/references');
+const { suggest } = require('../glyphs/suggest');
+const { createGlyphPrice } = require('../glyphs/price');
 const formats = require('../glyphs/formats');
 const fs = require('fs');
 const path = require('path');
@@ -52,6 +54,7 @@ function createIconRoutes(ctx) {
     const guestCaps = config.glyphGuests || { perGuest: 2, perAddress: 4, daily: 25 };
     const referenceSearch = ctx.referenceSearch || createReferenceSearch({ config });
     const drafts = ctx.glyphDrafts || createGlyphDrafts({ db: s.db, ai, guests: guestCaps, referenceSearch });
+    const glyphPrice = ctx.glyphPrice || createGlyphPrice({ ai, log });
     // A guest (L50 step 5): a random id in an httpOnly cookie, stored only as a keyed hash; the address only as a hash
     // salted with the day. The key is the service's own secret (a new one each start where none is set: development).
     const GUEST_COOKIE = 'ovd_guest';
@@ -139,13 +142,15 @@ function createIconRoutes(ctx) {
         const subject = subjectOf(req);
         const reviewer = isAdmin(req);
         const guest = subject ? null : guestOf(req, res);
-        const [mine, waiting] = await Promise.all([
+        const [mine, waiting, price] = await Promise.all([
             subject ? drafts.list({ subject, limit: 24 }).catch(() => []) : guest ? drafts.list({ subject: `guest:${guest.id}`, limit: 24 }).catch(() => []) : [],
             reviewer ? drafts.list({ status: 'draft', limit: 60 }).catch(() => []) : [],
+            glyphPrice.get().catch(() => null),
         ]);
         const notice = req.query.drafted != null ? (Number(req.query.drafted) ? `${Number(req.query.drafted)} candidate${Number(req.query.drafted) === 1 ? '' : 's'} drawn: they wait for review below.` : 'No candidate passed the checks this time: try saying more about it.') : req.query.reviewed ? `Draft ${String(req.query.reviewed).slice(0, 20)}.` : '';
         const draw = /^[a-z][a-z0-9-]{1,31}$/.test(String(req.query.draw || '')) ? String(req.query.draw) : '';
-        send(res, 200, iconsPage({ base: baseUrl(), mine, drafts: waiting, reviewer, notice, error: String(req.query.error || '').slice(0, 200), draw, guest: !subject ? { perDay: guestCaps.perGuest, turnstile: turnstileOn ? guestCaps.turnstileSiteKey : '' } : null }), { viewer: req.viewer, ...(guest ? { cacheControl: 'private, no-store' } : {}) });
+        const q = String(req.query.q || '').slice(0, 100);
+        send(res, 200, iconsPage({ base: baseUrl(), mine, drafts: waiting, reviewer, notice, error: String(req.query.error || '').slice(0, 200), draw, q, price, guest: !subject ? { perDay: guestCaps.perGuest, turnstile: turnstileOn ? guestCaps.turnstileSiteKey : '' } : null }), { viewer: req.viewer, ...(guest ? { cacheControl: 'private, no-store' } : {}) });
     });
 
     r.get('/icons/font-awesome-alternative', (req, res) => send(res, 200, faAlternativePage({ base: baseUrl() }), { viewer: req.viewer }));
@@ -320,6 +325,25 @@ function createIconRoutes(ctx) {
             return name ? { asked: a, name, svg: glyphs.path(name), solid: glyphs.solid(name) || '' } : null;
         }).filter(Boolean);
         res.json({ count: out.length, glyphs: out });
+    });
+    // The icons for a button's words (plan L32 I2): free keyword ranking first; ?rank=1 asks a small model when the
+    // words are new. The answer is cached for half an hour, so a page can ask as a person types.
+    r.get('/api/v1/glyphs/suggest', async (req, res) => {
+        const label = String(req.query.label || '').trim().slice(0, 120);
+        if (!label) return problem(res, req, 422, 'design.suggest_label_required', 'Send ?label= the words on the button, up to 120 characters.');
+        const context = String(req.query.context || '').trim().slice(0, 160);
+        const limit = Math.min(Math.max(Number(req.query.limit) || 8, 1), 24);
+        // A model call costs: only this site's own pages may ask for one (the free keyword answer stays public).
+        const rank = (req.query.rank === '1' || req.query.rank === 'true') && sameOrigin(req, config);
+        const person = subjectOf(req);
+        try {
+            const out = await suggest(label, { context, limit, rank, ai, person });
+            const price = glyphPrice.peek();
+            res.set('Cache-Control', rank || person ? 'private, no-store' : 'public, max-age=120').set(OPEN).json({ ...out, ...(price ? { draft_price: price } : {}) });
+        } catch (err) {
+            log.warn('[OpenVibe.Design] glyph suggest failed:', err && err.message);
+            return problem(res, req, 503, 'design.suggest_unavailable', 'Suggestions are unavailable for a moment.');
+        }
     });
     r.get('/api/v1/glyphs/search', (req, res) => {
         const q = String(req.query.q || '').slice(0, 100);

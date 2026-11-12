@@ -41,6 +41,38 @@
         if (drawLink && /^[a-z][a-z0-9-]{1,31}$/.test(q)) drawLink.href = `/icons?draw=${encodeURIComponent(q)}#draw`;
     });
 
+    // The label used by a search from another page (?q=) filters as if it had been typed.
+    if (find && find.value.trim()) find.dispatchEvent(new Event('input'));
+
+    // Choose an icon for a button's words: GET /api/v1/glyphs/suggest. The free keyword answer comes at once; rank=1
+    // lets a small model order the shortlist when the words are new. A name with no good match is a door to Draw.
+    const suggest = $('[data-ic-suggest-form]');
+    if (suggest) {
+        const out = $('[data-ic-suggest-out]');
+        const label = $('[data-ic-suggest-label]', suggest);
+        const esc = (v) => String(v == null ? '' : v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const run = async () => {
+            const words = label.value.trim();
+            if (!words) { out.hidden = true; return; }
+            out.hidden = false;
+            out.innerHTML = '<p class="ic-more">Looking for the nearest icons…</p>';
+            try {
+                const r = await fetch(`/api/v1/glyphs/suggest?label=${encodeURIComponent(words)}&limit=8&rank=1`, { headers: { accept: 'application/json' } });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.detail || 'Suggestions are unavailable.');
+                const tiles = (data.glyphs || []).map((g) => `<a class="ic-sugg" href="/icons/${encodeURIComponent(g.name)}" title="${esc((g.tags || []).join(', '))}"><span class="ic-sugg-ic">${svgOf(g.name)}</span><b>${esc(g.name)}</b><small>${esc((g.tags || []).slice(0, 3).join(' · '))}</small></a>`).join('');
+                const draw = /^[a-z][a-z0-9-]{1,31}$/.test(words.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) ? words.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '';
+                out.innerHTML = `${data.ranked ? `<p class="ic-more">Ranked by a small model${data.model ? ` (${esc(data.model)})` : ''} for “${esc(words)}”.</p>` : ''}`
+                    + (tiles ? `<div class="ic-suggs">${tiles}</div>` : '<p class="ic-more">No glyph has these words yet.</p>')
+                    + `<p class="ic-more">${data.new ? 'Nothing fits well. ' : ''}<a href="${draw ? `/icons?draw=${encodeURIComponent(draw)}#draw` : '#draw'}">${data.new ? 'Draw one' : 'Draw a different one'}</a>${data.draft_price && data.draft_price.usd != null ? ` · about $${Number(data.draft_price.usd) < 0.01 ? Number(data.draft_price.usd).toFixed(4) : Number(data.draft_price.usd).toFixed(2)} a draft` : ''}.</p>`;
+            } catch (err) {
+                out.innerHTML = `<p class="ic-more">${esc(err.message)}</p>`;
+            }
+        };
+        suggest.addEventListener('submit', (e) => { e.preventDefault(); run(); });
+        label.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+    }
+
     // Sizes.
     document.querySelectorAll('[data-ic-size]').forEach((b) => b.addEventListener('click', () => {
         grids.forEach((g) => g.style.setProperty('--ic-size', `${b.dataset.icSize}px`));
