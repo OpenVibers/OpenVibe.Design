@@ -585,6 +585,10 @@ const RULES = Object.freeze([
         "When Bot restarts for a deploy it closes every link with 1012 and waits for the replies, Link stops a robot's plugins with the cause link_restart (not link_lost), and a driver stops its motors without latching a stop of its own that a person would have to clear by hand. Every close is logged with its code and reason, or as a drop with no close frame.",
         '2026-11-12', "Maticus, 11-12: every Bot deploy meant Clear STOP, ARM and Go Live by hand on LOOI, and the logs did not say why the link closed.",
         [], ['OpenVibe.Link test: TestServerRestartStopsWithLinkRestart', 'OpenVibe.Bot test: restart-close']),
+    R("agents-are-blueprints", "agents", "An agent is a blueprint anyone can read, change, share and run anywhere.",
+        "What a person makes is one small document of ten parts (face, brain, knows, hands, places, memory, rules, when, makes, team), each part a slot fed by the product that knows it best: Design for the face, Exchange for the models and prices, Tools and every product for the hands, Link for the machines, Events and Sources for what starts it. Vibe is one too. A blueprint asks and never grants: installing shows every ask in words, a new version that asks for more waits for a yes, it carries no key or token, and money, passwords, deletions, new recipients and posting in a person's name always ask. Made on Design (Create, Agent), shared and remixed in Design's gallery, run from any chat, composer, schedule, event or machine.",
+        '2026-11-12', 'The owner: one agent system, "multi purpose reusable in a modular and API/sdk driven way", the same one other people use, with Exchange, Link, Design, Chat, Codes, Tools and shared hardware all part of it.',
+        [], ['openvibe-contracts test: agents.blueprint fixtures', 'openvibe-sdk test: agents-blueprint']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
