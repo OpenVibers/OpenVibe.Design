@@ -505,6 +505,10 @@ const RULES = Object.freeze([
     R("logs-keep-cause-and-effect", "data", "A log keeps each cause with what it caused.",
         "Who did it (or what was said) leads a turn, and what happened sits indented under it, each outcome with its own icon and tint; a refused turn is marked as refused. A log is never a run of equal boxes where the reader pairs \"Ada presses\" with the line after it, and words every row already implies (\"(simulated)\" on a page that says it is a sample) are said once, above the log.",
         '2026-11-12', 'The element preview\'s sample run showed six presses and their six results as twelve equal boxes, cut off by a scroll box.'),
+    R("message-actions-at-the-corner", "phone", "A message's actions are one cluster at its corner, never in its words.",
+        "Reply, edit, translate, copy and delete are icon buttons, each with its label, in one cluster that floats just above the message's right end: on hover or keyboard focus on a computer, on a tap of the message on a phone, where each is big enough for a thumb (44 × 40). Nothing about a message shows until asked for. Editing happens in the chat box, under an \"Editing your message\" bar (Enter saves, Esc puts back what was in the box), never in a browser prompt; replying shows \"Replying to …\" there. A changed message says \"edited\" once, quietly, right after its words, with the time as its title; never a line of its own. Every site's chat takes these from openvibe-shared (messages.js, ov-composer.js), so one fix reaches them all.",
+        '2026-11-12', 'The owner, with phone screenshots of a stream\'s chat: every one of your own messages carried a full-size "Edit" pill in its words, editing opened the browser\'s prompt box, and "edited · 06:49 PM" fell onto a line of its own ("The edit button needs improvement … so it never happens again").',
+        [{ label: 'The chat component', href: '/components/chat' }], ['openvibe-shared test: messages', 'openvibe-shared test: composer-v2-chrome', 'OpenVibe.Live test: chat-msg-actions']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.

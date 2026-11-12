@@ -47,6 +47,15 @@ const { boot, check, done } = require('./helpers/boot');
             assert.ok(edit.definition.states.includes('editing'));
         });
 
+        await check('the chat page is the shared chat, live: messages.js, ov-composer.js and the demo; rule 138 links to it', async () => {
+            const res = await t.get('/components/chat');
+            assert.strictEqual(res.status, 200);
+            const html = res.text;
+            ['messages.js', 'ov-composer.js', 'messages.css', 'component-chat.js'].forEach((f) => assert.ok(html.includes(f), `the page loads ${f}`));
+            assert.ok(html.includes('id="cr-chat-list"') && html.includes('id="cr-chat-box"'), 'the list and the box');
+            const rules = (await t.get('/rules')).text;
+            assert.ok(rules.includes('message-actions-at-the-corner') || rules.includes("A message's actions are one cluster at its corner") || rules.includes('A message&#39;s actions are one cluster at its corner'), 'rule 138 is on /rules');
+        });
         await check('the API reads the stored registry and returns the example markup', async () => {
             const all = (await t.get('/api/v1/components')).json();
             assert.strictEqual(all.schema, 'design.component@1');
