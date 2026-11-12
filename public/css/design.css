@@ -1060,7 +1060,6 @@ html[data-ov-motion=off] .ar-vote-pair[data-pick] .ar-pickable{transform: none}
 .el-g-filters .el-g-sort a:hover { color: var(--text-primary); }
 .el-g-filters .el-g-sort a[aria-current] { color: var(--text-primary); background: var(--ovk-panel, rgba(255,255,255,.04)); font-weight: 600; }
 @media (min-width: 600px) { .el-g-chips { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; } }
-@media (prefers-reduced-motion: reduce) { .el-g-chip, .el-g-card, .el-deck-tile { transition: none; } .el-g-chip:active { transform: none; } .el-deck-tile:hover { transform: none; } }
 
 .el-g-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
 .el-g-card { border: 1px solid var(--border); border-radius: 18px; background: var(--bg-card, var(--bg-secondary)); overflow: hidden; transition: border-color .15s; }
