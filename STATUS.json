@@ -8,11 +8,11 @@
   "runtime": "node 22, express 4, openvibe-shared/shell; PostgreSQL (or embedded PGlite in development), OpenVibe.AI generate jobs, OpenVibe.Events account data in, no Valkey",
   "port": "5090",
   "domain": "openvibe.design",
-  "contracts": "openvibe-contracts v0.406.0",
+  "contracts": "openvibe-contracts v0.416.0",
   "sdk": "openvibe-sdk v0.150.0",
   "shared": "openvibe-shared v4.217.0",
   "packages": [
-    "openvibe-contracts v0.406.0",
+    "openvibe-contracts v0.416.0",
     "openvibe-publishing v1.7.0",
     "openvibe-sdk v0.150.0",
     "openvibe-shared v4.217.0"
