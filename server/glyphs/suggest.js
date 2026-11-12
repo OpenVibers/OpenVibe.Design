@@ -6,7 +6,7 @@
  * META, its Font Awesome names and Design's synonyms (aliases.js). That is enough for "Deep dive" (compass, search,
  * binoculars), "Add to cart" (cart, plus, store) and most labels a person writes.
  *
- * When the words are new ("hot tub", "gpu benchmark") and the free pass is weak, the caller may ask a small model to
+ * When the words are new ("hot tub", "throughput benchmark") and the free pass is weak, the caller may ask a small model to
  * rank the shortlist by meaning (`rank=1`). Only names that exist are returned; a model answer that invents one is
  * ignored. A signed-in person's allowance pays (OpenVibe.AI's `on_behalf_of`); signed out, Design's service does,
  * and OpenVibe.AI picks the cheapest route. Answers are cached for half an hour.

@@ -28,7 +28,8 @@ const ai = {
         });
 
         await check('new words ask a small model to rank the shortlist', async () => {
-            const r = await t.get('/api/v1/glyphs/suggest?label=gpu%20benchmark&rank=1', { headers: { 'sec-fetch-site': 'same-origin' } });
+            // A label the registry has no glyph for: shared v4.223.0 added a gpu glyph, so this must stay unclaimed.
+            const r = await t.get('/api/v1/glyphs/suggest?label=throughput%20benchmark&rank=1', { headers: { 'sec-fetch-site': 'same-origin' } });
             assert.equal(r.status, 200, r.text);
             const j = r.json();
             assert.equal(j.ranked, true);
