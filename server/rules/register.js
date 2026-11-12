@@ -565,6 +565,22 @@ const RULES = Object.freeze([
         "Every composer takes a picture with no words, as any social app does. A picture's description is asked for, never required: ✨ on the picture writes a caption and alt text with AI on the person's own allowance (one tap, never on its own), and a post sent without a description gets one written as it goes when it can.",
         '2026-11-12', "The owner, 11-12, on a comment refused for having only a picture: \"it shouldn't require you to type text if you just put a picture … like other social media … auto caption using OpenVibe.Exchange\".",
         [{ label: 'The composer', href: '/components/thread-composer' }], ['openvibe-shared test: composer-caption-chrome', 'OpenVibe.Community test: comments']),
+    R("any-button-opens-a-place-in-the-menu", "navigation", "Any button, link or address can open a place in the menu.",
+        "A place in the menu has an address: a place, or place/part (you/notifications, you/apps, feed, here/live, or a door like vibe). An element with data-ov-menu=\"you/notifications\" opens it on a click on any page with the bar, a page address ending #ov-menu=you/notifications opens it as the page loads, and OpenVibeNavbar.openMenu takes the same words. A link that has an address still opens elsewhere with a modifier key, and the address leaves the page's own once used.",
+        '2026-11-12', "The owner, 11-12: \"other tools and buttons can open specific areas of the menu\".",
+        [{ label: 'The menu', href: '/components/menu' }], ['openvibe-shared test: menu-address-chrome']),
+    R("one-search-field-everywhere", "building", "Every site's search is the one search field, with suggestions, recent searches and a ghost completion.",
+        "A site's search box is openvibe-shared's ov-searchbox: a pill with the search mark, a clear button and a \"/\" key on a computer, its edge glowing with focus. Its placeholder names examples in turn while idle; as you type it suggests from the site, with the first suggestion's rest as a ghost that Tab or → takes; while empty it shows your recent searches here. Enter searches the words, the arrows choose a row, Escape closes then clears. Its list is the one dropdown every field uses.",
+        '2026-11-12', "The owner, 11-12: \"improve the search field … autocomplete, dropdown, animated effects … a shared, universal, reusable search input component across all sites\".",
+        [{ label: 'The search field', href: '/components/search-field' }], ['openvibe-shared test: ov-searchbox-chrome']),
+    R("a-robot-declares-its-controls", "products", "A robot says what it can do in a manifest its maker versions; the panel and the AI read only that.",
+        "A robot's driver publishes a manifest (bot.robot-manifest@1): each command's kind, class, ranges, lifetime, delivery window, what it does when released and how often it may be sent, and each reading's fields and source. The panel draws a control for each, people arrange them, and OpenVibe AI reads the same facts when it suggests a layout or writes a control, so nothing it makes can ask for more. A checked version is frozen; a change is a new version, not an edit, and needs no OpenVibe release.",
+        '2026-11-12', "Maticus's P7 command list for LOOI (11-12) became its first frozen manifest, with the owner's \"use this list for the manifest … and AI control generation\".",
+        [], ['openvibe-contracts: bot.robot-manifest fixtures']),
+    R("a-planned-restart-is-not-a-loss", "honest", "A service restarting on purpose says so, and nothing latches for it.",
+        "When Bot restarts for a deploy it closes every link with 1012 and waits for the replies, Link stops a robot's plugins with the cause link_restart (not link_lost), and a driver stops its motors without latching a stop of its own that a person would have to clear by hand. Every close is logged with its code and reason, or as a drop with no close frame.",
+        '2026-11-12', "Maticus, 11-12: every Bot deploy meant Clear STOP, ARM and Go Live by hand on LOOI, and the logs did not say why the link closed.",
+        [], ['OpenVibe.Link test: TestServerRestartStopsWithLinkRestart', 'OpenVibe.Bot test: restart-close']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
