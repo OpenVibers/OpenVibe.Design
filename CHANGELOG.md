@@ -1,5 +1,10 @@
 # Changelog
 
+
+## Unreleased — a plain Stop
+
+- The controls rule: Stop is one plain little button a person may add, not a red-ringed disc that is always there.
+
 What changed in OpenVibe.Design, newest first. Each site also publishes its patch notes at /updates.
 
 ## 0.1.0 — 2026-10-28
