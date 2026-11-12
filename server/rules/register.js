@@ -549,6 +549,22 @@ const RULES = Object.freeze([
         "Every API returns times as ISO 8601 with a zone (2026-11-12T05:01:02Z). A client that meets \"2026-11-12 05:01:02\" reads it as UTC, never as the reader's local time, and every relative time (\"3 h ago\") stays current while it is on screen.",
         '2026-11-12', "The owner, 11-12: \"how come everything in the history is just now? … the time doesn't update\". Network's history sent zone-less UTC times, which browsers read as local time, so every visit west of UTC was hours ahead.",
         [], ['openvibe-shared test: menu-home-screen-chrome']),
+    R("back-returns-to-the-menu", "motion", "Back from a page you left through the menu opens the menu again, where you were.",
+        "Following a link in the menu marks where it was (its place, its door, its scroll) on its history entry. Back to that page opens the menu there, whether the page returns from the browser's cache, loads again, or is swapped in place; it reuses that entry, so Forward still works, and closing it then leaves the page as it was. Links in the menu warm up as a finger lands on them.",
+        '2026-11-12', "The owner, 11-12, on the menu: \"fix the history back button so it properly brings you back to this GUI rather than the page behind it\" and \"when you click links … it loads async dynamically and is highly optimized\".",
+        [], ['openvibe-shared test: menu-back-chrome']),
+    R("one-search-per-place", "building", "A place has one search: the menu's own field, saying what it finds there.",
+        "Inside the menu nothing adds a second search box under the menu's field. A place that can be searched (the Feed, All apps) turns the field to it, with words that say so (\"Search the feed\", \"Find among 64 apps\"), and filters in place; leaving the place gives the field back to searching OpenVibe. The place's head is its name, its count and a quiet hint.",
+        '2026-11-12', "The owner, 11-12, circling All apps' own box under the menu's search: \"confusing … improve\".",
+        [], ['openvibe-shared test: menu-home-screen-chrome']),
+    R("a-burst-is-one-card", "honest", "A burst of the same thing is one card, counted whole, and no card shows twice.",
+        "When a source delivers many items at once with no person behind them (a Deals poll, a News import, new jobs), the feed shows one card per site and hour, counted from the whole burst and named by its site, never \"System\"; a page that ends inside a burst moves past it, and a list never draws a card it already shows. Words are words: a source's Markdown is read as plain text and its first picture as the card's picture, from an address that loads.",
+        '2026-11-12', "The owner, 11-12, marking the menu's Feed: \"spam\" over three \"112 new deals\" cards, and \"broke\" over a post printed as Markdown and a picture that did not load.",
+        [], ['OpenVibe.Network test: feed']),
+    R("a-picture-alone-is-a-post", "products", "A picture is enough to post or comment; words and descriptions are optional, and AI can write them.",
+        "Every composer takes a picture with no words, as any social app does. A picture's description is asked for, never required: ✨ on the picture writes a caption and alt text with AI on the person's own allowance (one tap, never on its own), and a post sent without a description gets one written as it goes when it can.",
+        '2026-11-12', "The owner, 11-12, on a comment refused for having only a picture: \"it shouldn't require you to type text if you just put a picture … like other social media … auto caption using OpenVibe.Exchange\".",
+        [{ label: 'The composer', href: '/components/thread-composer' }], ['openvibe-shared test: composer-caption-chrome', 'OpenVibe.Community test: comments']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
