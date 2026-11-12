@@ -8,11 +8,11 @@
   "runtime": "node 22, express 4, openvibe-shared/shell; PostgreSQL (or embedded PGlite in development), OpenVibe.AI generate jobs, OpenVibe.Events account data in, no Valkey",
   "port": "5090",
   "domain": "openvibe.design",
-  "contracts": "openvibe-contracts v0.406.0",
+  "contracts": "openvibe-contracts v0.410.0",
   "sdk": "openvibe-sdk v0.150.0",
   "shared": "openvibe-shared v4.211.0",
   "packages": [
-    "openvibe-contracts v0.406.0",
+    "openvibe-contracts v0.410.0",
     "openvibe-publishing v1.7.0",
     "openvibe-sdk v0.150.0",
     "openvibe-shared v4.211.0"
@@ -73,5 +73,5 @@
     "The changes archive: every openvibe-shared release from the pinned changelog, its component pages and rule numbers",
     "Component pages for the bar's brand, the search pill, the quest card, the avatar, the player, soft pages, icon ink and the footer"
   ],
-  "updated": "2026-11-11"
+  "updated": "2026-11-12"
 }
