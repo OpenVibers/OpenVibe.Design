@@ -40,7 +40,7 @@ const svg = (d, size = 24) => `<svg viewBox="0 0 24 24" width="${size}" height="
 // A draft's solid twin (L50): filled, its class="ln" parts drawn as lines (icons.css .is-solid).
 const solidSvg = (d, size = 24) => `<svg class="is-solid" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${d}</svg>`;
 
-function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '', guest = null } = {}) {
+function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '', q = '', price = null, guest = null } = {}) {
     const fa = faByGlyph();
     const left = stillFontAwesome();
     const covered = usage.names.filter((n) => glyphs.fromFa(n.name)).reduce((a, n) => a + n.uses, 0);
@@ -69,7 +69,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     const browse = `<section class="ic-sec" aria-labelledby="ic-all">
   <h2 id="ic-all" class="ovk-sr">Every glyph</h2>
   <div class="ic-tools" data-ic-tools hidden>
-    <label class="ic-find">${kit.icon('search')}<span class="ovk-sr">Find a glyph</span><input type="search" placeholder="Find: a name, or a Font Awesome name" autocomplete="off" data-ic-find></label>
+    <label class="ic-find">${kit.icon('search')}<span class="ovk-sr">Find a glyph</span><input type="search" placeholder="Find: a name, or a Font Awesome name" autocomplete="off" data-ic-find value="${esc(q)}"></label>
     <div class="ic-sizes" role="group" aria-label="Size">${[16, 20, 24, 32].map((n) => `<button type="button" class="ic-size" data-ic-size="${n}" aria-pressed="${n === 24 ? 'true' : 'false'}">${n}</button>`).join('')}</div>
   </div>
   <p class="ic-grid-cap">The ${FIRST} the network uses most</p>
@@ -110,6 +110,7 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     const drawSec = `<section class="ic-sec" id="draw" aria-labelledby="ic-draw">
   <div class="ic-sec-head"><h2 id="ic-draw">Draw an icon</h2><p>Name it and say what it stands for. OpenVibe.AI draws a few candidates in this hand; each is checked before review. House rules: centre on the 24-unit grid, long side 18–20 units, 1/1.5/2/2.5-unit line weights, and 2.5-unit gaps so shapes stay clear at 16 px. Solids should stay under 2.6 times the line ink.</p></div>
   ${notice ? kit.notice({ kind: 'ok', text: notice }) : ''}${error ? kit.notice({ kind: 'error', text: error }) : ''}
+  ${price ? `<p class="ic-price">${price.usd != null ? `About $${Number(price.usd) < 0.01 ? Number(price.usd).toFixed(4) : Number(price.usd).toFixed(2)} a draft` : 'One AI run a draft'}<small>${esc(price.note || '')}${price.model ? ` Cheapest now: ${esc(price.model)}.` : ''} Prices before the draft, never after.</small></p>` : ''}
   <form class="ic-form" method="post" action="/icons/draft">
     <label><span>Name</span><input name="name" required pattern="[a-z][a-z0-9\\-]{1,31}" maxlength="32" placeholder="hot-tub" value="${esc(draw)}" autocomplete="off" spellcheck="false"></label>
     <label class="ic-grow"><span>What it stands for</span><input name="sentence" maxlength="200" placeholder="A tub with steam over it: a hot tub at a rental"></label>
@@ -140,15 +141,23 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     <div><h3>As a font</h3>${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-font.css">\n<i class="ovi ovi-eye"></i>`, id: 'ic-use-font', label: 'Copy the HTML' })}</div>
     <div><h3>On a server</h3>${kit.snippet({ code: "const glyphs = require('openvibe-shared/glyphs');\n\nglyphs.svg('live', { size: 20 });   // a standalone SVG\nglyphs.fromFa('fa-eye');             // 'eye'", id: 'ic-use-node', label: 'Copy the code' })}</div>
     <div><h3>Switching from another set?</h3><p class="ic-more">Font Awesome, Lucide, Material or MUI: <a href="/icons/migrate">paste your page</a> and see every icon with its OpenVibe twin. Their names work in <code>&lt;ov-icon name="lucide:settings"&gt;</code> too.</p></div>
-    <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/api/v1/glyphs?names=heart,fa-gear\nGET ${base}/api/v1/glyphs/search?q=heart\nGET ${base}/api/v1/glyphs/<name>?style=thin|light|regular|bold|solid|duotone\nPOST ${base}/api/v1/glyphs/draft\nGET ${base}/icons/<name>.svg?style=auto|line|solid`, id: 'ic-use-api', label: 'Copy' })}</div>
+    <div><h3>As data</h3>${kit.snippet({ code: `GET ${base}/api/v1/glyphs\nGET ${base}/api/v1/glyphs?names=heart,fa-gear\nGET ${base}/api/v1/glyphs/search?q=heart\nGET ${base}/api/v1/glyphs/suggest?label=deep%20dive\nGET ${base}/api/v1/glyphs/<name>?style=thin|light|regular|bold|solid|duotone\nPOST ${base}/api/v1/glyphs/draft\nGET ${base}/icons/<name>.svg?style=auto|line|solid`, id: 'ic-use-api', label: 'Copy' })}</div>
   </div>
 </section>`;
 
+    const suggestSec = `<section class="ic-sec" id="suggest" aria-labelledby="ic-suggest">
+  <div class="ic-sec-head"><h2 id="ic-suggest">Choose an icon for a button</h2><p>Type what the button says. The set&rsquo;s names and keywords answer first; for words that are new, a small model ranks the shortlist, and when nothing fits, draw one. The same API is <code>GET /api/v1/glyphs/suggest?label=</code>.</p></div>
+  <form class="ic-suggest" data-ic-suggest-form>
+    <label class="ic-grow"><span>Button label</span><input name="label" placeholder="Deep dive, add to cart, go live…" maxlength="120" autocomplete="off" data-ic-suggest-label></label>
+    <button type="submit" class="ic-btn is-go">${kit.icon('spark')} Suggest</button>
+  </form>
+  <div class="ic-suggest-out" data-ic-suggest-out hidden></div>
+</section>`;
     return layout({
         title: 'The OpenVibe glyphs',
         description: `${glyphs.NAMES.length} icons in one hand, the OpenVibe mark's: search them, copy or download their SVG, use them in place of Font Awesome, and draw new ones with OpenVibe.AI.`,
         path: '/icons', active: '/icons', styles: ['css/icons.css'], scripts: ['js/icons.js'],
-        body: `<article class="ic">${hero}${browse}${get}${leftHtml}${drawSec}${use}</article>`,
+        body: `<article class="ic">${hero}${suggestSec}${browse}${get}${leftHtml}${drawSec}${use}</article>`,
     });
 }
 

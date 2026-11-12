@@ -112,6 +112,15 @@ const fakeAi = (state, doc = ELEMENT) => ({
             assert.strictEqual(v.element.look.props.size, 'small');
             assert.notStrictEqual(v.element.look.style.tint, first.element.look.style.tint);
             assert.ok(v.tweaks.find((x) => x.name === 'size'));
+            assert.ok(v.tweaks.find((x) => x.name === 'icon'), 'the editor offers an icon');
+            const iconTweak = await t.get(`/api/v1/designs/${t.designId}/element/tweak`, { headers: token(alice), json: { icon: 'compass' } });
+            assert.strictEqual(iconTweak.status, 200, iconTweak.text);
+            assert.strictEqual(iconTweak.json().variants[0].element.look.icon, 'compass');
+            const badIcon = await t.get(`/api/v1/designs/${t.designId}/element/tweak`, { headers: token(alice), json: { icon: 'not-a-glyph' } });
+            assert.strictEqual(badIcon.status, 422, 'an unknown icon is refused');
+            const preview = await t.get(`/d/${t.designId}/element/preview`, { as: alice });
+            assert.ok(preview.text.includes('data-el-icon') && preview.text.includes('data-el-icon-row'), 'the picker and its suggestions are on the preview');
+            assert.ok(preview.text.includes('Suggested for'), 'suggestions are named by the label');
         });
 
         await check('the preview runs the recipe on sample data: roles, cost, cooldown and a simulated robot', async () => {

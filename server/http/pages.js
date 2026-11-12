@@ -221,7 +221,7 @@ function createPageRoutes(ctx) {
         if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
         try {
             await ctx.designs.tweakElement({ id: req.params.id, values: { size: req.body.size, tint: req.body.tint,
-                label: req.body.label, show_label: req.body.show_label === '1' }, owner: subjectOf(req), key: req.body.key || '', viewer: req.viewer });
+                label: req.body.label, icon: req.body.icon, show_label: req.body.show_label === '1' }, owner: subjectOf(req), key: req.body.key || '', viewer: req.viewer });
             return elementBack(req, res, req.body.key ? `?key=${encodeURIComponent(req.body.key)}` : '');
         } catch (err) { return res.status(err.status || 500).type('text/plain').send(err.detail || 'Could not apply the tweak.'); }
     });

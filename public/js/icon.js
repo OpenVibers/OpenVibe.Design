@@ -88,3 +88,40 @@
         });
     }
 })();
+
+// Suggest an icon for a button's words (L32 I2), on the glyph page too: GET /api/v1/glyphs/suggest,
+// then the drawings for the names it returns in one request. A weak answer is a door to Draw on /icons.
+(function () {
+    'use strict';
+    const form = document.querySelector('[data-gp-suggest]');
+    if (!form) return;
+    const out = document.querySelector('[data-gp-suggest-out]');
+    const input = form.querySelector('input[name="label"]');
+    const esc = (v) => String(v == null ? '' : v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const icon = (d) => `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+    async function run() {
+        const words = input.value.trim();
+        if (!words) { out.hidden = true; return; }
+        out.hidden = false;
+        out.innerHTML = '<p class="ic-more">Looking for the nearest icons…</p>';
+        try {
+            const r = await fetch(`/api/v1/glyphs/suggest?label=${encodeURIComponent(words)}&limit=8&rank=1`, { headers: { accept: 'application/json' } });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.detail || 'Suggestions are unavailable.');
+            const names = (data.glyphs || []).map((g) => g.name);
+            let drawings = {};
+            if (names.length) {
+                const gr = await fetch(`/api/v1/glyphs?names=${encodeURIComponent(names.join(','))}`, { headers: { accept: 'application/json' } });
+                if (gr.ok) drawings = Object.fromEntries(((await gr.json()).glyphs || []).map((g) => [g.name, g.svg]));
+            }
+            const tiles = (data.glyphs || []).map((g) => `<a class="gp-sugg" href="/icons/${encodeURIComponent(g.name)}">${icon(drawings[g.name] || '')}<b>${esc(g.name)}</b><small>${esc((g.tags || []).slice(0, 3).join(' · '))}</small></a>`).join('');
+            const slug = words.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            out.innerHTML = `${data.ranked ? `<p class="ic-more">Ranked by a small model${data.model ? ` (${esc(data.model)})` : ''} for “${esc(words)}”.</p>` : ''}`
+                + (tiles ? `<div class="gp-suggs">${tiles}</div>` : '<p class="ic-more">No glyph has these words yet.</p>')
+                + `<p class="ic-more">${data.new ? 'Nothing fits well. ' : ''}<a href="${/^[a-z][a-z0-9-]{1,31}$/.test(slug) ? `/icons?draw=${encodeURIComponent(slug)}#draw` : '/icons#draw'}">${data.new ? 'Draw one' : 'Draw a different one'}</a>${data.draft_price && data.draft_price.usd != null ? ` · about $${Number(data.draft_price.usd) < 0.01 ? Number(data.draft_price.usd).toFixed(4) : Number(data.draft_price.usd).toFixed(2)} a draft` : ''}.</p>`;
+        } catch (err) {
+            out.innerHTML = `<p class="ic-more">${esc(err.message)}</p>`;
+        }
+    }
+    form.addEventListener('submit', (e) => { e.preventDefault(); run(); });
+})();
