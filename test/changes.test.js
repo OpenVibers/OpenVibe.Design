@@ -61,8 +61,17 @@ const { PUBLIC_DIR } = require('../server/assets');
             assert.strictEqual((await t.get('/changes/specimen-player.mp4')).status, 200);
         });
 
+        // /changes shows the newest twelve releases; each release keeps its whole entry on its own page. A Shared pin moves
+        // older ones past the fold (4.211 pushed 4.195–4.196; 4.217 pushed 4.200–4.205), so these read the whole archive.
+        const archive = async () => {
+            const list = (await t.get('/api/v1/changes?limit=500')).json();
+            const versions = (list.releases || list.changes || list.items || []).map((x) => x.version).filter(Boolean);
+            const pages = [await t.get('/changes')];
+            for (const v of versions) pages.push(await t.get(`/changes/${v}`));
+            return { text: pages.map((x) => x.text).join('\n'), versions };
+        };
         await check('each release links the component pages it touches, and every link answers', async () => {
-            const r = await t.get('/changes');
+            const r = await archive();
             const links = [...new Set([...r.text.matchAll(/href="(\/components\/[a-z0-9-]+)"/g)].map((m) => m[1]))];
             assert.ok(links.length >= 8, `${links.length} component pages linked`);
             for (const href of links) assert.strictEqual((await t.get(href)).status, 200, href);
@@ -72,7 +81,7 @@ const { PUBLIC_DIR } = require('../server/assets');
         });
 
         await check('the rule numbers are the register’s own, and each links to its rule', async () => {
-            const r = await t.get('/changes');
+            const r = await archive();
             const { RULES } = require('../server/rules/register');
             const rule = RULES.find((x) => x.id === 'button-becomes-its-tab');
             assert.ok(rule && rule.n > 0, 'numbered');
@@ -81,10 +90,9 @@ const { PUBLIC_DIR } = require('../server/assets');
         });
 
         await check('every screenshot path named exists, and 4.195.0 through 4.200.0 each have plates', async () => {
-            const r = await t.get('/changes');
+            const r = await archive();
             const paths = [...new Set([...r.text.matchAll(/\/changes\/(\d+\.\d+\.\d+)\/([a-z0-9-]+-(?:390|1280)-(?:dark|light)\.webp)/g)].map((m) => m[0]))];
-            // 24 plates (2026-11-11, was 40): /changes renders the newest twelve releases; the 4.211.0 pin
-            // pushed 4.195.0 and 4.196.0 past that fold, and each still shows its plates on its own page below.
+            // Across the whole archive (every release's page), not the newest twelve on /changes.
             assert.ok(paths.length >= 24, `${paths.length} plates named`);
             for (const p of paths) assert.ok(fs.existsSync(path.join(PUBLIC_DIR, p)), p);
             for (const v of ['4.195.0', '4.196.0', '4.197.0', '4.198.0', '4.199.0', '4.200.0']) {
