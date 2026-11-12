@@ -17,10 +17,10 @@ const { boot, check, done } = require('./helpers/boot');
             const start = page.indexOf('<div class="pick" id="pick-scenes">');
             assert.ok(start > 0, 'the pick block is on the home');
             const block = page.slice(start, page.indexOf('<section aria-labelledby="ds-strip-h">'));
-            assert.match(block, /<nav class="pick-row" aria-label="What you can do">/);
-            const chips = [...block.matchAll(/<a class="pick-chip" href="#(?:pp-scenes-)?(ds-scene-\d+)">()()([^<]+)<\/a>/g)];
+            assert.match(block, /<div class=\"ov-parts ov-parts--front\" data-parts=\"\d+\">/, 'its parts are tabs on a phone');
+            const chips = [...block.matchAll(/<label for="ovp-[a-z0-9]+-(?:pp-scenes-)?(ds-scene-\d+)">()()([^<]+)(?: <span class="ov-parts-n">[^<]*<\/span>)?<\/label>/g)];
             assert.strictEqual(chips.length, 3, `a chip per scene (${chips.length})`);
-            assert.ok(!/type="radio"/.test(block), 'no chip is a radio: nothing is picked, every pane shows');
+            assert.ok(/<input type=\"radio\" class=\"ov-parts-r\"[^>]* checked>/.test(block), 'the first part is open on a phone (Shared pick(): tabs, 11-12)');
             // Every scene stays in the page, each in its own pane.
             const scenes = [...block.matchAll(/<article class="sc-scene/g)];
             assert.strictEqual(scenes.length, chips.length, 'every scene is in the page');
