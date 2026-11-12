@@ -120,7 +120,6 @@ ${models.length ? `<p class="dv-group-h">Or choose the models yourself<small>Up 
     const kindName = Object.fromEntries(kinds.map((k) => [k.id, k]));
     const lookName = Object.fromEntries(looksAll.map((t) => [t.id, t.name]));
     const body = `<section class="dv-create"><h1>What will you design?</h1>
-<p class="dv-create-gallery"><a href="/gallery">Elements and packs gallery →</a> Free controls people made with AI: install one on your channel or remix it.</p>
 <form method="post" action="/create" class="dv-composer" data-dv-composer${options ? ' data-api="/api/create"' : ''}>
 ${kindRow}
 <label class="dv-visually-hidden" for="dv-prompt">Describe your design</label>
@@ -128,6 +127,7 @@ ${kindRow}
 <div class="dv-tray">${frameMod}${lookMod}${whoMod}${startMod}${researchMod}<button type="submit" class="dv-go"><span data-go-label>Create three takes</span>${ARROW}</button></div>
 <p class="dv-cost" data-dv-cost role="status" hidden></p></form>
 <div class="dv-examples" aria-label="Try an example">${kinds.map((k) => (k.examples || []).map((x) => `<button type="button" data-example="${esc(x)}" data-kind="${esc(k.id)}">${k.glyph}<span>${esc(x)}</span></button>`).join('')).join('')}</div>
+<a class="dv-create-door" href="/gallery"><span class="dv-create-door-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg></span><span><b>Elements and packs</b><small>Free controls and stream buttons people made with AI: try one, install it, remix it.</small></span><span class="dv-create-door-go" aria-hidden="true">→</span></a>
 ${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map((d) => { const k = kindName[d.kind] || MAKE[d.kind] || MAKES[0]; const bits = [k.name, lookName[d.look] || lookName[d.themeId], d.model, d.status === 'running' ? 'Drawing now' : d.status === 'failed' ? 'Did not finish' : ago(d.createdAt)].filter(Boolean);
         return `<li><a class="dv-rc" href="${esc(d.url)}"><span class="dv-rc-k" aria-hidden="true">${d.thumbnail ? `<img src="${esc(d.thumbnail)}" alt="" loading="lazy" decoding="async">` : k.glyph}</span><span class="dv-rc-t"><b>${esc(d.prompt)}</b><small>${esc(bits.join(' · '))}</small></span></a></li>`; }).join('')}</ul></section>` : ''}</section>`;
     return layout({ title: 'Create a design', path: '/create', body, active: '/create', styles: ['css/deepdive.css'], scripts: ['js/design.js'] });
