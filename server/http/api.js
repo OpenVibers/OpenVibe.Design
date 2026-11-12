@@ -135,6 +135,32 @@ function createApi(ctx) {
             llms: 'https://openvibe.design/llms.txt',
         });
     });
+    // ── Suggestions for the one search field (ov-searchbox): components, rules and themes whose names match ──
+    r.get('/v1/suggest', async (req, res) => {
+        const q = String(req.query.q || '').trim().toLowerCase().slice(0, 80);
+        const limit = Math.max(1, Math.min(12, Number(req.query.limit) || 8));
+        res.set('Cache-Control', 'public, max-age=300');
+        if (!q) return res.json({ sections: [] });
+        const hit = (...words) => words.some((w) => String(w || '').toLowerCase().includes(q));
+        const starts = (w) => (String(w || '').toLowerCase().startsWith(q) ? 0 : 1);
+        const parts = legacyRegistry.COMPONENTS.filter((c) => hit(c.title, c.name, c.summary))
+            .sort((a, b) => starts(a.title) - starts(b.title)).slice(0, limit)
+            .map((c) => ({ label: c.title, url: `/components/${c.name}`, sub: c.summary.slice(0, 90), icon: 'page' }));
+        const { RULES } = require('../rules/register');
+        const rules = RULES.filter((x) => hit(x.rule, x.id)).slice(-limit).reverse()
+            .map((x) => ({ label: x.rule.length > 70 ? `${x.rule.slice(0, 68)}…` : x.rule, url: `/rules#${x.id}`, sub: `Rule ${x.n} · ${x.decided}`, icon: 'page' }));
+        let themes = [];
+        try {
+            const list = await catalog.list();
+            themes = ((list && list.themes) || []).filter((t) => hit(t.name, t.slug)).slice(0, 4)
+                .map((t) => ({ label: t.name, url: `/themes/${encodeURIComponent(t.slug)}`, sub: 'Theme', icon: 'place' }));
+        } catch { /* the themes catalogue is away: components and rules still answer */ }
+        return res.json({ sections: [
+            { id: 'components', label: 'Components', items: parts },
+            { id: 'rules', label: 'Rules', items: rules.slice(0, Math.max(2, limit - parts.length)) },
+            { id: 'themes', label: 'Themes', items: themes },
+        ].filter((s) => s.items.length) });
+    });
     r.get('/v1/components/:name', async (req, res) => {
         const entry = await registry.get(req.params.name);
         if (entry) {

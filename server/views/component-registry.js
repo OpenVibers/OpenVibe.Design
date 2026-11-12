@@ -10,6 +10,8 @@ const link = (name) => `/components/${name}`;
 // A live demo built from openvibe-shared's own files loads them, as a site does.
 const PAGE_EXTRA = {
     'thread-composer': { shared: ['ov-thread.js'], sharedStyles: ['thread.css'] },
+    'search-field': { shared: ['ov-searchbox.js'] },
+    'form-controls': { sharedStyles: ['ov-forms.css'] },
     chat: { shared: ['messages.js', 'ov-composer.js'], sharedStyles: ['messages.css'], scripts: ['js/component-chat.js'] },
 };
 const demo = {
@@ -18,6 +20,15 @@ const demo = {
     'you-home': () => kit.section({ title: 'You', note: 'Your places in one menu', body: kit.list([kit.row({ href: '/look', title: 'Your look', sub: 'Theme and comfort settings', mark: kit.mark({ name: 'You' }) }), kit.row({ href: '/themes', title: 'Theme studio', sub: 'Make it yours', mark: kit.mark({ name: 'Studio' }) })]) }),
     dock: () => kit.dock({ action: '#', id: 'cr-dock', label: 'Message', placeholder: 'Write a message' }),
     'dock-tabs': () => `<nav class="cr-dock-tabs" aria-label="Demo app tabs"><a href="/">${kit.icon('home')} Home</a><a href="/themes" aria-current="page">${kit.icon('palette')} Studio</a><a href="/look">${kit.icon('user')} You</a></nav>`,
+    // Every control as the sites draw it (openvibe-shared/ov-forms.css): press, hover and tab through them.
+    'form-controls': () => `<div class="cr-controls" style="display:grid;gap:14px;max-width:560px">
+<div style="display:flex;flex-wrap:wrap;gap:16px"><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" checked> Checked</label><label style="display:flex;gap:10px;align-items:center"><input type="checkbox"> Off</label><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" disabled checked> Disabled</label></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px" role="radiogroup" aria-label="A choice"><label style="display:flex;gap:10px;align-items:center"><input type="radio" name="cr-r" checked> One</label><label style="display:flex;gap:10px;align-items:center"><input type="radio" name="cr-r"> Two</label><label style="display:flex;gap:10px;align-items:center"><input type="radio" name="cr-r" disabled> Three</label></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px"><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" role="switch" checked> A switch, on</label><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" role="switch"> Off</label></div>
+<label class="ov-field"><span>A field</span><input class="ov-input" placeholder="Type, and see the focus glow"></label>
+<div style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" class="ovk-btn">A button</button><button type="button" class="ovk-btn ovk-btn--primary">Primary</button></div></div>`,
+    // The real field, searching this site's own components, rules and themes (GET /api/v1/suggest).
+    'search-field': () => `<form class="cr-search" action="/components" role="search" style="max-width:560px"><input name="q" placeholder="Search" aria-label="Search OpenVibe.Design" data-ov-searchbox="/api/v1/suggest" data-ov-examples="components|rules|themes"></form><p class="cr-note">Type “me”, then Tab. Press / from anywhere on the page.</p>`,
     'thread-composer': () => thread.composer({ action: '#', method: 'get', placeholder: 'Ask anything', tools: kit.sheetButton({ sheet: 'cr-options', label: 'Options', icon: 'more', iconOnly: false }), attach: { name: 'files' }, id: 'cr-composer' }) + kit.sheet({ id: 'cr-options', title: 'Options', body: kit.seg({ name: 'cr-model', label: 'Model', options: [['auto', 'Auto'], ['fast', 'Fast']], value: 'auto' }) }),
     chat: () => `<div class="cr-chat"><div class="cr-chat-views" role="group" aria-label="How messages look"><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-chat-view="room" aria-pressed="true">Room lines</button><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-chat-view="bubbles" aria-pressed="false">Bubbles</button></div><ol class="ovm-messages" id="cr-chat-list" aria-label="Demo conversation"></ol><div id="cr-chat-box"></div><p class="ds-fine">Hover a message (on a phone, tap it): reply, edit, translate and copy are one cluster at its corner. Edit puts the words in the box; Enter saves, Esc puts back what was there. The demo keeps its messages on this page.</p></div>`,
     sheet: () => kit.sheetButton({ sheet: 'cr-sheet', label: 'Open sheet', icon: 'plus', iconOnly: false }) + kit.sheet({ id: 'cr-sheet', title: 'Add a site', body: `<p>Pick a site and theme.</p>${kit.seg({ name: 'cr-theme', label: 'Look', options: [['vibe', 'Vibe'], ['daylight', 'Daylight']], value: 'vibe' })}` }),
@@ -43,7 +54,7 @@ function registryLinks() {
 
 const GROUPS = [
     ['Navigation', ['navbar', 'menu', 'you-home', 'dock', 'dock-tabs']],
-    ['Writing and choosing', ['chat', 'thread-composer', 'sheet', 'popover', 'keyboard']],
+    ['Writing and choosing', ['chat', 'thread-composer', 'search-field', 'form-controls', 'sheet', 'popover', 'keyboard']],
     ['Content', ['kit-row', 'kit-card', 'kit-section', 'empty-state']],
     ['Settings', ['switch-row', 'segmented-control']],
     ['Files and AI', ['upload-progress', 'ai-choice']],
