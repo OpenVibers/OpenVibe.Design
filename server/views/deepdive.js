@@ -47,7 +47,9 @@ function researchModule({ options = null, recent = [], signedIn = false } = {}) 
     const depths = Array.isArray(o.depths) ? o.depths : [];
     const priced = depths.some((d) => d.price_usd != null);
     if (!signedIn) {
-        return `<details class="dv-mod" data-mod="research"><summary><span class="dv-mod-k">Research first</span><b>Deep dive</b></summary>
+        // Like every module, the summary says its value, and the value is Off until a dive is chosen: "Research first
+        // Deep dive" read as if one were already on (the 11-12 review).
+        return `<details class="dv-mod" data-mod="research"><summary><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg><span class="dv-mod-k">Research first</span><b>Off</b></summary>
 <div class="dv-mod-sheet" role="group" aria-label="Research first"><header><b>Research first</b><small>An expert design research run: we search everywhere, capture the best sites at phone and computer sizes, and tell you what works and why. It goes into the brief for every take.</small></header>
 <p>${kit.button({ href: '/auth/login?next=%2Fcreate', label: 'Sign in to start a deep dive', kind: 'quiet', icon: 'spark' })}</p>
 <p class="dv-fine">A deep dive is priced on OpenVibe Exchange and held on your Balance before it runs. <a href="https://openvibe.exchange/deep-dive">Read about deep dives</a>.</p></div></details>`;
@@ -56,7 +58,7 @@ function researchModule({ options = null, recent = [], signedIn = false } = {}) 
         : `<p class="dv-fine">The depths are not readable right now. <a href="https://openvibe.exchange/deep-dive">Start a deep dive on OpenVibe Exchange</a>, then attach it here.</p>`;
     const done = (recent || []).filter((r) => r && r.id);
     const recentRows = done.length ? `<label class="dv-start"><span>Or attach a dive you already ran</span><select name="research_id"><option value="">None</option>${done.map((r) => `<option value="${esc(r.id)}">${esc(String(r.question || 'Deep dive').slice(0, 80))}${r.status === 'running' ? ' (still running)' : ''} · ${esc(day(r.createdAt))}</option>`).join('')}</select></label>` : '';
-    return `<details class="dv-mod" data-mod="research"><summary><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg><span class="dv-mod-k">Research first</span><b data-mod-v>${priced ? 'Off' : 'Deep dive'}</b></summary>
+    return `<details class="dv-mod" data-mod="research"><summary><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg><span class="dv-mod-k">Research first</span><b data-mod-v>Off</b></summary>
 <div class="dv-mod-sheet" role="group" aria-label="Research first"><header><b>Research first</b><small>A deep dive's synthesis (patterns, do and don't, reference tokens as inspiration, the rules it cites) becomes part of the generation brief. Each take says which research points it follows. A site's assets and code are never copied.</small></header>
 <label class="dv-opt dv-opt--check"><input type="checkbox" name="research" value="new" data-research="on"><span><b>Start a deep dive for this design</b><small>The takes wait for its report, then are drawn from it.</small></span></label>
 <div class="dv-deep" data-research-new hidden>

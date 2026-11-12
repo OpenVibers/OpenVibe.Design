@@ -102,6 +102,9 @@
                 const tick = q('input[name="research"]'); if (tick) tick.checked = !last.research.id && !last.research.ref;
             }
         } catch { fitFrames(); fitExamples(); }
+        // A link can open the composer on a kind (/create?kind=element: Bot's "Make one with AI"); it wins over the
+        // last one kept in this browser, because the person just asked for it.
+        try { const asked = new URLSearchParams(location.search).get('kind'); if (asked && q(`input[name="kind"][value="${CSS.escape(asked)}"]`)) setKind(asked); } catch { /* an odd query keeps the default */ }
         fitModels(); fitResearch();
         const mods = all('.dv-mod');
         const closeMods = (except) => mods.forEach((m) => { if (m !== except) m.open = false; });

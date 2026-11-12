@@ -325,6 +325,14 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 @keyframes dvStep { 50% { transform: translateX(calc(5px * var(--ov-move, 1))); opacity: .6; } }
 /* Ideas to start from: those of the kind chosen above, each with its glyph. */
 .dv-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+/* The gallery's door under the examples (11-12 review: it had been a pink link run into the heading's text). */
+.dv-create-door { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px;
+  background: var(--bg-card, var(--bg-secondary)); color: var(--text-primary); text-decoration: none; transition: border-color .15s; }
+.dv-create-door:hover, .dv-create-door:focus-visible { border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.dv-create-door-ic { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; color: var(--accent-light, var(--accent)); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.dv-create-door b { display: block; font-size: .95rem; }
+.dv-create-door small { display: block; margin-top: 2px; color: var(--text-secondary); font-size: .84rem; line-height: 1.4; }
+.dv-create-door-go { margin-left: auto; color: var(--text-muted); font-size: 1.1rem; }
 .dv-examples button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border: 1px solid var(--border); border-radius: 99px; padding: 0 14px 0 11px; background: var(--bg-card); color: var(--text-secondary); font: inherit; font-size: .86rem; cursor: pointer; transition: color .15s, border-color .15s, transform .12s; animation: dvIn .4s cubic-bezier(.2, .9, .3, 1.1) both; }
 .dv-examples button svg { width: 16px; height: 16px; flex: none; color: var(--accent-light, var(--accent)); }
 .dv-examples button:hover, .dv-examples button:focus-visible { color: var(--text-primary); border-color: var(--accent); }
