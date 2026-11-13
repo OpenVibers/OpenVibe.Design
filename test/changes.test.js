@@ -142,14 +142,18 @@ const { PUBLIC_DIR } = require('../server/assets');
         await check('the home and every component page link the changes archive', async () => {
             assert.match((await t.get('/')).text, /href="\/changes"/, 'the home links it');
             const pages = ['/components/registry', '/components/brand', '/components/menu', '/components/navbar', '/components/search-pill',
-                '/components/quest-card', '/components/avatar', '/components/player', '/components/soft-pages', '/components/icon-ink', '/components/footer'];
+                '/components/quest-card', '/components/avatar', '/components/player', '/components/soft-pages', '/components/icon-ink', '/components/footer', '/components/metrics'];
             for (const href of pages) {
                 const r = await t.get(href);
                 assert.strictEqual(r.status, 200, href);
                 assert.match(r.text, /href="\/changes"/, `${href} links the archive`);
             }
+            const metrics = await t.get('/components/metrics');
+            assert.match(metrics.text, /<script src="[^"]*ov-metrics[^"]*\.js[^"]*" defer>/, 'the metrics page loads the real module');
+            assert.match(metrics.text, /component-metrics[^"]*\.js/, 'and the script that draws its parts');
+            assert.match(metrics.text, /href="\/rules#numbers-drawn-once"/, 'the rule it carries out');
             const registry = await t.get('/components/registry');
-            for (const name of ['brand', 'search-pill', 'quest-card', 'avatar', 'player', 'soft-pages', 'icon-ink', 'footer']) {
+            for (const name of ['brand', 'search-pill', 'quest-card', 'avatar', 'player', 'soft-pages', 'icon-ink', 'footer', 'metrics']) {
                 assert.match(registry.text, new RegExp(`href="/components/${name}"`), name);
             }
         });
