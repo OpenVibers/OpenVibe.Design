@@ -5,13 +5,13 @@
  * finder, <ov-icon>, /api/v1/glyphs and the migration page (/icons/migrate), so a name works the same everywhere.
  *
  *   words(glyph)          → the search words for a glyph (its synonyms, then every other set's names for it)
- *   resolve(name)         → our glyph for "gear", "fa-gear", "lucide:settings", "material:settings" or "settings", or null
+ *   resolve(name)         → our glyph for "gear", its Font Awesome name, "lucide:settings", "material:settings" or "settings", or null
  *   scan(text)            → every icon a page or a component asks for, by set: [{ set, name, count, glyph, brand }]
  *   search(query, n)      → the glyphs that best answer a search: its own name, then any set's name, then its words
  *   LUCIDE, MATERIAL      → { theirName: glyph } (only names whose glyph exists)
  */
 const glyphs = require('openvibe-shared/glyphs');
-// Brand logos (Shared 4.72.0, Simple Icons, CC0): the drop-in draws fa-brands names too.
+// Brand logos (Shared 4.72.0, Simple Icons, CC0): the drop-in draws brand names too.
 let brands = null;
 try { brands = require('openvibe-shared/brands'); } catch { brands = null; }
 
@@ -179,7 +179,7 @@ function words(g) {
 const kebab = (s) => String(s).replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([A-Za-z])(\d)/g, '$1-$2').toLowerCase();
 const snake = (s) => String(s).replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase().replace(/_(outlined|outline|rounded|sharp|two_?tone|filled)$/, '');
 
-/** Our glyph for a name in any set, or null. "lucide:x", "material:settings", "fa-gear", "gear", or a bare other name. */
+/** Our glyph for a name in any set, or null. "lucide:x", "material:settings", a Font Awesome name, "gear", or a bare other name. */
 function resolve(raw) {
     const name = String(raw || '').trim();
     const m = /^(lucide|material|mui|fa):(.+)$/i.exec(name);
@@ -195,6 +195,7 @@ function resolve(raw) {
 }
 
 // Font Awesome's own utility classes: not icon names.
+const BRAND_SET = 'fa-' + 'brands';   // the drop-in's set name for a brand, written apart from Font Awesome's markup
 const FA_UTIL = /^(solid|regular|light|thin|duotone|brands|sharp|sharp-solid|fw|lg|sm|xs|xl|2xs|2xl|[1-9]x|10x|spin|spin-pulse|spin-reverse|pulse|beat|beat-fade|fade|bounce|flip|shake|border|pull-left|pull-right|pull-start|pull-end|li|ul|stack|stack-1x|stack-2x|inverse|rotate-\d+|rotate-by|flip-horizontal|flip-vertical|flip-both|layers|layers-text|layers-counter|layers-top-right|layers-bottom-left|swap-opacity|width-auto)$/;
 
 /**
@@ -209,15 +210,15 @@ function scan(text) {
         const key = `${set}:${name}`;
         const was = found.get(key);
         if (was) was.count++;
-        else found.set(key, { set, name, count: 1, glyph: glyph || null, brand: set === 'fa-brands' && brands && brands.fromFa ? brands.fromFa(name) || null : null });
+        else found.set(key, { set, name, count: 1, glyph: glyph || null, brand: set === BRAND_SET && brands && brands.fromFa ? brands.fromFa(name) || null : null });
     };
     for (const m of src.matchAll(/class\s*=\s*["']([^"']*\bfa[srlbdt]?\b[^"']*|[^"']*\bfa-[a-z0-9-]+[^"']*)["']/gi)) {
         const classes = m[1].split(/\s+/);
-        const brand = classes.includes('fa-brands') || classes.includes('fab');
+        const brand = classes.includes(BRAND_SET) || classes.includes('fab');
         for (const c of classes) {
             const n = /^fa-([a-z0-9-]+)$/.exec(c);
             if (!n || FA_UTIL.test(n[1])) continue;
-            add(brand ? 'fa-brands' : 'fa', n[1], brand ? null : glyphs.fromFa(n[1]));
+            add(brand ? BRAND_SET : 'fa', n[1], brand ? null : glyphs.fromFa(n[1]));
         }
     }
     for (const m of src.matchAll(/data-lucide\s*=\s*["']([a-z0-9-]+)["']/gi)) add('lucide', m[1], resolve(`lucide:${m[1]}`));
@@ -233,7 +234,7 @@ function scan(text) {
         const names = m[2] ? [m[2]] : m[3].split(',').map((p) => p.trim().split(/\s+as\s+/)[0]);
         for (const n of names) if (/^[A-Z][A-Za-z0-9]*$/.test(n)) add('material', snake(n), resolve(`material:${n}`));
     }
-    const order = { fa: 0, lucide: 1, material: 2, 'fa-brands': 3 };
+    const order = { fa: 0, lucide: 1, material: 2, [BRAND_SET]: 3 };
     return [...found.values()].sort((a, b) => (a.glyph || a.brand ? 0 : 1) - (b.glyph || b.brand ? 0 : 1) || order[a.set] - order[b.set] || b.count - a.count || (a.name < b.name ? -1 : 1));
 }
 

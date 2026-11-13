@@ -28,12 +28,12 @@ function iconStyles() {
         ['line', 'Line', 'Outlines at every size.'],
         ['solid', 'Solid', 'Filled at every size.'],
     ];
-    const i = (name, force) => `<i class="fa-solid ${name}${force ? ` ovg-${force}` : ''}" aria-hidden="true"></i>`;
+    const i = (name, force) => `<i class="ovg-fill${force ? ` ovg-${force}` : ''}" data-ov-icon="${name}" aria-hidden="true"></i>`;
     const screen = (style) => {
         const force = style === 'auto' ? '' : style;
-        const rows = [['fa-tower-broadcast', 72], ['fa-comments', 54], ['fa-heart', 64]].map(([n, w]) => `<span class="lk-st-row"><span class="lk-st-dot">${i(n, force)}</span><span class="lk-st-lines"><span style="width:${w}%"></span><span></span></span></span>`).join('');
-        const bar = ['fa-house', 'fa-compass', 'fa-bell', 'fa-user'].map((n, k) => `<span class="lk-st-tab"${k === 0 ? ' aria-current="page"' : ''}>${i(n, force)}</span>`).join('');
-        return `<span class="lk-st-screen"${style === 'auto' ? ' style="--ovg-pref:18.4px"' : ''}><span class="lk-st-head"><span class="lk-st-title"></span>${i('fa-magnifying-glass', force)}${i('fa-bell', force)}</span>${rows}<span class="lk-st-bar">${bar}</span></span>`;
+        const rows = [['live', 72], ['chat', 54], ['heart', 64]].map(([n, w]) => `<span class="lk-st-row"><span class="lk-st-dot">${i(n, force)}</span><span class="lk-st-lines"><span style="width:${w}%"></span><span></span></span></span>`).join('');
+        const bar = ['home', 'compass', 'bell', 'user'].map((n, k) => `<span class="lk-st-tab"${k === 0 ? ' aria-current="page"' : ''}>${i(n, force)}</span>`).join('');
+        return `<span class="lk-st-screen"${style === 'auto' ? ' style="--ovg-pref:18.4px"' : ''}><span class="lk-st-head"><span class="lk-st-title"></span>${i('search', force)}${i('bell', force)}</span>${rows}<span class="lk-st-bar">${bar}</span></span>`;
     };
     return `<div class="lk-icons"><span class="ovk-set-text" id="lk-icons-h">Icons</span><div class="lk-styles" role="radiogroup" aria-labelledby="lk-icons-h">${STYLES.map(([id, name, what]) => `<label class="lk-style"><input type="radio" name="icons" value="${id}"${id === 'auto' ? ' checked' : ''}>${screen(id)}<span class="lk-st-cap"><b>${name}</b><small>${what}</small></span></label>`).join('')}</div></div>`;
 }

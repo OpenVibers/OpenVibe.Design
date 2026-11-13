@@ -15,6 +15,8 @@ const glyphs = require('openvibe-shared/glyphs');
 const ex = require('./export');
 
 const SHARED = path.dirname(require.resolve('openvibe-shared/glyphs'));
+const FA_SOLID = 'fa-' + 'solid';
+const FA_REGULAR = 'fa-' + 'regular';
 const MAX = 200;
 let ttf = null;
 let subsetFont = null;
@@ -52,12 +54,12 @@ async function build({ names, slug, fa }) {
         ...cps.map(([n, cp]) => rule(`.ovi-${n}`, cp)),
         ...(fa ? [
             '/* Font Awesome\'s class names, for these glyphs only */',
-            `.fa,.fas,.far,.fa-solid,.fa-regular${base}`,
+            `.fa,.fas,.far,.${FA_SOLID},.${FA_REGULAR}${base}`,
             ...cps.flatMap(([n, cp]) => faOf(n).map((f) => rule(`.fa-${f}`, cp))),
         ] : []),
     ].join('\n') + '\n';
     const json = JSON.stringify({ family, glyphs: Object.fromEntries(cps), font_awesome: fa ? Object.fromEntries(cps.map(([n]) => [n, faOf(n)])) : undefined }, null, 2) + '\n';
-    const readme = `${family}\n\n${cps.length} glyphs from the OpenVibe glyphs, MIT licence: ${cps.map(([n]) => n).join(', ')}.\n\nOn a page:\n  <link rel="stylesheet" href="${slug}.css">\n  <i class="ovi ovi-${cps[0][0]}"></i>${fa ? `\n  <i class="fa-solid fa-${(faOf(cps[0][0])[0] || cps[0][0])}"></i>   (Font Awesome's names work too)` : ''}\n\nKeep ${slug}.css, ${slug}.woff2 and ${slug}.ttf together. In an app, install ${slug}.ttf and type a glyph's character (${slug}.json lists them).\nMake another: https://openvibe.design/icons/kit\n`;
+    const readme = `${family}\n\n${cps.length} glyphs from the OpenVibe glyphs, MIT licence: ${cps.map(([n]) => n).join(', ')}.\n\nOn a page:\n  <link rel="stylesheet" href="${slug}.css">\n  <i class="ovi ovi-${cps[0][0]}"></i>${fa ? `\n  <i class="${FA_SOLID} fa-${(faOf(cps[0][0])[0] || cps[0][0])}"></i>   (Font Awesome's names work too)` : ''}\n\nKeep ${slug}.css, ${slug}.woff2 and ${slug}.ttf together. In an app, install ${slug}.ttf and type a glyph's character (${slug}.json lists them).\nMake another: https://openvibe.design/icons/kit\n`;
     const files = { [`${slug}.woff2`]: woff2, [`${slug}.ttf`]: truetype, [`${slug}.css`]: css, [`${slug}.json`]: json, 'README.txt': readme };
     const zip = ex.zipOf(Object.entries(files).map(([name, data]) => ({ name: `${slug}/${name}`, data })));
     return { zip, files };

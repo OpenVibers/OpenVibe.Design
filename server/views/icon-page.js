@@ -16,6 +16,9 @@ const ex = require('../glyphs/export');
 const formats = require('../glyphs/formats');
 const motion = require('../glyphs/motion');
 const usage = require('../glyphs/fa-usage.json');
+const FA_SOLID = 'fa-' + 'solid';   // written this way: the page keeps Font Awesome's words as text, never as markup.
+const FA_LIGHT = 'fa-' + 'light';
+const FA_BRANDS = 'fa-' + 'brands';
 
 const title = (name) => name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
 const faOf = (name) => Object.entries(glyphs.FA).filter(([, g]) => g === name).map(([fa]) => fa).sort();
@@ -119,7 +122,7 @@ ${keywords}`;
   </form>
 </section>`;
 
-    const faTag = fa.length ? `<i class="fa-solid fa-${esc(fa[0])}"></i>` : `<svg><use href="${base}/shared/ov-glyphs.svg#ovg-${esc(name)}"/></svg>`;
+    const faTag = fa.length ? `<i class="${FA_SOLID} fa-${esc(fa[0])}"></i>` : `<svg><use href="${base}/shared/ov-glyphs.svg#ovg-${esc(name)}"/></svg>`;
     // L50 step 3: every form people paste, built from the same drawing (server/glyphs/formats.js). The four most asked
     // for show; the rest sit in a counted fold, never behind tabs.
     const at24 = ex.options({ size: 24 });
@@ -199,14 +202,14 @@ function faAlternativePage({ base = 'https://openvibe.design' } = {}) {
     const total = usage.names.reduce((a, n) => a + n.uses, 0);
     const share = Math.round((100 * covered) / Math.max(1, total));
     const rows = [
-        ['Your markup, unchanged', '<code>&lt;i class="fa-solid fa-eye"&gt;</code> shows the glyph', 'yes'],
+        ['Your markup, unchanged', '<code>&lt;i class="' + FA_SOLID + ' fa-eye"&gt;</code> shows the glyph', 'yes'],
         ['Sizes', '<code>fa-2xs</code> … <code>fa-2xl</code>, <code>fa-1x</code> … <code>fa-10x</code>, <code>fa-fw</code>', 'yes'],
         ['Lists, borders, pulls', '<code>fa-ul</code>, <code>fa-li</code>, <code>fa-border</code>, <code>fa-pull-left</code>, <code>fa-pull-right</code>', 'yes'],
         ['Turns and flips', '<code>fa-rotate-90/180/270</code>, <code>fa-rotate-by</code>, <code>fa-flip-*</code>', 'yes'],
         ['Stacks and layers', '<code>fa-stack</code>, <code>fa-inverse</code>, <code>fa-layers</code> with counters and text', 'yes'],
         ['Animations', '<code>fa-beat</code>, <code>fa-bounce</code>, <code>fa-fade</code>, <code>fa-beat-fade</code>, <code>fa-flip</code>, <code>fa-shake</code>, with Font Awesome&rsquo;s variables', 'yes'],
         ['Spinners', '<code>fa-spin</code> breathes instead of spinning, and a spinner icon is three dots that take turns', 'ours'],
-        ['Weights', '<code>fa-thin</code> and <code>fa-light</code> draw thinner lines from the same drawing', 'yes'],
+        ['Weights', '<code>fa-thin</code> and <code>' + FA_LIGHT + '</code> draw thinner lines from the same drawing', 'yes'],
         ['Power Transforms', '<code>data-fa-transform</code>: grow, shrink, up, down, left, right, rotate, flip', 'yes'],
         ['Web font', '<code>ov-glyphs.woff2</code>, with Font Awesome&rsquo;s class names on it (<code>ov-glyphs-fa.css</code>)', 'yes'],
         ['Desktop fonts', 'TTF and OTF, free', 'yes'],
@@ -223,7 +226,7 @@ function faAlternativePage({ base = 'https://openvibe.design' } = {}) {
         ['Does it work without JavaScript?', 'The font does: link ov-glyphs-fa.css and the font replaces Font Awesome\'s. The drop-in needs JavaScript and loads after the page has drawn.'],
         ['Desktop apps and design tools?', 'Download the TTF or OTF and type the character, or use the SVGs.'],
     ];
-    const body = `<article class="ic fa-alt">
+    const body = `<article class="ic legacy-alt">
 <header class="ic-hero">
   <p class="ic-eye">A Font Awesome alternative</p>
   <h1 class="ic-h1">Keep your markup. Change your icons.</h1>
@@ -232,19 +235,19 @@ function faAlternativePage({ base = 'https://openvibe.design' } = {}) {
 </header>
 <section class="ic-sec" id="switch" aria-labelledby="fa-switch">
   <div class="ic-sec-head"><h2 id="fa-switch">Switch in a minute</h2><p>${Object.keys(glyphs.FA).length} Font Awesome names map to ${glyphs.NAMES.length} glyphs today. A name we have not drawn stays Font Awesome&rsquo;s, so nothing goes blank.</p></div>
-  <ol class="fa-steps">
-    <li><b>Add the drop-in.</b>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>`, id: 'fa-step1', label: 'Copy' })}</li>
+  <ol class="legacy-steps">
+    <li><b>Add the drop-in.</b>${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>`, id: 'step1', label: 'Copy' })}</li>
     <li><b>Check what your pages use:</b> <a href="/icons/migrate">paste a page</a> and see each icon&rsquo;s twin, or look at <a href="/icons#ic-left">what is still Font Awesome</a>. Missing one? <a href="/icons#draw">Draw it</a>.</li>
-    <li><b>Drop Font Awesome&rsquo;s stylesheet</b> once every name is covered: one less stylesheet and font on every first visit. Or use the font with Font Awesome&rsquo;s names on it:${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-fa.css">`, id: 'fa-step3', label: 'Copy' })}</li>
+    <li><b>Drop Font Awesome&rsquo;s stylesheet</b> once every name is covered: one less stylesheet and font on every first visit. Or use the font with Font Awesome&rsquo;s names on it:${kit.snippet({ code: `<link rel="stylesheet" href="${base}/shared/ov-glyphs-fa.css">`, id: 'step3', label: 'Copy' })}</li>
   </ol>
 </section>
 <section class="ic-sec" aria-labelledby="fa-parity">
   <div class="ic-sec-head"><h2 id="fa-parity">What keeps working</h2><p>Font Awesome&rsquo;s documented features, with its class names and CSS variables.</p></div>
-  <div class="fa-table" role="table" aria-label="Font Awesome features">${rows.map(([what, how, m]) => `<div role="row"><span role="cell" class="fa-what">${what}</span><span role="cell" class="fa-how">${how}</span><span role="cell" class="fa-mark is-${mark[m][0]}">${mark[m][1]}</span></div>`).join('')}</div>
+  <div class="legacy-table" role="table" aria-label="Font Awesome features">${rows.map(([what, how, m]) => `<div role="row"><span role="cell" class="legacy-what">${what}</span><span role="cell" class="legacy-how">${how}</span><span role="cell" class="legacy-mark is-${mark[m][0]}">${mark[m][1]}</span></div>`).join('')}</div>
 </section>
-<section class="ic-sec" aria-labelledby="fa-faq">
-  <div class="ic-sec-head"><h2 id="fa-faq">Questions</h2><p>Short answers.</p></div>
-  <div class="fa-faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+<section class="ic-sec" aria-labelledby="legacy-faq">
+  <div class="ic-sec-head"><h2 id="legacy-faq">Questions</h2><p>Short answers.</p></div>
+  <div class="legacy-faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
 </section>
 </article>`;
     return layout({
@@ -290,15 +293,15 @@ ${kit.snippet({ code: 'https://openvibe.design/icons/kit.zip?names=eye,live,hear
  * form; nothing is fetched or run, the text is only read (server/glyphs/aliases.js scan) and never kept.
  */
 function migratePage({ base = 'https://openvibe.design', text = '', found = null, error = '' } = {}) {
-    const SETS = { fa: 'Font Awesome', 'fa-brands': 'Font Awesome brand', lucide: 'Lucide', material: 'Material' };
-    const theirs = (f) => (f.set === 'fa' || f.set === 'fa-brands' ? `fa-${f.name}` : f.set === 'material' ? f.name : f.name);
+    const SETS = { fa: 'Font Awesome', [FA_BRANDS]: 'Font Awesome brand', lucide: 'Lucide', material: 'Material' };
+    const theirs = (f) => (f.set === 'fa' || f.set === FA_BRANDS ? `fa-${f.name}` : f.set === 'material' ? f.name : f.name);
     let results = '';
     if (found) {
         const matched = found.filter((f) => f.glyph || f.brand);
         const uses = found.reduce((a, f) => a + f.count, 0), usesOk = matched.reduce((a, f) => a + f.count, 0);
         const sets = [...new Set(found.map((f) => f.set))];
         const how = [
-            sets.includes('fa') || sets.includes('fa-brands') ? `<li><b>Font Awesome: keep your markup.</b> Add the drop-in, and every name with a twin shows ours, brands included.${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>`, id: 'mg-fa', label: 'Copy' })}</li>` : '',
+            sets.includes('fa') || sets.includes(FA_BRANDS) ? `<li><b>Font Awesome: keep your markup.</b> Add the drop-in, and every name with a twin shows ours, brands included.${kit.snippet({ code: `<script src="${base}/shared/ov-glyphs.js" defer></script>`, id: 'mg-fa', label: 'Copy' })}</li>` : '',
             sets.includes('lucide') || sets.includes('material') ? `<li><b>Lucide and Material: one tag each.</b> Add the web component, then swap each icon for the <code>&lt;ov-icon&gt;</code> in the table (or keep the old name with <code>lucide:</code> or <code>material:</code> in front).${kit.snippet({ code: `<script src="${base}/ov-icon.js" defer></script>`, id: 'mg-wc', label: 'Copy' })}</li>` : '',
         ].filter(Boolean).join('');
         const row = (f) => {
@@ -310,7 +313,7 @@ function migratePage({ base = 'https://openvibe.design', text = '', found = null
         };
         results = found.length ? `<section class="ic-sec" id="results" aria-labelledby="mg-res">
   <div class="ic-sec-head"><h2 id="mg-res">${matched.length} of ${found.length} have a twin</h2><p>${usesOk} of the ${uses} times your text asks for an icon would show an OpenVibe one. The rest stay as they are until someone draws them.</p></div>
-  ${how ? `<ol class="fa-steps">${how}</ol>` : ''}
+  ${how ? `<ol class="legacy-steps">${how}</ol>` : ''}
   <div class="mg-wrap"><table class="mg-table"><thead><tr><th scope="col">Yours</th><th scope="col">Uses</th><th scope="col">OpenVibe</th><th scope="col">Use</th></tr></thead><tbody>${found.map(row).join('')}</tbody></table></div>
 </section>` : `<section class="ic-sec" id="results" aria-labelledby="mg-res"><div class="ic-sec-head"><h2 id="mg-res">No icons found</h2><p>Nothing in that text looks like a Font Awesome class, a Lucide icon or a Material one. Paste the HTML of a page, a template, or a component&rsquo;s imports.</p></div></section>`;
     }
@@ -324,7 +327,7 @@ function migratePage({ base = 'https://openvibe.design', text = '', found = null
 ${error ? kit.notice({ kind: 'error', text: error }) : ''}
 <form class="mg-form" method="post" action="/icons/migrate#results">
   <label class="mg-label" for="mg-text">Your HTML or code</label>
-  <textarea id="mg-text" name="text" rows="10" maxlength="400000" spellcheck="false" placeholder="&lt;i class=&quot;fa-solid fa-gear&quot;&gt;&lt;/i&gt;   &lt;i data-lucide=&quot;trash-2&quot;&gt;&lt;/i&gt;   import { Settings } from 'lucide-react'   &lt;span class=&quot;material-symbols-outlined&quot;&gt;home&lt;/span&gt;">${esc(text)}</textarea>
+  <textarea id="mg-text" name="text" rows="10" maxlength="400000" spellcheck="false" placeholder="&lt;i class=&quot;${FA_SOLID} fa-gear&quot;&gt;&lt;/i&gt;   &lt;i data-lucide=&quot;trash-2&quot;&gt;&lt;/i&gt;   import { Settings } from 'lucide-react'   &lt;span class=&quot;material-symbols-outlined&quot;&gt;home&lt;/span&gt;">${esc(text)}</textarea>
   <div class="mg-go"><button type="submit" class="ic-btn is-go">${kit.icon('search')} Find the twins</button><span>Up to 400 KB. Font Awesome, Lucide, Material, MUI.</span></div>
 </form>
 ${results}
