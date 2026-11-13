@@ -40,7 +40,7 @@ async function start() {
     // queues requests in the kernel instead of answering 502. Without the socket unit, the usual listen.
     const socketActivated = process.env.LISTEN_FDS === '1' && Number(process.env.LISTEN_PID) === process.pid;
     const server = app.listen(...(socketActivated ? [{ fd: 3 }] : [config.port, config.host]), () => {
-        console.log(`[OpenVibe.Design] ${config.nodeEnv} on http://${config.host}:${config.port} → ${config.baseUrl} (network ${config.networkUrl}, ai ${config.ai.url})`);
+        console.log(`[OpenVibe.Design] ${config.nodeEnv} on http://${config.host}:${config.port}, public ${config.baseUrl} (network ${config.networkUrl}, ai ${config.ai.url})`);
         // Load the Network's signing key now, not on the first sign-in, so /api/ready reports sign-in as it is.
         ctx.keys.ensure().catch(() => {});
         // Generate queued Arena rounds. DESIGN_DRILL=1 keeps the loop off (a test or a drill drives tick()).

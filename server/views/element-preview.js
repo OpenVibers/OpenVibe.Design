@@ -126,7 +126,7 @@ ${listing && listing.error ? `<p class="dv-err" role="alert">${esc(listing.error
 <p class="dv-fine">Add to my channel puts it in your Live element library. Publish puts it in the Elements and packs gallery here on Design as a free listing under your name.${signedIn ? '' : ' Sign in to use either.'}</p>
 </div>` : (mode === 'canvas' ? '<p class="dv-fine">Sign in at OpenVibe to add this element to your channel or publish it.</p>' : '');
     // The listing's own page is the back link on Try it, so no second "see it in the gallery" link.
-    const share = o.listingUrl && mode !== 'try' ? `<p><a href="${esc(o.listingUrl)}">See it in the Elements and packs gallery →</a></p>` : '';
+    const share = o.listingUrl && mode !== 'try' ? `<p><a href="${esc(o.listingUrl)}">See it in the Elements and packs gallery ${kit.icon('forward')}</a></p>` : '';
     const tryIt = o.tryUrl ? `<p><a class="ovk-btn ovk-btn--quiet" href="${esc(o.tryUrl)}">Try it again</a></p>` : '';
     const hasRobot = robotActions(sim).length > 0;
     const body = `<section class="el-page el-preview">

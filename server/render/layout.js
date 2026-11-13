@@ -43,7 +43,7 @@ function layout({ title, description, canonical, path, robots = 'index, follow',
     const found = breadcrumbOf(pathNow);
     const crumb = found && !/aria-label="Breadcrumb"/.test(String(body || '')) ? found : null;
     if (crumb) {
-        const html = `<nav class="ds-crumbs" aria-label="Breadcrumb"><a href="${esc(crumb.door.href)}">${esc(crumb.door.name)}</a><span aria-hidden="true">›</span><span aria-current="page">${esc(crumb.name)}</span></nav>`;
+        const html = `<nav class="ds-crumbs" aria-label="Breadcrumb"><a href="${esc(crumb.door.href)}">${esc(crumb.door.name)}</a><span aria-hidden="true">${kit.icon('chevron')}</span><span aria-current="page">${esc(crumb.name)}</span></nav>`;
         const at = String(body || '').indexOf('<h1');
         body = at === -1 ? `${html}${body || ''}` : `${String(body).slice(0, at)}${html}${String(body).slice(at)}`;
         jsonLd = [...(jsonLd || []), seo.jsonLd.breadcrumbs([

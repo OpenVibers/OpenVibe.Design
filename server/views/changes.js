@@ -63,7 +63,7 @@ function releasePage(version) {
     const r = all[index];
     const pin = pinned();
     const canonicalPath = `/changes/${r.version}`;
-    const navigation = `<nav class="chg-release-nav" aria-label="Release navigation">${index < all.length - 1 ? `<a rel="prev" href="/changes/${esc(all[index + 1].version)}">← ${esc(all[index + 1].version)}</a>` : '<span></span>'}${index > 0 ? `<a rel="next" href="/changes/${esc(all[index - 1].version)}">${esc(all[index - 1].version)} →</a>` : '<span></span>'}</nav>`;
+    const navigation = `<nav class="chg-release-nav" aria-label="Release navigation">${index < all.length - 1 ? `<a rel="prev" href="/changes/${esc(all[index + 1].version)}">${kit.icon('back')} ${esc(all[index + 1].version)}</a>` : '<span></span>'}${index > 0 ? `<a rel="next" href="/changes/${esc(all[index - 1].version)}">${esc(all[index - 1].version)} ${kit.icon('forward')}</a>` : '<span></span>'}</nav>`;
     return layout({
         title: `OpenVibe.Shared ${r.version}: ${r.title}`,
         description: r.title,

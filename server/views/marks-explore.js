@@ -21,6 +21,7 @@
  * fusions, no pac-man shapes. Picks travel in the link (#picks=L04,P17,M09).
  */
 const { layout, esc } = require('../render/layout');
+const kit = require('openvibe-shared/kit');
 
 const BLUE = '#4f7cff', VIOLET = '#8b5cf6', CYAN = '#22d3ee', PINK = '#ec4899', NIGHT = '#0d1322', PAPER = '#f4f6fb';
 const f = (v) => +Number(v).toFixed(2);
@@ -724,7 +725,7 @@ function panel(id, kind, rows, label, hidden) {
     const sections = rows.map((row) => {
         const first = n + 1;
         const cards = row.items.map((item) => { n += 1; const code = `${kind}${pad(n)}`; return kind === 'M' ? menuCard(code, item, n - 1) : kind === 'F' ? fontCard(code, item, n - 1) : markCard(code, kind, item, n - 1); }).join('');
-        return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small><span class="mx-swipe" aria-hidden="true">swipe →</span></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
+        return `<section class="mx-row"><h3>${esc(row.title)} <small>${kind}${pad(first)}–${kind}${pad(n)} · ${row.items.length}</small><span class="mx-swipe" aria-hidden="true">swipe ${kit.icon('forward')}</span></h3><p class="mx-row-line">${esc(row.line)}</p><ul class="mx-grid">${cards}</ul></section>`;
     });
     const body = rows.map((row, k) => [row.lead ? 0 : 1, k]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(([, k]) => sections[k]).join('');
     const NEXT = {
@@ -736,7 +737,7 @@ function panel(id, kind, rows, label, hidden) {
     }[id];
     const next = `<nav class="mx-next" aria-label="Where next">${NEXT.map(([to, title, line_]) => to === 'share'
         ? `<button type="button" class="mx-next-share" data-mx-share><b>${title} <span aria-hidden="true">✓</span></b><small>${line_}</small></button>`
-        : `<a href="#${to}" data-mx-go="${to}"><b>${title} <span aria-hidden="true">${/^Back/.test(title) ? '←' : '→'}</span></b><small>${line_}</small></a>`).join('')}</nav>`;
+        : `<a href="#${to}" data-mx-go="${to}"><b>${title} <span aria-hidden="true">${/^Back/.test(title) ? kit.icon('back') : kit.icon('forward')}</span></b><small>${line_}</small></a>`).join('')}</nav>`;
     const STEP = {
         loop: [1, 'Pick a logo: the Loop', 'Tap the ones you like. Look at the Pair too.'],
         pair: [1, 'Pick a logo: the Pair', 'Tap the ones you like. Look at the Loop too.'],
@@ -836,9 +837,9 @@ ${tab('font', 'The font', 'The letters of the name', '<span class="fx-tabart" ar
 <a href="#loop" data-mx-go="loop" class="mx-step">${miniArt('L01', 20, 's')}<span>Loop</span><i data-mx-count="L"></i></a>
 <a href="#pair" data-mx-go="pair" class="mx-step">${miniArt('P01', 20, 's')}<span>Pair</span><i data-mx-count="P"></i></a>
 ${wild ? `<a href="#wild" data-mx-go="wild" class="mx-step">${miniArt('W01', 20, 's')}<span>Wild</span><i data-mx-count="W"></i></a>` : ''}
-<span class="mx-steps-sep" aria-hidden="true">→</span><span class="mx-stepn" aria-hidden="true">2</span>
+<span class="mx-steps-sep" aria-hidden="true">${kit.icon('forward')}</span><span class="mx-stepn" aria-hidden="true">2</span>
 <a href="#menu" data-mx-go="menu" class="mx-step mx-step-2">${miniArt('M01', 22, 's')}<span>Menu button</span><i data-mx-count="M"></i></a>
-<span class="mx-steps-sep" aria-hidden="true">→</span><span class="mx-stepn" aria-hidden="true">3</span>
+<span class="mx-steps-sep" aria-hidden="true">${kit.icon('forward')}</span><span class="mx-stepn" aria-hidden="true">3</span>
 <a href="#font" data-mx-go="font" class="mx-step mx-step-3"><span class="fx-mini" aria-hidden="true">Aa</span><span>Font</span><i data-mx-count="F"></i></a>
 <button type="button" class="mx-step mx-sheet" data-mx-density="sheet" aria-pressed="false" aria-label="Sheet: show all at once"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg></button>
 <button type="button" class="mx-step mx-share" data-mx-share aria-label="Copy your picks and a link to them"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg><span>Share</span></button>
@@ -848,7 +849,7 @@ ${panel('pair', 'P', PAIR_ROWS, `The Pair: ${PAIRS.length} takes`, true)}
 ${wild ? panel('wild', 'W', WILD_ROWS, `The Wildcards: ${WN} ideas`, true) : ''}
 ${panel('menu', 'M', MENU_ROWS, `The menu button: ${MENU_ROWS.reduce((t, r) => t + r.items.length, 0)} ideas`, true)}
 ${panel('font', 'F', FONT_ROWS, 'The font: twelve faces', true)}
-<div class="mx-nudge" data-mx-nudge role="status" hidden><span data-mx-nudge-text></span><a href="#menu" data-mx-go="menu" class="mx-btn" data-mx-nudge-go>Go to step 2 →</a><button type="button" class="mx-btn mx-btn-quiet" data-mx-nudge-close aria-label="Close">✕</button></div>
+<div class="mx-nudge" data-mx-nudge role="status" hidden><span data-mx-nudge-text></span><a href="#menu" data-mx-go="menu" class="mx-btn" data-mx-nudge-go>Go to step 2 ${kit.icon('forward')}</a><button type="button" class="mx-btn mx-btn-quiet" data-mx-nudge-close aria-label="Close">✕</button></div>
 <p class="mx-fine">Nothing changes on the sites until a logo wins. <a href="/brand">Today&rsquo;s logo</a>.</p>
 </div>`;
     return layout({

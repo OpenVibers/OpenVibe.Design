@@ -412,7 +412,7 @@ function simulateElement(doc, { price = null } = {}) {
         if (!allowed(person)) return;
         lastBy = person.name;
         lastOverall = at;
-        if (points) push('cost', `${person.name} spends ${points} channel points (${person.points} → ${person.points - points}).`, { person: person.name });
+        if (points) push('cost', `${person.name} spends ${points} channel points (from ${person.points} to ${person.points - points}).`, { person: person.name });
         for (const action of recipe.actions || []) {
             const effect = effectOf(action);
             if (effect.state) {

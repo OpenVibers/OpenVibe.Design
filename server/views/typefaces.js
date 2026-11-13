@@ -9,6 +9,7 @@
  * letters on screen are the letters the person just made.
  */
 const { layout, esc } = require('../render/layout');
+const kit = require('openvibe-shared/kit');
 
 /** The stylesheet both pages share. */
 const STYLES = ['css/typefaces.css'];
@@ -68,7 +69,7 @@ function specimen({ face, compiled, chars = '' } = {}) {
         const g = glyphs.find((x) => x.char === c);
         return '<span class="tf-letter' + (g ? '' : ' tf-missing') + '">' + esc(c) + '</span>';
     }).join('');
-    const body = '<div class="tf tf-specimen"><a class="tf-back" href="/fonts/make">← Make another</a>'
+    const body = '<div class="tf tf-specimen"><a class="tf-back" href="/fonts/make">' + kit.icon('back') + ' Make another</a>'
         + '<header class="tf-hero"><p class="tf-eyebrow">' + esc(face.license) + (face.model ? ' · drawn by ' + esc(face.model) : '') + '</p>'
         + '<h1 class="tf-name" style="font-family:\'OpenVibe Made\',sans-serif">' + esc(face.name) + '</h1>'
         + '<p>' + esc(face.prompt) + '</p></header>'
@@ -115,7 +116,7 @@ function vectorMake({ mine = [], signedIn = false, left = 0, perDay = 0 } = {}) 
 
 /** The drawing: the SVG, the downloads and the notes. */
 function vector({ vector: v } = {}) {
-    const body = '<div class="tf tf-vector"><a class="tf-back" href="/vectors/make">← Make another</a>'
+    const body = '<div class="tf tf-vector"><a class="tf-back" href="/vectors/make">' + kit.icon('back') + ' Make another</a>'
         + '<header class="tf-hero"><p class="tf-eyebrow">' + esc(v.kind) + (v.model ? ' · drawn by ' + esc(v.model) : '') + '</p>'
         + '<h1>' + esc(v.prompt) + '</h1></header>'
         + '<figure class="tf-figure">' + v.svg + '</figure>'
