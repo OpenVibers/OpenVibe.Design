@@ -646,7 +646,7 @@ const RULES = Object.freeze([
         '2026-11-13', 'The owner, 11-13: "hide the label of the inactive tabs, and we should add the badges back" and "the icons are so small, make them use more of the space, less padding".',
         [], ['openvibe-shared test: menu-home-screen-chrome']),
     R('close-is-ours', 'look', 'A close button is our disc with a bold x beside what it closes; its focus ring is the accent, never the browser\'s white.',
-        'The menu\'s close sits beside the pill, never over it: a 48 px disc lit by the accent with a 26 px x that turns in as the menu opens and turns a quarter on press. Focus shows as an accent ring only for keys; the browser\'s own outline (white on dark) never shows.',
+        'The menu\'s close sits beside the pill, never over it: a disc lit by the accent, larger than the menu button, with a bold x that turns in as the menu opens and turns a quarter on press. Focus shows as an accent ring only for keys; the browser\'s own outline (white on dark) never shows.',
         '2026-11-13', 'The owner, 11-13: "the close button can\'t be white. I hate that white like outline border … redesign … sleeker and have a cooler animation … bigger". The white ring was the browser\'s focus outline.',
         [], ['openvibe-shared test: menu-home-screen-chrome']),
     R('the-bell-rings', 'motion', 'The bell is one drawing everywhere and swings once when something is new; Calm shortens it and Off stills it.',
