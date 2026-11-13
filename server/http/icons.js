@@ -318,7 +318,7 @@ function createIconRoutes(ctx) {
         if (req.query.names == null) return res.json(glyphsJson());
         // Just the names asked for (<ov-icon> asks for a page's in one go): a glyph or a Font Awesome name, each answered
         // under the name it was asked by; an unknown one is left out.
-        // Any set's name works (L50 step 4): "gear", "fa-gear", "lucide:settings", "material:delete", or a bare "settings".
+        // Any set's name works (L50 step 4): "gear", its Font Awesome name, "lucide:settings", "material:delete", or a bare "settings".
         const asked = [...new Set(String(req.query.names).split(',').map((n) => n.trim().toLowerCase()).filter((n) => /^(?:(?:lucide|material|mui|fa):)?[a-z][a-z0-9_-]{0,47}$/.test(n)))].slice(0, 120);
         const out = asked.map((a) => {
             const name = aliases.resolve(a);

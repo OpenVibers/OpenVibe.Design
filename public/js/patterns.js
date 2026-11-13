@@ -199,7 +199,7 @@
       set('online', 'Online', 'Others see a green dot and the word Online.');
       [['online', 'Online', 'Others see a green dot and the word Online.'], ['away', 'Away', 'A crescent after ten minutes without input.'], ['dnd', 'Do not disturb', 'A bar across the dot; pings stay quiet.'], ['live', 'Live now', 'Live outranks the rest while streaming.'], ['none', 'Invisible', 'Others see no dot at all, and never “last seen”.']].forEach(([s2, l, o], i) => control(l, () => set(s2, l, o), i === 0));
     } else if (id === 'fab-sheet') {
-      const phone = node('div', 'phone-demo'); phone.append(node('p', '', 'My files'), node('p', 'pmeta', '24 files')); const fab = button('+  New', () => { phone.classList.add('open'); say('The sheet opens from the bottom.'); }, true); fab.className += ' fab-demo';
+      const phone = node('div', 'phone-demo'); phone.append(node('p', '', 'My files'), node('p', 'pmeta', '24 files')); const fab = button('+  New', () => { phone.classList.add('open'); say('The sheet opens from the bottom.'); }, true); fab.className += ' float-demo';
       const sheet = node('div', 'sheet-demo'); ['Upload files', 'New folder', 'Back up a folder'].forEach((t) => sheet.append(node('div', 'sheet-row', t))); phone.append(fab, sheet); widget.append(phone);
       control('Back', () => { phone.classList.remove('open'); say('Back closed the sheet first.'); });
       control('The bug', () => { phone.classList.toggle('broken'); say(phone.classList.contains('broken') ? 'Three forms above the list: the files start a screen down.' : 'One button; the files start at the top.'); });

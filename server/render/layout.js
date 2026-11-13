@@ -24,7 +24,7 @@ const ROOM = rooms.get('design');
 const esc = kit.esc;
 
 // Four doors, in this order, are the site's whole bar (the owner, 2026-11-10). The brand is the way home.
-const NAV = DOORS.map((door) => ({ label: door.name, href: door.href, icon: { eye: 'fa-eye', spark: 'fa-wand-magic-sparkles', scale: 'fa-scale-balanced', terminal: 'fa-terminal' }[door.icon] }));
+const NAV = DOORS.map((door) => ({ label: door.name, href: door.href, icon: { eye: 'eye', spark: 'wand', scale: 'scale', terminal: 'terminal' }[door.icon] }));
 
 let RELEASE = 'dev';
 let BASE = 'https://openvibe.design';

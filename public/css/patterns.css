@@ -84,7 +84,7 @@ html[data-ov-motion=off] .pcard:hover{transform:none}html[data-ov-motion=off] .d
 .dot-demo[data-state=live]{background:#ef4444}.dot-demo[data-state=none]{display:none}
 .phone-demo{position:relative;height:220px;overflow:hidden;padding:12px 14px;max-width:300px}
 .phone-demo.broken::before{content:"Upload form · Folder form · Backup link";display:block;padding:40px 10px;margin:-4px 0 8px;border:1px dashed var(--border);border-radius:10px;color:var(--text-muted);font-size:12px}
-.fab-demo{position:absolute;right:12px;bottom:12px;border-radius:16px}
+.float-demo{position:absolute;right:12px;bottom:12px;border-radius:16px}
 .sheet-demo{position:absolute;left:0;right:0;bottom:0;padding:10px;border-radius:18px 18px 0 0;background:var(--bg-secondary);border-top:1px solid var(--border);transform:translateY(100%);transition:transform var(--ov-dur-2,260ms) cubic-bezier(.2,.8,.2,1);box-shadow:0 0 0 400px color-mix(in srgb,#000 0%,transparent)}
 .phone-demo.open .sheet-demo{transform:none;box-shadow:0 0 0 400px color-mix(in srgb,#000 40%,transparent)}
 .sheet-row{padding:12px;border-radius:10px}.sheet-row+.sheet-row{border-top:1px solid var(--border)}

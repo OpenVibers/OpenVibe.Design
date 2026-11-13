@@ -86,7 +86,7 @@
 
 .ic-use,.gp-use{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ic-use>div,.gp-use>div{min-width:0}
-.ic-use pre,.gp-use pre,.fa-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;padding-right:52px}
+.ic-use pre,.gp-use pre,.legacy-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;padding-right:52px}
 .ic-use h3,.gp-use h3{margin-top:0}
 /* L50 step 3: the ways to use a glyph. The rest fold under a count of what is inside, never behind tabs. */
 .gp-note{margin:-4px 0 8px;color:var(--text-secondary);font-size:13px;line-height:1.5}
@@ -160,31 +160,31 @@
 .gp-go{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;padding-top:4px}
 
 /* The Font Awesome alternative. */
-.fa-steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:12px;max-width:760px}
-.fa-steps li{min-width:0;counter-increment:s;position:relative;padding:14px 16px 14px 56px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary);line-height:1.55}
-.fa-steps li::before{content:counter(s);position:absolute;left:16px;top:13px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent-strong,var(--accent));color:var(--on-accent-strong,#fff);font-family:var(--ic-face);font-weight:900}
-.fa-steps li>b{display:block;margin-bottom:6px}
-.fa-table{display:grid;border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.fa-table>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--border)}
-.fa-table>div:first-child{border-top:0}
-.fa-what{font-weight:700}
-.fa-how{color:var(--text-secondary);font-size:14px;line-height:1.5}
-.fa-how code{font-size:12.5px;white-space:nowrap}
-.fa-mark{justify-self:end;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:750;white-space:nowrap;background:var(--bg-primary);color:var(--text-secondary)}
-.fa-mark.is-ok{color:var(--success,#16a34a);background:color-mix(in srgb,var(--success,#16a34a) 14%,transparent)}
-.fa-mark.is-ours{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
-.fa-faq{display:grid;gap:8px;max-width:760px}
-.fa-faq details{padding:12px 16px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary)}
-.fa-faq summary{cursor:pointer;font-weight:700}
-.fa-faq p{margin:8px 0 0;color:var(--text-secondary);line-height:1.55}
+.legacy-steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:12px;max-width:760px}
+.legacy-steps li{min-width:0;counter-increment:s;position:relative;padding:14px 16px 14px 56px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary);line-height:1.55}
+.legacy-steps li::before{content:counter(s);position:absolute;left:16px;top:13px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent-strong,var(--accent));color:var(--on-accent-strong,#fff);font-family:var(--ic-face);font-weight:900}
+.legacy-steps li>b{display:block;margin-bottom:6px}
+.legacy-table{display:grid;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.legacy-table>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--border)}
+.legacy-table>div:first-child{border-top:0}
+.legacy-what{font-weight:700}
+.legacy-how{color:var(--text-secondary);font-size:14px;line-height:1.5}
+.legacy-how code{font-size:12.5px;white-space:nowrap}
+.legacy-mark{justify-self:end;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:750;white-space:nowrap;background:var(--bg-primary);color:var(--text-secondary)}
+.legacy-mark.is-ok{color:var(--success,#16a34a);background:color-mix(in srgb,var(--success,#16a34a) 14%,transparent)}
+.legacy-mark.is-ours{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.legacy-faq{display:grid;gap:8px;max-width:760px}
+.legacy-faq details{padding:12px 16px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary)}
+.legacy-faq summary{cursor:pointer;font-weight:700}
+.legacy-faq p{margin:8px 0 0;color:var(--text-secondary);line-height:1.55}
 
 @media (min-width:761px){.ic-tools{position:sticky;top:calc(var(--navbar-h,52px) + 8px);z-index:5}}
 @media (max-width:760px){
   .ic-sec-head,.ic-use,.gp-use,.gp-hero,.gp-maker{grid-template-columns:minmax(0,1fr)}
   .gp-stage>svg{max-width:220px}
   .gp-preview{max-width:320px}
-  .fa-table>div{grid-template-columns:minmax(0,1fr) auto}
-  .fa-how{grid-column:1/-1;grid-row:2}
+  .legacy-table>div{grid-template-columns:minmax(0,1fr) auto}
+  .legacy-how{grid-column:1/-1;grid-row:2}
   .ic-grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
   .ic-tile{min-height:92px}
 }

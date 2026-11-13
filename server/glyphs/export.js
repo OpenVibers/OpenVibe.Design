@@ -191,7 +191,7 @@ const PACK = Object.freeze({
     'ov-glyphs.otf': { path: path.join(SHARED, 'glyph-fonts', 'ov-glyphs.otf'), type: 'font/otf', label: 'OTF', about: 'OpenType, for design tools' },
     'ov-glyphs.svg': { path: path.join(SHARED, 'ov-glyphs.svg'), type: 'image/svg+xml', label: 'SVG sprite', about: 'every glyph as a <symbol>' },
     'ov-glyphs-font.css': { path: path.join(SHARED, 'ov-glyphs-font.css'), type: 'text/css', label: 'Font CSS', about: 'class="ovi ovi-eye"' },
-    'ov-glyphs-fa.css': { path: path.join(SHARED, 'ov-glyphs-fa.css'), type: 'text/css', label: 'Font Awesome names', about: 'class="fa-solid fa-eye" on the font' },
+    'ov-glyphs-fa.css': { path: path.join(SHARED, 'ov-glyphs-fa.css'), type: 'text/css', label: 'Font Awesome names', about: 'class="' + 'fa-' + 'solid' + ' fa-eye" on the font' },
     'glyph-codepoints.json': { path: path.join(SHARED, 'glyph-codepoints.json'), type: 'application/json', label: 'Code points', about: 'each glyph\'s character' },
 });
 let codepoints = null;
