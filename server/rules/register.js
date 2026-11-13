@@ -697,6 +697,14 @@ const RULES = Object.freeze([
         'A run of deals in the feed is a listing, two columns on a wide screen, ending with "See all N deals"; a deal with no picture wears a tag on the deals colour. Free says Free.',
         '2026-11-13', 'The owner, 11-13: "update the listings for deals … more cohesive and way better on mobile, but also great on desktop".',
         [], ['openvibe-shared test: menu-feed-v2-chrome']),
+    R('nav-knows-who-is-looking', 'navigation', 'The navigation knows who is looking: a guest, a member, staff or the owner, and offers what that viewer can use.',
+        'One viewer model (OV.viewer() in a page, GET /api/v1/viewer for an app) says signed in or not, the rank, staff and owner. The menu offers by it: the owner and admins get Admin, a global moderator gets Moderation (Live\'s staff console), a member neither. A page never offers a door its viewer cannot open; the page behind it still refuses anyone else.',
+        '2026-11-13', 'The owner, 11-13: navigation "user aware and session aware and … aware of rank … user can through API and SDK read it … more mobile friendly".',
+        [], ['openvibe-shared test: viewer-model', 'openvibe-shared test: menu-viewer-places-chrome', 'OpenVibe.Network test: viewer-api']),
+    R('names-wear-their-effects', 'look', 'Every person\'s name, on every site, wears its effect, hat and badge.',
+        'A name is tagged with its person\'s usr_ subject (data-ov-subject) and dressed by OV.names(scope); a name whose data carries no subject stays plain rather than guessed. A private profile\'s card does not reveal the subject.',
+        '2026-11-13', 'The owner, 11-13: "make sure user name decoration … applies everywhere".',
+        [], ['openvibe-shared test: names-decorated', 'OpenVibe.Network test: user-card']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
