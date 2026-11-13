@@ -1,7 +1,7 @@
 'use strict';
 /**
  * The component pages for what has shipped since the first registry: the bar's brand, the search pill, the quest
- * card, the avatar, the player, soft pages, icon ink and the footer. Each page has one specimen, built from the
+ * card, the avatar, the player, soft pages, icon ink, the footer and metrics. Each page has one specimen, built from the
  * openvibe-shared this site pins wherever that package already holds the part, and the release, the changelog words
  * and the numbered rules behind it. A part that is still in review says so; nothing is claimed as shipped before it is.
  *
@@ -151,6 +151,20 @@ const SPECIMENS = {
   </div>
   <p class="spec-note">The footer's online strip says the short count, the faces and one tooltip. Hovering or focusing the count shows "In the last 30 minutes" and the members and guests beneath it; a press opens the same words above the list of names. The tooltip file is fetched by the first pointer over the bar, not with the page.</p>
 </div>`,
+
+    metrics: () => `<div class="spec spec--metrics">
+  <p class="spec-ovm-label">Example numbers, so every part shows. On Report, Exchange and Compare the same parts draw real ones.</p>
+  <div data-ovm="tiles"></div>
+  <div class="spec-ovm-grid">
+    <figure><figcaption><code>OVMetrics.spark(values)</code></figcaption><div data-ovm="spark"></div></figure>
+    <figure><figcaption><code>OVMetrics.percentiles({ p50, p90, p95, n })</code></figcaption><div data-ovm="percentiles"></div></figure>
+    <figure><figcaption><code>OVMetrics.bars(rows, { format })</code></figcaption><div data-ovm="bars"></div></figure>
+    <figure><figcaption><code>OVMetrics.split(parts, { format })</code></figcaption><div data-ovm="split"></div></figure>
+    <figure class="spec-ovm-wide"><figcaption><code>OVMetrics.table(rows, columns)</code></figcaption><div data-ovm="table"></div></figure>
+  </div>
+  <p class="spec-note" data-ovm-wait>The parts draw in the browser from <code>/shared/ov-metrics.js</code>; with script off, a page shows its own table of the same numbers.</p>
+  <p class="spec-note">Every part takes its colours from the theme (tokens only), fits 390 px, reads in both themes and holds still with motion off. A delta knows whether up is good: more calls is green, a slower first token is red, and both say it in words. A number nobody measured is a dash, never 0.</p>
+</div>`,
 };
 
 const NOTES = Object.freeze({
@@ -253,6 +267,15 @@ const NOTES = Object.freeze({
         rules: ['two-icon-sets', 'only-the-pair', 'targets-44'],
         build: `// openvibe-shared/app-icon.js: the favicon's heavy form on a rounded tile\nfavicon({ site })   // mark(site, 0.58, 'heavy')\n\n// the test measures the painted bounds in headless Chrome, not the viewBox:\ntest/icon-ink.test.js   // ink within 4% of the target, centre within 3%`,
     },
+    metrics: {
+        title: 'Metrics',
+        summary: 'The network’s one way to show numbers: tiles, a trend line, ranked bars, percentiles, a split and a sortable table.',
+        release: { version: '4.232.0', state: 'shipped', href: '/changes#v4.232.0' },
+        shipped: '4.232.0 shipped ov-metrics.js. Report, Exchange, Compare and the admin panel draw their AI and usage numbers with it: time to first token, tokens a second, success, cache share, cost per call and per task. The words come from OVMetrics.format, which servers also use, so 540 ms, $0.0042 and 86.0 tok/s read the same on every site.',
+        quote: '“ov-metrics.js: the network’s one way to show numbers … nobody draws a chart of their own.” — the 4.232.0 change, for every AI call measured everywhere',
+        rules: ['numbers-drawn-once', 'state-in-words', 'no-fake-content'],
+        build: `<script src="/shared/ov-metrics.js" defer></script>\n\n// tiles with a delta that knows whether up is good\nslot.append(OVMetrics.tiles([\n  { label: 'Calls', value: OVMetrics.format.count(18420), delta: 0.12, trend: daily },\n  { label: 'Time to first token', value: OVMetrics.format.ms(row.ttft_ms.p50), sub: 'p95 ' + OVMetrics.format.ms(row.ttft_ms.p95), better: 'down' },\n]));\n// p50 and p95 on one scale, from report.ai-performance@1\nslot.append(OVMetrics.percentiles(row.ttft_ms, { label: 'Time to first token' }));\n// a sortable table; a numeric column can carry a bar\nslot.append(OVMetrics.table(rows, [{ key: 'model', label: 'Model' }, { key: 'tps', label: 'Speed', numeric: true, bar: true, format: OVMetrics.format.tps }]));\n\n// on a server: the same words\nconst { format } = require('openvibe-shared/ov-metrics');\nformat.ms(1310);   // '1.3 s'`,
+    },
     footer: {
         title: 'The footer',
         summary: 'The strip that says how many are online, the faces, and one tooltip that says what the count means.',
@@ -293,7 +316,8 @@ function notePage(name) {
         active: '/components',
         styles: ['css/component-registry.css', 'css/specimens.css'],
         sharedStyles: name === 'player' ? ['player.css'] : [],
-        shared: name === 'player' ? ['player.js'] : [],
+        shared: name === 'player' ? ['player.js'] : name === 'metrics' ? ['ov-metrics.js'] : [],
+        scripts: name === 'metrics' ? ['js/component-metrics.js'] : [],
         body,
     });
 }
