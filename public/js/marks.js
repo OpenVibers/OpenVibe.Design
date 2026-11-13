@@ -465,8 +465,8 @@
             if (!nudge) return;
             var has = function (k) { return picks.some(function (c) { return c[0] === k; }); };
             var key, text, to, label;
-            if ((code[0] === 'L' || code[0] === 'P' || code[0] === 'W') && !has('M')) { key = '2'; text = code + ' voted. Next: pick a menu button.'; to = 'menu'; label = 'Step 2 \u2192'; }
-            else if (code[0] === 'M' && !has('F')) { key = '3'; text = code + ' voted. Last: pick a font.'; to = 'font'; label = 'Step 3 \u2192'; }
+            if ((code[0] === 'L' || code[0] === 'P' || code[0] === 'W') && !has('M')) { key = '2'; text = code + ' voted. Next: pick a menu button.'; to = 'menu'; label = 'Step 2'; }
+            else if (code[0] === 'M' && !has('F')) { key = '3'; text = code + ' voted. Last: pick a font.'; to = 'font'; label = 'Step 3'; }
             else if (code[0] === 'F' && (has('L') || has('P') || has('W')) && has('M')) { key = 'done'; text = 'All three done. Thank you!'; to = null; label = 'Share'; }
             else return;
             var seen = {};

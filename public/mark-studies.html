@@ -154,7 +154,7 @@ const iconAt = (d, s = 1, cx = 50, cy = 50) => s === 1 ? d : null;
 const RIBBON_OV = 'M74 50 A24 24 0 0 0 26 50 A24 24 0 0 0 74 50 C79 40 82 31 86 28 L108 72 L130 28';
 const study1 = {
   num: '01', name: 'Ribbon', idea: 'The whole mark is one unbroken line. "ov" is drawn without lifting the pen; on a site, the same line rewrites itself into the site\'s icon and carries on underneath the name, so the name is always underlined by the brand.',
-  naming: ['<code>ov</code> one stroke  →  <code>[icon] live</code> with the line running under the name', 'The line is the brand; the icon and the name are what it draws today.'],
+  naming: ['<code>ov</code> one stroke becomes <code>[icon] live</code> with the line running under the name', 'The line is the brand; the icon and the name are what it draws today.'],
   moves: ['Intro: the line draws itself from the top of the O.', 'Site: the line morphs into the icon, then runs under the name as it types in.', 'Loading: a bright segment chases around the O.'],
   target(s) { if (!s.label) return RIBBON_OV; const w = measure(s.label); return s.icon + ` L94 80 H${112 + w}`; },
   mount(svg) {
@@ -194,11 +194,11 @@ const study1 = {
   },
 };
 
-// ── 2. Breadcrumb: the V turns into "›" ───────────────────────────────────────
+// ── 2. Breadcrumb: the V turns into a chevron ───────────────────────────────────────
 const study2 = {
-  num: '02', name: 'Breadcrumb', idea: 'The V is a chevron waiting to happen. Turned a quarter, it becomes "›", so every site reads as a path: the network, then where you are. "ov" on the network, "[icon] › live" on Live. The O becomes the icon, the V becomes the way in.',
-  naming: ['<code>ov</code>  →  <code>[icon] › live</code>', 'Reads like a breadcrumb: OpenVibe › Live. The switcher can open from the chevron.'],
-  moves: ['Site: the O morphs into the icon while the V turns and shrinks into "›".', 'The name slides out from behind the chevron.', 'Loading: the chevron nudges forward, the O runs.'],
+  num: '02', name: 'Breadcrumb', idea: 'The V is a chevron waiting to happen. Turned a quarter, it becomes a chevron, so every site reads as a path: the network, then where you are. "ov" on the network, "the icon then its name" on Live. The O becomes the icon, the V becomes the way in.',
+  naming: ['<code>ov</code> becomes <code>[icon] <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-1px"><path d="m9 6 6 6-6 6"/></svg> live</code>', 'Reads like a breadcrumb: OpenVibe then Live. The switcher can open from the chevron.'],
+  moves: ['Site: the O morphs into the icon while the V turns and shrinks into a chevron.', 'The name slides out from behind the chevron.', 'Loading: the chevron nudges forward, the O runs.'],
   vState(s) { return s.label ? { a: -90, k: .46, x: -2 } : { a: 0, k: 1, x: 0 }; },
   applyV(v) { this.v.setAttribute('transform', `translate(${v.x} 0) translate(108 50) rotate(${v.a}) scale(${v.k}) translate(-108 -50)`); this.vs = v; },
   mount(svg) {
@@ -247,7 +247,7 @@ const study2 = {
 function pill(w) { const x2 = 110 + w + 16; return `M84 50 L95 40 Q98 32 106 32 H${x2 - 18} A18 18 0 0 1 ${x2 - 18} 68 H106 Q98 68 95 60 Z`; }
 const study3 = {
   num: '03', name: 'Porthole', idea: 'The O never changes: it is a round window, and each site is what you see through it. The icon irises open inside the ring and follows your pointer a little, like something behind glass. The V folds open into a name tag pinned to the window.',
-  naming: ['<code>(ov)</code>  →  <code>(◉) [ live ]</code>', 'The ring is always the network. What is inside it, and the tag beside it, is the site.'],
+  naming: ['<code>(ov)</code> becomes <code>(◉) [ live ]</code>', 'The ring is always the network. What is inside it, and the tag beside it, is the site.'],
   moves: ['Site: an iris opens inside the ring; the V swings open into the tag.', 'Hover: the icon drifts with the pointer (parallax behind glass).', 'Loading: the ring breaks into an aperture and turns.'],
   mount(svg) {
     this.paint = gradient(svg);
@@ -313,7 +313,7 @@ function gooFilter(svg, sd = 4.5) {
 }
 const study4 = {
   num: '04', name: 'Liquid', idea: 'O and V are one drop of ink: where they meet, they are fused, so the "ov" is a single soft shape. On a site, the O melts into the icon and the V pours itself into a pill that holds the name. Nothing snaps; everything flows.',
-  naming: ['<code>ov</code> fused  →  <code>[icon](live)</code>', 'One liquid shape for the network; the site is the shape it settles into.'],
+  naming: ['<code>ov</code> fused becomes <code>[icon](live)</code>', 'One liquid shape for the network; the site is the shape it settles into.'],
   moves: ['Site: both shapes melt into their new forms through the goo.', 'Idle: a droplet breathes at the join.', 'Loading: a droplet orbits the O and keeps merging back in.'],
   mount(svg) {
     this.paint = gradient(svg); const goo = gooFilter(svg); this.goo = goo;
@@ -365,7 +365,7 @@ const study4 = {
 // ── 5. Seal: a solid disc with the V bitten out, and it speaks ────────────────
 const study5 = {
   num: '05', name: 'Seal', idea: 'A solid stamp instead of letters: a disc with a V bitten out of the top. That bite is the "v". On a site the bite turns to face the name and opens, and the name comes out of it, as if the mark were saying it. Each site gets its own colour; the network keeps the gradient.',
-  naming: ['<code>●v</code> (bite up)  →  <code>● live</code> (bite facing the name)', 'Best at tiny sizes: a solid disc with a notch reads at 16 px when lines do not.'],
+  naming: ['<code>●v</code> (bite up) becomes <code>● live</code> (bite facing the name)', 'Best at tiny sizes: a solid disc with a notch reads at 16 px when lines do not.'],
   moves: ['Site: the bite turns 90°, opens, and the name slides out of it; the disc takes the site\'s colour.', 'Hover: the bite opens a little wider, like a breath.', 'Loading: it chomps.'],
   mount(svg) {
     this.paint = gradient(svg); const defs = svg.querySelector('defs');

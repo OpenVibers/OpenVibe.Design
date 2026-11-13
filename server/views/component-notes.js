@@ -63,7 +63,7 @@ const SPECIMENS = {
         <button type="button" class="spec-close" aria-label="Close the menu" title="Close">${kit.icon('close')}</button>
       </span>
     </form>
-    <p class="spec-note">One row of five places: Here (this site), Feed, Vibe with its <b>Chat · Agents</b> switch, Chat, and You with the red count of what is new. Vibe's <b>+</b> starts a chat and <b>↗</b> opens it in OpenVibe.Chat; the icons sit in the search pill beside the close button, so they cost no row. On a phone the menu is one sheet and Chat and Vibe open inside it; on a computer they open the Dock.</p>
+    <p class="spec-note">One row of five places: Here (this site), Feed, Vibe with its <b>Chat · Agents</b> switch, Chat, and You with the red count of what is new. Vibe's <b>+</b> starts a chat and ${kit.icon('open')} opens it in OpenVibe.Chat; the icons sit in the search pill beside the close button, so they cost no row. On a phone the menu is one sheet and Chat and Vibe open inside it; on a computer they open the Dock.</p>
   </div>
 </div>`,
 
@@ -79,7 +79,7 @@ const SPECIMENS = {
   </form>
   <div class="spec-split">
     <div><b>The field</b><p>The menu's search, and the place's own field when a place has one. Typing filters the chosen place in place; Enter opens the first result.</p></div>
-    <div><b>The actions</b><p><b>+</b> starts a new chat; <b>↗</b> opens the same place in OpenVibe.Chat; <b>×</b> closes the menu and steps back. Each is an icon button with a spoken label and a tooltip, and each has a 44 px target on a phone.</p></div>
+    <div><b>The actions</b><p><b>+</b> starts a new chat; ${kit.icon('open')} opens the same place in OpenVibe.Chat; <b>×</b> closes the menu and steps back. Each is an icon button with a spoken label and a tooltip, and each has a 44 px target on a phone.</p></div>
   </div>
   <p class="spec-note">Inside the menu the place's actions sit in the pill; the floating Dock keeps them in a slim row of their own. The pill itself is the kit's search: one field, one button, no invented control.</p>
 </div>`,
@@ -96,10 +96,10 @@ const SPECIMENS = {
       <p class="ovq-story">One small thing today, on the sites you already use. The badge is yours when the three steps are done.</p>
       <ol class="ovq-steps">
         <li class="is-done"><a href="/components/quest-card"><span class="ovq-site-icon">${kit.icon('chat')}</span><span class="ovq-step"><span>Say hello in a chat</span><small>OpenVibe.Chat</small></span><span class="ovq-check" aria-label="Done">✓</span></a></li>
-        <li class="is-next"><a href="/components/quest-card"><span class="ovq-site-icon">${kit.icon('user')}</span><span class="ovq-step"><span>Follow one person</span><small>Next · OpenVibe.Network</small></span><span class="ovq-go">›</span></a></li>
-        <li><a href="/components/quest-card"><span class="ovq-site-icon">${kit.icon('feed')}</span><span class="ovq-step"><span>Start a thread</span><small>OpenVibe.Community</small></span><span class="ovq-go">›</span></a></li>
+        <li class="is-next"><a href="/components/quest-card"><span class="ovq-site-icon">${kit.icon('user')}</span><span class="ovq-step"><span>Follow one person</span><small>Next · OpenVibe.Network</small></span><span class="ovq-go">${kit.icon('chevron')}</span></a></li>
+        <li><a href="/components/quest-card"><span class="ovq-site-icon">${kit.icon('feed')}</span><span class="ovq-step"><span>Start a thread</span><small>OpenVibe.Community</small></span><span class="ovq-go">${kit.icon('chevron')}</span></a></li>
       </ol>
-      <a class="ovq-more" href="/components/quest-card"><span class="ovq-more-text"><b>More on OpenVibe.Quest</b><span>4 badges · 1 quest going · 9 more to try</span></span><span class="ovq-arrow">→</span></a>
+      <a class="ovq-more" href="/components/quest-card"><span class="ovq-more-text"><b>More on OpenVibe.Quest</b><span>4 badges · 1 quest going · 9 more to try</span></span><span class="ovq-arrow">${kit.icon('forward')}</span></a>
     </div>
   </div>
   <p class="spec-note">The daily quest card any site can show: its badge mark, the day's quest, the three steps with the next one lit, and one door to OpenVibe.Quest. Its marks are its own SVG, not Font Awesome, and the door's arrow takes the accent.</p>
@@ -217,10 +217,10 @@ const NOTES = Object.freeze({
         title: 'The search pill',
         summary: 'The menu’s field, and the place’s actions as icons inside it: new, open in Chat, close.',
         release: { version: '4.200.0', state: 'shipped', href: '/changes#v4.200.0' },
-        shipped: 'A place’s actions became icons in 4.200.0: + (new) and ↗ (open in OpenVibe.Chat) sit in the search pill, left of the close button, so they cost no row. The floating Dock keeps one slim row of the same icons.',
+        shipped: 'A place’s actions became icons in 4.200.0: + (new) and the open icon (open in OpenVibe.Chat) sit in the search pill, left of the close button, so they cost no row. The floating Dock keeps one slim row of the same icons.',
         quote: '“remove the text of Vibe conversations … the new conversation button can … move to an icon plus button … Open in chat should be … a little button icon.” — the owner, 2026-11-10',
         rules: ['actions-as-icons-in-the-pill', 'say-it-once', 'targets-44'],
-        build: `// openvibe-shared/search.js: the pill's actions are the panel's own buttons, mirrored\n<span class="ovk-find">\n  <button type="button" aria-label="New chat" data-ov-new-chat>+</button>\n  <button type="button" aria-label="Open in OpenVibe.Chat" data-ov-open-chat>↗</button>\n  <button type="button" aria-label="Close">×</button>\n</span>`,
+        build: `// openvibe-shared/search.js: the pill's actions are the panel's own buttons, mirrored\n<span class="ovk-find">\n  <button type="button" aria-label="New chat" data-ov-new-chat>+</button>\n  <button type="button" aria-label="Open in OpenVibe.Chat" data-ov-open-chat><i data-ov-icon="open"></i></button>\n  <button type="button" aria-label="Close">×</button>\n</span>`,
     },
     'quest-card': {
         title: 'The quest card',
@@ -253,7 +253,7 @@ const NOTES = Object.freeze({
         title: 'Soft pages',
         summary: 'A page fetched on intent, its wait drawn by the mark, and a bar that holds still while the page cross-fades.',
         release: { version: '4.201.0', state: 'in review', href: '/changes#v4.192.0' },
-        shipped: 'The soft page is in review for the next Shared release (soft.js). A same-site link is fetched on pointer down or after 80 ms of hover, never on Save-Data or 2G/3G, at most four in flight. The mark’s wait starts on the press and ends at first paint; cross-document view transitions hold the shared bar still and fade the rest (180 ms; Calm 120 ms; Off none). Measured on production pages at 390 px: press to first paint 1632 ms → 994 ms median.',
+        shipped: 'The soft page is in review for the next Shared release (soft.js). A same-site link is fetched on pointer down or after 80 ms of hover, never on Save-Data or 2G/3G, at most four in flight. The mark’s wait starts on the press and ends at first paint; cross-document view transitions hold the shared bar still and fade the rest (180 ms; Calm 120 ms; Off none). Measured on production pages at 390 px: press to first paint 1632 ms to 994 ms median.',
         quote: '“soft.js: prefetch on intent, the mark on the press, cross-document view transitions” — the change; 39% / ~0.64 s less press-to-first-paint in five throttled runs',
         rules: ['first-paint-alone', 'content-hashed-assets', 'no-spinners', 'calm-reduces-off-removes'],
         build: `<!-- in <head>, after theme-loader.js, not deferred -->\n<script src="/shared/soft.js"></script>\n\n// a page can turn one link off, or the whole thing:\n<a href="/next" data-ov-no-prefetch>Next</a>\nOpenVibeSoft = { on(), off(), exclude(selector) };`,
@@ -283,7 +283,7 @@ const NOTES = Object.freeze({
         shipped: '4.197.0 made the footer say “13 online”, then the faces; hovering or focusing the count shows “In the last 30 minutes” and the members and guests, and a press opens the same words above the names. A guests-only strip opens that line too.',
         quote: '“Make it like shorthand ‘3 online’. If you put your mouse over it, it says ‘last 30 minutes’.” — the owner, 2026-11-10',
         rules: ['one-bar', 'state-in-words', 'say-it-once', 'targets-44'],
-        build: `// openvibe-shared/footer.js\n// one read: /api/frame/online → { count, members, guests, faces, live }\n// the count carries data-ov-tip="In the last 30 minutes"; a press opens the names`,
+        build: `// openvibe-shared/footer.js\n// one read: /api/frame/online gives { count, members, guests, faces, live }\n// the count carries data-ov-tip="In the last 30 minutes"; a press opens the names`,
     },
 });
 

@@ -1,6 +1,7 @@
 'use strict';
 
 const { layout, esc } = require('../render/layout');
+const kit = require('openvibe-shared/kit');
 const ovServe = require('openvibe-shared/serve');
 const { attrEscape } = require('../arena/sanitize');
 const { themeCss } = require('../designs');
@@ -127,7 +128,7 @@ ${kindRow}
 <div class="dv-tray">${frameMod}${lookMod}${whoMod}${startMod}${researchMod}<button type="submit" class="dv-go"><span data-go-label>Create three takes</span>${ARROW}</button></div>
 <p class="dv-cost" data-dv-cost role="status" hidden></p></form>
 <div class="dv-examples" aria-label="Try an example">${kinds.map((k) => (k.examples || []).map((x) => `<button type="button" data-example="${esc(x)}" data-kind="${esc(k.id)}">${k.glyph}<span>${esc(x)}</span></button>`).join('')).join('')}</div>
-<a class="dv-create-door" href="/gallery"><span class="dv-create-door-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg></span><span><b>Elements and packs</b><small>Free controls and stream buttons people made with AI: try one, install it, remix it.</small></span><span class="dv-create-door-go" aria-hidden="true">→</span></a>
+<a class="dv-create-door" href="/gallery"><span class="dv-create-door-ic"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg></span><span><b>Elements and packs</b><small>Free controls and stream buttons people made with AI: try one, install it, remix it.</small></span><span class="dv-create-door-go" aria-hidden="true">${ARROW}</span></a>
 ${recent.length ? `<section class="dv-recent"><h2>Your recent designs</h2><ul>${recent.map((d) => { const k = kindName[d.kind] || MAKE[d.kind] || MAKES[0]; const bits = [k.name, lookName[d.look] || lookName[d.themeId], d.model, d.status === 'running' ? 'Drawing now' : d.status === 'failed' ? 'Did not finish' : ago(d.createdAt)].filter(Boolean);
         return `<li><a class="dv-rc" href="${esc(d.url)}"><span class="dv-rc-k" aria-hidden="true">${d.thumbnail ? `<img src="${esc(d.thumbnail)}" alt="" loading="lazy" decoding="async">` : k.glyph}</span><span class="dv-rc-t"><b>${esc(d.prompt)}</b><small>${esc(bits.join(' · '))}</small></span></a></li>`; }).join('')}</ul></section>` : ''}</section>`;
     return layout({ title: 'Create a design', path: '/create', body, active: '/create', styles: ['css/deepdive.css'], scripts: ['js/design.js'] });
@@ -226,7 +227,7 @@ function canvas({ data, themes = [], editKey = '', viewer = null, publishing = {
 ${deepDiveView.takePoints(v.research_points || v.researchPoints, design.research)}
 <div class="dv-card-actions">${picked
         ? (design.kind === 'element'
-            ? `<span class="dv-picked">Working element</span><a class="dv-fine" href="/d/${encodeURIComponent(design.id)}/element/preview${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">Preview, tweak and publish →</a>`
+            ? `<span class="dv-picked">Working element</span><a class="dv-fine" href="/d/${encodeURIComponent(design.id)}/element/preview${editKey ? `?key=${encodeURIComponent(editKey)}` : ''}">Preview, tweak and publish ${ARROW}</a>`
             : `<span class="dv-picked">Working frame</span><span class="dv-fine">Click any element to edit it</span>`)
         : done ? (pick ? '<span class="dv-fine">Not the working frame</span>'
             : `<form method="post" action="/d/${encodeURIComponent(design.id)}/pick"><input type="hidden" name="key" value="${esc(editKey)}"><input type="hidden" name="variantIndex" value="${index}"><button type="submit" class="dv-pick" data-pick="${index}">Use this design</button></form>`)
@@ -274,7 +275,7 @@ ${keyInput}
 <p class="dv-fine">${pick ? `${chatLeft} of ${pick.chatEditLimit} AI edits left on this design. Click edits and undo are free.` : 'Chat edits work on the picked frame.'}</p>
 </form>`;
     const body = `<section class="dv-canvas" data-kind="${esc(design.kind || 'page')}" data-id="${esc(design.id)}" data-key="${esc(editKey)}" data-picked="${pick ? pickedIndex : ''}" data-variant-id="${esc(pickedVariant && pickedVariant.id || '')}">
-<header class="dv-heading"><a href="/create">← New design</a><h1>${esc(design.prompt)}</h1>
+<header class="dv-heading"><a href="/create">${kit.icon('back')} New design</a><h1>${esc(design.prompt)}</h1>
 <p id="dv-status" role="status">${esc(statusText)}</p>
 <p class="dv-share"><button type="button" data-ov-share-sheet data-kind="design" data-id="${esc(design.id)}"
   data-title="${esc(design.prompt)}" data-url="${esc(`/d/${encodeURIComponent(design.id)}`)}">Share</button></p></header>

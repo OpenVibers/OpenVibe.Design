@@ -72,7 +72,7 @@ function componentsPage({ id = '', platform = 'web' } = {}) {
     const p = PLATFORMS.some((x) => x.key === platform) ? platform : 'web';
     const code = p === 'android' ? `${components.PREAMBLE.compose}\n\n${spec.native.compose}`
         : p === 'ios' ? `${components.PREAMBLE.swiftui}\n\n${spec.native.swiftui}`
-            : `// A kit document (JSON). The web renders it with openvibe-shared/components:\n//   components.render(doc, kit)  →  ${spec.web}(…)\n${JSON.stringify(sample, null, 2)}`;
+            : `// A kit document (JSON). The web renders it with openvibe-shared/components:\n//   components.render(doc, kit) gives ${spec.web}(…)\n${JSON.stringify(sample, null, 2)}`;
     const how = p === 'android' ? 'Jetpack Compose, on the theme file from Tokens (Android): Material 3 roles for colour, OvScale for sizes.'
         : p === 'ios' ? 'SwiftUI, on the theme file from Tokens (iOS): OvTokens (the theme you wear) for colour, OvScale for sizes.'
             : `The same component as data: a server sends this, the web renders it with ${spec.web}, and a native app with its own view.`;

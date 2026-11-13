@@ -1,4 +1,5 @@
 'use strict';
+const kit = require('openvibe-shared/kit');
 
 // The catalog is the one source for each rule, live demo, token references, and generated native examples.
 const TOKENS = Object.freeze({
@@ -98,12 +99,12 @@ function page(p) {
       <aside class="pbug"><h2>The bug that taught it</h2><p><time datetime="${esc(p.bug.slice(0,10))}">${esc(p.bug)}</time></p></aside>
       <section class="ptokens"><h2>Tokens used</h2><ul>${tokenRows(p)}</ul></section>
       <section class="pnative"><h2>Native spec · generated from this pattern and the shared token registry</h2><div class="pcodegrid"><figure><figcaption>SwiftUI</figcaption><pre><code>${esc(spec.swift)}</code></pre></figure><figure><figcaption>Compose</figcaption><pre><code>${esc(spec.compose)}</code></pre></figure></div></section>
-      <nav class="pnext" aria-label="Pattern navigation"><a href="/patterns">All patterns</a>${p.slug==='mark-system'?'<a href="/brand">The OpenVibe mark ↗</a><a href="/patterns/mark/studies">The earlier studies ↗</a>':''}</nav>`;
+      <nav class="pnext" aria-label="Pattern navigation"><a href="/patterns">All patterns</a>${p.slug==='mark-system'?`<a href="/brand">The OpenVibe mark ${kit.icon('open')}</a><a href="/patterns/mark/studies">The earlier studies ${kit.icon('open')}</a>`:''}</nav>`;
     return pageLayout({ title: `${p.title} pattern`, description:p.rule, path:`/patterns/${p.slug}`, active:'/patterns', scripts:['js/pattern-kit.js','js/patterns.js'], body:`<article class="pattern-page">${body}</article>` });
 }
 function index() {
     const groups = [...new Set(patterns.map(p => p.group))];
-    const cards = groups.map(g => `<section class="pgroup"><h2>${esc(g)}</h2><div class="pcards">${patterns.filter(p => p.group===g).map(p => `<a class="pcard" href="/patterns/${esc(p.slug)}"><span>${esc(p.title)}</span><small>${esc(p.summary)}</small><b aria-hidden="true">→</b></a>`).join('')}</div></section>`).join('');
+    const cards = groups.map(g => `<section class="pgroup"><h2>${esc(g)}</h2><div class="pcards">${patterns.filter(p => p.group===g).map(p => `<a class="pcard" href="/patterns/${esc(p.slug)}"><span>${esc(p.title)}</span><small>${esc(p.summary)}</small><b aria-hidden="true">${kit.icon('forward')}</b></a>`).join('')}</div></section>`).join('');
     return pageLayout({ title:'Patterns', description:'Working OpenVibe patterns, extracted from shipped code with live demos and native specs.', path:'/patterns', active:'/patterns', body:`<article class="patterns-index"><header class="phead"><p class="peye">OpenVibe Kit · patterns from production</p><h1>Patterns that hold up in production</h1><p class="plede">Each pattern pairs a live demo with its rule, the bug that taught it, shared tokens, and generated native examples.</p></header>${cards}</article>` });
 }
 module.exports = { patterns, TOKENS, nativeSpecs, page, index, esc };

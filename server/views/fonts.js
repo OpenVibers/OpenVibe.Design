@@ -1,6 +1,7 @@
 'use strict';
 
 const { layout, esc } = require('../render/layout');
+const kit = require('openvibe-shared/kit');
 const { FONTS: VENDORED } = require('../fonts/vendored');
 
 const previewFile = f => f.files['400-normal'] || Object.values(f.files)[0];
@@ -62,7 +63,7 @@ function detail(f) {
         preloads: f.sri ? [{ url, sri: f.sri }] : [],
         inlineStyles: [Object.keys(f.files).map(key => { const [w, s] = key.split('-'); return face(f, Number(w), s); }).join('\n')
             + f.pairings.filter(p => p.file).map(p => `@font-face{font-family:${JSON.stringify(p.family)};src:url(${JSON.stringify(p.file)}) format("woff2");font-weight:${Number(p.weight) || 700};font-style:normal;font-display:swap}`).join('\n')],
-        body: `<div class="fo fo-detail"><a class="fo-back" href="/fonts">← All fonts</a><header class="fo-hero"><p class="fo-eyebrow">${esc(f.category)} · ${esc(f.version || '')}</p><h1 style="font-family:${esc(JSON.stringify(f.family))}">${esc(f.family)}</h1><p>Designed by ${esc(f.designer)}</p></header>
+        body: `<div class="fo fo-detail"><a class="fo-back" href="/fonts">${kit.icon('back')} All fonts</a><header class="fo-hero"><p class="fo-eyebrow">${esc(f.category)} · ${esc(f.version || '')}</p><h1 style="font-family:${esc(JSON.stringify(f.family))}">${esc(f.family)}</h1><p>Designed by ${esc(f.designer)}</p></header>
 <label class="fo-try">Try your own words<input type="text" data-font-sample maxlength="140" placeholder="The quick brown fox jumps over the lazy dog."></label>
 <section><h2>Every style <span class="fo-n">${entries.length}</span></h2><div class="fo-styles">${styles}</div>${stylesMore}</section>
 <section class="fo-details"><div><h2>Use this font</h2><pre><code>${esc(css)}</code></pre><p><a href="${esc(url)}" download>Download the regular WOFF2</a>${f.sri ? `<span class="fo-integrity">SHA-384 integrity: <code>${esc(f.sri)}</code></span>` : ''}</p></div>
