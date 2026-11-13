@@ -270,10 +270,10 @@ const NOTES = Object.freeze({
     metrics: {
         title: 'Metrics',
         summary: 'The network’s one way to show numbers: tiles, a trend line, ranked bars, percentiles, a split and a sortable table.',
-        release: { version: '4.232.0', state: 'shipped', href: '/changes#v4.232.0' },
-        shipped: '4.232.0 shipped ov-metrics.js. Report, Exchange, Compare and the admin panel draw their AI and usage numbers with it: time to first token, tokens a second, success, cache share, cost per call and per task. The words come from OVMetrics.format, which servers also use, so 540 ms, $0.0042 and 86.0 tok/s read the same on every site.',
+        release: { version: '4.233.0', state: 'shipped', href: '/changes#v4.233.0' },
+        shipped: '4.232.0 shipped ov-metrics.js, and 4.233.0 made its table labelled cards in a box under 520 px wide (a phone or a side column), with the heads as sort buttons, and kept two significant digits in a price under a dollar. Report, Exchange, Compare and the admin panel draw their AI and usage numbers with it: time to first token, tokens a second, success, cache share, cost per call and per task. The words come from OVMetrics.format, which servers also use, so 540 ms, $0.0042 and 86.0 tok/s read the same on every site.',
         quote: '“ov-metrics.js: the network’s one way to show numbers … nobody draws a chart of their own.” — the 4.232.0 change, for every AI call measured everywhere',
-        rules: ['numbers-drawn-once', 'state-in-words', 'no-fake-content'],
+        rules: ['numbers-drawn-once', 'tables-become-cards', 'state-in-words', 'no-fake-content'],
         build: `<script src="/shared/ov-metrics.js" defer></script>\n\n// tiles with a delta that knows whether up is good\nslot.append(OVMetrics.tiles([\n  { label: 'Calls', value: OVMetrics.format.count(18420), delta: 0.12, trend: daily },\n  { label: 'Time to first token', value: OVMetrics.format.ms(row.ttft_ms.p50), sub: 'p95 ' + OVMetrics.format.ms(row.ttft_ms.p95), better: 'down' },\n]));\n// p50 and p95 on one scale, from report.ai-performance@1\nslot.append(OVMetrics.percentiles(row.ttft_ms, { label: 'Time to first token' }));\n// a sortable table; a numeric column can carry a bar\nslot.append(OVMetrics.table(rows, [{ key: 'model', label: 'Model' }, { key: 'tps', label: 'Speed', numeric: true, bar: true, format: OVMetrics.format.tps }]));\n\n// on a server: the same words\nconst { format } = require('openvibe-shared/ov-metrics');\nformat.ms(1310);   // '1.3 s'`,
     },
     footer: {
