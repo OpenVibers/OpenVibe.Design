@@ -144,3 +144,5 @@ html[data-ov-motion=off] .pcard:hover{transform:none}html[data-ov-motion=off] .d
 .hn-fig b{font-size:1.6rem;font-variant-numeric:tabular-nums}
 .hn-fig .hn-src{color:var(--text-muted);max-height:0;overflow:hidden;transition:max-height var(--ov-dur-2,260ms) ease}
 .hn-fig.open .hn-src{max-height:4em}
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .plede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }

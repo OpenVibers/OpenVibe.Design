@@ -1,4 +1,4 @@
-.uk-wrap { max-width: 1050px; margin: 0 auto; padding: 20px 20px 70px; }
+.uk-wrap { max-width: 1050px; margin: 0 auto; padding: 12px 20px 70px; }
 .uk-wrap header { max-width: 760px; margin: 14px 0 30px; }
 .uk-wrap h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; }
 .uk-wrap p { line-height: 1.6; }
@@ -9,3 +9,5 @@
 .uk-card > p { margin: 0 0 16px; }
 .uk-card code { overflow-wrap: anywhere; }
 .uk-note { margin-top: 12px !important; opacity: .7; font-size: .9rem; }
+/* Design rule 201 (the owner, 11-14): a page starts within 12 px of the bar, 8 px on a phone. */
+@media (max-width: 640px) { .uk-wrap { padding-top: 8px; } }

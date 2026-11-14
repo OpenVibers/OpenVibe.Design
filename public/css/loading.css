@@ -62,3 +62,5 @@
 @media (max-width: 860px) {
     .ld-sec-head, .ld-mark, .ld-use { grid-template-columns: minmax(0, 1fr); }
 }
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .ld-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }
