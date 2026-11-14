@@ -164,3 +164,5 @@ html[data-ov-motion=off] .br:not([data-fx-demo]) .br-files a:hover{transform:non
   .br-mo{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;margin-right:-16px;padding:0 16px 8px 0;scrollbar-width:thin}
   .br-mo>.br-mo-card{flex:0 0 82%;scroll-snap-align:start}
 }
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .br-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }

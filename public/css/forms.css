@@ -40,3 +40,5 @@
 .fm-table tr:last-child td { border-bottom: 0; }
 .fm-table td:first-child { white-space: nowrap; }
 @media (max-width: 760px) { .fm-sec-head, .fm-demo { grid-template-columns: 1fr; } }
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .fm-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }

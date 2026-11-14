@@ -300,3 +300,5 @@ html[data-ov-motion=off] .ic-tile:hover{transform:none}
 .gp-suggest input{min-height:42px;box-sizing:border-box;padding:0 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);font:inherit;font-size:15px}
 .gp-suggest-out{margin-top:12px}
 @media (max-width:520px){.gp-styles{gap:6px}.gp-style{min-width:64px;padding:10px 6px}}
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .ic-lede, .gp-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }
