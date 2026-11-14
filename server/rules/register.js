@@ -759,6 +759,10 @@ const RULES = Object.freeze([
         'The menu\'s Vibe, Chat\'s Vibe page, Codes\' start and Actor\'s chat all draw OpenVibeRun: your agents\' faces on top, conversations as message rows; a computer shows the list beside the open conversation, a phone one at a time with Back. One box for everything (files and pictures go with a message); one engine decides per message whether it is a chat, code, a task or a computer\'s work.',
         '2026-11-14', 'The owner, 11-14: "the same modular system, agentic system … the same conversation system, the same OpenVibe.design elements … capable of everything."',
         [], ['openvibe-shared test: run-page-chrome']),
+    R('page-starts-under-the-bar', 'length', 'A page starts within 12 px of the bar, and its head is one row: the title, and beside it the main action.',
+        '8 px on a phone. An intro under it is one line, at most two on a phone; anything longer goes in the page, not above it. No empty band, banner or second heading above the first content: the bar ends and the page begins, and what sits between them is wasted space.',
+        '2026-11-14', 'The owner, on openvibe.community/forum with a phone, 11-14: the waste of space above a page, more compact, especially on mobile, across all sites, and openvibe.design updated.',
+        [], ['site sweep: page-head gaps at 390 and 1280']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
