@@ -3,6 +3,13 @@
 
 ## Unreleased — a plain Stop
 
+- **The corner of a ground is a choice now** (plan AB.29): one corner scale for the marks, the app icons and the PNG
+  maker, in one module (`server/glyphs/rounding.js`) — none, soft (a 12 % corner), round (the corner the app icons
+  use) or squircle (a superellipse). `ground` still picks the shape (none, circle, square, squircle); `rounding`
+  picks the corner of that square, wherever a ground is taken (`/icons/<name>.svg`, `.png`, `.xml`,
+  `/icons/<name>/favicon.zip` and the maker's page): a name that is not one of the four is refused with a plain
+  message. A file with no rounding given is byte for byte the file it was. The maker's page has a "Corners" control
+  beside the ground, and the preview follows it.
 - The controls rule: Stop is one plain little button a person may add, not a red-ringed disc that is always there.
 
 What changed in OpenVibe.Design, newest first. Each site also publishes its patch notes at /updates.

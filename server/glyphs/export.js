@@ -3,12 +3,12 @@
  * A glyph as a file (plan L32 I5): a standalone SVG with the person's choices, a PNG drawn from it, every glyph as a
  * ZIP of SVGs, and the font files openvibe-shared builds. The choices are the PNG maker's on /icons/<name>: size,
  * density, colour (or the mark's two), stroke weight, padding, a ground (none, a circle, a square or a squircle)
- * in its own colour, a finish (L44: flat; depth, light to deep in its own colour as the mark is drawn; a glow
- * behind it; or both), and a style (L50: the line drawing, the solid one, or auto: solid at 18 px and under when the
- * glyph has one, as the sites show it). Every value is clamped; anything unknown falls back to the default, so a URL
- * never fails.
+ * in its own colour, the corner of that ground (AB.29: none, soft, round or squircle), a finish (L44: flat; depth,
+ * light to deep in its own colour as the mark is drawn; a glow behind it; or both), and a style (L50: the line
+ * drawing, the solid one, or auto: solid at 18 px and under when the glyph has one, as the sites show it). Every value
+ * is clamped; anything unknown falls back to the default, so a URL never fails.
  *
- *   options(query)  → { size, scale, color, stroke, pad, ground, bg, fx, style }, and isDefault(opts)
+ *   options(query)  → { size, scale, color, stroke, pad, ground, rounding, bg, fx, style }, and isDefault(opts)
  *   drawnAs(name, opts) → 'line' or 'solid': what svg() draws for those choices
  *   query(opts)     → the query string that rebuilds the same file (only what differs from the default)
  *   svg(name, opts) → standalone SVG text, or null for an unknown glyph
@@ -20,15 +20,18 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const glyphs = require('openvibe-shared/glyphs');
+const rounding = require('./rounding');
 
 const SHARED = path.dirname(require.resolve('openvibe-shared/glyphs'));
 const MARK = ['#4f7cff', '#8b5cf6'];
 const GROUNDS = ['none', 'circle', 'square', 'squircle'];
+// The corner of the ground (AB.29): the four names, and the numbers behind them, live in one module (glyphs/rounding.js).
+const ROUNDINGS = rounding.ROUNDINGS;
 const FINISHES = ['flat', 'depth', 'glow', 'depth-glow'];
 const STYLES = ['auto', 'line', 'solid'];
 // The size at and under which "auto" draws the solid drawing: openvibe-shared's ov-glyphs.js switches at the same one.
 const SOLID_BELOW = 18;
-const DEFAULT = Object.freeze({ size: 256, scale: 1, color: '0f172a', stroke: 2, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto' });
+const DEFAULT = Object.freeze({ size: 256, scale: 1, color: '0f172a', stroke: 2, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto', rounding: 'none' });
 const SIZES = [16, 24, 32, 48, 64, 96, 128, 192, 256, 512, 1024];
 
 /** A hex colour (no #) mixed toward `to` by t, as #rrggbb. */
@@ -44,13 +47,17 @@ const num = (v, lo, hi, d, step = 1) => {
 };
 
 function options(q = {}) {
+    const ground = GROUNDS.includes(String(q.ground)) ? String(q.ground) : DEFAULT.ground;
     return {
         size: num(q.size, 16, 1024, DEFAULT.size),
         scale: num(q.scale, 1, 3, DEFAULT.scale),
         color: String(q.color || '').toLowerCase() === 'mark' ? 'mark' : hex(q.color, DEFAULT.color),
         stroke: num(q.stroke, 1, 3, DEFAULT.stroke, 0.25),
         pad: num(q.pad, 0, 40, DEFAULT.pad),
-        ground: GROUNDS.includes(String(q.ground)) ? String(q.ground) : DEFAULT.ground,
+        ground,
+        // The corner: the one asked for, or the ground's own (a square has square corners, the old squircle ground
+        // has the app icon's). A file with no rounding given is drawn exactly as it was before.
+        rounding: rounding.forGround(ground, rounding.nameOf(q)),
         bg: hex(q.bg, DEFAULT.bg),
         fx: FINISHES.includes(String(q.fx)) ? String(q.fx) : DEFAULT.fx,
         style: STYLES.includes(String(q.style)) ? String(q.style) : DEFAULT.style,
@@ -72,7 +79,16 @@ function solidMarkup(name, paint, width) {
 const isDefault = (o) => Object.keys(DEFAULT).every((k) => o[k] === DEFAULT[k]);
 function query(o) {
     const p = new URLSearchParams();
-    for (const k of Object.keys(DEFAULT)) if (o[k] !== DEFAULT[k] && !(k === 'bg' && o.ground === 'none')) p.set(k, String(o[k]));
+    for (const k of Object.keys(DEFAULT)) {
+        // The ground's own corner is not said twice: a link keeps the file it always made.
+        if (k === 'rounding') {
+            if (o.rounding !== rounding.DEFAULT_ROUNDING[o.ground]) p.set(k, String(o.rounding));
+            continue;
+        }
+        if (o[k] === DEFAULT[k]) continue;
+        if (k === 'bg' && o.ground === 'none') continue;
+        p.set(k, String(o[k]));
+    }
     const s = p.toString();
     return s ? `?${s}` : '';
 }
@@ -84,9 +100,7 @@ function svg(name, o = options()) {
     const box = +(24 / (1 - (2 * o.pad) / 100)).toFixed(3);
     const off = +((box - 24) / 2).toFixed(3);
     const px = o.size;
-    const ground = o.ground === 'circle' ? `<circle cx="${box / 2}" cy="${box / 2}" r="${box / 2}" fill="#${o.bg}"/>`
-        : o.ground === 'square' ? `<rect width="${box}" height="${box}" fill="#${o.bg}"/>`
-            : o.ground === 'squircle' ? `<rect width="${box}" height="${box}" rx="${+(box * 0.225).toFixed(3)}" fill="#${o.bg}"/>` : '';
+    const ground = rounding.ground({ ground: o.ground, rounding: o.rounding, box, bg: o.bg });
     const depth = o.fx === 'depth' || o.fx === 'depth-glow', glow = o.fx === 'glow' || o.fx === 'depth-glow';
     let stroke = o.color === 'mark' ? 'url(#ovg-mark)' : `#${o.color}`;
     let extra = o.color === 'mark' ? `<linearGradient id="ovg-mark" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="${depth ? mix(MARK[0], 'ffffff', 0.32) : MARK[0]}"/><stop offset="1" stop-color="${depth ? mix(MARK[1], '000000', 0.14) : MARK[1]}"/></linearGradient>` : '';
@@ -200,4 +214,4 @@ function codepointOf(name) {
     return codepoints[name] || null;
 }
 
-module.exports = { options, isDefault, query, drawnAs, svg, png, zip, zipOf, crc32, PACK, codepointOf, DEFAULT, SIZES, GROUNDS, STYLES, SOLID_BELOW, MARK };
+module.exports = { options, isDefault, query, drawnAs, svg, png, zip, zipOf, crc32, PACK, codepointOf, DEFAULT, SIZES, GROUNDS, ROUNDINGS, STYLES, SOLID_BELOW, MARK };

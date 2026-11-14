@@ -4,7 +4,8 @@
  *   GET  /icons                         the set, what is still Font Awesome, "Draw an icon" and the review list
  *   GET  /icons/<name>                  one glyph's own page: every export, the PNG maker, its Font Awesome names
  *   GET  /icons/<name>.svg              one glyph as a standalone SVG (anyone may fetch it); with the PNG maker's
- *                                       choices in the query (size, color, stroke, pad, ground, bg), drawn with them
+ *                                       choices in the query (size, color, stroke, pad, ground, rounding, bg), drawn
+ *                                       with them
  *   GET  /icons/<name>.png              the same as a PNG (resvg), any size up to 1024 at 1-3x
  *   GET  /icons/<name>.mjs              an ES module with the line and solid drawings (L50)
  *   GET  /icons/<name>.xml              an Android VectorDrawable, with the maker's colour and style
@@ -92,6 +93,15 @@ function createIconRoutes(ctx) {
     const isAdmin = (req) => !!(req.viewer && req.viewer.kind === 'user' && req.viewer.role === 'admin');
     const problem = (res, req, status, code, detail) => http.sendProblem(res, status, code, { detail, ctx: req.ov });
     const back = (res, q) => res.redirect(303, `/icons?${new URLSearchParams(q)}#draw`);
+    // The corner of the ground (AB.29): the four names, or the URL is refused with a plain message. Everything else
+    // is clamped, but a corner that is not one of the four is a mistake worth saying so about.
+    const badRounding = (req) => {
+        const raw = req.query.rounding;
+        if (raw == null || String(raw).trim() === '') return null;
+        return ex.ROUNDINGS.includes(String(raw))
+            ? null
+            : `rounding must be one of: ${ex.ROUNDINGS.join(', ')}\n`;
+    };
     const serviceDrafts = new Map();
 
     // First-party requests use the same staff review queue as the icon form.
@@ -247,6 +257,8 @@ function createIconRoutes(ctx) {
     r.get('/icons/:name/favicon.zip', (req, res, next) => {
         const name = req.params.name;
         if (!/^[a-z][a-z0-9-]{0,40}$/.test(name) || !glyphs.path(name)) return next();
+        const bad = badRounding(req);
+        if (bad) return res.status(400).type('text/plain').send(bad);
         const q = { ground: 'squircle', bg: '0b1020', color: 'mark', pad: '14', ...req.query };
         res.set(OPEN).set('Cache-Control', 'public, max-age=86400').type('application/zip').attachment(`${name}-favicon.zip`)
             .send(formats.faviconZip(name, ex.options(q)));
@@ -255,6 +267,8 @@ function createIconRoutes(ctx) {
     r.get('/icons/:file', (req, res, next) => {
         const m = /^([a-z][a-z0-9-]{0,40})(?:\.(svg|png|mjs|xml))?$/.exec(req.params.file);
         if (!m || !glyphs.path(m[1])) return next();
+        const bad = badRounding(req);
+        if (bad) return res.status(400).type('text/plain').send(bad);
         const [, name, kind] = m;
         const opts = ex.options(req.query);
         if (!kind) return send(res, 200, glyphPage({ base: baseUrl(), name, opts }), { viewer: req.viewer });

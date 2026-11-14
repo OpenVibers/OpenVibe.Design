@@ -49,7 +49,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
     const svgUrl = `/icons/${name}.svg`;
     const pngUrl = `/icons/${name}.png${q}`;
     const faLine = fa.length ? `In place of Font Awesome&rsquo;s ${fa.slice(0, 6).map((f) => `<code>fa-${esc(f)}</code>`).join(', ')}${fa.length > 6 ? ` and ${fa.length - 6} more` : ''}.` : '';
-    const sel = (field, list, cur, label) => `<label class="gp-field"><span>${label}</span><select name="${field}" data-gp="${field}">${list.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
+    const sel = (field, list, cur, label, attrs = '') => `<label class="gp-field"${attrs}><span>${label}</span><select name="${field}" data-gp="${field}">${list.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
     const range = (field, min, max, step, cur, label, unit) => `<label class="gp-field"><span>${label} <output data-gp-out="${field}">${cur}${unit}</output></span><input type="range" name="${field}" min="${min}" max="${max}" step="${step}" value="${cur}" data-gp="${field}"></label>`;
 
     const styles = [['thin', 1], ['light', 1.5], ['regular', 2], ['bold', 2.5], ['solid', 2], ['duotone', 2]];
@@ -100,7 +100,7 @@ function glyphPage({ base = 'https://openvibe.design', name, opts = ex.options()
 ${keywords}`;
 
     const maker = `<section class="ic-sec" id="png" aria-labelledby="gp-png">
-  <div class="ic-sec-head"><h2 id="gp-png">Make a PNG</h2><p>Any size up to 1024 pixels at 1×, 2× or 3×, in any colour or the mark&rsquo;s two, a lighter or heavier line, flat or with the mark&rsquo;s depth and glow, room around it and a ground behind it. The link rebuilds the same file every time.</p></div>
+  <div class="ic-sec-head"><h2 id="gp-png">Make a PNG</h2><p>Any size up to 1024 pixels at 1×, 2× or 3×, in any colour or the mark&rsquo;s two, a lighter or heavier line, flat or with the mark&rsquo;s depth and glow, room around it and a ground behind it &mdash; with the corner you want on that ground. The link rebuilds the same file every time.</p></div>
   <form class="gp-maker" method="get" action="/icons/${esc(name)}#png" data-gp-form>
     <div class="gp-preview" data-gp-preview data-ground="${esc(opts.ground)}"><img src="${esc(pngUrl)}" alt="${esc(T)} icon, ${opts.size} pixels" width="${Math.min(opts.size, 256)}" height="${Math.min(opts.size, 256)}" data-gp-img></div>
     <div class="gp-controls">
@@ -112,6 +112,7 @@ ${keywords}`;
       ${sel('style', [['auto', `Auto: ${glyphs.solid(name) ? `solid at ${ex.SOLID_BELOW} px and under` : 'the line (it has no solid)'}`], ['line', 'Line'], ['solid', glyphs.solid(name) ? 'Solid' : 'Solid (it has none: the line)']], opts.style, 'Style')}
       ${sel('fx', [['flat', 'Flat'], ['depth', 'Depth: light to deep'], ['glow', 'A glow behind it'], ['depth-glow', 'Depth and a glow']], opts.fx, 'Finish')}
       ${sel('ground', [['none', 'None, transparent'], ['circle', 'A circle'], ['squircle', 'A rounded square'], ['square', 'A square']], opts.ground, 'Ground')}
+      ${sel('rounding', [['none', 'None, square corners'], ['soft', 'Soft: a 12% corner'], ['round', 'Round: the app-icon corner'], ['squircle', 'Squircle: the superellipse']], opts.rounding, 'Corners', (opts.ground === 'none' || opts.ground === 'circle') ? ' data-gp-round-field hidden' : ' data-gp-round-field')}
       <label class="gp-field" data-gp-bg-field${opts.ground === 'none' ? ' hidden' : ''}><span>Ground colour</span><span class="gp-colour"><input type="color" value="#${esc(opts.bg)}" data-gp-bgpick aria-label="Ground colour"><input type="text" name="bg" value="${esc(opts.bg)}" maxlength="6" pattern="[0-9a-fA-F]{3}|[0-9a-fA-F]{6}" spellcheck="false" data-gp="bg"></span></label>
       <div class="gp-go">
         <noscript><button type="submit" class="ic-btn">Show it</button></noscript>

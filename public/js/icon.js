@@ -13,17 +13,29 @@
     const pngLink = $('[data-gp-png]', form);
     const svgLink = $('[data-gp-svg]', form);
     const bgField = $('[data-gp-bg-field]', form);
+    const roundField = $('[data-gp-round-field]', form);
     const preview = $('[data-gp-preview]', form);
     const field = (n) => form.elements[n];
+    // A page without the field (an older copy still in a cache) must not break the maker.
+    const val = (n) => (field(n) ? String(field(n).value) : '');
     const pick = $('[data-gp-colour]', form);
     const bgPick = $('[data-gp-bgpick]', form);
-    const DEFAULT = { size: '256', scale: '1', color: '0f172a', stroke: '2', pad: '0', ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto' };
+    const DEFAULT = { size: '256', scale: '1', color: '0f172a', stroke: '2', pad: '0', ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto', rounding: 'none' };
+    // The corner each ground has of its own: a square has square corners, the old squircle ground has the app icon's.
+    // A rounding is only said in the link when it is not the ground's own (the server leaves it out the same way).
+    const GROUND_ROUNDING = { none: 'none', circle: 'none', square: 'none', squircle: 'round' };
+    let roundingPicked = false;
 
     function query() {
         const p = new URLSearchParams();
+        const ground = field('ground').value;
         Object.keys(DEFAULT).forEach((k) => {
-            const v = String(field(k).value).replace(/^#/, '').toLowerCase();
-            if (v !== DEFAULT[k] && !(k === 'bg' && field('ground').value === 'none')) p.set(k, v);
+            const v = val(k).replace(/^#/, '').toLowerCase();
+            if (k === 'rounding') {
+                if (v !== GROUND_ROUNDING[ground]) p.set(k, v);
+                return;
+            }
+            if (v !== DEFAULT[k] && !(k === 'bg' && ground === 'none')) p.set(k, v);
         });
         const s = p.toString();
         return s ? `?${s}` : '';
@@ -31,8 +43,10 @@
     let timer = 0;
     function update() {
         form.querySelectorAll('[data-gp-out]').forEach((o) => { o.textContent = field(o.dataset.gpOut).value + (o.dataset.gpOut === 'pad' ? '%' : ''); });
-        bgField.hidden = field('ground').value === 'none';
-        preview.dataset.ground = field('ground').value;
+        bgField.hidden = val('ground') === 'none';
+        // A circle has no corner, and nothing behind the glyph has no ground to round.
+        if (roundField) roundField.hidden = val('ground') === 'none' || val('ground') === 'circle';
+        preview.dataset.ground = val('ground');
         $('[data-gp-mark]', form).setAttribute('aria-pressed', field('color').value === 'mark' ? 'true' : 'false');
         // A colour typed as hex shows in its swatch too.
         [[field('color'), pick], [field('bg'), bgPick]].forEach(([text, swatch]) => {
@@ -62,8 +76,13 @@
         const svg = b.querySelector('svg');
         if (svg) svg.replaceWith(svg.cloneNode(true));
     }));
+    // Picking a ground brings its own corner along, unless a corner was picked by hand.
+    if (field('rounding')) field('rounding').addEventListener('change', () => { roundingPicked = true; });
+    form.addEventListener('change', (e) => {
+        if (e.target.name === 'ground' && !roundingPicked && field('rounding')) field('rounding').value = GROUND_ROUNDING[e.target.value];
+        update();
+    });
     form.addEventListener('input', update);
-    form.addEventListener('change', update);
     form.addEventListener('submit', (e) => { e.preventDefault(); update(); });
 
     // Colour pickers write the hex fields; "The mark's" switches to the mark's two colours and back.
