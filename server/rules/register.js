@@ -743,6 +743,10 @@ const RULES = Object.freeze([
         'In the footer\'s online box, a member who is live gets a red ring and a LIVE badge with their viewers and links to their channel; their channel is not listed a second time.',
         '2026-11-14', 'The owner, 11-14: "you don\'t need the person duplicated … it shows Maticus twice."',
         [], ['openvibe-shared test: footer-online']),
+    R('page-starts-under-the-bar', 'length', 'A page starts within 12 px of the bar, and its head is one row: the title, and beside it the main action.',
+        '8 px on a phone. An intro under it is one line, at most two on a phone; anything longer goes in the page, not above it. No empty band, banner or second heading above the first content: the bar ends and the page begins, and what sits between them is wasted space.',
+        '2026-11-14', 'The owner, on openvibe.community/forum with a phone, 11-14: "this shit is a waste of space \u2026 more compact, especially on mobile \u2026 across all sites \u2026 update openvibe.design".',
+        [], ['site sweep: page-head gaps at 390 and 1280']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
