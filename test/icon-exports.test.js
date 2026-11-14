@@ -75,7 +75,7 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             assert.deepEqual(pngSize((await t.get('/icons/heart.png')).buffer), [256, 256], 'the default');
             assert.equal((await t.get('/icons/nope.png')).status, 404);
             const o = ex.options({ size: '3', color: 'javascript:', stroke: '9', pad: '-4', ground: '<x>', bg: 'zz', style: 'bold' });
-            assert.deepEqual(o, { size: 16, scale: 1, color: '0f172a', stroke: 3, pad: 0, ground: 'none', bg: 'ffffff', fx: 'flat', style: 'auto' });
+            assert.deepEqual(o, { size: 16, scale: 1, color: '0f172a', stroke: 3, pad: 0, ground: 'none', rounding: 'none', bg: 'ffffff', fx: 'flat', style: 'auto' });
         });
 
         await check('every size by itself (L50): style=auto draws the solid drawing at 18 px and under, line and solid on ask', async () => {
@@ -121,7 +121,7 @@ const jsonLd = (html) => [...html.matchAll(/<script type="application\/ld\+json"
             const page = (await t.get('/icons/heart?fx=glow')).text;
             assert.ok(page.includes('<option value="glow" selected'), 'the maker remembers the finish');
             const js = fs.readFileSync(path.join(__dirname, '..', 'public/js/icon.js'), 'utf8');
-            assert.match(js, /fx: 'flat', style: 'auto' \}/, 'the maker\'s live link leaves a flat finish and the auto style out, as the server does');
+            assert.match(js, /fx: 'flat', style: 'auto', rounding: 'none' \}/, 'the maker\'s live link leaves a flat finish, the auto style and the ground\'s own corner out, as the server does');
         });
         await check('use it anywhere (L50 steps 2-3): <ov-icon>, the drawings by name, and every copy format', async () => {
             const formats = require('../server/glyphs/formats');
