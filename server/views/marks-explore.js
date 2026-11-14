@@ -22,6 +22,7 @@
  */
 const { layout, esc } = require('../render/layout');
 const kit = require('openvibe-shared/kit');
+const rounding = require('../glyphs/rounding');
 
 const BLUE = '#4f7cff', VIOLET = '#8b5cf6', CYAN = '#22d3ee', PINK = '#ec4899', NIGHT = '#0d1322', PAPER = '#f4f6fb';
 const f = (v) => +Number(v).toFixed(2);
@@ -62,7 +63,9 @@ function paint(kind, id) {
 /** The mark's parts in their treatment: the tile under it, the glow or the solid edge behind it. */
 function treat(p, body) {
     const out = [];
-    if (p.tile) out.push(`<rect x="2" y="2" width="96" height="96" rx="24" fill="${p.tile}"${p.tileLine ? ' stroke="#ffffff22" stroke-width="1"' : ''}/>`);
+    // The tile under the mark is a ground like any other: its corner comes from the shared scale (the round one,
+    // the corner the app icons use), so the mark, the app icons and the generator agree.
+    if (p.tile) out.push(`<rect x="2" y="2" width="96" height="96" rx="${rounding.radius('round', 96)}" fill="${p.tile}"${p.tileLine ? ' stroke="#ffffff22" stroke-width="1"' : ''}/>`);
     if (p.glow) out.push(`<g class="mx-glow" filter="url(#${p.glow})" opacity=".75">${body}</g>`);
     // The edge: the same parts in one dark colour, a little down and right (masks stay; only the paint changes).
     if (p.extrude) out.push(`<g transform="translate(2.4 3.2)" opacity=".9">${body.replace(/(fill|stroke)="url\(#[^)]+\)"/g, `$1="${p.extrude}"`)}</g>`);

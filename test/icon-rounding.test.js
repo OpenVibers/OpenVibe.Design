@@ -101,6 +101,13 @@ const rounding = require('../server/glyphs/rounding');
             assert.match(js, /GROUND_ROUNDING = \{ none: 'none', circle: 'none', square: 'none', squircle: 'round' \}/);
         });
 
+        await check('the mark\'s own tile uses the scale too', async () => {
+            const explore = require('../server/views/marks-explore');
+            const html = explore.explorePage({});
+            assert.ok(html.includes('rx="21.6"'), 'the tile under the mark: the round corner of a 96-unit tile');
+            assert.ok(!html.includes('rx="24"'), 'not the corner it had before');
+        });
+
         await check('the PNG is drawn with the corner too', async () => {
             const soft = await t.get('/icons/eye.png?ground=square&rounding=soft&size=32');
             assert.equal(soft.status, 200);
