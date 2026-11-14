@@ -144,3 +144,30 @@ html[data-ov-motion=off] .pcard:hover{transform:none}html[data-ov-motion=off] .d
 .hn-fig b{font-size:1.6rem;font-variant-numeric:tabular-nums}
 .hn-fig .hn-src{color:var(--text-muted);max-height:0;overflow:hidden;transition:max-height var(--ov-dur-2,260ms) ease}
 .hn-fig.open .hn-src{max-height:4em}
+
+/* The conversation layout (pattern conversation-layout, plan §AA.27): bar, filters, history, conversation, composer. */
+.cv-demo{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:0;margin:10px;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:300px;position:relative;background:var(--bg-primary,transparent)}
+.cv-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);min-width:0}
+.cv-who{display:flex;align-items:center;gap:8px;min-width:0;flex:1}.cv-who small{color:var(--text-muted);font-size:12px}
+.cv-face{width:24px;height:24px;border-radius:50%;flex:none;background:linear-gradient(135deg,var(--accent),#a855f7)}
+.cv-chip{font-size:12px;font-weight:650;padding:3px 9px;border-radius:999px;border:1px solid var(--border)}
+.cv-histbtn{display:none;min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--border);background:none;color:inherit;font:inherit;font-size:13px}
+.cv-main{display:grid;grid-template-columns:180px minmax(0,1fr);min-height:0}
+.cv-side{border-right:1px solid var(--border);padding:8px;display:grid;align-content:start;gap:8px;min-width:0}
+.cv-filters{display:flex;gap:4px;flex-wrap:wrap}.cv-filter{font-size:12px;padding:3px 8px;border-radius:999px;color:var(--text-muted)}.cv-filter.on{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--text-primary,inherit);font-weight:650}
+.cv-list{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:13px}.cv-list li{padding:6px 8px;border-radius:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cv-list li.on{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.cv-thread{padding:10px 12px;display:grid;align-content:end;gap:8px;min-width:0}
+.cv-msg{margin:0;max-width:80%;padding:7px 11px;border-radius:14px;background:var(--bg-secondary);font-size:13px;line-height:1.4}.cv-msg.me{justify-self:end;background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.cv-run{display:flex;align-items:center;gap:8px;max-width:80%;padding:8px 11px;border-radius:12px;border:1px solid var(--border);font-size:13px}.cv-run i{width:8px;height:8px;border-radius:50%;background:#22c55e}.cv-run span{color:var(--text-muted);margin-left:auto}
+.cv-composer{display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--border)}
+.cv-box{flex:1;min-width:0;padding:9px 12px;border-radius:999px;border:1px solid var(--border);color:var(--text-muted);font-size:13px}
+.cv-send{padding:7px 14px;border-radius:999px;background:var(--accent);color:#fff;font-size:13px;font-weight:650}
+.cv-demo[data-view=phone]{max-width:300px;margin:10px auto}
+.cv-demo[data-view=phone] .cv-histbtn{display:inline-flex;align-items:center}
+.cv-demo[data-view=phone] .cv-main{grid-template-columns:minmax(0,1fr)}
+.cv-demo[data-view=phone] .cv-side{display:none}
+.cv-demo[data-view=phone].cv-open .cv-side{display:grid;position:absolute;inset:49px 0 auto 0;z-index:1;background:var(--bg-secondary);border-bottom:1px solid var(--border);border-right:0}
+.cv-demo[data-view=phone] .cv-chip{display:none}
+.cv-demo.cv-bug .cv-main{grid-template-columns:minmax(0,1fr) 150px}.cv-demo.cv-bug .cv-side{order:2;border-right:0;border-left:1px solid var(--border)}
+.cv-demo.cv-bug .cv-composer{border-top:0;border-bottom:1px solid var(--border);order:-1}.cv-demo.cv-bug .cv-box{border-radius:6px}.cv-demo.cv-bug .cv-run{border-style:dashed;font-family:monospace}
+@media (max-width:520px){.cv-main{grid-template-columns:minmax(0,1fr)}.cv-side{display:none}.cv-histbtn{display:inline-flex;align-items:center}}
