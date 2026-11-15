@@ -26,6 +26,18 @@ const { ATTRS } = require('../server/views/forms');
             assert.match(html, /\/js\/forms-page\.js/);
             assert.match(html, /data-ov-forms=&quot;off&quot;|data-ov-forms="off"/, 'how a site keeps the browser\'s own');
         });
+        await check('one ring per field: every field type, plain and in a box, and how a page keeps it', async () => {
+            const html = (await t.get('/forms')).text;
+            assert.match(html, /<section class="fm-sec" id="fm-rings"/);
+            for (const type of ['text', 'search', 'email', 'url', 'tel', 'password', 'number', 'date', 'time', 'datetime-local', 'month', 'week']) {
+                assert.match(html, new RegExp(`<input id="fm-r-${type}" type="${type}"`), `${type} is shown`);
+            }
+            assert.match(html, /<textarea id="fm-r-textarea"/);
+            assert.match(html, /<select id="fm-r-select">/);
+            assert.match(html, /class="fm-pill"><span class="fm-pill-ic"/, 'a field in a pill');
+            assert.match(html, /contenteditable="true"/, 'a composer');
+            assert.match(html, /openvibe-shared\/field-rings/, 'how to check a page');
+        });
         await check('found: the See door, the sitemap and llms.txt', async () => {
             assert.ok((await t.get('/see')).text.includes('/forms'), 'the See door');
             assert.ok((await t.get('/sitemap.xml')).text.includes('https://openvibe.design/forms'));
