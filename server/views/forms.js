@@ -55,6 +55,16 @@ const RING_TYPES = [
     ['password', 'Password', ' autocomplete="new-password"'], ['number', 'Number'], ['date', 'Date'], ['time', 'Time'],
     ['datetime-local', 'Date and time'], ['month', 'Month'], ['week', 'Week'],
 ];
+// Trending in the search box (openvibe-shared 4.277.0 ov-trending.js; design rule search-boxes-show-trending).
+const TRENDING_SNIPPET = `<!-- Any search box: the navbar brings ov-trending.js once a page has one. -->
+<input type="search" name="q" placeholder="Search">
+
+<!-- A box that is a search but not type=search, and the site whose trending lead: -->
+<input data-ov-trending data-ov-trending-site="openvibe.exchange" placeholder="Search models">
+
+<!-- Not a search (a code, a filter of your own list): leave it alone. -->
+<input type="search" data-ov-trending="off" placeholder="Filter your files">`;
+
 const RINGS_SNIPPET = `<!-- A field in a box: the box draws the border and the focus ring; the field is bare. -->
 <label class="pill">
   <input type="search" placeholder="Search or ask">
@@ -204,6 +214,17 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
       <div class="fm-pill fm-pill-compose"><div contenteditable="true" role="textbox" aria-label="Message" data-placeholder="Write a message"></div><button type="button" class="fm-pill-go" aria-label="Send">${kit.icon('send')}</button></div>
     </div>
     <div class="fm-code">${kit.snippet({ code: RINGS_SNIPPET, id: 'fm-rings-code', label: 'Copy' })}</div>
+  </div>
+</section>
+
+<section class="fm-sec" id="fm-trending" aria-labelledby="fm-trending-h">
+  <div class="fm-sec-head"><h2 id="fm-trending-h">Trending in the search box</h2><p>An empty search box shows what people are searching for, in the box itself: “Try” and a trending search, one at a time. The line slides up and out, the next slides in, and a shine crosses the term once; Calm is slower, Off holds the first one still. Tab takes the term shown. Typing hides it at once and clearing brings it back. A search sent from the box is counted (never with Do Not Track or Global Privacy Control on, never anything personal), and a search shows as trending only once five or more people looked for it. The numbers are on <a href="https://openvibe.report/searches">openvibe.report/searches</a>.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live fm-stack">
+      <label class="fm-pill"><span class="fm-pill-ic" aria-hidden="true">${kit.icon('search')}</span><input type="search" placeholder="Search OpenVibe" aria-label="Search OpenVibe" data-ov-trending-site="openvibe.design"><button type="button" class="fm-pill-go" aria-label="Go">${kit.icon('chevron')}</button></label>
+      <p class="fm-rings-cap">Every <code>input type="search"</code> on every OpenVibe site does this; <code>data-ov-trending="off"</code> leaves one alone.</p>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: TRENDING_SNIPPET, id: 'fm-trending-code', label: 'Copy' })}</div>
   </div>
 </section>
 
