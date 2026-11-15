@@ -5,7 +5,7 @@
  * seconds: the numbers count up, each step is a fold that says what it did and how long it took (the running one open,
  * with its breakdown: the sites chosen and why, each site's captures as they land), new rows and chips arrive with a
  * little motion, the bar shimmers while it works. Nothing reloads until the run ends (then the report). Text is always
- * set with textContent. Motion follows html[data-ov-motion] and prefers-reduced-motion. */
+ * set with textContent. Motion follows html[data-ov-motion]: Calm reduces it, only Off stops it (Design's rule). */
 (function () {
     'use strict';
     var root = document.querySelector('[data-dd-run]');
@@ -23,7 +23,7 @@
     function dur(s) { if (s == null) return ''; return s < 60 ? s + ' s' : Math.floor(s / 60) + ' min ' + (s % 60 ? (s % 60) + ' s' : ''); }
     function clock(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
     function num(re, text) { var m = re.exec(String(text || '')); return m ? Number(m[1]) : null; }
-    var still = function () { return document.documentElement.getAttribute('data-ov-motion') === 'off' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); };
+    var still = function () { return document.documentElement.getAttribute('data-ov-motion') === 'off'; };
 
     /** A number that counts up to its new value (never down: a value that drops is set at once). */
     function count(el, to) {

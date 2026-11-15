@@ -123,7 +123,6 @@
     .ddl-body { padding-left: 14px; }
 }
 html[data-ov-motion="off"] .ddl-chip .ddl-dot, html[data-ov-motion="off"] .ddl-bar .ddl-fill::after, html[data-ov-motion="off"] .ddl-step .ddl-ic, html[data-ov-motion="off"] .ddl-site, html[data-ov-motion="off"] .ddl-cap, html[data-ov-motion="off"] .ddl-v, html[data-ov-motion="off"] .ddl-body { animation: none !important; }
-@media (prefers-reduced-motion: reduce) { .ddl-chip .ddl-dot, .ddl-bar .ddl-fill::after, .ddl-step .ddl-ic, .ddl-site, .ddl-cap, .ddl-v, .ddl-body { animation: none !important; } .ddl-fill { transition: none; } }
 
 /* ── /deep-dive: the design deep dive's own start page, and choosing sites on /research/:id. ── */
 .ddh .ds-page-h h1 { margin-bottom: .4rem; }
