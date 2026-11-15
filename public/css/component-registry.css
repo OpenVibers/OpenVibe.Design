@@ -124,3 +124,7 @@
 .cr-chat-views [aria-pressed="true"] { background: color-mix(in srgb, var(--accent, #3b82f6) 20%, transparent); color: var(--text-primary); }
 .cr-chat .ovm-messages { max-height: 360px; overflow: auto; padding-top: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-primary, #0b0f19); }
 .cr-chat .ovm-messages[data-view="room"] { gap: 4px; }
+/* A live demo mounts a component whose own markup has sections (the session's thread column). The page's section
+   spacing (design.css .ds section) belongs to the page's blocks, not to the component's (11-15: it pushed the session
+   40 px down inside its frame). */
+.ds .cr-session section, .ds .cr-session header { margin: 0; }
