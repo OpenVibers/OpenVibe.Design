@@ -19,7 +19,13 @@ const { startAi } = require('./helpers/ai');
 const report = {
     id: 'run_x', schema: 'ai.deep-dive@1', status: 'succeeded',
     input: { question: 'A phone-first robot control panel', depth: 'quick', max_sites: 6, sites: [] },
-    steps: [], sources: [], captures: [], analysis: [],
+    steps: [], sources: [{ id: 'src_acme', kind: 'web', title: 'Acme controls', url: 'https://acme.example/controls', read_at: '2026-11-15T22:00:00.000Z' }],
+    captures: [
+        { id: 'cap_1', source_id: 'src_acme', url: 'https://acme.example/controls', captured_at: '2026-11-15T22:01:00.000Z', viewport: 390, theme: 'dark', full_page: true, media_id: 'med_01JKLMNPQRSTVWXYZ012345678', crops: [{ id: 'crop_1_1', media_id: 'med_01JKLMNPQRSTVWXYZ012345679', y: 0, height: 844 }], skip: null, cached: false },
+        { id: 'cap_2', source_id: 'src_acme', url: 'https://acme.example/controls', captured_at: '2026-11-15T22:01:00.000Z', viewport: 1280, theme: 'light', full_page: true, media_id: 'med_01JKLMNPQRSTVWXYZ01234567A', crops: [{ id: 'crop_2_1', media_id: 'med_01JKLMNPQRSTVWXYZ01234567B', y: 0, height: 844 }], skip: null, cached: true },
+        { id: 'cap_3', source_id: 'src_acme', url: 'https://acme.example/controls', captured_at: '2026-11-15T22:01:00.000Z', viewport: 390, theme: 'light', full_page: false, media_id: null, crops: [], skip: 'robots_disallowed', cached: false },
+    ],
+    analysis: [],
     synthesis: { patterns: [{ name: 'One primary button in the thumb arc', what: 'The primary button sits in the thumb arc.', sites: [], usage_count: 2, evidence: [] }], comparison: { columns: [], rows: [] }, best: { source_id: null, what: '', evidence: [] }, mistakes: [], gap: 'No one shows the state.', reference_tokens: { palettes: [], type_scales: [], spacing: [] }, do: ['Keep Stop visible.'], dont: [], accessibility: [], speed: [] },
     recommendations: [], receipt: { price_usd: 0.25, held_usd: 0.25, cost_usd: 0.1, models: [], captures_count: 0, synthetic: false }, gaps: [],
     created_at: '2026-11-15T22:00:00.000Z', updated_at: '2026-11-15T22:03:00.000Z', finished_at: '2026-11-15T22:03:00.000Z',
@@ -97,6 +103,8 @@ const report = {
             assert.match(r.text, /js\/deep-dive-live\.js/);
             const seed = JSON.parse(/<script type="application\/json" id="dd-state">([\s\S]*?)<\/script>/.exec(r.text)[1]);
             assert.deepEqual([seed.stateUrl, seed.state.status, seed.state.captures.length, seed.labels.capture], [`/research/${encodeURIComponent(researchId)}/state`, 'running', 1, 'Capturing']);
+            assert.equal(seed.shotUrl, `/research/${encodeURIComponent(researchId)}/crop/`, 'the live strip shows each screenshot through Design');
+            assert.match(r.text, /js\/deep-dive-shots\.js/, 'and the viewer opens them');
             assert.match(r.text, /Stop the deep dive/);
             r = await t.get(`/research/${encodeURIComponent(researchId)}/state`, { as: owner });
             assert.equal(r.status, 200);
@@ -133,6 +141,13 @@ const report = {
             assert.equal(r.status, 200);
             assert.ok(!/data-dd-run/.test(r.text), 'no live view for a finished dive');
             assert.match(r.text, /The research points/);
+            // Every screenshot it took, by site, phone and computer, each opening the whole page (11-15).
+            assert.match(r.text, /The screenshots <small>2 from 1 site<\/small>/);
+            const crop = `/research/${encodeURIComponent(researchId)}/crop/`;
+            assert.ok(r.text.includes(`<a class="dds-frame is-phone" href="${crop}cap_1" data-dd-shot="acme.example · Phone · dark"><img src="${crop}crop_1_1"`), 'a phone shot: its top as the picture, the whole page when opened');
+            assert.match(r.text, /from the week's cache/);
+            assert.ok(!r.text.includes(`${crop}cap_3`), 'a skipped capture has no picture');
+            assert.match(r.text, /js\/deep-dive-shots\.js/);
             const home = await t.get('/deep-dive', { as: owner });
             assert.match(home.text, /Your deep dives/);
             assert.match(home.text, new RegExp(`href="/research/${encodeURIComponent(researchId)}"`));

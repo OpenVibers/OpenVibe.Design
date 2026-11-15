@@ -98,6 +98,33 @@ function takePoints(points, research) {
     return `<p class="dv-take-research">Follows ${points.map((p) => `<a href="${esc(base)}#p${esc(String(p.n))}" title="${esc(String(p.text || '').slice(0, 240))}">research point ${esc(String(p.n))}</a>`).join(', ')}</p>`;
 }
 
+/** The screenshots, by site: phone and computer, light and dark; each opens full page in the viewer (deep-dive-shots.js). */
+function shotsGallery(r) {
+    const shots = Array.isArray(r.shots) ? r.shots : [];
+    if (!shots.length) return '';
+    const base = `/research/${encodeURIComponent(r.id || '')}/crop/`;
+    const bySite = new Map();
+    for (const s of shots) { const k = s.sourceId || s.url; if (!bySite.has(k)) bySite.set(k, []); bySite.get(k).push(s); }
+    const order = (s) => (s.viewport < 700 ? 0 : 2) + (s.theme === 'dark' ? 1 : 0);
+    const label = (s) => `${s.viewport < 700 ? 'Phone' : 'Computer'} · ${s.theme === 'dark' ? 'dark' : 'light'}`;
+    const cards = [...bySite.values()].map((list) => {
+        const first = list[0];
+        const frames = list.slice().sort((a, b) => order(a) - order(b)).map((s) => `<a class="dds-frame${s.viewport < 700 ? ' is-phone' : ''}" href="${base}${encodeURIComponent(s.id)}" data-dd-shot="${esc(`${host(s.url)} · ${label(s)}`)}"><img src="${base}${encodeURIComponent(s.cropId || s.id)}" alt="${esc(`${host(s.url)}, ${label(s)}`)}" loading="lazy" decoding="async"><span>${esc(label(s))}</span></a>`).join('');
+        return `<article class="dds-site"><header><a href="${esc(/^https?:\/\//i.test(first.url) ? first.url : '#')}" rel="noopener noreferrer" target="_blank">${esc(first.site || host(first.url))}</a><small>${esc(host(first.url))}${first.capturedAt ? ` · read ${esc(day(first.capturedAt))}` : ''}${list.some((s) => s.cached) ? ' · from the week\'s cache' : ''}</small></header><div class="dds-row">${frames}</div></article>`;
+    }).join('');
+    return `<section class="dd-sec dds" aria-labelledby="dds-h" data-dd-shots><h2 id="dds-h">The screenshots <small>${shots.length} from ${bySite.size} site${bySite.size === 1 ? '' : 's'}</small></h2>
+<p class="dv-fine">Private to you. Each is shown as commentary with its site and the day it was read; open one to see the whole page.</p>${cards}</section>`;
+}
+
+/** The image search pages the dive read (ai.deep-dive@1 image_sheets): each a whole grid of recent images, read at once. */
+function imageSheetsSection(r) {
+    const sheets = Array.isArray(r.imageSheets) ? r.imageSheets : [];
+    if (!sheets.length) return '';
+    const base = `/research/${encodeURIComponent(r.id || '')}/crop/`;
+    return `<section class="dd-sec dds" aria-labelledby="ddi-h" data-dd-shots><h2 id="ddi-h">Image search, a page at a time <small>${sheets.length}</small></h2>
+<div class="ddi-grid">${sheets.map((x) => `<figure class="ddi-sheet"><a href="${base}${encodeURIComponent(x.id)}" data-dd-shot="${esc(`${x.engine || 'images'} · ${x.query || ''}`)}"><img src="${base}${encodeURIComponent(x.id)}" alt="${esc(`Image results for ${x.query || ''}`)}" loading="lazy" decoding="async"></a><figcaption><b>${esc(x.query || '')}</b><small>${esc([x.engine, x.recency && x.recency !== 'any' ? `past ${x.recency}` : null, x.count ? `${x.count} images` : null].filter(Boolean).join(' · '))}</small>${x.reading ? `<p>${esc(String(x.reading).slice(0, 600))}</p>` : ''}</figcaption></figure>`).join('')}</div></section>`;
+}
+
 /** One report, read on Design: the numbered points with their evidence, and the rules it proposes. */
 function researchPage({ research, viewer = null, notice = null, error = null } = {}) {
     const r = research || {};
@@ -116,10 +143,11 @@ ${steps.length ? `<ol class="dd-steps">${steps.map((s) => `<li class="dd-step is
 ${points.length ? `<section class="dd-sec" aria-labelledby="dd-points-h"><h2 id="dd-points-h">The research points</h2>
 ${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'research' ? 'What the best write-ups say' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(p.text)}</p>${evidenceList(p.evidence, { crops: true, research: r })}</div></li>`).join('')}</ol>`).join('')}
 </section>` : running ? kit.empty({ icon: 'spark', title: 'Still researching', text: 'The points appear here as the dive writes them up.' }) : kit.empty({ icon: 'search', title: 'No report yet', text: 'This deep dive has not produced a report.' })}
+${shotsGallery(r)}${imageSheetsSection(r)}
 ${proposals.length ? `<section class="dd-sec" aria-labelledby="dd-props-h"><h2 id="dd-props-h">Proposed from research</h2>${proposalsList(proposals, { compact: true })}</section>` : ''}
 <p class="dd-back"><a href="${r.designId ? `/d/${encodeURIComponent(r.designId)}` : '/create'}">${r.designId ? 'Back to the design' : 'Create a design'}</a></p>
 </div>`;
-    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Research`, description: 'A deep dive report on OpenVibe.Design: patterns, do and don\'t, reference tokens and the rules it cites, with the evidence behind each point.', path: `/research/${r.id || ''}`, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], body });
+    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Research`, description: 'A deep dive report on OpenVibe.Design: patterns, do and don\'t, reference tokens and the rules it cites, with the evidence behind each point.', path: `/research/${r.id || ''}`, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-shots.js'], body });
 }
 
 /** "How others do it" on a component page. Empty and absent until a finished dive has a point for it. */
@@ -216,11 +244,11 @@ function researchLivePage({ research, state }) {
     const id = r.id || '';
     const base = `/research/${encodeURIComponent(id)}`;
     const since = st.created_at || r.createdAt;
-    const seed = { id, since, stateUrl: `${base}/state`, labels: STEP_LABELS, notes: STEP_NOTES, order: Object.keys(STEP_LABELS),
+    const seed = { id, since, stateUrl: `${base}/state`, shotUrl: `${base}/crop/`, labels: STEP_LABELS, notes: STEP_NOTES, order: Object.keys(STEP_LABELS),
         minutes: { quick: 3, thorough: 8, expert: 18 }[r.depth] || null,
         state: { status: st.status || 'queued', step: st.step || 'plan', progress: st.progress || 0, steps: st.steps || [], site_limit: st.site_limit || null,
             candidates: (st.candidates || []).map((c) => ({ url: c.url, title: c.title, reason: c.reason, source_id: c.source_id, kind: c.kind, chosen: c.chosen })),
-            captures: (st.captures || []).map((c) => ({ id: c.id, source_id: c.source_id, url: c.url, viewport: c.viewport, theme: c.theme, skip: c.skip, cached: c.cached })),
+            captures: (st.captures || []).map((c) => ({ id: c.id, source_id: c.source_id, url: c.url, viewport: c.viewport, theme: c.theme, skip: c.skip, cached: c.cached, crops: (c.crops || []).slice(0, 1).map((x) => ({ id: x.id })) })),
             gaps: st.gaps || [], error: st.error || null } };
     const choosing = st.status === 'choosing';
     const steps = new Map((st.steps || []).map((x) => [x.key, x]));
@@ -237,7 +265,7 @@ ${chooseForm}
 <form method="post" action="${base}/cancel" class="ddh-cancel">${kit.button({ label: 'Stop the deep dive', type: 'submit', kind: 'danger' })}<span class="dv-fine">Stopping ends the next model call and the next capture.</span></form>
 <p class="dd-back"><a href="/deep-dive">All your deep dives</a></p>
 </div><script type="application/json" id="dd-state">${jsLit(seed)}</script>`;
-    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Deep dive`, description: 'A design deep dive at work.', path: base, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-live.js'], body });
+    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Deep dive`, description: 'A design deep dive at work.', path: base, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-live.js', 'js/deep-dive-shots.js'], body });
 }
 
 module.exports = { researchModule, researchPanel, takePoints, researchPage, componentFinds, proposalsSection, proposalsList, evidenceList, day, usd, DEPTH_LINE, deepDivePage, researchLivePage, STEP_LABELS };
