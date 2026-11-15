@@ -115,7 +115,7 @@
 .br-use{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
 .br-use>div{min-width:0}
 .br-use>div:first-child{grid-row:span 2}
-.br-use pre{font-size:12.5px;white-space:pre;overflow-x:auto;max-height:none;padding-right:52px}
+.br-use pre{font-size:12.5px;white-space:pre;overflow-x:auto;overflow-y:auto;max-height:none;padding-right:52px}
 .br-files-h{margin-top:26px!important}
 .br-files{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .br .br-files a{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 12px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);text-decoration:none;transition:border-color var(--ov-dur-2, .18s),transform var(--ov-dur-2, .18s)}
@@ -161,6 +161,6 @@ html[data-ov-motion=off] .br:not([data-fx-demo]) .br-files a:hover{transform:non
 
 /* A phone: the motion files are a sideways rail (the owner, 10-31: short pages by rails and folds, never by hiding). */
 @media (max-width:640px){
-  .br-mo{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;margin-right:-16px;padding:0 16px 8px 0;scrollbar-width:thin}
+  .br-mo{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;margin-right:-16px;padding:0 16px 8px 0;scrollbar-width:thin}
   .br-mo>.br-mo-card{flex:0 0 82%;scroll-snap-align:start}
 }

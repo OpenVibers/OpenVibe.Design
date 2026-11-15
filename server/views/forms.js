@@ -37,6 +37,17 @@ kit.segmented({
 })`;
 
 // The demo is the kit's own output: kit.switchRow and kit.segmented (openvibe-shared, pinned here).
+// The controls every page gets with no class (ov-forms.css): the same markup the demo draws.
+const CONTROLS_SNIPPET = `<label><input type="checkbox" role="switch" checked> Switch back when the week frees</label>
+<label><input type="checkbox" checked> Tell me when it switches</label>
+<label><input type="radio" name="access" value="ask" checked> Ask first</label>
+<label><input type="radio" name="access" value="full"> Full access</label>
+<label>Volume <input type="range" min="0" max="100" value="64"></label>
+<label>A file <input type="file"></label>
+
+<!-- The browser's own look for one control, or a part of the page: -->
+<input type="range" data-ov-native>`;
+
 const VISIBILITY = [{ value: 'public', label: 'Public', icon: 'globe' }, { value: 'unlisted', label: 'Unlisted', icon: 'link' }, { value: 'private', label: 'Private', icon: 'lock' }];
 
 const MODELS = [
@@ -84,7 +95,7 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
   <p class="fm-eye">Forms</p>
   <h1 class="fm-h1">Controls that look like OpenVibe, on every site</h1>
   <p class="fm-lede">Every select is OpenVibe’s own: a menu on a computer, a sheet from the bottom on a phone. A choice can say whether it is ready, how much is used, and how to set it up. The form underneath is the browser’s, so everything that worked still works, and a page without JavaScript keeps its plain controls.</p>
-  <nav class="fm-jump" aria-label="On this page"><a href="#fm-select">The select</a><a href="#fm-more">Several, search, groups</a><a href="#fm-controls">Switches and boxes</a><a href="#fm-rows">Switch rows and segments</a><a href="#fm-fields">Fields and choices</a><a href="#fm-attrs">What it reads</a><a href="#fm-use">Use it</a></nav>
+  <nav class="fm-jump" aria-label="On this page"><a href="#fm-select">The select</a><a href="#fm-more">Several, search, groups</a><a href="#fm-controls">Switches, boxes and sliders</a><a href="#fm-rows">Switch rows and segments</a><a href="#fm-fields">Fields and choices</a><a href="#fm-attrs">What it reads</a><a href="#fm-use">Use it</a></nav>
 </header>
 
 <section class="fm-sec" id="fm-select" aria-labelledby="fm-select-h">
@@ -108,14 +119,19 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
 </section>
 
 <section class="fm-sec" id="fm-controls" aria-labelledby="fm-controls-h">
-  <div class="fm-sec-head"><h2 id="fm-controls-h">Switches and boxes</h2><p>A checkbox with <code>role="switch"</code> is a switch. Checkboxes, radios and sliders take the site’s accent. Nothing here changes a size, so a site’s own layout never moves.</p></div>
-  <div class="fm-row">
-    <label class="fm-check"><input type="checkbox" role="switch" checked> Switch back when the week frees</label>
-    <label class="fm-check"><input type="checkbox" checked> Tell me when it switches</label>
-    <label class="fm-check"><input type="radio" name="fm-r" checked> Ask first</label>
-    <label class="fm-check"><input type="radio" name="fm-r"> Full access</label>
-    <label class="fm-check fm-range">Volume <input type="range" min="0" max="100" value="64"></label>
-    <label class="fm-check">A file <input type="file"></label>
+  <div class="fm-sec-head"><h2 id="fm-controls-h">Switches, boxes and sliders</h2><p>One material for every control: off is set into the page, on is lit from above in the site’s accent. A checkbox with <code>role="switch"</code> is a switch, a slider fills up to its thumb, and a file input’s button is a button. Every page gets them with no class; a site’s own rule always wins, and <code>data-ov-native</code> keeps the browser’s.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live fm-ctls">
+      <label class="fm-ctl"><input type="checkbox" role="switch" checked><span class="fm-ctl-t"><b>Switch back when the week frees</b><small>A switch: <code>role="switch"</code> on a checkbox</small></span></label>
+      <label class="fm-ctl"><input type="checkbox" checked><span class="fm-ctl-t"><b>Tell me when it switches</b><small>A checkbox</small></span></label>
+      <fieldset class="fm-ctl-set"><legend>Access</legend>
+        <label class="fm-ctl"><input type="radio" name="fm-r" value="ask" checked><span class="fm-ctl-t"><b>Ask first</b><small>It asks before it acts</small></span></label>
+        <label class="fm-ctl"><input type="radio" name="fm-r" value="full"><span class="fm-ctl-t"><b>Full access</b><small>It acts, then tells you</small></span></label>
+      </fieldset>
+      <div class="fm-ctl fm-ctl-range"><label for="fm-vol">Volume</label><input id="fm-vol" type="range" min="0" max="100" value="64"><output for="fm-vol" data-fm-range="fm-vol">64</output></div>
+      <div class="fm-ctl fm-ctl-file"><label for="fm-file">A file</label><input id="fm-file" type="file"></div>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: CONTROLS_SNIPPET, id: 'fm-controls-code', label: 'Copy' })}</div>
   </div>
 </section>
 

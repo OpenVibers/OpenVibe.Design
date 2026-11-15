@@ -14,4 +14,12 @@
         group.forEach(function (el) { el.addEventListener('change', say); });
         say();
     });
+    // A slider says its value beside it as it moves.
+    document.querySelectorAll('output[data-fm-range]').forEach(function (out) {
+        var range = document.getElementById(out.getAttribute('data-fm-range'));
+        if (!range) return;
+        var say = function () { out.textContent = range.value; };
+        range.addEventListener('input', say);
+        say();
+    });
 })();

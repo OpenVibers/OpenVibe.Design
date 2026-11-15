@@ -16,7 +16,7 @@
 #ds-submit-form .ovk-btn { min-height: 44px; }
 .ds-history summary { display: flex; gap: 8px; min-height: 44px; align-items: center; }
 .ds-history summary .ovk-i { width: 18px; height: 18px; }
-.ds-history ol { display: flex; gap: 10px; overflow-x: auto; padding: 4px 0 10px; scroll-snap-type: x proximity; }
+.ds-history ol { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding: 4px 0 10px; scroll-snap-type: x proximity; }
 .ds-history li { flex: 0 0 148px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 130px; padding: 10px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); scroll-snap-align: start; }
 .ds-history li .ds-hist-dot { display: block; width: 100%; height: 34px; border-radius: 8px; }
 .ds-history li b { line-height: 1.25; }
@@ -92,7 +92,7 @@
 }
 @media (max-width: 759px) {
     /* The three sites side by side to swipe through, so the colours to edit are one screen below the preview, not three. */
-    .ds-stage .ds-previews { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86%; gap: 10px; margin-inline: -14px; padding-inline: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 14px; scrollbar-width: none; }
+    .ds-stage .ds-previews { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86%; gap: 10px; margin-inline: -14px; padding-inline: 14px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding-inline: 14px; scrollbar-width: none; }
     .ds-stage .ds-previews::-webkit-scrollbar { display: none; }
     .ds-stage .ds-previews > .pv-frame { scroll-snap-align: start; }
     .ds-stage .pv-video { aspect-ratio: 16 / 6.5; }

@@ -20,7 +20,7 @@ html[data-ov-motion=off] .pcard:hover{transform:none}html[data-ov-motion=off] .d
 .cols-name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700}.cols-score{text-align:right;font-variant-numeric:tabular-nums}
 .num-demo{border-collapse:collapse;min-width:240px}.num-demo th,.num-demo td{padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
 .num-demo .num{text-align:right;font-variant-numeric:tabular-nums}.num-demo.broken td.num{text-align:left;font-variant-numeric:normal}
-.tscroll-demo{max-width:220px;overflow-x:auto;border-radius:12px;border:1px solid var(--border);background:var(--bg-primary)}
+.tscroll-demo{max-width:220px;overflow-x:auto;overflow-y:auto;border-radius:12px;border:1px solid var(--border);background:var(--bg-primary)}
 .tscroll-table{border-collapse:collapse}.tscroll-table th,.tscroll-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
 .tscroll-demo.broken{overflow-x:visible}.tscroll-demo.broken .tscroll-table{width:100%;table-layout:fixed}.tscroll-demo.broken th,.tscroll-demo.broken td{white-space:normal;overflow-wrap:anywhere}
 .measure-card{display:grid;place-items:center;width:200px;height:120px;border-radius:18px;border:1px solid var(--border);background:var(--bg-primary);font-weight:800}
