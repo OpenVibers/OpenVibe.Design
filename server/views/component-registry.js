@@ -13,6 +13,8 @@ const PAGE_EXTRA = {
     'search-field': { shared: ['ov-searchbox.js'] },
     'form-controls': { sharedStyles: ['ov-forms.css'] },
     chat: { shared: ['messages.js', 'ov-composer.js'], sharedStyles: ['messages.css'], scripts: ['js/component-chat.js'] },
+    picker: { shared: ['ov-picker.js'], scripts: ['js/component-picker.js'] },
+    session: { shared: ['ov-session.js'], scripts: ['js/component-session.js'] },
 };
 const demo = {
     navbar: () => `<nav class="cr-mini-nav" aria-label="Demo navigation"><a href="/">${kit.icon('home')} OpenVibe</a><a href="/themes">Themes</a><details><summary>More</summary><a href="/look">Your look</a><a href="/components">Components</a></details></nav>`,
@@ -31,6 +33,10 @@ const demo = {
     'search-field': () => `<form class="cr-search" action="/components" role="search" style="max-width:560px"><input name="q" placeholder="Search" aria-label="Search OpenVibe.Design" data-ov-searchbox="/api/v1/suggest" data-ov-examples="components|rules|themes"></form><p class="cr-note">Type “me”, then Tab. Press / from anywhere on the page.</p>`,
     'thread-composer': () => thread.composer({ action: '#', method: 'get', placeholder: 'Ask anything', tools: kit.sheetButton({ sheet: 'cr-options', label: 'Options', icon: 'more', iconOnly: false }), attach: { name: 'files' }, id: 'cr-composer' }) + kit.sheet({ id: 'cr-options', title: 'Options', body: kit.seg({ name: 'cr-model', label: 'Model', options: [['auto', 'Auto'], ['fast', 'Fast']], value: 'auto' }) }),
     chat: () => `<div class="cr-chat"><div class="cr-chat-views" role="group" aria-label="How messages look"><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-chat-view="room" aria-pressed="true">Room lines</button><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-chat-view="bubbles" aria-pressed="false">Bubbles</button></div><ol class="ovm-messages" id="cr-chat-list" aria-label="Demo conversation"></ol><div id="cr-chat-box"></div><p class="ds-fine">Hover a message (on a phone, tap it): reply, edit, translate and copy are one cluster at its corner. Edit puts the words in the box; Enter saves, Esc puts back what was there. The demo keeps its messages on this page.</p></div>`,
+    // The picker: three ways it opens (a long list with sections and search, several at once, a short menu).
+    picker: () => `<div class="cr-picker" style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" class="ovk-btn" data-cr-pick="model">${kit.icon('spark')} Model: <b data-cr-pick-v="model">Auto</b></button><button type="button" class="ovk-btn" data-cr-pick="sources">${kit.icon('search')} Sources: <b data-cr-pick-v="sources">Web</b></button><button type="button" class="ovk-btn ovk-btn--quiet" data-cr-pick="more">${kit.icon('more')} More</button></div><p class="ds-fine" data-cr-pick-said aria-live="polite"></p>`,
+    // A session with a coding agent, on this page's own recorded data (nothing leaves the page).
+    session: () => '<div class="cr-session" id="cr-session" style="height:min(640px,80vh);border:1px solid var(--border,rgba(127,127,127,.2));border-radius:16px;overflow:hidden"></div>',
     sheet: () => kit.sheetButton({ sheet: 'cr-sheet', label: 'Open sheet', icon: 'plus', iconOnly: false }) + kit.sheet({ id: 'cr-sheet', title: 'Add a site', body: `<p>Pick a site and theme.</p>${kit.seg({ name: 'cr-theme', label: 'Look', options: [['vibe', 'Vibe'], ['daylight', 'Daylight']], value: 'vibe' })}` }),
     popover: () => kit.more({ label: 'More choices', items: [{ href: '/themes', label: 'Themes', icon: 'palette' }, { href: '/look', label: 'Your look', icon: 'user' }] }),
     keyboard: () => `<label class="cr-field">A keyboard-aware field <input type="text" placeholder="Focus this field"></label><p class="ds-fine">Tab moves forward; Escape closes a menu or sheet and returns focus.</p>`,
@@ -54,7 +60,7 @@ function registryLinks() {
 
 const GROUPS = [
     ['Navigation', ['navbar', 'menu', 'you-home', 'dock', 'dock-tabs']],
-    ['Writing and choosing', ['chat', 'thread-composer', 'search-field', 'form-controls', 'sheet', 'popover', 'keyboard']],
+    ['Writing and choosing', ['session', 'picker', 'chat', 'thread-composer', 'search-field', 'form-controls', 'sheet', 'popover', 'keyboard']],
     ['Content', ['kit-row', 'kit-card', 'kit-section', 'empty-state']],
     ['Settings', ['switch-row', 'segmented-control']],
     ['Files and AI', ['upload-progress', 'ai-choice']],
