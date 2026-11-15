@@ -831,6 +831,10 @@ const RULES = Object.freeze([
         'Whatever order a page of messages arrives in, the thread sorts it by when each was sent. The day line says Today, Yesterday, the weekday, then the date; a new run starts with another sender or after ten quiet minutes, and its head says the time.',
         '2026-11-15', 'The owner, 11-15, on a DM in the menu\'s Chat tab: "the conversations aren\'t ordered correctly and are missing dates and timestamps".',
         [], ['openvibe-shared test: dock-chrome']),
+    R('one-ring-per-field', 'look', 'A field inside a box has one border and one focus ring: the box\'s.',
+        'When a search, a message box or any field sits in a pill or a card, the pill draws the border and the focus ring (on focus-within); the input inside is bare: no border, outline, shadow, radius or the platform\'s search look. A plain field on its own shows its ring as its border and outline, never a box-shadow halo.',
+        '2026-11-15', 'The owner, 11-15, on a phone screenshot of the session search: "These text inputs are ugly as shit. Why does it have a double border instead of just being no border on the inner one?"',
+        [{ label: 'Forms', href: '/forms' }], ['openvibe-shared test: ov-forms-focus-ring-chrome', 'openvibe-shared test: ov-session-chrome']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
