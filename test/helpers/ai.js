@@ -146,6 +146,20 @@ async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.00
             return json(201, { run });
         }
 
+        // The live state (the design deep dive's live view on /research/:id), adding or dropping sites, cancelling.
+        const live = /^\/api\/v1\/deep-dives\/([^/]+)\/(state|sites)$/.exec(url.pathname);
+        if (live && st.deepDives.has(decodeURIComponent(live[1]))) {
+            st.requests.push({ method: req.method, path: url.pathname, body, claims });
+            const id = decodeURIComponent(live[1]);
+            const base = st.liveState || { status: 'running', step: 'capture', progress: 0.5, steps: [{ key: 'plan', status: 'done', detail: '7 questions' }, { key: 'search', status: 'done', detail: '20 sources from 4 engines' }, { key: 'choose', status: 'done', detail: '2 sites' }, { key: 'capture', status: 'running', detail: '1/2 sites' }], site_limit: 6,
+                candidates: [{ url: 'https://acme.example/controls', title: 'Acme controls', reason: 'a phone-first panel', source_id: 'src_acme', chosen: true }], captures: [{ id: 'cap_1', source_id: 'src_acme', url: 'https://acme.example/controls', viewport: 390, theme: 'light', skip: null, cached: false }], gaps: [], error: null };
+            return json(200, { deep_dive: { id, run_id: id, ...base, created_at: new Date(Date.now() - 60000).toISOString() } });
+        }
+        const cancelled = /^\/api\/v1\/runs\/([^/]+)\/cancel$/.exec(url.pathname);
+        if (cancelled && req.method === 'POST') {
+            st.requests.push({ method: 'POST', path: url.pathname, claims });
+            return json(200, { run: { id: decodeURIComponent(cancelled[1]), status: 'cancelled' } });
+        }
         const shot = /^\/api\/v1\/deep-dives\/([^/]+)\/shots\/([^/]+)$/.exec(url.pathname);
         if (shot && req.method === 'GET') {
             st.requests.push({ method: 'GET', path: url.pathname, claims });
@@ -164,7 +178,7 @@ async function startAi({ models = DEFAULT_MODELS, htmlFor = null, costUsd = 0.00
             const dive = st.deepDives.get(id);
             if (dive) {
                 st.deepDiveReads++;
-                const done = st.deepDiveStatus === 'succeeded' || st.deepDiveReads > 1;
+                const done = !st.deepDiveHold && (st.deepDiveStatus === 'succeeded' || st.deepDiveReads > 1);
                 const run = done
                     ? { ...dive.run, status: st.deepDiveStatus, output: dive.report, usage: { cost_usd: 0.25, tokens_in: 100, tokens_out: 200 } }
                     : dive.run;
