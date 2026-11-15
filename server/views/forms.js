@@ -48,6 +48,30 @@ const CONTROLS_SNIPPET = `<label><input type="checkbox" role="switch" checked> S
 <!-- The browser's own look for one control, or a part of the page: -->
 <input type="range" data-ov-native>`;
 
+// One ring per field (design rule one-ring-per-field; the owner, 11-15: "make sure that input double border shit is fixed
+// for all element types"): every type people type into, shown plain and inside a box.
+const RING_TYPES = [
+    ['text', 'Text'], ['search', 'Search'], ['email', 'Email', ' autocomplete="off"'], ['url', 'Address'], ['tel', 'Phone'],
+    ['password', 'Password', ' autocomplete="new-password"'], ['number', 'Number'], ['date', 'Date'], ['time', 'Time'],
+    ['datetime-local', 'Date and time'], ['month', 'Month'], ['week', 'Week'],
+];
+const RINGS_SNIPPET = `<!-- A field in a box: the box draws the border and the focus ring; the field is bare. -->
+<label class="pill">
+  <input type="search" placeholder="Search or ask">
+</label>
+.pill { border: 1px solid var(--border); border-radius: 999px; }
+.pill:focus-within { border-color: var(--accent); }
+.pill input { border: 0; outline: none; background: none; }
+
+<!-- On every OpenVibe site the navbar keeps it so even when a page forgets:
+     a field in a box is marked data-ov-field="inner" or "bare" and the box
+     [data-ov-fieldbox] takes the accent; a field on its own keeps its ring
+     on its border (outline-offset 0), never apart from it. -->
+
+// Check a page: openvibe-shared/field-rings (the browser check's "rings")
+const { RINGS } = require('openvibe-shared/field-rings');
+const { fields, doubles } = await page.evaluate(\`(\${RINGS})()\`);`;
+
 const VISIBILITY = [{ value: 'public', label: 'Public', icon: 'globe' }, { value: 'unlisted', label: 'Unlisted', icon: 'link' }, { value: 'private', label: 'Private', icon: 'lock' }];
 
 const MODELS = [
@@ -163,6 +187,23 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
       </div>
     </div>
     <div class="fm-code">${kit.snippet({ code: fieldSnippet, id: 'fm-field-code', label: 'Copy' })}${kit.snippet({ code: choiceSnippet, id: 'fm-choice-code', label: 'Copy' })}</div>
+  </div>
+</section>
+
+<section class="fm-sec" id="fm-rings" aria-labelledby="fm-rings-h">
+  <div class="fm-sec-head"><h2 id="fm-rings-h">One ring per field</h2><p>Every kind of field has one border and one focus ring. Inside a pill, a search bar, a composer or a chip, the box draws them: the field inside is bare, and the box takes the accent while it holds the focus. A field on its own rings on its border, never a second ring apart from it. The navbar measures each field once it is drawn and keeps it that way on every site; the browser check fails a page that draws two. Try each one: focus it, or tab through.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live fm-stack">
+      <div class="fm-rings-grid">
+        ${RING_TYPES.map(([t, label, extra]) => `<div class="ov-field"><label for="fm-r-${t}">${esc(label)}</label><input id="fm-r-${t}" type="${t}"${extra || ''}></div>`).join('')}
+        <div class="ov-field"><label for="fm-r-textarea">Long text</label><textarea id="fm-r-textarea" rows="2"></textarea></div>
+        <div class="ov-field"><label for="fm-r-select">Pick one</label><select id="fm-r-select"><option>Hourly</option><option>Daily</option><option>Weekly</option></select></div>
+      </div>
+      <p class="fm-rings-cap">In a box: the box's ring is the only one.</p>
+      <label class="fm-pill"><span class="fm-pill-ic" aria-hidden="true">${kit.icon('search')}</span><input type="search" placeholder="Search or ask" aria-label="Search or ask"><button type="button" class="fm-pill-go" aria-label="Go">${kit.icon('chevron')}</button></label>
+      <div class="fm-pill fm-pill-compose"><div contenteditable="true" role="textbox" aria-label="Message" data-placeholder="Write a message"></div><button type="button" class="fm-pill-go" aria-label="Send">${kit.icon('send')}</button></div>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: RINGS_SNIPPET, id: 'fm-rings-code', label: 'Copy' })}</div>
   </div>
 </section>
 
