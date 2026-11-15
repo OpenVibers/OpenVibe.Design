@@ -9,7 +9,7 @@
 .kt code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
 
 /* Groups, as a rail of links */
-.kt-gnav { display: flex; gap: 6px; margin: 22px 0 0; padding: 2px 0 8px; overflow-x: auto; scrollbar-width: thin; }
+.kt-gnav { display: flex; gap: 6px; margin: 22px 0 0; padding: 2px 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
 .kt-gnav a { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 13px; border: 1px solid var(--border, #26344d); border-radius: 999px;
     color: var(--text-primary, #e6edf7); font-weight: 750; font-size: .86rem; text-decoration: none; background: var(--bg-card, #0f1729); }
 .kt-gnav a span { color: var(--text-muted, #7386a3); font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -95,9 +95,9 @@
 
 @media (max-width: 759px) {
   /* A group is a rail a swipe wide, not a column of tiles */
-  .kt-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+  .kt-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding-bottom: 8px; }
   .kt-tile { scroll-snap-align: start; }
-  .kt-use-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 88%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; align-items: stretch; }
+  .kt-use-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 88%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding-bottom: 8px; align-items: stretch; }
   .kt-use-card { scroll-snap-align: start; }
   .kt-thumb { height: 148px; }
   .kt-pn { grid-template-columns: 1fr 1fr; }

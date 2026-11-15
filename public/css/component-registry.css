@@ -65,7 +65,7 @@
 
 /* The registry list and an entry page (Opus, 11-09): a chip row to jump between groups, each group's line under its
    name, cards with their counts and module; an entry's states and tokens as chips beside its behaviour. */
-.crl-jump { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 18px 0 6px; padding-bottom: 4px; }
+.crl-jump { display: flex; gap: 6px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; margin: 18px 0 6px; padding-bottom: 4px; }
 .crl-jump::-webkit-scrollbar { display: none; }
 .crl-jump a { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--ovk-line); color: var(--ovk-text); text-decoration: none; font-size: .88rem; font-weight: 600; }
 .crl-jump a:hover { border-color: var(--ovk-accent, var(--accent)); }

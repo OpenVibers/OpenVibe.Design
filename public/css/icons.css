@@ -86,7 +86,7 @@
 
 .ic-use,.gp-use{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ic-use>div,.gp-use>div{min-width:0}
-.ic-use pre,.gp-use pre,.legacy-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;padding-right:52px}
+.ic-use pre,.gp-use pre,.legacy-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;overflow-y:auto;padding-right:52px}
 .ic-use h3,.gp-use h3{margin-top:0}
 /* L50 step 3: the ways to use a glyph. The rest fold under a count of what is inside, never behind tabs. */
 .gp-note{margin:-4px 0 8px;color:var(--text-secondary);font-size:13px;line-height:1.5}
@@ -221,7 +221,7 @@ html[data-ov-motion=off] .ic-tile:hover{transform:none}
 .mg-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .mg-go{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .mg-go>span{color:var(--text-muted);font-size:13px}
-.mg-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+.mg-wrap{overflow-x:auto;overflow-y:auto;border-radius:14px;border:1px solid var(--border)}
 .mg-table{width:100%;border-collapse:collapse;font-size:14px}
 .mg-table th{position:sticky;top:0;padding:10px 14px;text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);background:var(--bg-secondary);border-bottom:1px solid var(--border)}
 .mg-table td{padding:10px 14px;border-bottom:1px solid color-mix(in srgb,var(--border) 70%,transparent);vertical-align:middle}
@@ -265,7 +265,7 @@ html[data-ov-motion=off] .ic-tile:hover{transform:none}
 .ic-left-fold>.ic-left{padding:4px 14px 14px}
 /* A phone: the downloads are a sideways rail, not seven stacked cards. */
 @media (max-width:520px){
-  .ic-packs{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:6px;margin-right:-16px;padding-right:16px}
+  .ic-packs{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:6px;margin-right:-16px;padding-right:16px}
   .ic-packs li{flex:0 0 min(72%,240px);scroll-snap-align:start}
 }
 

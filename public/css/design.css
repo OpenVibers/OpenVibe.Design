@@ -51,7 +51,7 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds-see { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--text-muted, #7386a3); }
 .ds-see select, .ds-submit input, .ds-field input[type=text] { min-height: 36px; padding: 4px 10px; border-radius: 10px; border: 1px solid var(--border, #1f2d47); background: var(--bg-input, #0d1322); color: var(--text-primary, #e6edf7); font: inherit; font-size: .86rem; }
 @media (max-width: 1099px) {
-    .ds-gal-list { grid-auto-flow: column; grid-auto-columns: minmax(180px, 64%); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: thin; }
+    .ds-gal-list { grid-auto-flow: column; grid-auto-columns: minmax(180px, 64%); overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: thin; }
     .ds-gal-list li { scroll-snap-align: start; }
 }
 @media (min-width: 1100px) {
@@ -236,7 +236,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .ar-output-h h2 { overflow-wrap: anywhere; }
 
 /* Leaderboards: one card per category, numbers right-aligned, the leader in the room colour */
-.ar-lb { padding: 14px 16px 4px; border: 1px solid var(--border, #26344d); border-radius: 16px; background: var(--bg-card, #0f1729); overflow-x: auto; }
+.ar-lb { padding: 14px 16px 4px; border: 1px solid var(--border, #26344d); border-radius: 16px; background: var(--bg-card, #0f1729); overflow-x: auto; overflow-y: hidden; }
 .ar-boards > .ar-lb-head h2 { font-size: clamp(1.15rem, 2.4vw, 1.45rem); }
 .ar-table tr:last-child td { border-bottom: 0; }
 .ar-table th:nth-child(n+3), .ar-table td:nth-child(n+3) { text-align: right; }
@@ -379,7 +379,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .dv-rc-t small { color: var(--text-secondary); font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 640px) {
     .dv-create { margin-top: 22px; }
-    .dv-kinds { grid-auto-columns: minmax(84px, 1fr); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -8px; padding: 0 8px; scroll-snap-type: x proximity; }
+    .dv-kinds { grid-auto-columns: minmax(84px, 1fr); overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -8px; padding: 0 8px; scroll-snap-type: x proximity; }
     .dv-kinds::-webkit-scrollbar { display: none; }
     .dv-kinds label { scroll-snap-align: start; }
     .dv-kinds span { flex-direction: column; gap: 3px; min-height: 58px; font-size: .8rem; }
@@ -392,7 +392,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
     /* The options rise from the bottom over a dimmed page. */
     .dv-mod[open]::before { content: ""; position: fixed; inset: 0; z-index: 10005; background: rgba(0, 0, 0, .5); animation: dvFade .2s both; }
     .dv-mod-sheet { position: fixed; z-index: 10006; left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 76vh; padding: 16px 12px calc(16px + env(safe-area-inset-bottom, 0px)); border-radius: 24px 24px 0 0; border-width: 1px 0 0; transform-origin: 50% 100%; animation: dvRise .3s cubic-bezier(.2, .9, .25, 1) both; }
-    .dv-examples { flex-wrap: nowrap; overflow-x: auto; margin-left: -16px; margin-right: -16px; padding: 0 16px 4px; scrollbar-width: none; }
+    .dv-examples { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; margin-left: -16px; margin-right: -16px; padding: 0 16px 4px; scrollbar-width: none; }
     .dv-examples::-webkit-scrollbar { display: none; }
     .dv-examples button { flex: none; }
 }
@@ -404,7 +404,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .dv-heading a { font-size: .85rem; }
 .dv-heading h1 { max-width: 900px; margin: 18px 0 8px; font-size: clamp(1.45rem, 3vw, 2.5rem); letter-spacing: -.04em; line-height: 1.12; overflow-wrap: anywhere; }
 .dv-heading p { margin: 0; color: var(--text-muted); font-size: .9rem; }
-.dv-rail { display: flex; gap: 20px; max-width: 1600px; margin: 0 auto; padding: 8px 4px 24px; overflow-x: auto; scroll-snap-type: x mandatory; }
+.dv-rail { display: flex; gap: 20px; max-width: 1600px; margin: 0 auto; padding: 8px 4px 24px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; }
 .dv-card { flex: 0 0 min(34vw, 500px); min-width: 300px; scroll-snap-align: center; }
 .dv-frame { height: min(68vh, 680px); min-height: 440px; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); box-shadow: 0 14px 32px #0002; transition: box-shadow var(--ov-dur-2, .2s), transform var(--ov-dur-2, .2s); }
 .dv-frame iframe { display: block; border: 0; transform-origin: top left; max-width: none; }
@@ -525,7 +525,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 .tk-row small { color: var(--ovk-muted); }
 @media (min-width: 760px) { .tk-row { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; } }
 /* Exported code keeps its lines: it scrolls sideways inside its box instead of wrapping. */
-.tk .ovk-snip pre { white-space: pre; overflow-x: auto; }
+.tk .ovk-snip pre { white-space: pre; overflow-x: auto; overflow-y: auto; }
 /* The home's Create scene: the three steps, numbered. */
 .ds-flow { list-style: none; counter-reset: flow; margin: 0; padding: 0; display: grid; gap: 10px; }
 .ds-flow li { counter-increment: flow; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 2px 12px; padding: 14px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
@@ -643,7 +643,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
   .pick-bar { margin-top: 30px; }
   .pick-head { display: block; }
   .pick-head h2 { margin: 0 0 4px; font: 700 clamp(20px, 2.4vw, 28px)/1.2 var(--ov-font, 'Inter', system-ui, sans-serif); letter-spacing: -.02em; }
-  .pick-row { display: flex; gap: 8px; overflow-x: auto; margin: 10px -16px 0; padding: 2px 16px 4px; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .pick-row { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; margin: 10px -16px 0; padding: 2px 16px 4px; scrollbar-width: none; overscroll-behavior-x: contain; }
   .pick-row::-webkit-scrollbar { display: none; }
   .pick-chip { display: inline-flex; align-items: center; flex: none; min-height: 44px; padding: 0 15px; border-radius: 999px; border: 1px solid var(--border, #1f2d47); color: var(--text-secondary, #96a7c2); font-size: .9rem; font-weight: 650; white-space: nowrap; text-decoration: none; }
   .pick-chip:hover, .pick-chip:focus-visible { color: var(--text-primary, #e6edf7); border-color: var(--accent, #3b82f6); }
@@ -695,7 +695,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
    A sideways rail of kinds, the blind pair right under it, then one card per kind's board (a rail on a phone). */
 .ar-hero--arena { padding-bottom: 6px; }
 .ar-hero--arena #ar-total { margin: 8px 0 0; }
-.ar-kinds { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(138px, 1fr); gap: 8px; margin: 18px 0 0; padding: 2px 2px 10px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: thin;
+.ar-kinds { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(138px, 1fr); gap: 8px; margin: 18px 0 0; padding: 2px 2px 10px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scrollbar-width: thin;
     -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
 .ar-kind { scroll-snap-align: start; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 2px 9px; min-height: 58px; padding: 10px 11px; border: 1px solid var(--border, #26344d); border-radius: 14px;
     background: var(--bg-card, #0f1729); color: var(--text-primary, #e6edf7); text-decoration: none; transition: border-color var(--ov-dur-2, .15s), background-color var(--ov-dur-2, .15s); }
@@ -784,7 +784,7 @@ html.ar-fit .ar-shot--desktop .ar-shot-frame, html.ar-fit .ar-shot--desktop::bef
 @media (max-width: 759px) {
   .ar-kinds { grid-auto-columns: minmax(124px, 42%); margin-left: -2px; margin-right: -2px; }
   /* Nine boards side by side, a swipe apart, instead of nine cards down the page */
-  .ar-kboards { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+  .ar-kboards { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding-bottom: 8px; }
   .ar-kb { scroll-snap-align: start; }
   .ar-who { text-align: left; }
 }
@@ -1031,7 +1031,7 @@ html[data-ov-motion=off] .ar-vote-pair[data-pick] .ar-pickable{transform: none}
 .el-price > .ovk-i { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--accent-light); }
 .el-price b { display: block; font-weight: 650; }
 .el-price small { display: block; margin-top: 2px; color: var(--text-muted); font-size: .8125rem; }
-.el-pack-pick { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 4px -16px 0; padding: 0 16px 4px; }
+.el-pack-pick { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; margin: 4px -16px 0; padding: 0 16px 4px; }
 .el-pack-pick::-webkit-scrollbar { display: none; }
 .el-pack-pick .el-g-chip { padding: 0 14px; }
 @media (min-width: 761px) { .el-pack-pick { flex-wrap: wrap; margin: 4px 0 0; padding: 0; overflow: visible; } }
@@ -1051,7 +1051,7 @@ html[data-ov-motion=off] .ar-vote-pair[data-pick] .ar-pickable{transform: none}
    whole deck beside one action card. */
 .el-gallery .ovk-find { margin: 4px 0 10px; }
 .el-g-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 16px; }
-.el-g-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
+.el-g-chips { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
 .el-g-chips::-webkit-scrollbar { display: none; }
 .el-g-chip { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 7px; box-sizing: border-box;
   border-radius: 999px; border: 1px solid var(--ovk-line, rgba(255,255,255,.1)); background: var(--ovk-panel, rgba(255,255,255,.04)); color: var(--text-primary);
