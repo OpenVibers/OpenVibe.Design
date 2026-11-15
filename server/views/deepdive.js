@@ -114,7 +114,7 @@ ${notice ? `<p class="dd-notice">${esc(notice)}</p>` : ''}${error ? `<p class="d
 ${steps.length ? `<ol class="dd-steps">${steps.map((s) => `<li class="dd-step is-${esc(s.state || 'waiting')}"><span>${esc(s.name)}</span></li>`).join('')}</ol>` : ''}
 </header>
 ${points.length ? `<section class="dd-sec" aria-labelledby="dd-points-h"><h2 id="dd-points-h">The research points</h2>
-${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(p.text)}</p>${evidenceList(p.evidence, { crops: true, research: r })}</div></li>`).join('')}</ol>`).join('')}
+${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'research' ? 'What the best write-ups say' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(p.text)}</p>${evidenceList(p.evidence, { crops: true, research: r })}</div></li>`).join('')}</ol>`).join('')}
 </section>` : running ? kit.empty({ icon: 'spark', title: 'Still researching', text: 'The points appear here as the dive writes them up.' }) : kit.empty({ icon: 'search', title: 'No report yet', text: 'This deep dive has not produced a report.' })}
 ${proposals.length ? `<section class="dd-sec" aria-labelledby="dd-props-h"><h2 id="dd-props-h">Proposed from research</h2>${proposalsList(proposals, { compact: true })}</section>` : ''}
 <p class="dd-back"><a href="${r.designId ? `/d/${encodeURIComponent(r.designId)}` : '/create'}">${r.designId ? 'Back to the design' : 'Create a design'}</a></p>
@@ -162,10 +162,11 @@ ${proposalsList(proposals, { owner: true })}</section>`;
 // on Exchange's general deep dive, which researches any question). /deep-dive starts one; /research/:id follows it
 // live (public/js/deep-dive-live.js, the live view Exchange had) until its report is written. ──
 
-const STEP_LABELS = { plan: 'Planning', search: 'Searching', choose: 'Choosing sites', capture: 'Capturing', analyse: 'Analysing', synthesise: 'Writing it up', report: 'The report' };
+const STEP_LABELS = { plan: 'Planning', search: 'Searching', read: 'Reading write-ups', choose: 'Choosing sites', capture: 'Capturing', analyse: 'Analysing', synthesise: 'Writing it up', report: 'The report' };
 const STEP_NOTES = {
     plan: 'The questions an expert designer would ask, and the searches that answer them.',
     search: 'Exchange\'s research sources and engines, open-source projects on GitHub, design write-ups, and our own rules register and component registry.',
+    read: 'The general deep dive at its core: the best design write-ups read in full, noted against the questions, and answered with their sources.',
     choose: 'The sites worth capturing, with a reason each. On Thorough and Expert you can add or drop any before Capture.',
     capture: 'Each site at 390 and 1280 px, light and dark where it supports dark, full page after a slow scroll, with its measured type, colour, spacing and components.',
     analyse: 'A vision model reads each screenshot; a text model reads the measured facts and the words.',

@@ -43,6 +43,19 @@ const report = {
         const kim = t.network.addUser('kim');
         let researchId;
 
+        await check('a report built on the general deep dive leads with what the write-ups say, each with its pages', async () => {
+            const { normalizeReport } = require('../server/deepdive/report');
+            const withResearch = { ...report, research: { questions: [{ key: 'q', question: 'What makes a control panel usable?' }],
+                reads: [{ id: 'read_1', source_id: 'src_w', url: 'https://ux.example/panels', final_url: 'https://ux.example/panels', title: 'Panels', site: 'UX', published: null, read_at: '2026-11-15T22:00:00.000Z', words: 900, status: 'read', reason: null, relevant: true, summary: 'On panels.', kind: 'opinion', findings: [] }],
+                answer: { summary: 'Keep Stop alone.', key_points: [{ text: 'Stop is always one press away.', sources: ['src_w'] }], answers: [], comparison: null, disagreements: [], open_questions: [], next_steps: [] } } };
+            const n = normalizeReport(withResearch, { question: 'A phone-first robot control panel', depth: 'quick' });
+            assert.equal(n.points[0].group, 'research');
+            assert.equal(n.points[0].text, 'Stop is always one press away.');
+            assert.equal(n.points[0].evidence[0].url, 'https://ux.example/panels');
+            const { STEP_NAMES } = require('../server/deepdive/report');
+            assert.ok(STEP_NAMES.includes('Reading write-ups'), 'the read step has its name');
+        });
+
         await check('/deep-dive: what it does, a sign-in, then the form with the depths and their prices', async () => {
             let r = await t.get('/deep-dive');
             assert.equal(r.status, 200);
