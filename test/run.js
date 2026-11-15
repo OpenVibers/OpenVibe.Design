@@ -18,7 +18,7 @@ const { run } = require('openvibe-shared/test-runner');
 // here and needed ~50 s on a cold CI runner, where the 60 s limit timed it out once (11-11, Design #282). The other
 // files finish in seconds; only a stuck test waits this long. Live's runner declares 120 s for its Chrome tests the
 // same way.
-run({ dir: __dirname, timeoutMs: 90_000, pad: 34, parallel: 1 }).then((r) => {
+run({ dir: __dirname, timeoutMs: 90_000, pad: 34 }).then((r) => {
     if (process.env.VERBOSE) {
         for (const t of r.results) console.log(`\n── ${t.file} ──\n${t.output.trimEnd()}`);
         console.log(`\n${r.summary}`);
