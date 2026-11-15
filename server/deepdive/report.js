@@ -49,7 +49,7 @@ function evidenceOf(item) {
 function hostOf(url) { try { return new URL(String(url)).hostname.replace(/^www\./, ''); } catch { return ''; } }
 
 /** Turn the report into a numbered list a take can follow and a page can link to. */
-const STEP_LABEL = { plan: 'Planning', search: 'Searching', choose: 'Choosing sites', capture: 'Capturing', analyse: 'Analysing', synthesise: 'Writing it up', report: 'Writing it up' };
+const STEP_LABEL = { plan: 'Planning', search: 'Searching', read: 'Reading write-ups', choose: 'Choosing sites', capture: 'Capturing', analyse: 'Analysing', synthesise: 'Writing it up', report: 'Writing it up' };
 function pointsOf(report) {
     const source = object(report);
     const synth = object(source.synthesis);
@@ -66,6 +66,17 @@ function pointsOf(report) {
             else add(str(p.group || p.kind || 'point', 40), textOf(p), p, { rule: str(p.rule || p.rule_id, 80) || null });
         }
     } else {
+        // ai.deep-dive@1 1.1.0 (11-15): the general deep dive this one is built on read the best write-ups first; their
+        // answer's key points lead, each citing the pages it rests on.
+        const research = object(source.research);
+        const reads = list(research.reads);
+        for (const k of list(object(research.answer).key_points)) {
+            const evidence = list(k && k.sources).map((id) => {
+                const r = reads.find((x) => x && x.source_id === id);
+                return r ? { claim: str(k.text, 300), url: r.final_url || r.url, read_at: r.read_at, source_id: id, site: r.site || null } : null;
+            }).filter(Boolean);
+            add('research', k && k.text, { evidence });
+        }
         // ai.deep-dive@1: patterns say what and how many sites; do/don't are sentences; the reference tokens are
         // per source and are inspiration only; a recommendation states whether it follows or would change a rule.
         for (const item of list(synth.patterns || source.patterns)) {
@@ -206,7 +217,7 @@ function findsFor(report, component, limit = 6) {
     return out.filter((x) => { const k = `${x.title}|${x.cropId || x.crop || ''}`; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, limit);
 }
 /** The live step list for a running dive: the contract's seven steps, in order, as the words the brief names. */
-const CONTRACT_STEPS = ['plan', 'search', 'choose', 'capture', 'analyse', 'synthesise', 'report'];
+const CONTRACT_STEPS = ['plan', 'search', 'read', 'choose', 'capture', 'analyse', 'synthesise', 'report'];
 const STEP_NAMES = CONTRACT_STEPS.map((k) => STEP_LABEL[k]);
 function progressOf(run) {
     const r = object(run);

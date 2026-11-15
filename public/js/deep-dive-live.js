@@ -52,6 +52,9 @@
     var tiles = h('div', 'ddl-tiles');
     function tile(label) { var t = h('div', 'ddl-tile'); var v = h('b', 'ddl-v', '—'); var l = h('span', 'ddl-l', label); var s = h('small', 'ddl-s'); t.append(v, l, s); tiles.append(t); return { v: v, s: s }; }
     var tSources = tile('Sources found'), tSites = tile('Sites chosen'), tCaps = tile('Screenshots'), tTime = tile('Time');
+    // The screenshots themselves (Design, 11-15: "it should show screenshots it takes"): a strip, newest first.
+    var shotsBox = null, shotSeen = {};
+    if (S.shotUrl) { shotsBox = h('div', 'ddl-shotstrip'); shotsBox.setAttribute('data-dd-shots', ''); shotsBox.setAttribute('aria-label', 'The screenshots so far'); shotsBox.hidden = true; }
 
     var list = h('ol', 'ddl-steps');
     var rows = {};
@@ -78,7 +81,9 @@
     });
     var gapsBox = h('div', 'ddl-gaps');
     var err = h('p', 'dd-error'); err.setAttribute('role', 'alert'); err.hidden = true;
-    root.append(hero, tiles, list, gapsBox, err);
+    root.append(hero, tiles);
+    if (shotsBox) root.append(shotsBox);
+    root.append(list, gapsBox, err);
 
     // ── Breakdowns ──
     var siteRows = {};
@@ -179,6 +184,21 @@
         count(tCaps.v, shots || (rowsState.capture === 'running' || rowsState.capture === 'done' ? 0 : null));
         tCaps.s.textContent = chosen ? Object.keys(siteDone).length + ' of ' + chosen + ' sites done' : '';
 
+        if (shotsBox) {
+            (st.captures || []).forEach(function (c) {
+                if (!c || c.skip || shotSeen[c.id] || !c.crops || !c.crops.length) return;
+                shotSeen[c.id] = 1;
+                var what = host(c.url) + ' · ' + (c.viewport < 700 ? 'phone' : 'computer') + ' · ' + (c.theme || 'light');
+                var a = h('a', 'ddl-shot is-new' + (c.viewport < 700 ? ' is-phone' : ''));
+                a.href = S.shotUrl + encodeURIComponent(c.id);
+                a.setAttribute('data-dd-shot', what);
+                var im = h('img'); im.src = S.shotUrl + encodeURIComponent(c.crops[0].id); im.alt = what; im.loading = 'lazy'; im.decoding = 'async';
+                a.append(im, h('span', null, what));
+                shotsBox.insertBefore(a, shotsBox.firstChild);
+                setTimeout(function () { a.classList.remove('is-new'); }, 600);
+            });
+            shotsBox.hidden = !shotsBox.firstChild;
+        }
         gapsBox.textContent = '';
         if (st.gaps && st.gaps.length) { var g = h('details', 'ddl-gapfold'); g.append(h('summary', null, 'What it could not do (' + st.gaps.length + ')')); st.gaps.forEach(function (x) { g.append(h('p', 'ddl-note', String(x))); }); gapsBox.append(g); }
         err.hidden = !st.error;
