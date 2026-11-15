@@ -248,6 +248,18 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         return { run, citations: out && out.citations || [] };
     }
 
+    /** The live state (AI's /api/v1/deep-dives/:id/state): the steps, the sites chosen, the captures as they land. */
+    async function state(runId) {
+        const out = await call('GET', `/api/v1/deep-dives/${encodeURIComponent(String(runId || ''))}/state`, null);
+        return (out && (out.deep_dive || out.deepDive)) || null;
+    }
+
+    /** While a Thorough or Expert dive is choosing: add or drop sites, or start the capture now. */
+    async function sites(runId, { add = [], drop = [], start = false } = {}) {
+        const out = await call('POST', `/api/v1/deep-dives/${encodeURIComponent(String(runId || ''))}/sites`, { ...(add.length ? { add } : {}), ...(drop.length ? { drop } : {}), ...(start ? { start: true } : {}) });
+        return (out && (out.deep_dive || out.deepDive)) || null;
+    }
+
     async function cancel(runId) {
         const out = await call('POST', `/api/v1/runs/${encodeURIComponent(runId)}/cancel`, {});
         return out && (out.run || out);
@@ -308,7 +320,7 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         return 'running';
     }
 
-    return { enabled, start, getRun, cancel, crop, options, reportOf, statusOf, progressOf, publicReportUrl: (id) => `${publicBase}${reportPath.replace(':id', String(id || ''))}`, STEP_NAMES, pollMs, waitMs, DEPTH_NAMES };
+    return { enabled, start, getRun, state, sites, cancel, crop, options, reportOf, statusOf, progressOf, publicReportUrl: (id) => `${publicBase}${reportPath.replace(':id', String(id || ''))}`, STEP_NAMES, pollMs, waitMs, DEPTH_NAMES };
 }
 
 module.exports = { createDeepDiveAi, DeepDiveError, parsePrices, DEPTH_NAMES };

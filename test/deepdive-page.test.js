@@ -1,0 +1,132 @@
+'use strict';
+
+/**
+ * The design deep dive's own pages on OpenVibe.Design (11-15, the owner: the deep dive "was supposed to be for
+ * openvibe.design", built on Exchange's general deep dive):
+ *   - /deep-dive: what it does; signed out, a sign-in; signed in, the form with the depths and their prices; starting
+ *     one signed out signs in and comes back with the question kept;
+ *   - starting one asks AI for a design deep dive for the person and opens /research/:id;
+ *   - /research/:id while it runs: the live view (its seed and script), Stop; /research/:id/state is AI's state, the
+ *     person's own only; choosing: the candidates with Drop, Add and Start the capture (AI gets them); Stop cancels;
+ *   - when it ends, /research/:id is the report;
+ *   - "Your deep dives" lists it.
+ */
+
+const assert = require('assert');
+const { boot, check, done } = require('./helpers/boot');
+const { startAi } = require('./helpers/ai');
+
+const report = {
+    id: 'run_x', schema: 'ai.deep-dive@1', status: 'succeeded',
+    input: { question: 'A phone-first robot control panel', depth: 'quick', max_sites: 6, sites: [] },
+    steps: [], sources: [], captures: [], analysis: [],
+    synthesis: { patterns: [{ name: 'One primary button in the thumb arc', what: 'The primary button sits in the thumb arc.', sites: [], usage_count: 2, evidence: [] }], comparison: { columns: [], rows: [] }, best: { source_id: null, what: '', evidence: [] }, mistakes: [], gap: 'No one shows the state.', reference_tokens: { palettes: [], type_scales: [], spacing: [] }, do: ['Keep Stop visible.'], dont: [], accessibility: [], speed: [] },
+    recommendations: [], receipt: { price_usd: 0.25, held_usd: 0.25, cost_usd: 0.1, models: [], captures_count: 0, synthetic: false }, gaps: [],
+    created_at: '2026-11-15T22:00:00.000Z', updated_at: '2026-11-15T22:03:00.000Z', finished_at: '2026-11-15T22:03:00.000Z',
+};
+
+(async () => {
+    const dive = await startAi({ deepDive: {
+        options: { depths: [
+            { id: 'quick', name: 'Quick', price_usd: 0.25, sites: 6, minutes: 3, line: 'Six sites, about three minutes' },
+            { id: 'thorough', name: 'Thorough', price_usd: 0.65, sites: 15, line: 'Fifteen sites' },
+            { id: 'expert', name: 'Expert', price_usd: 1.5, sites: 30, line: 'Thirty sites' },
+        ] },
+        report,
+    } });
+    dive.state.deepDiveHold = true;   // the dive keeps running until the test lets it finish
+    const t = await boot({ env: { DESIGN_DEEP_DIVE_URL: dive.url, DESIGN_DEEP_DIVE_POLL_MS: '5' } });
+    const ORIGIN = 'https://openvibe.design';
+    const form = (o) => new URLSearchParams(o).toString();
+    try {
+        const owner = t.network.addUser('goosely', { role: 'owner' });
+        const kim = t.network.addUser('kim');
+        let researchId;
+
+        await check('/deep-dive: what it does, a sign-in, then the form with the depths and their prices', async () => {
+            let r = await t.get('/deep-dive');
+            assert.equal(r.status, 200);
+            assert.match(r.text, /<h1>Design deep dive<\/h1>/);
+            assert.match(r.text, /Sign in to run a design deep dive/);
+            assert.match(r.text, /What a design deep dive does/);
+            assert.match(r.text, /Exchange.{0,20}s deep dive/, 'it says it builds on Exchange\'s');
+            r = await t.get('/deep-dive?q=A%20robot%20panel', { as: owner });
+            assert.match(r.text, /What are you designing\?/);
+            assert.match(r.text, /<textarea name="question"[^>]*>A robot panel<\/textarea>/);
+            assert.match(r.text, /name="depth" value="quick" checked/);
+            assert.match(r.text, /25¢/);
+            assert.match(r.text, /\$1\.50/);
+        });
+
+        await check('starting: signed out signs in with the question kept; signed in, a design dive for the person, then its page', async () => {
+            let r = await t.get('/deep-dive', { method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ question: 'A phone-first robot control panel', depth: 'quick' }) });
+            assert.equal(r.status, 303);
+            assert.equal(r.headers.get('location'), `/auth/login?next=${encodeURIComponent('/deep-dive?q=A%20phone-first%20robot%20control%20panel')}`);
+            r = await t.get('/deep-dive', { as: owner, method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ question: 'A phone-first robot control panel', depth: 'quick', sites: 'https://acme.example/controls' }) });
+            assert.equal(r.status, 303, r.text.slice(0, 300));
+            const m = /^\/research\/([^/]+)$/.exec(r.headers.get('location') || '');
+            assert.ok(m, r.headers.get('location'));
+            researchId = decodeURIComponent(m[1]);
+            const started = dive.requests.filter((x) => x.method === 'POST' && x.path === '/api/v1/deep-dives').pop();
+            assert.ok(started, 'AI was asked');
+            assert.equal(started.body.question, 'A phone-first robot control panel');
+            assert.notEqual(started.body.kind, 'research', 'a design deep dive');
+            assert.deepEqual(started.body.on_behalf_of, { type: 'user', id: owner.sub || owner.subject || started.body.on_behalf_of.id });
+            r = await t.get('/deep-dive', { as: owner, method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ question: '' }) });
+            assert.equal(r.status, 422);
+            assert.match(r.text, /Say what you are designing first/);
+        });
+
+        await check('/research/:id while it runs: the live view and Stop; its state is the person\'s own', async () => {
+            let r = await t.get(`/research/${encodeURIComponent(researchId)}`, { as: owner });
+            assert.equal(r.status, 200);
+            assert.match(r.text, /data-dd-run/);
+            assert.match(r.text, /js\/deep-dive-live\.js/);
+            const seed = JSON.parse(/<script type="application\/json" id="dd-state">([\s\S]*?)<\/script>/.exec(r.text)[1]);
+            assert.deepEqual([seed.stateUrl, seed.state.status, seed.state.captures.length, seed.labels.capture], [`/research/${encodeURIComponent(researchId)}/state`, 'running', 1, 'Capturing']);
+            assert.match(r.text, /Stop the deep dive/);
+            r = await t.get(`/research/${encodeURIComponent(researchId)}/state`, { as: owner });
+            assert.equal(r.status, 200);
+            assert.equal(r.json().deep_dive.step, 'capture');
+            r = await t.get(`/research/${encodeURIComponent(researchId)}/state`, { as: kim });
+            assert.equal(r.status, 404, 'someone else\'s dive is not found');
+            r = await t.get(`/research/${encodeURIComponent(researchId)}/state`);
+            assert.equal(r.status, 401);
+        });
+
+        await check('choosing: the candidates with Drop, Add and Start the capture, sent to AI; Stop cancels', async () => {
+            dive.state.liveState = { status: 'choosing', step: 'choose', progress: 0.34, steps: [{ key: 'choose', status: 'running' }], site_limit: 15,
+                candidates: [{ url: 'https://acme.example/controls', title: 'Acme controls', reason: 'a phone-first panel', source_id: 'src_acme', chosen: true }], captures: [], gaps: [], error: null };
+            let r = await t.get(`/research/${encodeURIComponent(researchId)}`, { as: owner });
+            assert.match(r.text, /Choose the sites to capture/);
+            assert.match(r.text, /name="drop" value="https:\/\/acme\.example\/controls"/);
+            assert.match(r.text, /Start the capture/);
+            r = await t.get(`/research/${encodeURIComponent(researchId)}/sites`, { as: owner, method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ sites: 'https://beta.example/panel', start: '1' }) });
+            assert.equal(r.status, 303);
+            const sites = dive.requests.filter((x) => x.method === 'POST' && /\/sites$/.test(x.path)).pop();
+            assert.deepEqual(sites.body, { add: ['https://beta.example/panel'], start: true });
+            r = await t.get(`/research/${encodeURIComponent(researchId)}/cancel`, { as: owner, method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: '' });
+            assert.equal(r.status, 303);
+            assert.ok(dive.requests.some((x) => x.method === 'POST' && /\/cancel$/.test(x.path)), 'AI was asked to cancel');
+            r = await t.get(`/research/${encodeURIComponent(researchId)}/cancel`, { as: owner, method: 'POST', origin: 'https://evil.example', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: '' });
+            assert.equal(r.status, 403, 'only from openvibe.design');
+        });
+
+        await check('when it ends, /research/:id is the report; Your deep dives lists it', async () => {
+            dive.state.deepDiveHold = false;
+            dive.state.deepDiveStatus = 'succeeded';
+            dive.state.liveState = { status: 'succeeded', step: 'report', progress: 1, steps: [], candidates: [], captures: [], gaps: [], error: null };
+            const r = await t.get(`/research/${encodeURIComponent(researchId)}`, { as: owner });
+            assert.equal(r.status, 200);
+            assert.ok(!/data-dd-run/.test(r.text), 'no live view for a finished dive');
+            assert.match(r.text, /The research points/);
+            const home = await t.get('/deep-dive', { as: owner });
+            assert.match(home.text, /Your deep dives/);
+            assert.match(home.text, new RegExp(`href="/research/${encodeURIComponent(researchId)}"`));
+        });
+    } finally {
+        await t.close();
+        await dive.close();
+    }
+    done();
+})().catch((err) => { console.error(err); process.exit(1); });
