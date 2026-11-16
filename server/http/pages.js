@@ -149,8 +149,9 @@ function createPageRoutes(ctx) {
         if (!question) return diveHome(req, res, 422, { error: 'Say what you are designing first.' });
         const depth = ['quick', 'thorough', 'expert'].includes(req.body.depth) ? req.body.depth : 'quick';
         const sites = String(req.body.sites || '').split(/\r?\n/).map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x)).slice(0, 30);
+        const diveOptions = require('../deepdive/options').fromForm(req.body);
         try {
-            const out = await ctx.deepDive.create({ owner: subjectOf(req), question, depth, sites, token: tokenOf(req) });
+            const out = await ctx.deepDive.create({ owner: subjectOf(req), question, depth, sites, token: tokenOf(req), diveOptions });
             return res.redirect(303, `/research/${encodeURIComponent(out.research.id)}`);
         } catch (err) {
             return diveHome(req, res, [401, 402, 422, 503].includes(err.status) ? err.status : 502, { question, error: err.detail || err.message || 'The deep dive could not start.' });

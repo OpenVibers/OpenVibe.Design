@@ -204,6 +204,30 @@ const STEP_NOTES = {
 const jsLit = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 const when = (iso) => { if (!iso) return ''; try { return new Date(iso).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'; } catch { return String(iso); } };
 
+/** Every option of a design deep dive (deepdive/options.js reads them back): what to capture, how much, image search. */
+function optionsFold() {
+    const chip = (type, name, value, label, on, hint = '') => `<label class="ddh-chip"><input type="${type}" name="${name}" value="${esc(value)}"${on ? ' checked' : ''}><span>${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ''}</span></label>`;
+    const row = (title, body, note = '') => `<div class="ddh-opt"><span class="ddh-opt-k">${esc(title)}</span><div class="ddh-chips">${body}</div>${note ? `<small class="ddh-opt-note">${esc(note)}</small>` : ''}</div>`;
+    const num = (name, min, max, placeholder, label) => `<label class="ddh-num"><span>${esc(label)}</span><input type="number" name="${name}" min="${min}" max="${max}" inputmode="numeric" placeholder="${esc(placeholder)}"></label>`;
+    return `<details class="ddh-more" data-ddh-options><summary><span>Options</span><small>Phone and computer · light and dark · image search, past year</small></summary>
+<input type="hidden" name="custom" value="1" data-ddh-custom disabled>
+<div class="ddh-more-body">
+<fieldset class="ddh-group"><legend>What to capture</legend>
+${row('Sizes', chip('checkbox', 'vp', '390', 'Phone', true, '390 px') + chip('checkbox', 'vp', '1280', 'Computer', true, '1280 px'))}
+${row('Themes', chip('checkbox', 'th', 'light', 'Light', true) + chip('checkbox', 'th', 'dark', 'Dark', true, 'where the site has it'))}
+${row('Expert extras', chip('checkbox', 'extras', '1', 'At any depth', false, 'menus, hover and focus, axe-core, speed'))}
+</fieldset>
+<fieldset class="ddh-group"><legend>How much</legend><div class="ddh-nums">${num('sites', 1, 30, 'the depth\'s', 'Sites to capture')}${num('writeups', 0, 12, 'the depth\'s', 'Write-ups to read')}</div></fieldset>
+<fieldset class="ddh-group"><legend>Image search, a page at a time</legend>
+${row('Image search', chip('radio', 'images', '1', 'On', true) + chip('radio', 'images', '0', 'Off', false), 'Each engine\'s page of results laid out as one sheet and read whole.')}
+${row('From', ['any', 'day', 'week', 'month', 'year'].map((v) => chip('radio', 'recency', v, v === 'any' ? 'Any time' : `Past ${v}`, v === 'year')).join(''), 'Engines that cannot filter by date sit out a dated search.')}
+${row('Images per page', [24, 40, 60].map((v) => chip('radio', 'per_sheet', String(v), String(v), v === 40)).join(''))}
+${row('Engines', [['searxng', 'Google, Bing and more', 'OpenVibe SearXNG'], ['openverse', 'Openverse', ''], ['commons', 'Wikimedia Commons', ''], ['serpapi-images', 'Google Images', 'your SerpAPI key'], ['searchapi-images', 'Google or Bing', 'your SearchAPI key']].map(([v, l, h]) => chip('checkbox', 'eng', v, l, false, h)).join(''), 'None chosen: every engine OpenVibe runs.')}
+<label class="ddh-field"><span>Image searches <small>(optional, one a line; the question by default)</small></span><textarea name="img_q" rows="2" maxlength="900" placeholder="robot control panel ui"></textarea></label>
+</fieldset>
+</div></details>`;
+}
+
 /** /deep-dive: what a design deep dive does, the form (question, depth with its price, sites already known), your dives. */
 function deepDivePage({ options = null, recent = [], signedIn = false, question = '', error = null } = {}) {
     const depths = (options && Array.isArray(options.depths) ? options.depths : []);
@@ -215,6 +239,7 @@ function deepDivePage({ options = null, recent = [], signedIn = false, question 
 <label class="ddh-field"><span>What are you designing?</span><textarea name="question" rows="3" maxlength="500" required placeholder="A phone-first robot control panel">${esc(question)}</textarea></label>
 ${depthCards}
 <label class="ddh-field"><span>Sites you already know <small>(optional, one per line)</small></span><textarea name="sites" rows="2" maxlength="4000" placeholder="https://example.com/panel"></textarea></label>
+${optionsFold()}
 <div class="ddh-go">${kit.button({ label: 'Start the deep dive', type: 'submit', icon: 'spark' })}<p class="dv-fine">The price is held before it starts; you can stop it at any step.</p></div>
 ${error ? `<p class="dd-notice is-error" role="alert">${esc(error)}</p>` : ''}
 </form>`
@@ -234,7 +259,7 @@ ${step(6, 'Feeds your designs.', 'Its numbered points become the brief for a des
 <header class="ds-page-h"><p class="ds-kicker">Research first</p><h1>Design deep dive</h1>
 <p class="ds-lede">Expert design research: we research your question in full, capture the best sites at phone and computer sizes, and tell you what works and why, checked against OpenVibe's own rules.</p></header>
 ${form}${list}${what}</div>`;
-    return layout({ title: 'Design deep dive', description: 'Expert design research on OpenVibe.Design: the question researched in full, the best sites captured at phone and computer sizes and read as a designer, written up against our rules.', path: '/deep-dive', styles: ['css/deepdive.css'], body });
+    return layout({ title: 'Design deep dive', description: 'Expert design research on OpenVibe.Design: the question researched in full, the best sites captured at phone and computer sizes and read as a designer, written up against our rules.', path: '/deep-dive', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-options.js'], body });
 }
 
 /** /research/:id while it runs: the live view, drawn from AI's state and redrawn every two seconds; choosing sites. */
@@ -249,6 +274,7 @@ function researchLivePage({ research, state }) {
         state: { status: st.status || 'queued', step: st.step || 'plan', progress: st.progress || 0, steps: st.steps || [], site_limit: st.site_limit || null,
             candidates: (st.candidates || []).map((c) => ({ url: c.url, title: c.title, reason: c.reason, source_id: c.source_id, kind: c.kind, chosen: c.chosen })),
             captures: (st.captures || []).map((c) => ({ id: c.id, source_id: c.source_id, url: c.url, viewport: c.viewport, theme: c.theme, skip: c.skip, cached: c.cached, crops: (c.crops || []).slice(0, 1).map((x) => ({ id: x.id })) })),
+            image_sheets: (st.image_sheets || []).map((x) => ({ id: x.id, query: x.query, engine: x.engine, recency: x.recency, count: x.count })),
             gaps: st.gaps || [], error: st.error || null } };
     const choosing = st.status === 'choosing';
     const steps = new Map((st.steps || []).map((x) => [x.key, x]));
