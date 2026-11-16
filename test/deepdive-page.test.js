@@ -62,6 +62,31 @@ const report = {
             assert.ok(STEP_NAMES.includes('Reading write-ups'), 'the read step has its name');
         });
 
+        await check('the report: each point says its text once, a screenshot is drawn once, and an image sheet shows what the model saw', async () => {
+            // 11-16, a real report: the evidence line repeated the point word for word with "(Source 1)", and one crop was
+            // drawn under twenty points; the image sheet showed only its reading.
+            const { researchPage } = require('../server/views/deepdive');
+            const ev = { site: 'home-assistant.io', url: 'https://www.home-assistant.io/dashboards', cropId: 'crop_1_1', note: 'One hero per viewport. (Source 1)' };
+            const html = researchPage({ research: { id: 'rsr_1', question: 'A robot dashboard', depth: 'quick', status: 'done', points: [
+                { n: 1, group: 'pattern', text: 'One hero per viewport. (Source 1)', evidence: [ev] },
+                { n: 2, group: 'pattern', text: 'Status is explicit.', evidence: [{ ...ev, note: 'Offline states are said, not implied.' }] },
+            ], shots: [], imageSheets: [{ id: 'sheet_1', query: 'robot app dashboard ui', engine: 'Google and Bing images', recency: 'month', count: 38, width: 1654, height: 1036,
+                reading: 'Mostly dark dashboards.', patterns: ['Grid cards'], styles: ['dark UI with neon accents'], palette: ['#0a0f1f', 'red;x', '#00BAFF'], outliers: ['Row 1, column 1 is a photo'],
+                sources: [{ page: 'https://www.behance.net/x', title: 'Robot app' }, { page: 'javascript:alert(1)', title: 'Bad' }] }] } });
+            assert.ok(!/\(Source 1\)/.test(html), 'no citation tails');
+            assert.equal((html.match(/One hero per viewport\./g) || []).length, 1, 'the point says it once');
+            assert.equal((html.match(/<img class="dd-crop" src="\/research\/rsr_1\/crop\/crop_1_1"/g) || []).length, 1, 'the screenshot is drawn once');
+            assert.match(html, /<a class="dd-ev-again" href="\/research\/rsr_1\/crop\/crop_1_1" data-dd-shot="home-assistant\.io">.*The screenshot under point 1/);
+            assert.match(html, /Offline states are said, not implied\./, 'a note that says more stays');
+            assert.match(html, /<img src="\/research\/rsr_1\/crop\/sheet_1" alt="A page of image results for robot app dashboard ui" width="1654" height="1036"/);
+            assert.match(html, /What most of them do<\/h3><ul class="ddi-chips"><li>Grid cards<\/li>/);
+            assert.match(html, /<rect width="20" height="20" rx="5" fill="#0a0f1f"\/>/);
+            assert.ok(!/red;x/.test(html), 'only real colours become swatches');
+            assert.match(html, /Where the picture came from/);
+            assert.ok(!/javascript:/.test(html), 'only http(s) sources are linked');
+            assert.match(html, /one sheet · 38 images/);
+        });
+
         await check('the options: an unopened fold leaves everything to the depth; an opened one sends only what changed', async () => {
             const { fromForm } = require('../server/deepdive/options');
             assert.equal(fromForm({ vp: ['390', '1280'], th: ['light', 'dark'], images: '1', recency: 'year', per_sheet: '40' }), null, 'never opened: nothing sent');

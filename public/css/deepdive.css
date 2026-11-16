@@ -15,6 +15,7 @@
 .dd-points--page p { margin: 0 0 .3rem; }
 .dd-n { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 1.55rem; height: 1.55rem; border-radius: 50%; background: color-mix(in srgb, var(--accent) 18%, transparent); font-size: .76rem; font-weight: 700; }
 .dd-evidence { list-style: none; padding: 0; margin: .3rem 0; display: grid; gap: .3rem; }
+.dd-evidence > li { display: grid; justify-items: start; gap: .2rem; min-width: 0; }
 .dd-ev { font-size: .82rem; color: var(--text-secondary); }
 .dd-crop { display: block; max-width: min(100%, 22rem); height: auto; border: 1px solid var(--border); border-radius: 8px; margin: .3rem 0; }
 .dd-find-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
@@ -183,12 +184,32 @@ html[data-ov-motion="off"] .ddh-depth span { transition: none; }
 .dds-frame { flex: none; display: grid; gap: 4px; color: inherit; text-decoration: none; }
 .dds-frame img { height: 220px; max-width: 360px; }
 .dds-frame.is-phone img { max-width: 104px; }
-.ddi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
-.ddi-sheet { margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-secondary); display: grid; gap: 8px; }
-.ddi-sheet img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--border); }
-.ddi-sheet figcaption { display: grid; gap: 2px; font-size: .86rem; }
-.ddi-sheet figcaption small { color: var(--text-secondary); }
-.ddi-sheet figcaption p { margin: 4px 0 0; color: var(--text-secondary); line-height: 1.45; }
+.ddi-sheet { margin: 0 0 16px; padding: 12px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg-secondary); display: grid; gap: 14px; }
+.ddi-pic { display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: transform .2s cubic-bezier(.2, .9, .3, 1), box-shadow .2s; }
+.ddi-pic:hover { transform: translateY(calc(-2px * var(--ov-move, 1))); box-shadow: 0 14px 34px rgba(0, 0, 0, .28); }
+.ddi-sheet img { display: block; width: 100%; height: auto; }
+.ddi-sheet figcaption { display: grid; gap: 12px; min-width: 0; }
+.ddi-sheet figcaption header { display: grid; gap: 2px; }
+.ddi-sheet figcaption header b { font-size: 1.05rem; }
+.ddi-sheet figcaption header small { color: var(--text-secondary); font-size: .86rem; }
+.ddi-read { margin: 0; color: var(--text-secondary); line-height: 1.55; max-width: 72ch; }
+.ddi-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 14px 22px; }
+.ddi-cols h3 { margin: 0 0 6px; font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); }
+.ddi-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ddi-chips li { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: .84rem; line-height: 1.35; }
+.ddi-swatches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
+.ddi-swatches li { display: flex; align-items: center; gap: 8px; font-size: .82rem; }
+.ddi-swatches svg { flex: none; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(127, 127, 127, .35); }
+.ddi-list { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; color: var(--text-secondary); font-size: .86rem; line-height: 1.45; }
+.ddi-src summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--text-secondary); font-size: .9rem; }
+.ddi-src ol { margin: 4px 0 0; padding-left: 1.4rem; display: grid; gap: 4px; columns: 2 280px; }
+.ddi-src li { font-size: .86rem; break-inside: avoid; }
+.ddi-src li small { margin-left: 6px; color: var(--text-secondary); }
+.dd-ev-shot, .dd-ev-again { display: inline-block; border-radius: 8px; }
+.dd-ev-again { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: .2rem 0; color: var(--text-secondary); font-size: .82rem; text-decoration: none; }
+.dd-ev-again:hover span { text-decoration: underline; }
+.dd-crop.is-small { width: 56px; height: 40px; object-fit: cover; object-position: top; margin: 0; }
+html[data-ov-motion=off] .ddi-pic { transition: none; }
 dialog.dds-view { width: min(100vw - 16px, 1400px); height: calc(100dvh - 16px); max-width: none; max-height: none; padding: 0; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-primary, var(--bg-secondary)); color: inherit; overflow: hidden; }
 dialog.dds-view[open] { display: flex; flex-direction: column; animation: dds-open .22s cubic-bezier(.2, .8, .2, 1) both; }
 dialog.dds-view::backdrop { background: color-mix(in srgb, #000 72%, transparent); }

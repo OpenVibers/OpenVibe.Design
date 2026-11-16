@@ -26,18 +26,41 @@ function cropSrc(e, research) {
     if (e && e.cropId && research && research.id) return `/research/${encodeURIComponent(research.id)}/crop/${encodeURIComponent(e.cropId)}`;
     return null;
 }
-function evidenceList(evidence, { crops = false, research = null } = {}) {
+/** A point's words without the model's citation tails: "(Source 1)", "(Sources 1, 3)", "[2]". */
+function cleanText(t) {
+    return String(t || '').replace(/\s*\((?:sources?|src)\s*[\d,\s&and]+\)\s*\.?\s*$/i, '').replace(/\s*\[\d+(?:\s*,\s*\d+)*\]\s*$/, '').trim();
+}
+/**
+ * A point's evidence: the site and the day it was read, its note only when it says more than the point, and its screenshot
+ * once per page. `seen` (a Map, crop → the point that showed it) is shared by a whole report: a screenshot that backs
+ * twenty points is drawn once and named after that (it was drawn under every point, 11-16). Each opens in the viewer.
+ */
+function evidenceList(evidence, { crops = false, research = null, point = null, seen = null } = {}) {
     const list = Array.isArray(evidence) ? evidence : [];
     if (!list.length) return '';
+    const said = cleanText(point && point.text).toLowerCase();
     return `<ul class="dd-evidence">${list.map((e) => {
         const site = e.site || host(e.url);
         const label = site || (e.url ? 'Source' : 'Evidence');
         const href = safeHref(e.url);
         const link = href ? `<a href="${esc(href)}" rel="noopener">${esc(label)}</a>` : `<span>${esc(label)}</span>`;
         const when = e.capturedAt ? ` · read ${esc(day(e.capturedAt) || String(e.capturedAt).slice(0, 10))}` : '';
+        const note = cleanText(e.note);
+        const lower = note.toLowerCase();
+        const says = note && !(said && (lower === said || said.includes(lower) || lower.includes(said)));
         const src = crops ? safeImage(cropSrc(e, research)) : null;
-        const crop = src ? `<img class="dd-crop" src="${esc(src)}" alt="A crop from ${esc(label)}" loading="lazy" decoding="async">` : '';
-        return `<li>${crop}<span class="dd-ev">${link}${when}${e.note ? ` · ${esc(e.note)}` : ''}</span></li>`;
+        let crop = '';
+        if (src) {
+            const key = e.cropId || e.crop || src;
+            const shown = seen ? seen.get(key) : undefined;
+            if (shown !== undefined) {
+                crop = `<a class="dd-ev-again" href="${esc(src)}" data-dd-shot="${esc(label)}"><img class="dd-crop is-small" src="${esc(src)}" alt="" loading="lazy" decoding="async"><span>The screenshot under point ${esc(String(shown))}</span></a>`;
+            } else {
+                if (seen) seen.set(key, point && point.n != null ? point.n : '');
+                crop = `<a class="dd-ev-shot" href="${esc(src)}" data-dd-shot="${esc(label)}"><img class="dd-crop" src="${esc(src)}" alt="A crop from ${esc(label)}" loading="lazy" decoding="async"></a>`;
+            }
+        }
+        return `<li>${crop}<span class="dd-ev">${link}${when}${says ? ` · ${esc(note)}` : ''}</span></li>`;
     }).join('')}</ul>`;
 }
 
@@ -116,13 +139,42 @@ function shotsGallery(r) {
 <p class="dv-fine">Private to you. Each is shown as commentary with its site and the day it was read; open one to see the whole page.</p>${cards}</section>`;
 }
 
-/** The image search pages the dive read (ai.deep-dive@1 image_sheets): each a whole grid of recent images, read at once. */
+/**
+ * The image search pages the dive read (ai.deep-dive@1 image_sheets): each a whole page of an engine's image results laid
+ * out as one sheet and read at once (the owner, 11-15: "screenshot search queries on Google, Bing, etc to analyze a whole
+ * page of images at once"). The sheet at the full width of the page, then what the vision model saw: its reading, the
+ * patterns most of them share, the styles, the palette as swatches, the odd ones out, and where every picture came from.
+ */
 function imageSheetsSection(r) {
     const sheets = Array.isArray(r.imageSheets) ? r.imageSheets : [];
     if (!sheets.length) return '';
     const base = `/research/${encodeURIComponent(r.id || '')}/crop/`;
-    return `<section class="dd-sec dds" aria-labelledby="ddi-h" data-dd-shots><h2 id="ddi-h">Image search, a page at a time <small>${sheets.length}</small></h2>
-<div class="ddi-grid">${sheets.map((x) => `<figure class="ddi-sheet"><a href="${base}${encodeURIComponent(x.id)}" data-dd-shot="${esc(`${x.engine || 'images'} · ${x.query || ''}`)}"><img src="${base}${encodeURIComponent(x.id)}" alt="${esc(`Image results for ${x.query || ''}`)}" loading="lazy" decoding="async"></a><figcaption><b>${esc(x.query || '')}</b><small>${esc([x.engine, x.recency && x.recency !== 'any' ? `past ${x.recency}` : null, x.count ? `${x.count} images` : null].filter(Boolean).join(' · '))}</small>${x.reading ? `<p>${esc(String(x.reading).slice(0, 600))}</p>` : ''}</figcaption></figure>`).join('')}</div></section>`;
+    const strs = (v, n) => (Array.isArray(v) ? v.map((x) => String(x || '').trim()).filter(Boolean).slice(0, n) : []);
+    const chips = (v) => `<ul class="ddi-chips">${v.map((x) => `<li>${esc(x.slice(0, 120))}</li>`).join('')}</ul>`;
+    const total = sheets.reduce((n, x) => n + (Number(x.count) || 0), 0);
+    const one = (x) => {
+        const patterns = strs(x.patterns, 10), styles = strs(x.styles, 10), outliers = strs(x.outliers, 8);
+        const palette = strs(x.palette, 12).filter((c) => /^#[0-9a-f]{3,8}$/i.test(c));
+        const sources = (Array.isArray(x.sources) ? x.sources : []).filter((s) => s && safeHref(s.page || s.url)).slice(0, 80);
+        const label = `${x.engine || 'Image search'} · ${x.query || ''}`;
+        const w = Number(x.width) > 0 ? Number(x.width) : null, hgt = Number(x.height) > 0 ? Number(x.height) : null;
+        return `<figure class="ddi-sheet">
+<a class="ddi-pic" href="${base}${encodeURIComponent(x.id)}" data-dd-shot="${esc(label)}"><img src="${base}${encodeURIComponent(x.id)}" alt="${esc(`A page of image results for ${x.query || 'the question'}`)}"${w && hgt ? ` width="${w}" height="${hgt}"` : ''} loading="lazy" decoding="async"></a>
+<figcaption>
+<header><b>${esc(x.query || '')}</b><small>${esc([x.engine, x.recency && x.recency !== 'any' ? `the past ${x.recency}` : 'any time', x.count ? `${x.count} images` : null].filter(Boolean).join(' · '))}</small></header>
+${x.reading ? `<p class="ddi-read">${esc(String(x.reading).slice(0, 900))}</p>` : ''}
+<div class="ddi-cols">
+${patterns.length ? `<div><h3>What most of them do</h3>${chips(patterns)}</div>` : ''}
+${styles.length ? `<div><h3>Styles</h3>${chips(styles)}</div>` : ''}
+${palette.length ? `<div><h3>Palette</h3><ul class="ddi-swatches">${palette.map((c) => `<li><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect width="20" height="20" rx="5" fill="${esc(c)}"/></svg><code>${esc(c.toLowerCase())}</code></li>`).join('')}</ul></div>` : ''}
+${outliers.length ? `<div><h3>The odd ones out</h3><ul class="ddi-list">${outliers.map((o) => `<li>${esc(o.slice(0, 240))}</li>`).join('')}</ul></div>` : ''}
+</div>
+${sources.length ? `<details class="ddi-src"><summary>${sources.length === 1 ? 'Where the picture came from' : `Where the ${sources.length} pictures came from`}</summary><ol>${sources.map((src) => { const href = safeHref(src.page || src.url); return `<li><a href="${esc(href)}" rel="noopener noreferrer" target="_blank">${esc(String(src.title || host(href)).slice(0, 120))}</a><small>${esc(host(href))}</small></li>`; }).join('')}</ol></details>` : ''}
+</figcaption></figure>`;
+    };
+    return `<section class="dd-sec ddi" aria-labelledby="ddi-h" data-dd-shots><h2 id="ddi-h">Image search, a page at a time <small>${sheets.length === 1 ? 'one sheet' : `${sheets.length} sheets`}${total ? ` · ${total} images` : ''}</small></h2>
+<p class="dv-fine">What the search engines show for this right now: each sheet is a whole page of their image results, read at once by a vision model. Open one to see it full size.</p>
+${sheets.map(one).join('')}</section>`;
 }
 
 /** One report, read on Design: the numbered points with their evidence, and the rules it proposes. */
@@ -133,6 +185,7 @@ function researchPage({ research, viewer = null, notice = null, error = null } =
     const steps = (r.progress && Array.isArray(r.progress.steps)) ? r.progress.steps : [];
     const proposals = Array.isArray(r.proposals) ? r.proposals : [];
     const running = r.status === 'starting' || r.status === 'running';
+    const seen = new Map();   // each screenshot drawn once on the page (evidenceList)
     const body = `<div class="ds-wrap tk dd-page">
 <header class="ds-page-h"><p class="ds-kicker">Research first</p><h1>${esc(r.question || 'A deep dive')}</h1>
 <p class="ds-lede">A ${esc(r.depth || 'thorough')} deep dive${r.priceUsd != null ? ` (${esc(usd(r.priceUsd))})` : ''}${r.createdAt ? `, started ${esc(day(r.createdAt))}` : ''}; the takes on its design follow the numbered points below. ${safeHref(r.reportUrl) ? `<a href="${esc(safeHref(r.reportUrl))}" rel="noopener">The run on OpenVibe Exchange</a>.` : ''}</p>
@@ -141,7 +194,7 @@ ${notice ? `<p class="dd-notice">${esc(notice)}</p>` : ''}${error ? `<p class="d
 ${steps.length ? `<ol class="dd-steps">${steps.map((s) => `<li class="dd-step is-${esc(s.state || 'waiting')}"><span>${esc(s.name)}</span></li>`).join('')}</ol>` : ''}
 </header>
 ${points.length ? `<section class="dd-sec" aria-labelledby="dd-points-h"><h2 id="dd-points-h">The research points</h2>
-${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'research' ? 'What the best write-ups say' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(p.text)}</p>${evidenceList(p.evidence, { crops: true, research: r })}</div></li>`).join('')}</ol>`).join('')}
+${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'research' ? 'What the best write-ups say' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(cleanText(p.text))}</p>${evidenceList(p.evidence, { crops: true, research: r, point: p, seen })}</div></li>`).join('')}</ol>`).join('')}
 </section>` : running ? kit.empty({ icon: 'spark', title: 'Still researching', text: 'The points appear here as the dive writes them up.' }) : kit.empty({ icon: 'search', title: 'No report yet', text: 'This deep dive has not produced a report.' })}
 ${shotsGallery(r)}${imageSheetsSection(r)}
 ${proposals.length ? `<section class="dd-sec" aria-labelledby="dd-props-h"><h2 id="dd-props-h">Proposed from research</h2>${proposalsList(proposals, { compact: true })}</section>` : ''}
