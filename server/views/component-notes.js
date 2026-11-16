@@ -25,7 +25,14 @@ const brandMark = mark.svg({ form: 'pair', tone: 'brand', wide: true, size: 34 }
 const appTile = appIcon.favicon({ site: 'network' });
 
 // ── The specimens. Every value is written here (escaped by the builder that takes it), never read from a person. ──
+// The four themes a link is drawn in on the Links page: the theme's accent and light accent, nothing else.
+const LINK_THEMES = [['blue', 'Blue (the default)'], ['green', 'Green'], ['rose', 'Rose'], ['amber', 'Amber']];
 const SPECIMENS = {
+    links: () => `<div class="spec spec--links">${LINK_THEMES.map(([id, name]) => `<div class="spec-link-theme spec-link-theme--${id}">
+  <p class="spec-link-name">${esc(name)}</p>
+  <p>Go live from <a href="/components/links#${id}-browser">your browser</a>, with no software, then read <a href="/rules#links-are-ours">why links look like this</a>.</p>
+  <p class="spec-link-fine">Hover, focus or press one: the line sweeps in, glows, and washes.</p>
+</div>`).join('')}</div>`,
     brand: () => `<div class="spec spec--brand">
   <div class="spec-bar">
     <button type="button" class="ovnav-brand" aria-haspopup="menu" aria-expanded="false" aria-label="OpenVibe.Design: its pages and every OpenVibe site">
@@ -275,6 +282,20 @@ const NOTES = Object.freeze({
         quote: '“ov-metrics.js: the network’s one way to show numbers … nobody draws a chart of their own.” — the 4.232.0 change, for every AI call measured everywhere',
         rules: ['numbers-drawn-once', 'tables-become-cards', 'state-in-words', 'no-fake-content'],
         build: `<script src="/shared/ov-metrics.js" defer></script>\n\n// tiles with a delta that knows whether up is good\nslot.append(OVMetrics.tiles([\n  { label: 'Calls', value: OVMetrics.format.count(18420), delta: 0.12, trend: daily },\n  { label: 'Time to first token', value: OVMetrics.format.ms(row.ttft_ms.p50), sub: 'p95 ' + OVMetrics.format.ms(row.ttft_ms.p95), better: 'down' },\n]));\n// p50 and p95 on one scale, from report.ai-performance@1\nslot.append(OVMetrics.percentiles(row.ttft_ms, { label: 'Time to first token' }));\n// a sortable table; a numeric column can carry a bar\nslot.append(OVMetrics.table(rows, [{ key: 'model', label: 'Model' }, { key: 'tps', label: 'Speed', numeric: true, bar: true, format: OVMetrics.format.tps }]));\n\n// on a server: the same words\nconst { format } = require('openvibe-shared/ov-metrics');\nformat.ms(1310);   // '1.3 s'`,
+    },
+    links: {
+        title: 'Links',
+        summary: 'A link in running text, on every site: the person\'s theme draws it, a fine line rests under it, and a two-tone line sweeps in when you reach it.',
+        release: { version: '4.283.0', state: 'shipped', href: '/changes#v4.283.0' },
+        shipped: '4.283.0 made running-text links OpenVibe\'s own on every site, from the navbar\'s page-wide styles. Each one is drawn in the theme\'s light accent, with a fine accent line at rest. Hovering or focusing it sweeps in a two-tone line (the accent, and a second tone turned from it on the colour wheel, so every theme has its own pair) with a soft glow; a press washes the words in the accent; keyboard focus rings it. A link with a class is a component and keeps its look, bars, menus and the footer are left alone, and a site\'s own link colour still wins. Off stops the sweep; forced colours get a plain underline.',
+        quote: '“All sites should have a completely custom link style with animations and effects … rather than these default ass looking ones … across all sites, update openvibe.design.” — the owner, 2026-11-16',
+        rules: ['links-are-ours', 'state-in-words', 'targets-44'],
+        build: `<!-- nothing to add: the navbar's styles (openvibe-shared 4.283.0) draw every link in running text -->
+<p>Read <a href="/docs">the docs</a> first.</p>         <!-- OpenVibe's link -->
+<a class="my-chip" href="/x">A chip</a>                 <!-- a component: its own look -->
+
+/* where: p, dd, blockquote, figcaption, label, small, .ov-prose (never nav, menus or the footer)
+   colours: var(--accent-light) and a tone turned 60° from it; the site's own a { color } still wins */`,
     },
     footer: {
         title: 'The footer',

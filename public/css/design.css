@@ -7,7 +7,8 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .skip { position: absolute; left: -9999px; }
 .skip:focus { left: 12px; top: 12px; z-index: 99; padding: 8px 12px; border-radius: 10px; background: var(--bg-card, #0f1729); color: inherit; }
 .ds-wrap { max-width: 1320px; margin: 0 auto; padding: 0 16px 64px; }
-.ds a:not([class]) { color: var(--room-strong); }
+/* A link takes its room's colour; the shared lines and sweep (openvibe-shared 4.283.0) still draw it. A specimen shows the shared look as it is. */
+.ds a:not([class]):not(.spec a) { color: var(--room-strong); }
 .ds h2 { margin: 0 0 10px; font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; }
 .ds h3:not(.ovk-card-title) { margin: 18px 0 8px; font-size: .78rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted, #7386a3); }
 :where(.ds) .ovk-i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
