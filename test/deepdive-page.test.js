@@ -62,6 +62,16 @@ const report = {
             assert.ok(STEP_NAMES.includes('Reading write-ups'), 'the read step has its name');
         });
 
+        await check('the options: an unopened fold leaves everything to the depth; an opened one sends only what changed', async () => {
+            const { fromForm } = require('../server/deepdive/options');
+            assert.equal(fromForm({ vp: ['390', '1280'], th: ['light', 'dark'], images: '1', recency: 'year', per_sheet: '40' }), null, 'never opened: nothing sent');
+            assert.equal(fromForm({ custom: '1', vp: ['390', '1280'], th: ['light', 'dark'], images: '1', recency: 'year', per_sheet: '40' }), null, 'opened, nothing changed');
+            assert.deepEqual(fromForm({ custom: '1', vp: '390', th: ['light', 'dark'], sites: '4', writeups: '0', extras: '1', images: '1', recency: 'week', per_sheet: '60', eng: ['searxng', 'evil'], img_q: 'dashboard ui\n\nrobot app' }),
+                { viewports: [390], sites: 4, writeups: 0, extras: true, images: { recency: 'week', per_sheet: 60, queries: ['dashboard ui', 'robot app'], engines: ['searxng'] } });
+            assert.deepEqual(fromForm({ custom: '1', images: '0', recency: 'day' }), { images: { enabled: false } }, 'image search off: its details are not sent');
+            assert.equal(fromForm({ custom: '1', sites: '99', vp: '800' }), null, 'out of range is ignored');
+        });
+
         await check('/deep-dive: what it does, a sign-in, then the form with the depths and their prices', async () => {
             let r = await t.get('/deep-dive');
             assert.equal(r.status, 200);
@@ -75,6 +85,9 @@ const report = {
             assert.match(r.text, /name="depth" value="quick" checked/);
             assert.match(r.text, /25¢/);
             assert.match(r.text, /\$1\.50/);
+            assert.match(r.text, /<details class="ddh-more" data-ddh-options>/, 'every option, folded');
+            assert.match(r.text, /name="recency" value="year" checked/);
+            assert.match(r.text, /js\/deep-dive-options\.js/);
         });
 
         await check('starting: signed out signs in with the question kept; signed in, a design dive for the person, then its page', async () => {
@@ -91,6 +104,11 @@ const report = {
             assert.equal(started.body.question, 'A phone-first robot control panel');
             assert.notEqual(started.body.kind, 'research', 'a design deep dive');
             assert.deepEqual(started.body.on_behalf_of, { type: 'user', id: owner.sub || owner.subject || started.body.on_behalf_of.id });
+            // An opened Options fold: what changed reaches AI as the dive's options.
+            r = await t.get('/deep-dive', { as: owner, method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ question: 'A dashboard', depth: 'quick', custom: '1', vp: '1280', th: 'dark', images: '1', recency: 'month', eng: 'searxng' }) });
+            assert.equal(r.status, 303);
+            const withOptions = dive.requests.filter((x) => x.method === 'POST' && x.path === '/api/v1/deep-dives').pop();
+            assert.deepEqual(withOptions.body.options, { viewports: [1280], themes: ['dark'], images: { recency: 'month', engines: ['searxng'] } });
             r = await t.get('/deep-dive', { as: owner, method: 'POST', origin: ORIGIN, headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: form({ question: '' }) });
             assert.equal(r.status, 422);
             assert.match(r.text, /Say what you are designing first/);

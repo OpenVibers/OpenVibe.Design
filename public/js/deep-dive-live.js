@@ -197,6 +197,18 @@
                 shotsBox.insertBefore(a, shotsBox.firstChild);
                 setTimeout(function () { a.classList.remove('is-new'); }, 600);
             });
+            (st.image_sheets || []).forEach(function (x) {
+                if (!x || shotSeen[x.id]) return;
+                shotSeen[x.id] = 1;
+                var what = 'Images · ' + (x.query || '') + ' · ' + (x.engine || '') + (x.recency && x.recency !== 'any' ? ' · past ' + x.recency : '');
+                var a = h('a', 'ddl-shot is-sheet is-new');
+                a.href = S.shotUrl + encodeURIComponent(x.id);
+                a.setAttribute('data-dd-shot', what);
+                var im = h('img'); im.src = S.shotUrl + encodeURIComponent(x.id); im.alt = what; im.loading = 'lazy'; im.decoding = 'async';
+                a.append(im, h('span', null, what));
+                shotsBox.insertBefore(a, shotsBox.firstChild);
+                setTimeout(function () { a.classList.remove('is-new'); }, 600);
+            });
             shotsBox.hidden = !shotsBox.firstChild;
         }
         gapsBox.textContent = '';
