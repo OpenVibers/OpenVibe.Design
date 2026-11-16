@@ -10,15 +10,33 @@
     var dlg = null, img = null, cap = null, list = [], at = 0;
 
     function h(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+    // The viewer's buttons draw OpenVibe's glyphs, never characters standing in for icons (2026-11-16; the owner: icons
+    // as emoji or symbols look cheap): a 24-unit grid, round 2-unit strokes, as openvibe.design/icons draws them.
+    var GLYPH = {
+        prev: ['M15 6 9 12l6 6'],
+        next: ['M9 6l6 6-6 6'],
+        open: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
+        close: ['M6 6l12 12', 'M18 6 6 18'],
+    };
+    function glyph(name) {
+        var NS = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '18'); svg.setAttribute('height', '18'); svg.setAttribute('aria-hidden', 'true');
+        svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '2');
+        svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+        GLYPH[name].forEach(function (d) { var p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); svg.appendChild(p); });
+        return svg;
+    }
+    function iconButton(tag, name, label) { var b = h(tag, 'dds-btn'); b.appendChild(glyph(name)); b.setAttribute('aria-label', label); b.title = label; return b; }
     function build() {
         dlg = h('dialog', 'dds-view');
         dlg.setAttribute('aria-label', 'Screenshot');
         var bar = h('div', 'dds-bar');
         cap = h('p', 'dds-cap');
-        var prev = h('button', 'dds-btn', '‹'); prev.type = 'button'; prev.setAttribute('aria-label', 'Previous screenshot');
-        var next = h('button', 'dds-btn', '›'); next.type = 'button'; next.setAttribute('aria-label', 'Next screenshot');
-        var open = h('a', 'dds-btn dds-open', '↗'); open.target = '_blank'; open.rel = 'noopener'; open.setAttribute('aria-label', 'Open the image on its own');
-        var close = h('button', 'dds-btn', '✕'); close.type = 'button'; close.setAttribute('aria-label', 'Close');
+        var prev = iconButton('button', 'prev', 'Previous screenshot'); prev.type = 'button';
+        var next = iconButton('button', 'next', 'Next screenshot'); next.type = 'button';
+        var open = iconButton('a', 'open', 'Open the image on its own'); open.classList.add('dds-open'); open.target = '_blank'; open.rel = 'noopener';
+        var close = iconButton('button', 'close', 'Close'); close.type = 'button';
         bar.append(cap, prev, next, open, close);
         var scroller = h('div', 'dds-scroll');
         img = h('img', 'dds-img'); img.alt = '';
