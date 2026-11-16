@@ -28,6 +28,10 @@ const appTile = appIcon.favicon({ site: 'network' });
 // The four themes a link is drawn in on the Links page: the theme's accent and light accent, nothing else.
 const LINK_THEMES = [['blue', 'Blue (the default)'], ['green', 'Green'], ['rose', 'Rose'], ['amber', 'Amber']];
 const SPECIMENS = {
+    tabs: () => `<div class="spec spec--tabs">
+  <div class="spec-tabs" role="tablist" aria-label="A pill row" data-ovtb="pill">${['Messages', 'Friends', 'Global', 'Servers'].map((t, i) => `<button type="button" role="tab" aria-selected="${i === 0}">${t}</button>`).join('')}</div>
+  <div class="spec-tabs spec-tabs--line" role="tablist" aria-label="A line row" data-ovtb="line">${['All', 'Mentions', 'Live', 'System'].map((t, i) => `<button type="button" role="tab" aria-selected="${i === 0}">${t}</button>`).join('')}</div>
+</div>`,
     links: () => `<div class="spec spec--links">${LINK_THEMES.map(([id, name]) => `<div class="spec-link-theme spec-link-theme--${id}">
   <p class="spec-link-name">${esc(name)}</p>
   <p>Go live from <a href="/components/links#${id}-browser">your browser</a>, with no software, then read <a href="/rules#links-are-ours">why links look like this</a>.</p>
@@ -283,6 +287,23 @@ const NOTES = Object.freeze({
         rules: ['numbers-drawn-once', 'tables-become-cards', 'state-in-words', 'no-fake-content'],
         build: `<script src="/shared/ov-metrics.js" defer></script>\n\n// tiles with a delta that knows whether up is good\nslot.append(OVMetrics.tiles([\n  { label: 'Calls', value: OVMetrics.format.count(18420), delta: 0.12, trend: daily },\n  { label: 'Time to first token', value: OVMetrics.format.ms(row.ttft_ms.p50), sub: 'p95 ' + OVMetrics.format.ms(row.ttft_ms.p95), better: 'down' },\n]));\n// p50 and p95 on one scale, from report.ai-performance@1\nslot.append(OVMetrics.percentiles(row.ttft_ms, { label: 'Time to first token' }));\n// a sortable table; a numeric column can carry a bar\nslot.append(OVMetrics.table(rows, [{ key: 'model', label: 'Model' }, { key: 'tps', label: 'Speed', numeric: true, bar: true, format: OVMetrics.format.tps }]));\n\n// on a server: the same words\nconst { format } = require('openvibe-shared/ov-metrics');\nformat.ms(1310);   // '1.3 s'`,
     },
+    tabs: {
+        title: 'Tabs',
+        summary: 'One tab row for every site: the chosen tab sits on an ink that glides to the next one, in the theme\'s colours.',
+        release: { version: '4.284.0', state: 'shipped', href: '/changes#v4.284.0' },
+        shipped: '4.284.0 shipped ov-tabs.js. OVTabs.ink(list, { kind, key }) adds one ink behind the tabs of any row and moves it when aria-selected changes or the row resizes; a page that draws its row again (a panel rebuilt on every switch) names a key, and the ink glides from where it was instead of jumping. Pill (a raised pill behind the chosen tab) or line (an accent line under it); the theme\'s --bg-elevated and --accent, or a site\'s own --ovtb-ink and --ovtb-edge. A little overshoot as it lands; shorter under Calm, a jump under Off. First on Chat\'s Messages, Friends, Global and Servers.',
+        quote: '“The tabs at the top … messages, friends, global. That should have like a nice animation effect to that. It\'s reusable, and update openvibe.design for this type of tab system, so it\'s nice and animated and considers theme.” — the owner, 2026-11-16',
+        rules: ['one-edit-everywhere', 'targets-44', 'icons-fill-their-place'],
+        build: `<script src="/shared/ov-tabs.js" defer></script>
+
+<div role="tablist" aria-label="Chat" id="segs">
+  <button role="tab" aria-selected="true">Messages</button>
+  <button role="tab" aria-selected="false">Friends</button>
+</div>
+
+// your own clicks set aria-selected; the ink follows
+OVTabs.ink(document.getElementById('segs'), { kind: 'pill', key: 'chat-segs' });`,
+    },
     links: {
         title: 'Links',
         summary: 'A link in running text, on every site: the person\'s theme draws it, a fine line rests under it, and a two-tone line sweeps in when you reach it.',
@@ -337,8 +358,8 @@ function notePage(name) {
         active: '/components',
         styles: ['css/component-registry.css', 'css/specimens.css'],
         sharedStyles: name === 'player' ? ['player.css'] : [],
-        shared: name === 'player' ? ['player.js'] : name === 'metrics' ? ['ov-metrics.js'] : [],
-        scripts: name === 'metrics' ? ['js/component-metrics.js'] : [],
+        shared: name === 'player' ? ['player.js'] : name === 'metrics' ? ['ov-metrics.js'] : name === 'tabs' ? ['ov-tabs.js'] : [],
+        scripts: name === 'metrics' ? ['js/component-metrics.js'] : name === 'tabs' ? ['js/component-tabs.js'] : [],
         body,
     });
 }

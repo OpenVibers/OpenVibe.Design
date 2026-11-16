@@ -198,3 +198,11 @@
 .spec-link-theme--green { --accent: #16a34a; --accent-light: #4ade80; }
 .spec-link-theme--rose { --accent: #e11d48; --accent-light: #fb7185; }
 .spec-link-theme--amber { --accent: #d97706; --accent-light: #fbbf24; }
+
+/* Tabs (4.284.0): two rows, a pill and a line; ov-tabs.js draws the ink. */
+.spec--tabs { display: grid; gap: 16px; }
+.spec-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 16px; background: color-mix(in srgb, var(--text-primary, #e6edf7) 6%, transparent); }
+.spec-tabs [role="tab"] { all: unset; box-sizing: border-box; min-height: 44px; display: grid; place-items: center; border-radius: 12px; font-weight: 700; font-size: 14px; color: var(--text-secondary, #a8b3c4); cursor: pointer; }
+.spec-tabs [role="tab"][aria-selected="true"] { color: var(--text-primary, #e6edf7); }
+.spec-tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: -2px; }
+.spec-tabs--line { background: none; border-bottom: 1px solid var(--border, rgba(148, 163, 184, .2)); border-radius: 0; padding: 0; }
