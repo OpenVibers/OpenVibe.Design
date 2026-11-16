@@ -201,6 +201,8 @@ html[data-ov-motion="off"] .ddh-depth span { transition: none; }
 .ddi-swatches li { display: flex; align-items: center; gap: 8px; font-size: .82rem; }
 .ddi-swatches svg { flex: none; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(127, 127, 127, .35); }
 .ddi-list { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; color: var(--text-secondary); font-size: .86rem; line-height: 1.45; }
+.ddi-n { display: inline-block; min-width: 2.2em; padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, currentColor 12%, transparent); color: var(--text-primary); font-weight: 700; text-align: center; text-decoration: none; }
+.ddi-n:hover { text-decoration: underline; }
 .ddi-src summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--text-secondary); font-size: .9rem; }
 .ddi-src ol { margin: 4px 0 0; padding-left: 1.4rem; display: grid; gap: 4px; columns: 2 280px; }
 .ddi-src li { font-size: .86rem; break-inside: avoid; }

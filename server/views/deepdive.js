@@ -155,7 +155,15 @@ function imageSheetsSection(r) {
     const one = (x) => {
         const patterns = strs(x.patterns, 10), styles = strs(x.styles, 10), outliers = strs(x.outliers, 8);
         const palette = strs(x.palette, 12).filter((c) => /^#[0-9a-f]{3,8}$/i.test(c));
-        const sources = (Array.isArray(x.sources) ? x.sources : []).filter((s) => s && safeHref(s.page || s.url)).slice(0, 80);
+        // Numbered as the sheet's tiles are (AI #615): source n is tile n, so a gap keeps its number.
+        const sources = (Array.isArray(x.sources) ? x.sources : []).slice(0, 80).map((s, i) => ({ ...(s || {}), n: i + 1, href: s ? safeHref(s.page || s.url) : null })).filter((s) => s.href);
+        const byN = new Map(sources.map((s) => [s.n, s]));
+        // "#14: a real photo among flat mockups": the number links to where that picture came from.
+        const outlier = (o) => {
+            const m = /^#(\d{1,3})\s*[:.\-–—]?\s*/.exec(o);
+            const src = m ? byN.get(Number(m[1])) : null;
+            return src ? `<a class="ddi-n" href="${esc(src.href)}" rel="noopener noreferrer" target="_blank" title="${esc(String(src.title || host(src.href)).slice(0, 120))}">#${src.n}</a> ${esc(o.slice(m[0].length, 240))}` : esc(o.slice(0, 240));
+        };
         const label = `${x.engine || 'Image search'} · ${x.query || ''}`;
         const w = Number(x.width) > 0 ? Number(x.width) : null, hgt = Number(x.height) > 0 ? Number(x.height) : null;
         return `<figure class="ddi-sheet">
@@ -167,9 +175,9 @@ ${x.reading ? `<p class="ddi-read">${esc(String(x.reading).slice(0, 900))}</p>` 
 ${patterns.length ? `<div><h3>What most of them do</h3>${chips(patterns)}</div>` : ''}
 ${styles.length ? `<div><h3>Styles</h3>${chips(styles)}</div>` : ''}
 ${palette.length ? `<div><h3>Palette</h3><ul class="ddi-swatches">${palette.map((c) => `<li><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect width="20" height="20" rx="5" fill="${esc(c)}"/></svg><code>${esc(c.toLowerCase())}</code></li>`).join('')}</ul></div>` : ''}
-${outliers.length ? `<div><h3>The odd ones out</h3><ul class="ddi-list">${outliers.map((o) => `<li>${esc(o.slice(0, 240))}</li>`).join('')}</ul></div>` : ''}
+${outliers.length ? `<div><h3>The odd ones out</h3><ul class="ddi-list">${outliers.map((o) => `<li>${outlier(o)}</li>`).join('')}</ul></div>` : ''}
 </div>
-${sources.length ? `<details class="ddi-src"><summary>${sources.length === 1 ? 'Where the picture came from' : `Where the ${sources.length} pictures came from`}</summary><ol>${sources.map((src) => { const href = safeHref(src.page || src.url); return `<li><a href="${esc(href)}" rel="noopener noreferrer" target="_blank">${esc(String(src.title || host(href)).slice(0, 120))}</a><small>${esc(host(href))}</small></li>`; }).join('')}</ol></details>` : ''}
+${sources.length ? `<details class="ddi-src"><summary>${sources.length === 1 ? 'Where the picture came from' : `Where the ${sources.length} pictures came from`}</summary><ol>${sources.map((src) => `<li value="${src.n}"><a href="${esc(src.href)}" rel="noopener noreferrer" target="_blank">${esc(String(src.title || host(src.href)).slice(0, 120))}</a><small>${esc(host(src.href))}</small></li>`).join('')}</ol></details>` : ''}
 </figcaption></figure>`;
     };
     return `<section class="dd-sec ddi" aria-labelledby="ddi-h" data-dd-shots><h2 id="ddi-h">Image search, a page at a time <small>${sheets.length === 1 ? 'one sheet' : `${sheets.length} sheets`}${total ? ` · ${total} images` : ''}</small></h2>
