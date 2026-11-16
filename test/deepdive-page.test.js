@@ -71,7 +71,7 @@ const report = {
                 { n: 1, group: 'pattern', text: 'One hero per viewport. (Source 1)', evidence: [ev] },
                 { n: 2, group: 'pattern', text: 'Status is explicit.', evidence: [{ ...ev, note: 'Offline states are said, not implied.' }] },
             ], shots: [], imageSheets: [{ id: 'sheet_1', query: 'robot app dashboard ui', engine: 'Google and Bing images', recency: 'month', count: 38, width: 1654, height: 1036,
-                reading: 'Mostly dark dashboards.', patterns: ['Grid cards'], styles: ['dark UI with neon accents'], palette: ['#0a0f1f', 'red;x', '#00BAFF'], outliers: ['Row 1, column 1 is a photo'],
+                reading: 'Mostly dark dashboards.', patterns: ['Grid cards'], styles: ['dark UI with neon accents'], palette: ['#0a0f1f', 'red;x', '#00BAFF'], outliers: ['Row 1, column 1 is a photo', '#1: a real photo among flat mockups', '#2: its page is not linked'],
                 sources: [{ page: 'https://www.behance.net/x', title: 'Robot app' }, { page: 'javascript:alert(1)', title: 'Bad' }] }] } });
             assert.ok(!/\(Source 1\)/.test(html), 'no citation tails');
             assert.equal((html.match(/One hero per viewport\./g) || []).length, 1, 'the point says it once');
@@ -85,6 +85,10 @@ const report = {
             assert.match(html, /Where the picture came from/);
             assert.ok(!/javascript:/.test(html), 'only http(s) sources are linked');
             assert.match(html, /one sheet · 38 images/);
+            // Numbered tiles (AI #615): "#1" links to the first picture's page; a number with no linkable source stays words.
+            assert.match(html, /<a class="ddi-n" href="https:\/\/www\.behance\.net\/x" rel="noopener noreferrer" target="_blank" title="Robot app">#1<\/a> a real photo among flat mockups/);
+            assert.match(html, /<li>#2: its page is not linked<\/li>/);
+            assert.match(html, /<li value="1"><a href="https:\/\/www\.behance\.net\/x"/);
         });
 
         await check('the options: an unopened fold leaves everything to the depth; an opened one sends only what changed', async () => {
