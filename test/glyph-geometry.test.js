@@ -27,11 +27,11 @@ const OLD_HEART = '<path d="M11.9 20.3s-8.1-5.1-8.1-11.6a4.6 4.6 0 0 1 8.1-3A4.6
         assert.ok(r.offset <= 0.1, `${name} sits on the middle (${r.offset})`);
         assert.deepStrictEqual(r.flags, [], `${name}: nothing flagged`);
     }
-    assert.match(shapes.gear(), /<circle cx="12" cy="12" r="2.8"\/>/, 'the hole is on the middle');
+    assert.match(shapes.gear(), /<circle cx="12" cy="12" r="2.4"\/>/, "the hole is on the middle");
 
     // The check catches the hand-rounded gear and the uneven heart.
     const gear = geometry.check(OLD_GEAR, { expect: geometry.expectFor('gear') });
-    assert.ok(gear.flags.some((f) => /^quarter turn/.test(f)) && gear.flags.some((f) => /^8-fold/.test(f)), `the old gear is flagged (${gear.flags})`);
+    assert.ok(gear.flags.some((f) => /^n-fold 0\.(8|9)/.test(f)), `the old gear is flagged: no turn of it is exact (${gear.flags})`);
     assert.ok(gear.scores['8-fold'] < 0.9, `its teeth are uneven (${gear.scores['8-fold']})`);
     const heart = geometry.check(OLD_HEART, { expect: ['mirror ↔'] });
     assert.ok(heart.scores['mirror ↔'] < 0.995 && heart.flags.length, `the old heart is a little off (${heart.scores['mirror ↔']})`);
@@ -50,7 +50,7 @@ const OLD_HEART = '<path d="M11.9 20.3s-8.1-5.1-8.1-11.6a4.6 4.6 0 0 1 8.1-3A4.6
         const rows = [];
         const db = { async maybe() { return { n: 0 }; }, async exec(sql, args) { if (/INSERT INTO glyph_drafts/.test(sql)) rows.push(args); }, async many() { return []; } };
         const ai = { enabled: true, async text() { return { provider: 'stub', model: 'stub', text: JSON.stringify({ candidates: [{ line: NEAR_HEART }, { line: shapes.heart() }] }) }; } };
-        const out = await createGlyphDrafts({ db, ai, referenceSearch: async () => [] }).draft({ subject: 'usr_1', name: 'heart', sentence: 'love' });
+        const out = await createGlyphDrafts({ db, ai, referenceSearch: async () => [] }).draft({ subject: 'usr_1', name: 'heart', sentence: 'love', method: 'write' });
         assert.ok(out.kept.length >= 1, `kept (${out.refused})`);
         for (const k of out.kept) assert.ok(k.geometry && k.geometry.scores && k.geometry.scores['mirror ↔'] >= 0.995, `every kept heart is exact (${JSON.stringify(k.geometry)})`);
         assert.ok(rows.every((r) => /"scores"/.test(r[12])), 'the report is stored with the draft');
@@ -67,11 +67,11 @@ const OLD_HEART = '<path d="M11.9 20.3s-8.1-5.1-8.1-11.6a4.6 4.6 0 0 1 8.1-3A4.6
             const r = await fetch(`${base}/api/v1/glyphs/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ svg: OLD_GEAR, name: 'gear' }) });
             const j = await r.json();
             assert.strictEqual(r.status, 200, JSON.stringify(j));
-            assert.ok(j.flags.length && j.expect.includes('8-fold'), JSON.stringify(j.flags));
+            assert.ok(j.flags.length && j.expect.includes('n-fold'), JSON.stringify(j.flags));
             const bad = await fetch(`${base}/api/v1/glyphs/check`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ svg: '<script/>' }) });
             assert.strictEqual(bad.status, 422);
             const s = await (await fetch(`${base}/api/v1/glyphs/shapes/gear?teeth=6`)).json();
-            assert.ok(s.svg.startsWith('<path d="M') && (s.svg.match(/A10 10/g) || []).length === 6, 'six teeth');
+            assert.ok(s.svg.startsWith('<path d="M') && (s.svg.match(/A8\.48 8\.48/g) || []).length === 6, 'six teeth');
             assert.strictEqual((await fetch(`${base}/api/v1/glyphs/shapes/blob`)).status, 404);
         } finally { srv.close(); }
     }

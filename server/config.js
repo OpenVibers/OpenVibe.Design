@@ -37,6 +37,8 @@ function load(env = process.env) {
 
         // The theme API proxy (server/http/api.js): every call goes to the Network's /api/themes. `networkUrl`
         // is the internal origin the proxy and the token exchange use; `networkPublicUrl` is the browser's.
+        // OpenVibe.Codes: its coding agents (GET /api/v1/harnesses) draw icons in a task as the person (2026-11-16).
+        codes: { url: trim(env.OV_CODES_URL || 'https://openvibe.codes') },
         networkUrl: networkInternalUrl,
         networkPublicUrl,
         networkInternalUrl,
