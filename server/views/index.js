@@ -255,7 +255,9 @@ ${rows ? `<dl class="ds-colours">${rows}</dl>` : ''}
 // The SDK and the versions this site installs, read from its own package.json so the page never states a stale pin.
 const DESIGN_PACKAGE = require('../../package.json');
 function pinOf(name) {
-    const m = String((DESIGN_PACKAGE.dependencies || {})[name] || '').match(/refs\/tags\/v([^/]+)$/);
+    // GitHub's tag tarball (…/refs/tags/vX.Y.Z) or our own forge's (…/archive/vX.Y.Z.tar.gz, the pin bot's default since 4.284.0).
+    const t = String((DESIGN_PACKAGE.dependencies || {})[name] || '').match(/refs\/tags\/v([^/]+)$|\/archive\/v([^/]+?)\.tar\.gz$/);
+    const m = t && [t[0], t[1] || t[2]];
     return m ? m[1] : null;
 }
 function sdkSection() {
