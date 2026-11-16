@@ -259,6 +259,14 @@ const RULES = Object.freeze([
         '2026-09-28', 'It is what people ask assistants for, and what they recommend us for.'),
 
     // ── Look and marks ──
+    R('links-are-ours', 'look', 'A link in running text is OpenVibe\'s own, drawn by the person\'s theme.',
+        'The theme\'s light accent, a fine line under it at rest, a two-tone line (the accent and a tone turned from it) that sweeps in on hover or focus with a soft glow, and a wash of the accent on a press. Never the browser\'s blue or visited purple. A link with a class is a component and keeps its own look; a site\'s own colour for a link still wins (zero specificity). Off stops the sweep; forced colours get a plain underline.',
+        '2026-11-16', 'The owner: "a completely custom link style with animations and effects … rather than these default ass looking ones … across all sites".',
+        [{ label: 'Links', href: '/components/links' }], ['links-chrome (openvibe-shared 4.283.0)']),
+    R('suggestions-fit-the-box', 'words', 'A search box suggests what that box searches.',
+        'What people search across OpenVibe goes only in a site\'s own search. A box that filters something of the person\'s (their sessions, their inbox, their chats) suggests from it, or keeps its placeholder; the menu\'s box suggests what you can open and ask. A placeholder its page changes is taken up at once (never two lines drawn over each other), and the line sits on the box\'s own text line.',
+        '2026-11-16', 'The owner: "it\'s not content aware … try GraveGateKeeper, that\'s a person … dumb to have it here in the vibe … spacing wrong, offset to the top".',
+        [], ['trending-context-chrome (openvibe-shared 4.283.0)']),
     R('blue-by-default', 'look', 'The default look is blue; other themes are a choice.',
         'Vibe (deep blue) is everyone’s default; the violet original is its own theme, Violet Hour.',
         '2026-09-19', 'The owner prefers blue as the platform default.',
