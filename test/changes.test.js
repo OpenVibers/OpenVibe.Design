@@ -22,8 +22,9 @@ const { PUBLIC_DIR } = require('../server/assets');
         await check('/changes lists every release in the pinned CHANGELOG, newest first, in its own words', async () => {
             const r = await t.get('/changes');
             assert.strictEqual(r.status, 200);
-            // 136 KB (2026-11-11, was 120): each folded release is a row with its version, title and date as parts.
-            assert.ok(Buffer.byteLength(r.text) < 136 * 1024, `${Buffer.byteLength(r.text)} bytes`);
+            // 156 KB (2026-11-16, was 136: openvibe-shared 4.288.0's CHANGELOG made the page 142,228 bytes, and 4.289.0
+            // adds its entry); 136 KB (2026-11-11, was 120): each folded release is a row with its version, title and date.
+            assert.ok(Buffer.byteLength(r.text) < 156 * 1024, `${Buffer.byteLength(r.text)} bytes`);
             assert.match(r.text, /Every shared release, and where it shows/);
             assert.match(r.text, new RegExp(`openvibe-shared@${changes.SHARED_VERSION.replace(/\./g, '\\.')}`));
             assert.strictEqual((r.text.match(/data-release="/g) || []).length, 12, 'exactly twelve full releases');
