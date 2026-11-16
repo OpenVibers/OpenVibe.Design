@@ -59,3 +59,8 @@
 /* The selects keep the browser's own look (data-ov-native): the house's drawn select paints an empty one
    with the accent, and a menu of open fonts should read as a field, not as a button. */
 .tf .tf-form select,.tf .tf-redraw select{appearance:none;-webkit-appearance:none;background:var(--bg-primary) no-repeat right 12px center;color:var(--text-primary);border:1px solid var(--border);padding-right:32px;box-shadow:none}
+
+/* 2026-11-16: the item icon's fields show only when Item icon is the kind (no script). */
+.tf-form .tv-item { display: none; border: 0; margin: 0; padding: 0; min-width: 0; }
+.tf-form:has(#tv-kind option[value="item"]:checked) .tv-item { display: grid; gap: inherit; }
+.tf-form .tv-item legend { font-weight: 600; padding: 0; margin-bottom: 4px; }
