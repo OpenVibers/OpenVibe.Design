@@ -251,13 +251,14 @@ ${error ? `<p class="dd-notice is-error" role="alert">${esc(error)}</p>` : ''}
 ${step(1, 'Researches the question first.', 'The core is <a href="https://openvibe.exchange/deep-dive">Exchange\'s deep dive</a>: the questions an expert would ask, every search we have, and the write-ups worth reading.')}
 ${step(2, 'Chooses the sites worth a look.', 'A model ranks real products with a reason each; on Thorough and Expert you can add or drop any before Capture.')}
 ${step(3, 'Captures them properly.', '390 and 1280 px, dark and light where the site supports it, the whole page after a slow scroll, with its type scale, palette, spacing, grid and components measured. Expert adds open menus, hover and focus, axe-core and LCP/CLS/INP.')}
-${step(4, 'Reads them as a designer.', 'A vision model reads each screenshot and a text model the measured facts and the words: hierarchy, density, what draws the eye, what works and what fails.')}
-${step(5, 'Writes it up against our rules.', 'The patterns and how many sites use each, the best version, what everyone gets wrong, the gap nobody fills, reference tokens as direction, do and don\'t, and recommendations that say which of our rules they follow or would change.')}
-${step(6, 'Feeds your designs.', 'Its numbered points become the brief for a design on <a href="/create">Create</a> (Research first), and every take says which points it follows. Nothing from a captured site is ever copied.')}
+${step(4, 'Reads a whole page of images at once.', 'Google, Bing and DuckDuckGo image results for your question, recent ones only if you like (the past day, week, month or year), laid out as one sheet per engine that a vision model reads in one pass: what most of them look like, the palette, the styles, the odd ones out. The sheets are in the report, every picture linked to where it came from.')}
+${step(5, 'Reads them as a designer.', 'A vision model reads each screenshot and a text model the measured facts and the words: hierarchy, density, what draws the eye, what works and what fails.')}
+${step(6, 'Writes it up against our rules.', 'The patterns and how many sites use each, the best version, what everyone gets wrong, the gap nobody fills, reference tokens as direction, do and don\'t, and recommendations that say which of our rules they follow or would change.')}
+${step(7, 'Feeds your designs.', 'Its numbered points become the brief for a design on <a href="/create">Create</a> (Research first), and every take says which points it follows. Nothing from a captured site is ever copied.')}
 </ol></section>`;
     const body = `<div class="ds-wrap tk dd-page ddh">
 <header class="ds-page-h"><p class="ds-kicker">Research first</p><h1>Design deep dive</h1>
-<p class="ds-lede">Expert design research: we research your question in full, capture the best sites at phone and computer sizes, and tell you what works and why, checked against OpenVibe's own rules.</p></header>
+<p class="ds-lede">Expert design research: we research your question in full, capture the best sites at phone and computer sizes, read whole pages of image search results, and tell you what works and why, checked against OpenVibe's own rules. Every option is yours to set.</p></header>
 ${form}${list}${what}</div>`;
     return layout({ title: 'Design deep dive', description: 'Expert design research on OpenVibe.Design: the question researched in full, the best sites captured at phone and computer sizes and read as a designer, written up against our rules.', path: '/deep-dive', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-options.js'], body });
 }

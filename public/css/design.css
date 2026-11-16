@@ -11,7 +11,7 @@ html, body { margin: 0; background: var(--bg-primary, #0a0f1c); color: var(--tex
 .ds h2 { margin: 0 0 10px; font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; }
 .ds h3:not(.ovk-card-title) { margin: 18px 0 8px; font-size: .78rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted, #7386a3); }
 :where(.ds) .ovk-i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.ds-kicker { margin: 0 0 4px; font-size: .74rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--room-strong); }
+.ds-kicker { margin: 0 0 4px; font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--room-strong); }
 .ds-lede { margin: 8px 0 0; max-width: 720px; color: var(--text-secondary, #96a7c2); line-height: 1.55; }
 .ds-fine { color: var(--text-muted, #7386a3); font-size: .84rem; line-height: 1.5; }
 /* Where a page sits, above its h1: plain text and one link, the same on every page (the four doors, 2026-11-10). */
