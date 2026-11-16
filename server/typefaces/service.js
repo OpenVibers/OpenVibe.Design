@@ -14,7 +14,7 @@
  */
 const glyph = require('./glyph');
 const { compile, CHARSET, FAMILY } = require('./compile');
-const { sanitize } = require('../vectors/svg');
+const { sanitize } = require('openvibe-sdk/svg');   // the SDK's SVG cleaner (0.176.0; was server/vectors/svg.js)
 const itemStyle = require('../vectors/item-style');
 
 /** How many letters are asked for at a time. */

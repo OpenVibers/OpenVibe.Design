@@ -15,7 +15,7 @@ const { boot, check, done } = require('./helpers/boot');
 const { signDeliveryHeaders } = require('openvibe-sdk/events');
 const { clean } = require('../server/typefaces/glyph');
 const { compile } = require('../server/typefaces/compile');
-const { sanitize } = require('../server/vectors/svg');
+const { sanitize } = require('openvibe-sdk/svg');
 
 /**
  * Compile with the clock frozen. opentype.js stamps the font's head table with the build time when it writes

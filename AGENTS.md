@@ -55,7 +55,7 @@ shared Frame/kit (`openvibe-shared`), identity.
   [server/settings.js](server/settings.js).
 - **Studio/tokens:** [server/themes.js](server/themes.js), [server/tokens.js](server/tokens.js),
   [server/tokens/](server/tokens/) (`kit.js`, `formats.js`, `exports.js`), [server/typefaces/](server/typefaces/),
-  [server/vectors/svg.js](server/vectors/svg.js), [server/patterns/catalog.js](server/patterns/catalog.js),
+  `openvibe-sdk/svg` (the SVG cleaner), [server/patterns/catalog.js](server/patterns/catalog.js),
   [server/kit/](server/kit/).
 - **Arena/studio:** [server/arena/](server/arena/) (`ai.js`, `jobs.js`, `store.js`, `bench.js`,
   `sanitize.js`, `kinds.js`), [server/designs.js](server/designs.js),
