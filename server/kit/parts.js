@@ -39,6 +39,8 @@ const PARTS = [
         code: `kit.share({ title: 'Night owls', url: '/r/night-owls' }) + kit.share({ title: 'Goosely is live', url: '/goosely', text: 'Come watch', small: true })` },
     { id: 'badge', fn: 'badge', group: 'actions', name: 'Badge', line: 'A word beside a title: live, new, a state. Five tones.',
         code: `kit.badge('live', 'live') + kit.badge('new', 'accent') + kit.badge('paid', 'ok') + kit.badge('expiring', 'warn') + kit.badge('failed', 'bad')` },
+    { id: 'tile', fn: 'tile', group: 'actions', name: 'Glyph tile', line: 'A glyph on its own tinted square, drawn plainly at its size: a product in a hero button, a section heading, a setting. Five tones, or any hue.',
+        code: `kit.tile('cubes', { size: 44, label: 'Space' }) + kit.tile('code', { size: 44, hue: 200 }) + kit.tile('spark', { tone: 'ok' }) + kit.tile('bell', { tone: 'warn', size: 32 }) + kit.tile('people', { tone: 'muted', size: 28 })` },
     { id: 'dot', fn: 'dot', group: 'actions', name: 'Unread dot', line: 'How many are new. Nothing at zero; 9+ past nine.',
         code: `kit.dot(3) + kit.dot(42)` },
     { id: 'ask-agent', fn: 'askAgent', group: 'actions', name: 'Ask your agent', line: 'The chip that asks: a tap hands the question to your own agent in the Dock, with this page\'s context, and it never sends for you.', needs: 'the shared navbar',
