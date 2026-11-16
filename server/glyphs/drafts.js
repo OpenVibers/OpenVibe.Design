@@ -17,7 +17,8 @@
  */
 const crypto = require('crypto');
 const { clean, cleanSolid } = require('./validate');
-const { fitDrawing } = require('./fit');
+const { fitDrawing, transform: moveDrawing } = require('./fit');
+const geometry = require('./geometry');
 const { searchReferences } = require('./references');
 
 const PER_DAY = 12;
@@ -26,7 +27,7 @@ const NAME_RE = /^[a-z][a-z0-9-]{1,31}$/;
 
 // The house hand, shown rather than described (plan L49: drafts that look like the set they join). A dozen drawings
 // from openvibe-shared/glyphs, picked for range: a frame, a figure, a symbol, an object, a slash variant.
-const EXAMPLES = ['user', 'camera', 'bell', 'search', 'heart', 'gear', 'calendar', 'megaphone', 'compass', 'mug', 'thumbs-up', 'link-off'];
+const EXAMPLES = ['user', 'camera', 'bell', 'search', 'heart', 'sun', 'calendar', 'megaphone', 'compass', 'mug', 'thumbs-up', 'link-off'];
 function examples() {
     let glyphs = null;
     try { glyphs = require('openvibe-shared/glyphs'); } catch { return ''; }
@@ -40,7 +41,10 @@ const SYSTEM = `You draw icons for OpenVibe's glyph set. Every glyph is the insi
 strokes only (the page draws them 2 units wide, round caps and joins, in the text colour), at most 6 shapes from
 path, circle, ellipse, rect, line and polyline, every coordinate between 1 and 23, nothing filled, no transforms.
 Simple, centred on (12, 12), filling about 3 to 21 of the box, with at least 2.5 units between parallel lines so it
-reads at 16 px, in the hand of a clean line icon set. A dot is a zero-length line ("M12 12h.01"). Each candidate is a
+reads at 16 px, in the hand of a clean line icon set. Exact geometry: a regular shape is regular (a gear's teeth all
+the same width, evenly spaced; a star's points equal; a ring's centre on 12, 12), and anything symmetric is mirror-exact
+about x = 12 (the left side's numbers mirror the right side's to the decimal). Use whole or half units where you can,
+never a nearly-equal pair like 12 and 12.1. A dot is a zero-length line ("M12 12h.01"). Each candidate is a
 different idea, not the same drawing moved. Each candidate also has its solid twin for small sizes (16 px): the same
 idea as filled shapes, a hole cut with fill-rule="evenodd" on a path, a part that has to stay a line (a handle, a
 stem, a slash) as class="ln"; no other attributes, at most 6 shapes. Answer with JSON only:
@@ -114,11 +118,38 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         }
         const kept = [], refused = [];
         const seen = new Set();
+        const prepared = [];
         for (const c of list) {
             const r = sourceLine ? sourceLine : clean(lineOf(c));
             if (!r.ok) { refused.push(r.why); continue; }
-            const fitted = fitDrawing(r.svg);
+            let fitted = fitDrawing(r.svg);
             if (!fitted.ok) { refused.push(fitted.why); continue; }
+            // Exact geometry (2026-11-16): points that nearly mirror about x = 12 are made to, when that makes the drawing
+            // more symmetric, and each candidate carries its geometry report; the best are kept first.
+            let report = null, snapped = 0;
+            if (!sourceLine) {
+                try {
+                    report = geometry.check(fitted.svg, { expect: geometry.expectFor(n) });
+                    // The fit measures an arc by its end point and radius, which can push a drawing with arcs well off the
+                    // middle (a heart 2.4 units low): centre it on its drawn ink instead.
+                    if (report.centre && report.offset > 0.2) {
+                        const moved = clean(moveDrawing(fitted.svg, { cx: report.centre.x, cy: report.centre.y, scale: 1 }));
+                        if (moved.ok) { fitted = { ...fitted, svg: moved.svg }; report = geometry.check(moved.svg, { expect: geometry.expectFor(n) }); }
+                    }
+                    if (report.scores['mirror ↔'] >= 0.9 && report.scores['mirror ↔'] < 0.995) {
+                        const s = geometry.snapMirror(fitted.svg);
+                        const again = s.moved ? clean(s.svg) : null;
+                        if (again && again.ok) {
+                            const after = geometry.check(again.svg, { expect: geometry.expectFor(n) });
+                            if (after.scores['mirror ↔'] > report.scores['mirror ↔']) { fitted = { ...fitted, svg: again.svg }; report = after; snapped = s.moved; }
+                        }
+                    }
+                } catch { report = null; }
+            }
+            prepared.push({ c, fitted, report, snapped });
+        }
+        prepared.sort((a, b) => geometry.rank(b.report) - geometry.rank(a.report));
+        for (const { c, fitted, report, snapped } of prepared) {
             if (seen.has(fitted.svg)) continue;
             seen.add(fitted.svg);
             let sol = solidOf(c) ? cleanSolid(solidOf(c)) : { ok: false };
@@ -128,10 +159,11 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
                 const solidFit = fitDrawing(sol.svg);
                 if (solidFit.ok) sol = solidFit; else { refused.push(`${n} solid: ${solidFit.why}`); sol = { ok: false }; }
             }
+            const geo = report ? { scores: report.scores, offset: report.offset, flags: report.flags, snapped } : {};
             const row = { id: id(), subject: who, name: n, sentence: what, svg: fitted.svg, solid_svg: sol.ok ? sol.svg : null,
-                styles: requestedStyles, references, provider: answer.provider, model: answer.model, status: 'draft', created_at: iso() };
-            await db.exec('INSERT INTO glyph_drafts (id, subject, name, sentence, svg, solid_svg, provider, model, status, created_at, styles_json, references_json) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)',
-                [row.id, row.subject, row.name, row.sentence, row.svg, row.solid_svg, row.provider, row.model, row.status, row.created_at, JSON.stringify(row.styles), JSON.stringify(row.references)]);
+                styles: requestedStyles, references, provider: answer.provider, model: answer.model, status: 'draft', created_at: iso(), geometry: geo };
+            await db.exec('INSERT INTO glyph_drafts (id, subject, name, sentence, svg, solid_svg, provider, model, status, created_at, styles_json, references_json, geometry_json) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)',
+                [row.id, row.subject, row.name, row.sentence, row.svg, row.solid_svg, row.provider, row.model, row.status, row.created_at, JSON.stringify(row.styles), JSON.stringify(row.references), JSON.stringify(geo)]);
             kept.push(row);
         }
         if (!list.length) refused.push('the model answered no candidates');
@@ -143,7 +175,7 @@ function createGlyphDrafts({ db, ai, clock = { now: () => Date.now() }, guests =
         if (status) { args.push(status); where.push(`status = $${args.length}`); }
         if (subject) { args.push(subject); where.push(`subject = $${args.length}`); }
         args.push(Math.min(Math.max(Number(limit) || 60, 1), 500));
-        return db.many(`SELECT id, name, sentence, svg, solid_svg, styles_json, references_json, provider, model, status, created_at, reviewed_at FROM glyph_drafts${where.length ? ` WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC LIMIT $${args.length}`, args);
+        return db.many(`SELECT id, name, sentence, svg, solid_svg, styles_json, references_json, geometry_json, provider, model, status, created_at, reviewed_at FROM glyph_drafts${where.length ? ` WHERE ${where.join(' AND ')}` : ''} ORDER BY created_at DESC LIMIT $${args.length}`, args);
     }
 
     async function review({ id: draftId, action, reviewer }) {
