@@ -364,6 +364,29 @@ function createIconRoutes(ctx) {
         const names = aliases.search(q, Math.min(Math.max(Number(req.query.limit) || 24, 1), 60));
         res.set('Cache-Control', 'public, max-age=300').set(OPEN).json({ query: q, glyphs: names.map((name) => ({ name, svg: glyphs.path(name), solid: glyphs.solid(name) || '' })) });
     });
+    // How exact a drawing's geometry is (2026-11-16): POST { svg, name? } → its symmetry scores, the centre offset and
+    // what a drawing of that name is meant to keep and does not. The drawing is checked and rebuilt first (validate.js).
+    r.post('/api/v1/glyphs/check', express.json({ limit: '8kb' }), (req, res) => {
+        const body = req.body && typeof req.body === 'object' ? req.body : {};
+        const cleaned = require('../glyphs/validate').clean(String(body.svg || ''));
+        if (!cleaned.ok) return problem(res, req, 422, 'design.glyph_invalid', cleaned.why);
+        const geo = require('../glyphs/geometry');
+        const name = String(body.name || '').toLowerCase().slice(0, 32);
+        const report = geo.check(cleaned.svg, { expect: geo.expectFor(name) });
+        // The mirror snap is offered only when it makes the drawing more symmetric (a side off by more than the snap's
+        // reach can come out worse).
+        const snapped = geo.snapMirror(cleaned.svg);
+        const better = snapped.moved && geo.check(snapped.svg).scores['mirror ↔'] > report.scores['mirror ↔'];
+        res.set('Cache-Control', 'no-store').set(OPEN).json({ ...report, expect: geo.expectFor(name), snap: better ? { svg: snapped.svg, moved: snapped.moved } : null });
+    });
+    // Exact shapes (2026-11-16): GET /api/v1/glyphs/shapes/gear?teeth=8 → { svg } computed point by point.
+    r.get('/api/v1/glyphs/shapes/:shape', (req, res) => {
+        const { SHAPES } = require('../glyphs/shapes');
+        const make = SHAPES[String(req.params.shape || '').toLowerCase()];
+        if (!make) return problem(res, req, 404, 'design.shape_unknown', `The shapes are ${Object.keys(SHAPES).join(', ')}.`);
+        const q = Object.fromEntries(Object.entries(req.query || {}).map(([k, v]) => [k, String(v).slice(0, 12)]));
+        res.set('Cache-Control', 'public, max-age=3600').set(OPEN).json({ shape: req.params.shape, svg: make(q) });
+    });
     r.get('/api/v1/glyphs/:name', (req, res, next) => {
         const name = aliases.resolve(String(req.params.name || '').toLowerCase());
         if (!name) return next();

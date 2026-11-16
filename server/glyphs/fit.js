@@ -90,4 +90,4 @@ function fitDrawing(markup, transformSpec = null) {
     return { ok: true, svg, transform: t, metrics: after };
 }
 
-module.exports = { measure, fitDrawing };
+module.exports = { measure, fitDrawing, transform };
