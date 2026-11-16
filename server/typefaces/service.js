@@ -123,7 +123,9 @@ function createService({ db, ai, store, config = {}, log = console, s, sharing =
                     prompt: notesFor({ prompt, baseFamily, baseNote }) + (extra ? '\n\n' + extra : ''),
                     maxTokens: 8000,
                     target: { service: 'design', type: 'typeface', id: String(baseFamily || 'new') },
-                    prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },
+                    // The model comes from AI's routing for the task (the owner's default, the person's own choice):
+                    // never an id in code (2026-11-16).
+                    task: 'design.icon',
                     person: String(owner),
                 });
                 provider = provider || (answer.provider || null);
@@ -207,7 +209,8 @@ function createService({ db, ai, store, config = {}, log = console, s, sharing =
             prompt: item ? itemStyle.itemAsk(item, note) : 'Draw: ' + String(prompt || '').slice(0, 800) + (note ? '\n\nThe note on the last drawing: ' + String(note).slice(0, 400) : ''),
             maxTokens: item ? 4000 : 3000,
             target: { service: 'design', type: 'vector', id: String(kind || 'icon') },
-            prefer: chosen || { provider: 'anthropic', model: 'claude-opus-5-5' },
+            // The person's pick from Exchange's models, else AI's routing for the task (never an id in code, 2026-11-16).
+            task: 'design.icon', ...(chosen ? { prefer: chosen } : {}),
             ...(onBehalf ? { person: String(owner) } : {}),
         });
 
@@ -254,7 +257,7 @@ function createService({ db, ai, store, config = {}, log = console, s, sharing =
             ].join('\n'),
             maxTokens: 1200,
             target: { service: 'design', type: 'typeface_glyph', id: String(face.id || 'new') },
-            prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },
+            task: 'design.icon',
             person: String(owner),
         });
         const json = readJson(answer.text);

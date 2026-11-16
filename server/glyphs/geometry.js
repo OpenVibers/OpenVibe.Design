@@ -102,6 +102,7 @@ function check(markup, { expect = [] } = {}) {
     const scores = {};
     for (const k of KINDS) scores[k] = Math.round(bestScore(ink, d, k, c) * 1000) / 1000;
     const centre = { x: round(c[0] / 10), y: round(c[1] / 10) };
+    const size = { w: round((x1 - x0 + 1) / 10), h: round((y1 - y0 + 1) / 10) };
     const offset = round(Math.hypot(centre.x - 12, centre.y - 12));
     const flags = [];
     for (const k of KINDS) {
@@ -109,8 +110,14 @@ function check(markup, { expect = [] } = {}) {
         const meant = expect.includes(k) || (k === 'mirror ↔' && s >= 0.9) || s >= 0.95;
         if (meant && s < 0.995) flags.push(`${k} ${s.toFixed(3)}`);
     }
+    if (expect.includes('n-fold')) {
+        const best = Math.max(...KINDS.filter((x) => /-fold$/.test(x)).map((x) => scores[x]));
+        if (best < 0.995) flags.push(`n-fold ${best.toFixed(3)}`);
+        // A meant turn that is exact leaves the other turns' near-misses alone (a 6-tooth gear is not 12-fold).
+        else for (let i = flags.length - 1; i >= 0; i--) if (/^(\d+-fold|half turn|quarter turn) /.test(flags[i])) flags.splice(i, 1);
+    }
     if (offset > 0.6) flags.push(`centre ${offset} off (12, 12)`);
-    return { scores, centre, offset, flags };
+    return { scores, centre, offset, size, flags };
 }
 
 // ── Path data, absolute ─────────────────────────────────────────────
@@ -206,13 +213,15 @@ function snapMirror(markup) {
 
 // Shapes that are regular by meaning: a draft or a glyph with one of these names must keep these symmetries exactly.
 const EXPECTED = {
-    gear: ['quarter turn', '8-fold'], cog: ['quarter turn', '8-fold'], settings: ['quarter turn', '8-fold'],
-    sun: ['quarter turn', '8-fold'], star: ['mirror ↔', '5-fold'], snowflake: ['6-fold'], hexagon: ['6-fold'],
+    // 'n-fold': some turn of 5 to 12 parts is exact (a gear has as many as it has teeth).
+    gear: ['n-fold'], cog: ['n-fold'], settings: ['n-fold'], sun: ['n-fold'], star: ['mirror ↔', 'n-fold'], snowflake: ['6-fold'], hexagon: ['6-fold'],
     plus: ['quarter turn'], close: ['quarter turn'], 'x-circle': ['quarter turn'], 'plus-circle': ['quarter turn'],
     heart: ['mirror ↔'], shield: ['mirror ↔'], bell: ['mirror ↔'], lock: ['mirror ↔'], home: ['mirror ↔'],
     user: ['mirror ↔'], trophy: ['mirror ↔'], crown: ['mirror ↔'], gem: ['mirror ↔'], skull: ['mirror ↔'],
 };
 const expectFor = (name) => EXPECTED[String(name || '').toLowerCase()] || [];
+/** A report's score for an expected symmetry; 'n-fold' is the best of the 5- to 12-fold turns. */
+const scoreOf = (report, k) => (k === 'n-fold' ? Math.max(...KINDS.filter((x) => /-fold$/.test(x)).map((x) => report.scores[x] || 0)) : report.scores[k]);
 
 /** A draft's quality for ordering: fewer flags first, then the meant symmetries' scores. */
 function rank(report) {
@@ -220,4 +229,4 @@ function rank(report) {
     return -10 * (report.flags || []).length + Math.max(report.scores['mirror ↔'] || 0, report.scores['quarter turn'] || 0) - (report.offset || 0) / 10;
 }
 
-module.exports = { check, snapMirror, absolute, serialise, KINDS, EXPECTED, expectFor, rank };
+module.exports = { check, snapMirror, absolute, serialise, KINDS, EXPECTED, expectFor, scoreOf, rank };

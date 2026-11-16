@@ -174,7 +174,10 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             const res = await t.get('/icons/draft', { method: 'POST', as: ana, ...form({ name: 'hot-tub', sentence: 'A tub with steam over it' }), origin: ORIGIN });
             assert.equal(res.status, 303);
             assert.match(res.headers.get('location'), /^\/icons\?drafted=2&draw=hot-tub#draw$/);
-            assert.equal(asked.length, 1);
+            // Draw, measure, fix (2026-11-16): the steam is not mirrored (x 9 and 14), so the measures go back once; the
+            // same drawings again end it.
+            assert.equal(asked.length, 2);
+            assert.match(asked[1].prompt, /mirror ↔ 0\.9\d\d/, 'what was off went back to the model');
             assert.ok(asked[0].prompt.includes('hot-tub') && asked[0].prompt.includes('A tub with steam over it'));
             assert.deepEqual(asked[0].target, { service: 'design', type: 'glyph_draft', id: 'hot-tub' });
             const page = await t.get('/icons?drafted=2&draw=hot-tub', { as: ana });
@@ -256,6 +259,23 @@ const form = (fields) => ({ body: new URLSearchParams(fields).toString(), header
             const page = await t.get('/icons');
             assert.ok(/"href":"\/make"[^}]*"active":true/.test(page.text), 'the bar marks the Make door');
             assert.match(page.text, /<a href="\/make">Make<\/a>[\s\S]*?aria-current="page">Icons</, 'and the breadcrumb says where it sits');
+        });
+
+        await check('the ways to draw: the API lists them, the page offers them, a guest gets the one-call ways', async () => {
+            const api = await t.get('/api/v1/glyphs/methods');
+            assert.equal(api.status, 200);
+            const ways = JSON.parse(api.text);
+            assert.deepEqual(ways.methods.map((m) => m.id), ['auto', 'shape', 'refine', 'write', 'trace', 'harness']);
+            assert.ok(ways.models && Array.isArray(ways.models.draw) && Array.isArray(ways.models.image) && Array.isArray(ways.models.vision) && Array.isArray(ways.harnesses));
+            const signed = await t.get('/icons', { as: ana });
+            assert.ok(signed.text.includes('How to draw it') && signed.text.includes('name="model"') && signed.text.includes('value="harness"'), 'every way and its pickers');
+            const guestPage = await t.get('/icons');
+            assert.ok(guestPage.text.includes('How to draw it') && !guestPage.text.includes('name="model"') && !guestPage.text.includes('value="refine"') && !guestPage.text.includes('value="harness"'), 'a guest: Auto, an exact shape or Draw');
+            const before = asked.length;
+            const gear = await t.get('/icons/draft', { method: 'POST', as: ana, ...form({ name: 'settings', sentence: 'Your settings' }), origin: ORIGIN });
+            assert.equal(gear.status, 303);
+            assert.match(gear.headers.get('location'), /drafted=[1-9]/, 'Auto computes the exact gear');
+            assert.equal(asked.length, before, 'with no model at all');
         });
     } finally {
         await t.close();

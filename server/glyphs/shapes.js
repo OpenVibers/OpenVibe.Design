@@ -17,9 +17,11 @@ const num = (v, lo, hi, dflt) => { const n = Number(v); return Number.isFinite(n
 
 function gear(o = {}) {
     const teeth = Math.round(num(o.teeth, 5, 16, 8));
-    const tip = num(o.tip, 6, 10.5, 10), root = num(o.root, 4, tip - 1, 7.6);
+    // Defaults at the house size (openvibe-shared test/icon-ink: the ink's long side 0.79 of the box, 18.96 units with
+    // the 2-unit stroke).
+    const tip = num(o.tip, 6, 10.5, 8.48), root = num(o.root, 4, tip - 1, 6.45);
     const tipShare = num(o.tipShare, 0.15, 0.7, 0.4), rootShare = num(o.rootShare, tipShare, 0.85, 0.62);
-    const hole = num(o.hole, 0, root - 2, 2.8);
+    const hole = num(o.hole, 0, root - 2, 2.4);
     const pitch = (2 * Math.PI) / teeth, ht = (tipShare * pitch) / 2, hb = (rootShare * pitch) / 2;
     const d = [];
     for (let i = 0; i < teeth; i++) {
@@ -33,7 +35,7 @@ function gear(o = {}) {
 
 function star(o = {}) {
     const n = Math.round(num(o.points, 3, 12, 5));
-    const r1 = num(o.outer, 5, 10.5, 9.8), r2 = r1 * num(o.inner, 0.2, 0.9, 0.48);
+    const r1 = num(o.outer, 5, 10.5, 8.92), r2 = r1 * num(o.inner, 0.2, 0.9, 0.48);
     const angle = (i) => -Math.PI / 2 + (i * Math.PI) / n;
     const ys = Array.from({ length: 2 * n }, (_, i) => Math.sin(angle(i)) * (i % 2 ? r2 : r1));
     const cy = 12 - (Math.min(...ys) + Math.max(...ys)) / 2;
@@ -42,7 +44,7 @@ function star(o = {}) {
 }
 
 function polygon(o = {}) {
-    const n = Math.round(num(o.sides, 3, 12, 6)), r = num(o.radius, 4, 10.5, 9.5);
+    const n = Math.round(num(o.sides, 3, 12, 6)), r = num(o.radius, 4, 10.5, 8.48);
     const angle = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
     const ys = Array.from({ length: n }, (_, i) => Math.sin(angle(i)) * r);
     const cy = 12 - (Math.min(...ys) + Math.max(...ys)) / 2;
@@ -54,9 +56,9 @@ function polygon(o = {}) {
  * down to the point, the left and right the same curve mirrored, and its box centred on the grid.
  */
 function heart(o = {}) {
-    const half = num(o.width, 6, 10, 9.3), lobe = num(o.lobe, 3, 7, 5.3);
+    const half = num(o.width, 6, 10, 8.48), lobe = num(o.lobe, 3, 7, 4.83);
     // In the drawing's own frame: the sides at y = 0, the dip 3.6 above them, the point `drop` below.
-    const dip = num(o.dip, 1.5, 6, 3.6), drop = num(o.drop, 8, 15, 13), pull = num(o.pull, 0.3, 0.8, 0.565);
+    const dip = num(o.dip, 1.5, 6, 3.28), drop = num(o.drop, 8, 15, 11.85), pull = num(o.pull, 0.3, 0.8, 0.565);
     // The lobe's top: the circle through (12 - half, 0) and (12, -dip), radius `lobe`, centre below the chord.
     const ax = -half, ay = 0, bx = 0, by = -dip;
     const mx = (ax + bx) / 2, my = (ay + by) / 2, cl = Math.hypot(bx - ax, by - ay);
