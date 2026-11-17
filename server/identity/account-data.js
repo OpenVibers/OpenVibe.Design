@@ -23,6 +23,8 @@ const TABLES = [
     // The marks a signed-in person picked on /brand/explore (a guest's picks name nobody).
     { table: 'brand_picks', subject: 'voter', file: 'brand_picks.json', order: 'created_at', columns: ['code', 'created_at'], erase: 'delete' },
     { table: 'glyph_drafts', subject: 'subject', file: 'glyph_drafts.json', order: 'created_at', columns: ['id', 'name', 'sentence', 'svg', 'model', 'status', 'created_at', 'reviewed_at'], erase: 'delete' },
+    // The name effects a person asked for ("make me an effect", 11-17): theirs to export, gone with the account.
+    { table: 'name_effect_drafts', subject: 'subject', file: 'name_effect_drafts.json', order: 'created_at', columns: ['id', 'slug', 'label', 'words', 'css', 'model', 'status', 'created_at', 'reviewed_at'], erase: 'delete' },
     // The typefaces a person made with the model (/fonts/make): the outlines the model drew and the notes they
     // gave. The font files are compiled from the outlines on request, so deleting the rows deletes the fonts.
     { table: 'ai_typefaces', subject: 'owner', file: 'ai_typefaces.json', order: 'created_at', columns: ['id', 'name', 'prompt', 'base_family', 'style_notes', 'glyphs', 'metrics', 'provider', 'model', 'license', 'state', 'note', 'created_at', 'updated_at'], erase: 'delete' },
