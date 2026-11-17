@@ -123,6 +123,37 @@ const answer = (candidates) => ({ provider: 'stub', model: 'stub-model', text: J
         assert.deepStrictEqual([o.models.draw.map((m) => m.id), o.models.vision.map((m) => m.id), o.models.image.map((m) => m.id)], [['gpt-5', 'deepseek-chat'], ['gpt-5'], ['gpt-image-1']]);
         assert.deepStrictEqual(o.models.draw[0].prefer, { provider: 'p', model: 'gpt-5' });
         assert.deepStrictEqual(o.harnesses.map((h) => h.id), ['claude-code'], 'an agent that is off is not offered');
+        assert.ok(o.methods.every((m) => m.available), 'every way has something to run on');
+    }
+    // Signed in: the person's own keys and machines (AI's choices) join the lists, first; a pick runs as their choice.
+    {
+        methods.options.reset();
+        const asked = [];
+        const doc = (slug) => ({ slug, name: slug, offers: [{ provider: 'p', model: slug, price: { in: 1, out: 2 } }] });
+        const ai = {
+            async exchangeCatalog({ kind }) { return { models: kind === 'chat' ? [doc('gpt-5')] : [] }; },
+            async choices({ token, task }) {
+                asked.push([token, task]);
+                return task === 'image.generate'
+                    ? { options: { openvibe: [], keys: [{ model: 'openai/gpt-image-1', source: 'keys', name: 'GPT Image 1' }], machines: [] } }
+                    : { options: { openvibe: [], keys: [{ model: 'anthropic/claude-opus-5-5', source: 'keys', name: 'Claude Opus 5.5' }], machines: [{ model: 'qwen3-coder', source: 'machines', machine: 'mch_1', machine_name: 'Studio PC' }] } };
+            },
+        };
+        const anon = await methods.options({ ai });
+        assert.deepStrictEqual([anon.models.draw.map((m) => m.id), anon.models.image.length, asked.length], [['gpt-5'], 0, 0], 'signed out: what OpenVibe offers, no choices read');
+        assert.deepStrictEqual(anon.methods.filter((m) => !m.available).map((m) => m.id), ['trace', 'harness'], 'no image model and no Codes: those ways are not offered');
+        const mine = await methods.options({ ai, token: 'tok_person' });
+        assert.deepStrictEqual(asked.map((x) => x[1]).sort(), ['design.icon', 'image.generate']);
+        assert.ok(asked.every((x) => x[0] === 'tok_person'), 'read with the person\'s own token');
+        assert.deepStrictEqual(mine.models.draw.map((m) => m.id), ['keys:anthropic/claude-opus-5-5', 'machines:mch_1:qwen3-coder', 'gpt-5']);
+        assert.deepStrictEqual(mine.models.image.map((m) => m.id), ['keys:openai/gpt-image-1']);
+        assert.strictEqual(mine.methods.find((m) => m.id === 'trace').available, true, 'their own image key makes a picture possible');
+        assert.deepStrictEqual(mine.models.draw[1].choice, { model: 'qwen3-coder', source: 'machines', machine: 'mch_1' });
+        assert.strictEqual((await methods.options({ ai })).models.draw.length, 1, 'the person\'s list is never cached for the next one');
+        const calls = [];
+        const drawAi = { enabled: true, async text(x) { calls.push(x); return answer([{ line: shapes.star() }]); } };
+        await createGlyphDrafts({ db: fakeDb(), ai: drawAi, referenceSearch: async () => [] }).draft({ subject: 'usr_1', name: 'star', method: 'write', model: mine.models.draw[0] });
+        assert.deepStrictEqual([calls[0].choice, calls[0].prefer], [{ model: 'anthropic/claude-opus-5-5', source: 'keys' }, undefined], 'their key, as a per-run choice');
     }
     void geometry;
     console.log('glyph-methods: Auto exact with no model; refine refuses a lopsided gear and keeps the exact; picture traced to the solid; judged by a vision model; a coding agent in Codes; Exchange models by kind and Codes agents');

@@ -19,7 +19,8 @@
  * shape (geometry.EXPECTED) and is not exact is refused. A vision model may judge the survivors (judge), else they are
  * kept best geometry first.
  *
- *   options({ ai, codes, log })  → { methods, models: { draw, image, vision }, harnesses }   for the page and the API
+ *   options({ ai, codes, log, token })  → { methods, models: { draw, image, vision }, harnesses }   for the page and the API;
+ *                                with the person's token, their own keys and machines join draw and image (AI's choices)
  *   shapesFor(name, sentence)    → exact drawings when the words name a regular shape, else []
  *   METHODS, METHOD_IDS
  */
@@ -63,11 +64,52 @@ function entryOf(doc) {
     return { id: doc.slug, name: doc.name || doc.slug, note: [best.provider_name || best.provider, price].filter(Boolean).join(' · '), prefer: { provider: best.provider, ...(best.model ? { model: best.model } : {}) } };
 }
 
+/** A person's own key or machine (AI's choices) as a pick: it runs as a per-run choice, at no charge. */
+function choiceEntry(c, source) {
+    if (!c || !c.model) return null;
+    const machine = source === 'machines' ? (c.machine || null) : null;
+    return {
+        id: source === 'machines' ? `machines:${machine || 'any'}:${c.model}` : `keys:${c.model}`,
+        name: String(c.name || c.model).slice(0, 80),
+        note: source === 'machines' ? `${c.machine_name || 'Your machine'} · no charge` : 'Your own key · no charge',
+        choice: { model: c.model, source, ...(machine ? { machine } : {}) },
+    };
+}
+
+/** The person's own keys and machines for drawing (design.icon) and for pictures (image.generate). Never cached. */
+async function personal({ ai, token, log = console }) {
+    if (!token || !ai || typeof ai.choices !== 'function') return { draw: [], image: [] };
+    const read = async (task) => {
+        try {
+            const body = await ai.choices({ token, task });
+            const o = (body && body.options) || {};
+            return ['keys', 'machines'].flatMap((src) => (Array.isArray(o[src]) ? o[src] : []).map((c) => choiceEntry(c, src))).filter(Boolean).slice(0, 60);
+        } catch (err) { log.warn(`[OpenVibe.Design] your models (${task}) unavailable:`, (err && err.message) || err); return []; }
+    };
+    const [draw, image] = await Promise.all([read('design.icon'), read('image.generate')]);
+    return { draw, image };
+}
+
 const TTL_MS = 5 * 60_000;
 let cache = { at: 0, value: null };
 
 /** The methods and what each can run on: Exchange's models by kind and Codes' coding agents. */
-async function options({ ai = null, codes = null, log = console, now = () => Date.now() } = {}) {
+async function options({ ai = null, codes = null, log = console, now = () => Date.now(), token = null } = {}) {
+    const pub = await publicOptions({ ai, codes, log, now });
+    if (!token) return available(pub);
+    const mine = await personal({ ai, token, log });
+    return available({ ...pub, models: { ...pub.models, draw: mine.draw.concat(pub.models.draw), image: mine.image.concat(pub.models.image) } });
+}
+
+/** A way that has nothing to run on says so (available: false) and the page leaves it out: a picture needs an image
+ *  model (OpenVibe's or the person's own key), a coding agent needs Codes' agents. */
+function available(o) {
+    const can = { image: o.models.image.length > 0, harness: o.harnesses.length > 0 };
+    return { ...o, methods: o.methods.map((m) => ({ ...m, available: m.needs && m.needs in can ? can[m.needs] : true })) };
+}
+
+/** What anyone can draw with: Exchange's resold models by kind and Codes' agents (cached five minutes). */
+async function publicOptions({ ai, codes, log, now }) {
     if (cache.value && now() - cache.at < TTL_MS) return cache.value;
     const read = async (kind) => {
         if (!ai || typeof ai.exchangeCatalog !== 'function') return [];
@@ -93,4 +135,4 @@ async function options({ ai = null, codes = null, log = console, now = () => Dat
 }
 options.reset = () => { cache = { at: 0, value: null }; };
 
-module.exports = { METHODS, METHOD_IDS, shapesFor, options, entryOf };
+module.exports = { METHODS, METHOD_IDS, shapesFor, options, entryOf, choiceEntry };

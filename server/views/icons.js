@@ -182,7 +182,7 @@ function waysHtml(ways, signedIn) {
     // Shared's ov-forms turns each select into OpenVibe's own list (a menu, a sheet on a phone): the note is its second line.
     const opt = (list, label) => `<option value="">${label}</option>${(list || []).map((m) => `<option value="${esc(m.id)}"${m.note ? ` data-desc="${esc(m.note)}"` : ''}>${esc(m.name)}</option>`).join('')}`;
     const pick = (cls, label, name, list, first, title) => `<label data-ic-for="${cls}"><span>${label}</span><select name="${name}" data-ov-title="${esc(title)}"${(list || []).length > 8 ? ' data-ov-search="on"' : ''}>${opt(list, first)}</select></label>`;
-    const methods = ways.methods.filter((m) => signedIn || !m.signedIn);
+    const methods = ways.methods.filter((m) => (signedIn || !m.signedIn) && m.available !== false);
     return `<fieldset class="ic-ways"><legend>How to draw it</legend>
     <div class="ic-way-list" role="radiogroup">${methods.map((m, i) => `<label class="ic-way"><input type="radio" name="method" value="${esc(m.id)}" data-what="${esc(m.what)}"${i === 0 ? ' checked' : ''}><span>${esc(m.name)}</span></label>`).join('')}</div>
     <p class="ic-way-what" data-ic-what aria-live="polite">${esc(methods[0] ? methods[0].what : '')}</p>

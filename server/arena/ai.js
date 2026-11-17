@@ -448,12 +448,12 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
      * A picture from an image model (2026-11-16, icons drawn as pictures and traced): AI's ai.image workflow, the model
      * the person picked from Exchange's image models (prefer) or the task's default. → { images: [{ b64 | url }], model, provider }
      */
-    async function image({ prompt, prefer = null, person = null, size = '1024x1024', target = null, task = 'image.generate' }) {
+    async function image({ prompt, prefer = null, person = null, size = '1024x1024', target = null, task = 'image.generate', choice = null }) {
         const startedAt = Date.now();
         const who = onBehalfOf(person);
         const wait = Math.min(ai.waitMs, 60_000);
         const created = await call('POST', `/api/v1/runs?wait=${wait}`, {
-            workflow: 'ai.image', ...(task ? { task } : {}),
+            workflow: 'ai.image', ...(task ? { task } : {}), ...(choice ? { choice } : {}),
             input: { prompt: String(prompt || '').slice(0, 4000), size, n: 1 },
             options: { cache: false },
             ...(prefer ? { prefer } : {}), ...(who ? { on_behalf_of: who } : {}), ...(target ? { target } : {}),
@@ -468,13 +468,13 @@ function createArenaAi({ config, fetchImpl = globalThis.fetch, log = console }) 
      * A question about pictures for a vision model (2026-11-16, the icon judge): the pictures go as image parts of the
      * one message. → { text, model, provider }
      */
-    async function vision({ prompt, images = [], system = null, prefer = null, person = null, maxTokens = 600, target = null, task = null }) {
+    async function vision({ prompt, images = [], system = null, prefer = null, person = null, maxTokens = 600, target = null, task = null, choice = null }) {
         const startedAt = Date.now();
         const who = onBehalfOf(person);
         const wait = Math.min(ai.waitMs, 60_000);
         const content = [{ type: 'text', text: String(prompt || '') }, ...images.slice(0, 8).map((url) => ({ type: 'image_url', image_url: { url } }))];
         const created = await call('POST', `/api/v1/runs?wait=${wait}`, {
-            workflow: 'ai.chat', ...(task ? { task } : {}),
+            workflow: 'ai.chat', ...(task ? { task } : {}), ...(choice ? { choice } : {}),
             input: { ...(system ? { system } : {}), messages: [{ role: 'user', content }], max_tokens: maxTokens },
             options: { cache: false },
             ...(prefer ? { prefer } : {}), ...(who ? { on_behalf_of: who } : {}), ...(target ? { target } : {}),
