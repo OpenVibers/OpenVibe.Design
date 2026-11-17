@@ -25,11 +25,13 @@ const components = require('openvibe-shared/components');
                 'openvibe_design_icon_search', 'openvibe_design_icon_svg', 'openvibe_design_icon_code', 'openvibe_design_icon_migrate',
                 'openvibe_design_list_fonts', 'openvibe_design_get_font',
                 'openvibe_design_make_typeface', 'openvibe_design_make_vector',
+                'openvibe_design_audit_page',
             ]);
             assert.ok(listed.every(x => x.inputSchema && x.annotations));
             // Every tool but the two that make something only reads.
             assert.ok(listed.filter(x => x.annotations.readOnlyHint).length === listed.length - 2);
             assert.ok(listed.filter(x => !x.annotations.readOnlyHint).every(x => x.name.startsWith('openvibe_design_make_')));
+            assert.deepStrictEqual(listed.filter(x => x.annotations.openWorldHint).map(x => x.name), ['openvibe_design_audit_page'], 'only the audit reads the open web');
             assert.strictEqual((await t.get('/mcp', { method: 'OPTIONS' })).status, 204);
             assert.strictEqual((await t.get('/mcp')).status, 405);
             assert.strictEqual((await t.get('/mcp', { body: '{', headers: { 'content-type': 'application/json' } })).json().error.code, -32700);
@@ -37,6 +39,25 @@ const components = require('openvibe-shared/components');
             assert.strictEqual((await t.get('/mcp', { json: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'unknown' } } })).json().error.code, -32602);
             assert.strictEqual((await t.get('/.well-known/agent.json')).json().mcp.url, 'https://openvibe.design/mcp');
             assert.match((await t.get('/llms.txt')).text, /https:\/\/openvibe\.design\/mcp/);
+        });
+        await check('the page audit (plan §AD.25): a page\'s markup held to the checklist and the rules, each finding with its rule', async () => {
+            const asked = [];
+            t.ctx.readPage = async (url) => { asked.push(url); return { url: 'https://shop.example/', html: '<html><head><title>Shop</title></head><body><select><option>A</option></select><input class="fold-toggle" type="checkbox" id="fold"><button>Load more</button><div class="spinner"></div><p>Lorem ipsum dolor.</p></body></html>' }; };
+            const out = await call('openvibe_design_audit_page', { url: 'https://shop.example' });
+            assert.strictEqual(out.isError, false);
+            const a = out.structuredContent;
+            assert.deepStrictEqual(asked, ['https://shop.example']);
+            assert.deepStrictEqual(a.findings.map(f => [f.id, f.rule, f.severity, f.count]), [
+                ['viewport', 'works-at-320', 'high', 1], ['native-controls', 'every-control-is-ours', 'high', 1], ['fake-content', 'no-fake-content', 'high', 1],
+                ['load-more', 'checklist', 'medium', 1], ['spinners', 'no-spinners', 'medium', 1], ['lang-title', 'checklist', 'low', 1],
+            ], 'a CSS toggle is no native control; each finding names its rule');
+            assert.strictEqual(a.findings[1].rule_url, 'https://openvibe.design/rules#every-control-is-ours');
+            assert.match(a.note, /^Markup only/);
+            t.ctx.readPage = async () => { throw Object.assign(new Error('x'), { detail: 'That address is not a public web page.' }); };
+            const bad = await call('openvibe_design_audit_page', { url: 'https://10.0.0.1/' });
+            assert.deepStrictEqual([bad.isError, bad.content[0].text], [true, 'That page could not be read: That address is not a public web page.']);
+            assert.strictEqual((await call('openvibe_design_audit_page', { url: 'x' })).isError, true);
+            delete t.ctx.readPage;
         });
         await check('the icon tools (plan L50 step 6): search by any word or set\'s name, an SVG, code to paste, a migration', async () => {
             const found = (await call('openvibe_design_icon_search', { query: 'settings', limit: 3 })).structuredContent;
