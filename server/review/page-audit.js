@@ -37,6 +37,12 @@ function auditHtml(html, { url = null } = {}) {
     const add = (f) => { if (f.count > 0) findings.push({ ...f, examples: (f.examples || []).slice(0, MAX_EXAMPLES).map((x) => clip(x)) }); };
     // A tag written inside an attribute (a template in data-*, quotes escaped as &quot;) is no element.
     const tags = (re) => [...page.matchAll(re)].map((m) => m[0]).filter((t) => !/&quot;|&#34;/.test(t));
+    // OpenVibe's shared runtime on the page (11-17: the room check bounced Live's own home for what it draws). Shared's
+    // navbar.js brings ov-forms.js, which takes every <select> (the native one kept under it, data-ov-native), and
+    // ov-glyphs.js, which draws Font Awesome markup as OpenVibe glyphs and brand logos. Markup alone cannot see either.
+    const loads = (name) => new RegExp(`<script\\b[^>]*\\bsrc\\s*=\\s*["'][^"']*/${name}(\\.[a-f0-9]{6,})?\\.js\\b`, 'i').test(raw);
+    const sharedForms = loads('navbar') || loads('ov-forms');
+    const sharedGlyphs = loads('navbar') || loads('ov-glyphs');
 
     // A phone: the page says its width is the device's.
     checked.push('viewport');
@@ -48,7 +54,7 @@ function auditHtml(html, { url = null } = {}) {
 
     // OpenVibe's own controls: no native select, checkbox, radio, range or file button showing.
     checked.push('native-controls');
-    const natives = [...tags(/<select\b[^>]*>/gi), ...tags(/<input\b[^>]*>/gi).filter((t) => /type\s*=\s*["']?(checkbox|radio|range|file|color|date)\b/i.test(t))].filter((t) => !tucked(t));
+    const natives = [...(sharedForms ? [] : tags(/<select\b[^>]*>/gi)), ...tags(/<input\b[^>]*>/gi).filter((t) => /type\s*=\s*["']?(checkbox|radio|range|file|color|date)\b/i.test(t))].filter((t) => !tucked(t));
     add({ id: 'native-controls', rule: 'every-control-is-ours', severity: 'high', count: natives.length,
         says: `${natives.length} native control${natives.length === 1 ? '' : 's'} (select, checkbox, radio, range, file, colour or date) showing.`,
         fix: 'Use the shared picker, switch or chips, and keep the native element underneath with data-ov-native.', examples: natives });
@@ -74,10 +80,20 @@ function auditHtml(html, { url = null } = {}) {
     checked.push('icon-fonts');
     // A Font Awesome name that OpenVibe's glyph shim draws (data-ovg, data-ov-icon) is ours.
     const iconFonts = tags(/<(i|span|link|script)\b[^>]*>/gi).filter((t) => !/\sdata-ov(g|-icon)\b/i.test(t)).filter((t) => /font-?awesome|\bfa-(solid|regular|brands|[a-z]+-[a-z])|\bfa\s+fa-|lucide|material-(icons|symbols)|bootstrap-icons|\bbi-[a-z]/i.test(t));
-    add({ id: 'icon-fonts', rule: 'icons-draw-without-a-font', severity: 'medium', count: iconFonts.length, says: `${iconFonts.length} icon${iconFonts.length === 1 ? '' : 's'} from another icon set or an icon font.`,
-        fix: 'Use OpenVibe\'s glyphs (<i data-ov-icon="…">; openvibe.design/icons finds one by any set\'s name).', examples: iconFonts });
+    // With ov-glyphs.js on the page a Font Awesome name is drawn as OpenVibe's glyph or brand logo: no font, only markup
+    // still to write the network's way, which a release of the shim will stop reading.
+    const faOnly = sharedGlyphs ? iconFonts.filter((t) => !/\bfa-(solid|regular|brands)\b|\bfab?\s+fa-/i.test(t)) : iconFonts;
+    add({ id: 'icon-fonts', rule: 'icons-draw-without-a-font', severity: 'medium', count: faOnly.length, says: `${faOnly.length} icon${faOnly.length === 1 ? '' : 's'} from another icon set or an icon font.`,
+        fix: 'Use OpenVibe\'s glyphs (<i data-ov-icon="…">; openvibe.design/icons finds one by any set\'s name).', examples: faOnly });
+    const shimmed = iconFonts.filter((t) => !faOnly.includes(t));
+    add({ id: 'icon-markup', rule: 'icons-draw-without-a-font', severity: 'low', count: shimmed.length, says: `${shimmed.length} icon${shimmed.length === 1 ? '' : 's'} written as Font Awesome markup: ov-glyphs.js draws ${shimmed.length === 1 ? 'it' : 'them'} as OpenVibe's own for now.`,
+        fix: 'Write <i data-ov-icon="…"> or <i data-ov-brand="…"> (openvibe-shared scripts/fa-to-ov.js rewrites a repository).', examples: shimmed });
     checked.push('spinners');
-    const spinners = tags(/<[a-z][a-z0-9-]*\b[^>]*class\s*=\s*["'][^"']*\b(spinner|loader|loading-spinner|fa-spin|animate-spin|lds-[a-z]+)\b[^"']*["'][^>]*>/gi);
+    // A box named for a spinner that holds the mark itself (<div class="loading-spinner"><span class="ov-mark" …>) waits
+    // the network's way.
+    const spinners = [...page.matchAll(/<[a-z][a-z0-9-]*\b[^>]*class\s*=\s*["'][^"']*\b(spinner|loader|loading-spinner|fa-spin|animate-spin|lds-[a-z]+)\b[^"']*["'][^>]*>/gi)]
+        .filter((m) => !/&quot;|&#34;/.test(m[0]) && !/^\s*<[a-z][a-z0-9-]*\b[^>]*class\s*=\s*["'][^"']*\bov-mark\b/i.test(page.slice(m.index + m[0].length, m.index + m[0].length + 300)))
+        .map((m) => m[0]);
     add({ id: 'spinners', rule: 'no-spinners', severity: 'medium', count: spinners.length, says: `${spinners.length} spinner${spinners.length === 1 ? '' : 's'}: the only thing that goes round is the mark's own O.`,
         fix: 'Wait with the mark: <span class="ov-mark" data-state="busy"> (ov-mark.js).', examples: spinners });
     checked.push('text-arrows');

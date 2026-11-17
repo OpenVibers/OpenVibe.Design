@@ -53,6 +53,14 @@ const components = require('openvibe-shared/components');
             ], 'a CSS toggle is no native control; each finding names its rule');
             assert.strictEqual(a.findings[1].rule_url, 'https://openvibe.design/rules#every-control-is-ours');
             assert.match(a.note, /^Markup only/);
+            // A page on OpenVibe's shared runtime (11-17: the room check bounced Live's own home): navbar.js brings ov-forms.js,
+            // which takes every <select>, and ov-glyphs.js, which draws Font Awesome markup; a spinner box holding the mark
+            // waits the network's way. A checkbox is still a native control.
+            t.ctx.readPage = async () => ({ url: 'https://ours.example/', html: '<html lang="en"><head><title>Ours</title><meta name="viewport" content="width=device-width"><script src="/shared/navbar.js?v=cfd1cfab5534"></script></head><body><main><h1>Streams tonight</h1><p>Seven people are live.</p><select id="vis"><option>Public</option></select><input type="checkbox" id="nsfw"><div class="loading-spinner"><span class="ov-mark" data-state="busy"></span></div><i class="fa-brands fa-github"></i><i class="fa-solid fa-gear"></i><i class="lucide-star"></i></main></body></html>' });
+            const ours = (await call('openvibe_design_audit_page', { url: 'https://ours.example' })).structuredContent;
+            assert.deepStrictEqual(ours.findings.map(f => [f.id, f.severity, f.count]), [['native-controls', 'high', 1], ['icon-fonts', 'medium', 1], ['icon-markup', 'low', 2]],
+                'the checkbox only; the select, the spinner box and the Font Awesome markup are the runtime\'s; another set\'s icon is still a font');
+            assert.match(ours.findings[0].examples[0], /checkbox/);
             t.ctx.readPage = async () => { throw Object.assign(new Error('x'), { detail: 'That address is not a public web page.' }); };
             const bad = await call('openvibe_design_audit_page', { url: 'https://10.0.0.1/' });
             assert.deepStrictEqual([bad.isError, bad.content[0].text], [true, 'That page could not be read: That address is not a public web page.']);
