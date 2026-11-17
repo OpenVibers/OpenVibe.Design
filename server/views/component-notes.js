@@ -372,8 +372,8 @@ OVTabs.ink(document.getElementById('segs'), { kind: 'pill', key: 'chat-segs' });
     },
 });
 
-/** One note page, laid out like the component pages beside it. */
-function notePage(name) {
+/** One note page, laid out like the component pages beside it; `extra` is a section after the specimen's notes. */
+function notePage(name, { extra = '' } = {}) {
     const note = NOTES[name];
     if (!note) return null;
     const specimen = SPECIMENS[name] ? SPECIMENS[name]() : '';
@@ -392,6 +392,7 @@ function notePage(name) {
 <section class="cn-rules" aria-labelledby="cn-rules-h"><h2 id="cn-rules-h">The rules it carries out</h2><p class="cn-chips">${rules || '<span class="ds-fine">No rule has been written for this part yet.</span>'}</p>
 <h2>Build it</h2>${kit.snippet({ code: note.build, id: `cn-build-${name}` })}</section>
 </div>
+${extra}
 <footer class="cn-foot"><p><a href="/changes">Every Shared release, and the component it changed</a> · <a href="/components/registry">Every component</a> · <a href="/rules">How OpenVibe decides</a></p></footer>
 </div>`;
     return layout({
@@ -399,7 +400,7 @@ function notePage(name) {
         description: note.summary,
         path: `/components/${name}`,
         active: '/components',
-        styles: ['css/component-registry.css', 'css/specimens.css'],
+        styles: ['css/component-registry.css', 'css/specimens.css', ...(name === 'name-effects' ? ['css/icons.css'] : [])],
         sharedStyles: name === 'player' ? ['player.css'] : name === 'name-effects' ? ['items.css'] : [],
         shared: name === 'player' ? ['player.js'] : name === 'metrics' ? ['ov-metrics.js'] : name === 'tabs' ? ['ov-tabs.js'] : [],
         scripts: name === 'metrics' ? ['js/component-metrics.js'] : name === 'tabs' ? ['js/component-tabs.js'] : [],

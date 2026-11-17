@@ -333,6 +333,8 @@ async function createApp(opts = {}) {
     // The decision register (openvibe.design/rules) as data: open to any origin, for code and AI assistants.
     app.get('/api/v1/rules', (req, res) => { res.set({ 'Cache-Control': 'public, max-age=300', 'Access-Control-Allow-Origin': '*' }); res.json(require('./views/rules').rulesJson()); });
     app.use(createIconRoutes(ctx));
+    // The name effects page and its maker (plan §AD.15), before the generic component pages.
+    app.use(require('./http/name-effects').createNameEffectRoutes(ctx));
     // The public page routers are built before they are mounted: the Markdown twins render through the same routers
     // (server/agent-twins.js), so a twin cannot drift from the page a browser gets.
     const { createTypefaceRoutes, createVectorRoutes } = require('./http/typefaces');
