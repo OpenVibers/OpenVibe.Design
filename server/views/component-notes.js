@@ -27,7 +27,38 @@ const appTile = appIcon.favicon({ site: 'network' });
 // ── The specimens. Every value is written here (escaped by the builder that takes it), never read from a person. ──
 // The four themes a link is drawn in on the Links page: the theme's accent and light accent, nothing else.
 const LINK_THEMES = [['blue', 'Blue (the default)'], ['green', 'Green'], ['rose', 'Rose'], ['amber', 'Amber']];
+// The name effects (openvibe-shared items.css, remade in 4.289.0), in the words of their own stylesheet. The last two
+// belong to one person each.
+const NAME_EFFECTS = [
+    ['rainbow', 'Rainbow', 'The spectrum flows along the name, and a soft sheen rides on it.'],
+    ['golden', 'Golden', 'Polished gold; a highlight sweeps across it now and then, like light on metal.'],
+    ['neon', 'Neon', 'A lit tube: a steady glow that hums, and a rare double flicker as if the gas caught.'],
+    ['fire', 'Fire', 'The letters burn from the bottom up: the flame\'s colours rise through them, and the heat glow breathes.'],
+    ['ice', 'Ice', 'Frosted blue; a cold glint slides across, the edge stays crisp.'],
+    ['galaxy', 'Galaxy', 'A nebula drifts through the letters, with stars twinkling in it.'],
+    ['glitch', 'Glitch', 'A clean signal that tears for a fifth of a second every few seconds, red and cyan split.'],
+    ['hologram', 'Hologram', 'Iridescent and see-through: the colours shift and fine scanlines drift down the letters.'],
+    ['toxic', 'Toxic', 'Acid green that seethes: bubbles rise through the letters.'],
+    ['blood', 'Blood', 'Deep crimson; a wet sheen runs slowly down the letters.'],
+    ['divine', 'Divine', 'White gold with a halo that breathes, and a light that passes over the name.'],
+    ['shadow', 'Shadow', 'Smoke curls off the letters, drifting one way and then the other.'],
+    ['void', 'Void', 'A violet edge around darkness that pulls inward and lets go.'],
+    ['vegas', 'Vegas', 'Casino gold under marquee lights, between two slot reels that land on 7.', 'Josh Vegas'],
+    ['twofat', 'Bass Drop', 'The name thumps on the beat between an equalizer and the glow of a club.', '2fat'],
+];
+
 const SPECIMENS = {
+    // Every name effect, drawn by the openvibe-shared items.css this site pins (sharedStyles below): the effect's own
+    // class on a sample name, its words, and whether it is one person's own.
+    'name-effects': () => `<div class="spec spec--namefx">
+  <ul class="spec-namefx-grid">${NAME_EFFECTS.map(([id, name, what, own]) => `
+    <li class="spec-namefx${own ? ' is-own' : ''}"><p class="spec-namefx-name"><span class="name-fx-${id}">Juniper</span></p>
+      <p class="spec-namefx-label"><b>${esc(name)}</b>${own ? `<span class="spec-namefx-own">One of a kind · ${esc(own)}</span>` : ''}</p>
+      <p class="spec-namefx-what">${esc(what)}</p>
+      <code>.name-fx-${id}</code></li>`).join('')}
+  </ul>
+  <p class="spec-namefx-chat" aria-label="In chat"><span class="name-fx-golden">Juniper</span>: the same name in a chat line, at chat size.</p>
+</div>`,
     tabs: () => `<div class="spec spec--tabs">
   <div class="spec-tabs" role="tablist" aria-label="A pill row" data-ovtb="pill">${['Messages', 'Friends', 'Global', 'Servers'].map((t, i) => `<button type="button" role="tab" aria-selected="${i === 0}">${t}</button>`).join('')}</div>
   <div class="spec-tabs spec-tabs--line" role="tablist" aria-label="A line row" data-ovtb="line">${['All', 'Mentions', 'Live', 'System'].map((t, i) => `<button type="button" role="tab" aria-selected="${i === 0}">${t}</button>`).join('')}</div>
@@ -318,6 +349,18 @@ OVTabs.ink(document.getElementById('segs'), { kind: 'pill', key: 'chat-segs' });
 /* where: p, dd, blockquote, figcaption, label, small, .ov-prose (never nav, menus or the footer)
    colours: var(--accent-light) and a tone turned 60° from it; the site's own a { color } still wins */`,
     },
+    'name-effects': {
+        title: 'Name effects',
+        summary: 'How a name can look in chat and on a profile: fifteen effects, each its own motion, all following the person\'s motion setting.',
+        release: { version: '4.289.0', state: 'shipped', href: '/changes#v4.289.0' },
+        shipped: '4.289.0 remade every name effect in openvibe-shared\'s items.css: each has one idea and its own motion (a sweep, a flicker, a rise), reads on light themes as well as dark, plays slower with Calm and holds still with motion off, keeping its colour. Live and every site that shows a name take them from there.',
+        quote: '“Improve the animations and effects of all username effects … remake them all.” — the owner',
+        rules: ['shared-timing', 'effects-by-device-not-screen', 'state-in-words'],
+        build: `<link rel="stylesheet" href="/shared/items.css">   <!-- openvibe-shared ≥ 4.289.0 -->
+<span class="name-fx-golden">Juniper</span>
+
+/* the class is the item's effect (Inventory: live.name_fx.<id>); Calm and Off come from html[data-ov-motion] */`,
+    },
     footer: {
         title: 'The footer',
         summary: 'The strip that says how many are online, the faces, and one tooltip that says what the count means.',
@@ -357,7 +400,7 @@ function notePage(name) {
         path: `/components/${name}`,
         active: '/components',
         styles: ['css/component-registry.css', 'css/specimens.css'],
-        sharedStyles: name === 'player' ? ['player.css'] : [],
+        sharedStyles: name === 'player' ? ['player.css'] : name === 'name-effects' ? ['items.css'] : [],
         shared: name === 'player' ? ['player.js'] : name === 'metrics' ? ['ov-metrics.js'] : name === 'tabs' ? ['ov-tabs.js'] : [],
         scripts: name === 'metrics' ? ['js/component-metrics.js'] : name === 'tabs' ? ['js/component-tabs.js'] : [],
         body,
