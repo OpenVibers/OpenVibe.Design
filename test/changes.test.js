@@ -65,7 +65,8 @@ const { PUBLIC_DIR } = require('../server/assets');
         // /changes shows the newest twelve releases; each release keeps its whole entry on its own page. A Shared pin moves
         // older ones past the fold (4.211 pushed 4.195–4.196; 4.217 pushed 4.200–4.205), so these read the whole archive.
         const archive = async () => {
-            const list = (await t.get('/api/v1/changes?limit=500')).json();
+            // No limit: the whole archive (?limit is capped at 100, and 4.299 pushed the oldest releases past it).
+            const list = (await t.get('/api/v1/changes')).json();
             const versions = (list.releases || list.changes || list.items || []).map((x) => x.version).filter(Boolean);
             const pages = [await t.get('/changes')];
             for (const v of versions) pages.push(await t.get(`/changes/${v}`));
