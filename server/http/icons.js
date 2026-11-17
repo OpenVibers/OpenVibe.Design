@@ -57,10 +57,11 @@ function createIconRoutes(ctx) {
     const drafts = ctx.glyphDrafts || createGlyphDrafts({ db: s.db, ai, guests: guestCaps, referenceSearch, codes: config.codes || null });
     // The ways to draw (methods.js) and what each runs on: Exchange's models by kind and Codes' coding agents.
     const iconMethods = require('../glyphs/methods');
-    const methodOptions = () => iconMethods.options({ ai, codes: config.codes || null, log }).catch(() => ({ methods: iconMethods.METHODS, models: { draw: [], image: [], vision: [] }, harnesses: [] }));
+    const methodOptions = (token = null) => iconMethods.options({ ai, codes: config.codes || null, log, token }).catch(() => ({ methods: iconMethods.METHODS, models: { draw: [], image: [], vision: [] }, harnesses: [] }));
+    const tokenOf = (req) => req.token || (req.viewer && req.viewer.token) || null;
     /** A request's way and picks, by id: each pick is looked up in the lists, never taken as given. */
-    async function picksOf(body = {}) {
-        const o = await methodOptions();
+    async function picksOf(body = {}, token = null) {
+        const o = await methodOptions(token);
         const pick = (list, id) => (id ? list.find((m) => m.id === String(id)) || null : null);
         const method = iconMethods.METHOD_IDS.includes(String(body.method || '')) ? String(body.method) : 'auto';
         const harness = body.harness && o.harnesses.some((h) => h.id === String(body.harness)) ? String(body.harness) : null;
@@ -167,7 +168,7 @@ function createIconRoutes(ctx) {
             subject ? drafts.list({ subject, limit: 24 }).catch(() => []) : guest ? drafts.list({ subject: `guest:${guest.id}`, limit: 24 }).catch(() => []) : [],
             reviewer ? drafts.list({ status: 'draft', limit: 60 }).catch(() => []) : [],
             glyphPrice.get().catch(() => null),
-            methodOptions(),
+            methodOptions(subject ? tokenOf(req) : null),
         ]);
         const notice = req.query.drafted != null ? (Number(req.query.drafted) ? `${Number(req.query.drafted)} candidate${Number(req.query.drafted) === 1 ? '' : 's'} drawn: they wait for review below.` : 'No candidate passed the checks this time: try saying more about it.') : req.query.reviewed ? `Draft ${String(req.query.reviewed).slice(0, 20)}.` : '';
         const draw = /^[a-z][a-z0-9-]{1,31}$/.test(String(req.query.draw || '')) ? String(req.query.draw) : '';
@@ -307,7 +308,7 @@ function createIconRoutes(ctx) {
             guest = guestOf(req, res, { make: true });
         }
         try {
-            const picks = subject ? await picksOf(req.body || {}) : { method: iconMethods.METHOD_IDS.includes(String((req.body || {}).method || '')) ? String(req.body.method) : 'auto' };
+            const picks = subject ? await picksOf(req.body || {}, tokenOf(req)) : { method: iconMethods.METHOD_IDS.includes(String((req.body || {}).method || '')) ? String(req.body.method) : 'auto' };
             const out = await drafts.draft({ subject, guest, name: (req.body || {}).name, sentence: (req.body || {}).sentence, choice: req.body.choice ? JSON.parse(req.body.choice) : null, ...picks, token: subject ? (req.token || (req.viewer && req.viewer.token) || null) : null });
             if (out.pending) return back(res, { drawing: out.pending.task, draw: String((req.body || {}).name || '') });
             back(res, { drafted: String(out.kept.length), draw: String((req.body || {}).name || '') });
@@ -325,7 +326,7 @@ function createIconRoutes(ctx) {
         if (!writeAllowed(req, config)) return problem(res, req, 403, 'design.same_origin_required', 'Open this request from an authorized OpenVibe client.');
         try {
             const body = req.body || {};
-            const picks = await picksOf(body);
+            const picks = await picksOf(body, tokenOf(req));
             const out = await drafts.draft({ subject, name: body.name, sentence: body.sentence, styles: body.styles, sourceSvg: body.sourceSvg, choice: body.choice, ...picks, token: req.token || (req.viewer && req.viewer.token) || null });
             if (out.pending) return res.status(202).set('Cache-Control', 'private, no-store').json({ method: out.method, pending: out.pending });
             return res.status(201).set('Cache-Control', 'private, no-store').json({ method: out.method, kept: out.kept, refused: out.refused });
@@ -337,7 +338,9 @@ function createIconRoutes(ctx) {
 
     // The ways to draw an icon and what each can run on (2026-11-16): Exchange's models by kind, Codes' coding agents.
     r.get('/api/v1/glyphs/methods', async (req, res) => {
-        res.set('Cache-Control', 'public, max-age=120').set(OPEN).json(await methodOptions());
+        // Signed in, the lists carry the person's own keys and machines, so the answer is theirs alone.
+        const token = subjectOf(req) ? tokenOf(req) : null;
+        res.set('Cache-Control', token ? 'private, no-store' : 'public, max-age=120').set(OPEN).json(await methodOptions(token));
     });
     // A coding agent's drawing in progress: the page asks with the person's session; when the task has answered, its
     // drawings go through the gate and become drafts.

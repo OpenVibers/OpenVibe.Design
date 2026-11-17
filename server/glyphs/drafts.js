@@ -272,7 +272,7 @@ Your final answer is JSON only, nothing else: {"candidates": [{"line": "<path d=
                 prompt: prompt || `${sourceLine ? `Make a solid twin of this existing line drawing for "${n}": ${sourceLine.svg}` : `The icon: "${n}".`}${what ? ` What it stands for: ${what}` : ''}${referenceWords ? `\nRelated open icon concepts for vocabulary only: ${referenceWords}` : ''}${extra}`,
                 maxTokens: 1800,
                 target: { service: 'design', type: 'glyph_draft', id: n },
-                task: 'design.icon', choice,
+                task: 'design.icon', choice: (model && model.choice) || choice,
                 ...(model && model.prefer ? { prefer: model.prefer } : {}),
                 ...person,
             });
@@ -293,7 +293,7 @@ Your final answer is JSON only, nothing else: {"candidates": [{"line": "<path d=
             if (!ai.image) throw Object.assign(new Error('pictures need OpenVibe.AI image generation, which is not configured here'), { status: 503 });
             const painted = await ai.image({
                 prompt: `A single flat icon of ${n.replace(/-/g, ' ')}${what ? ` (${what})` : ''}: pure black shapes on a plain white background, centred, filling most of the square, bold simple forms, no text, no shading, no gradients, no frame, symmetric where the object is.`,
-                ...(imageModel && imageModel.prefer ? { prefer: imageModel.prefer } : {}), ...person,
+                ...(imageModel && imageModel.prefer ? { prefer: imageModel.prefer } : {}), ...(imageModel && imageModel.choice ? { choice: imageModel.choice } : {}), ...person,
                 target: { service: 'design', type: 'glyph_draft', id: n },
             });
             answer = { provider: painted.provider, model: painted.model };
