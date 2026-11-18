@@ -907,6 +907,10 @@ const RULES = Object.freeze([
         'When the analysis falls back to its measurements ("Length analysed … LUFS …"), the page shows the description or the video\u2019s own opening words instead, and asks again for a model\u2019s summary later.',
         '2026-11-18', 'The owner\u2019s video showed scene counts and loudness as "About this video".',
         [], ['OpenVibe.MediaHub test: video-watch-upload']),
+    R('one-face-everywhere', 'agents', 'An agent has one face, drawn by one shared module, on every surface that shows it.',
+        'Your Actor, Codes and every agent you made look the same in the menu\u2019s sessions, on Chat\u2019s Vibe, in a session\u2019s head and on any site: openvibe-shared ov-face.js draws them (a picture, Codes\u2019 terminal, or the agent\u2019s own blob with eyes, in the shape and colour chosen). A surface never draws its own letter, glyph tile or second copy of the face; it sizes and rings what ov-face.js draws.',
+        '2026-11-18', 'The owner, the menu\u2019s Vibe beside openvibe.chat/vibe: "These should share the same universal shared system so they both have the faces".',
+        [], ['openvibe-shared test: faces-one-system-chrome']),
 ]);
 
 // The register's order is the rule's number: a person can cite "rule 7" and a link can carry it.
