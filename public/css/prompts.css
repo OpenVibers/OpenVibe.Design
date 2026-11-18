@@ -19,3 +19,5 @@
 .pr-part pre{margin:0;max-height:420px;overflow:auto;overscroll-behavior:auto;padding:10px 12px;border-radius:10px;background:var(--bg-tertiary,#0b111c);font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
 .pr-fine{margin-top:22px;font-size:14px;color:var(--text-muted,#7386a3)}
 .pr-fine a{color:var(--accent,#4f7cff)}
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .pr-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }

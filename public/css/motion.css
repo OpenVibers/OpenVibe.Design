@@ -94,3 +94,5 @@
   .mo-durs small{display:none}
 }
 /* Still under reduced motion, except while the person plays the demos on this page ([data-fx-demo], demo-motion-controls.js). */
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .mo-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }

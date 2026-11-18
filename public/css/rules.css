@@ -89,3 +89,5 @@ a.rl-chip:hover{border-color:var(--accent);color:var(--accent)}
 .rl-lede a{color:var(--text-primary)}
 .rl-hero>*{min-width:0}
 @media (max-width:560px){.rl-hero .ovk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rl-hero .ovk-stats>div:last-child:nth-child(odd){grid-column:1/-1}}
+/* Design rule 201: the intro is one line on a computer, at most two on a phone. */
+@media (max-width: 640px) { .rl-lede, .sy-lede { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } }
