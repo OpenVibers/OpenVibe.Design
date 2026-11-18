@@ -26,7 +26,7 @@ const attr = (tag, name) => { const m = new RegExp(`\\s${name}\\s*=\\s*("([^"]*)
 const clip = (s, n = 120) => { const t = String(s || '').replace(/\s+/g, ' ').trim(); return t.length > n ? `${t.slice(0, n - 1)}…` : t; };
 /** A control kept under one of OpenVibe's own for accessibility, or not shown at all. A checkbox or radio named as a
  *  toggle (fold, tab, scene, menu …) is taken for a CSS-only switch hidden by the stylesheet, which markup cannot see. */
-const cssToggle = (tag) => /^(checkbox|radio)$/i.test(String(attr(tag, 'type') || '')) && /(toggle|fold|tab|scene|switch|state|hack|menu|drawer|open)/i.test(`${attr(tag, 'class') || ''} ${attr(tag, 'id') || ''} ${attr(tag, 'name') || ''}`);
+const cssToggle = (tag) => /^(checkbox|radio)$/i.test(String(attr(tag, 'type') || '')) && /(toggle|fold|tab|scene|switch|state|hack|menu|drawer|open|parts)/i.test(`${attr(tag, 'class') || ''} ${attr(tag, 'id') || ''} ${attr(tag, 'name') || ''}`);
 const tucked = (tag) => cssToggle(tag) || /\sdata-ov-native\b|\shidden\b|aria-hidden\s*=\s*["']?true|class\s*=\s*["'][^"']*\b(sr-only|visually-hidden|ov-native)\b|style\s*=\s*["'][^"']*(display\s*:\s*none|opacity\s*:\s*0\b|visibility\s*:\s*hidden)/i.test(tag);
 
 function auditHtml(html, { url = null } = {}) {
@@ -104,7 +104,9 @@ function auditHtml(html, { url = null } = {}) {
     // Words: real content, readable sizes, the page's language and title.
     checked.push('fake-content');
     const body = textOf(page.replace(/<head\b[^>]*>[\s\S]*?<\/head\s*>/i, ' '));
-    const fake = body.match(/lorem ipsum[^.]{0,60}|\bcoming soon\b[^.]{0,40}|\bplaceholder text\b/gi) || [];
+    // Filler as it is pasted ("Lorem ipsum dolor sit amet"), not a page that names it (11-18: openvibe.tools' Lorem Ipsum
+    // Generator was flagged for describing itself).
+    const fake = body.match(/lorem ipsum dolor[^.]{0,60}|\bcoming soon\b[^.]{0,40}/gi) || [];
     add({ id: 'fake-content', rule: 'no-fake-content', severity: 'high', count: fake.length, says: `${fake.length} piece${fake.length === 1 ? '' : 's'} of filler or "coming soon" content.`,
         fix: 'Show only what is real; an empty place says it is empty and offers one way forward.', examples: fake });
     checked.push('tiny-text');

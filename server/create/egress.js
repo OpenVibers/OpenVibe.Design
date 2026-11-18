@@ -102,7 +102,7 @@ function requestOnce(url, { timeoutMs = 6000 } = {}) {
  * Throws StartUrlError(422) for a non-public or unreachable address. fetchStartingPage reads it as text; the page
  * audit (server/review/page-audit.js) reads its markup.
  */
-async function fetchGuarded(raw, { timeoutMs = 6000 } = {}) {
+async function fetchGuarded(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS } = {}) {
     let url;
     try { url = new URL(String(raw == null ? '' : raw).trim()); } catch { throw new StartUrlError('start_url_invalid', 'That starting address is not a URL.'); }
     if (url.protocol !== 'https:') throw new StartUrlError('start_url_scheme', 'A starting address must be an https page.');
@@ -111,7 +111,7 @@ async function fetchGuarded(raw, { timeoutMs = 6000 } = {}) {
         throw new StartUrlError('start_url_denied', 'That address is not a public web page.');
     }
     let current = url;
-    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    for (let hop = 0; hop <= maxRedirects; hop++) {
         let out;
         try { out = await requestOnce(current, { timeoutMs }); } catch (err) {
             if (err instanceof StartUrlError) throw err;
@@ -142,8 +142,8 @@ async function fetchStartingPage(raw, { timeoutMs = 6000 } = {}) {
 }
 
 /** A page's markup through the guarded path, for the page audit. → { url, html } */
-async function fetchPageHtml(raw, { timeoutMs = 6000 } = {}) {
-    const out = await fetchGuarded(raw, { timeoutMs });
+async function fetchPageHtml(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS } = {}) {
+    const out = await fetchGuarded(raw, { timeoutMs, maxRedirects: Math.min(6, Math.max(0, Number(maxRedirects) || 0)) });
     return { url: out.url, html: out.body.toString('utf8') };
 }
 

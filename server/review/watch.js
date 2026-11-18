@@ -24,7 +24,9 @@ const RANK = { high: 0, medium: 1, low: 2 };
 function createWatch({ db, networkUrl = 'https://openvibe.network', fetchImpl = globalThis.fetch, readPage = null, now = () => Date.now(), log = console } = {}) {
     let timer = null;
     let running = false;
-    const read = readPage || ((url) => require('../create/egress').fetchPageHtml(url, { timeoutMs: 15000 }));
+    // A site's home may sign a cookie-less visitor in silently first (openvibe.my: four redirects back to itself), so the
+    // watch follows up to five; every hop is checked as any other.
+    const read = readPage || ((url) => require('../create/egress').fetchPageHtml(url, { timeoutMs: 15000, maxRedirects: 5 }));
 
     async function sites() {
         const r = await fetchImpl(`${String(networkUrl).replace(/\/+$/, '')}/api/frame`, { headers: { Accept: 'application/json' }, redirect: 'error', signal: AbortSignal.timeout(10000) });
