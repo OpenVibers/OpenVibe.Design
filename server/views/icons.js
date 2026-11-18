@@ -40,7 +40,7 @@ const svg = (d, size = 24) => `<svg viewBox="0 0 24 24" width="${size}" height="
 // A draft's solid twin (L50): filled, its class="ln" parts drawn as lines (icons.css .is-solid).
 const solidSvg = (d, size = 24) => `<svg class="is-solid" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false">${d}</svg>`;
 
-function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '', q = '', price = null, guest = null } = {}) {
+function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], reviewer = false, notice = '', error = '', draw = '', q = '', price = null, guest = null, ways = null, signedIn = false, drawing = '' } = {}) {
     const fa = faByGlyph();
     const left = stillFontAwesome();
     const covered = usage.names.filter((n) => glyphs.fromFa(n.name)).reduce((a, n) => a + n.uses, 0);
@@ -115,8 +115,14 @@ function iconsPage({ base = 'https://openvibe.design', drafts = [], mine = [], r
     <label><span>Name</span><input name="name" required pattern="[a-z][a-z0-9\\-]{1,31}" maxlength="32" placeholder="hot-tub" value="${esc(draw)}" autocomplete="off" spellcheck="false"></label>
     <label class="ic-grow"><span>What it stands for</span><input name="sentence" maxlength="200" placeholder="A tub with steam over it: a hot tub at a rental"></label>
     ${guest && guest.turnstile ? `<div class="cf-turnstile ic-human" data-sitekey="${esc(guest.turnstile)}" data-theme="auto" data-size="flexible"></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>` : ''}
+    ${waysHtml(ways, signedIn)}
     <button type="submit" class="ic-btn is-go">${kit.icon('spark')} Draw it</button>
   </form>
+  ${drawing ? `<p class="ic-more ic-drawing" data-ic-drawing="${esc(drawing)}" role="status">${kit.icon('spark')} A coding agent is drawing it in Codes. This page shows the drafts when it is done.</p>
+  <script>(() => { const el = document.querySelector('[data-ic-drawing]'); if (!el) return; const id = el.getAttribute('data-ic-drawing');
+    const tick = async () => { try { const r = await fetch('/api/v1/glyphs/harness/' + encodeURIComponent(id), { credentials: 'same-origin' }); const j = await r.json();
+      if (j.done) { location.replace('/icons?drafted=' + (j.kept || 0) + '#draw'); return; } el.lastChild.textContent = ' A coding agent is drawing it in Codes (' + (j.state || 'working') + '). This page shows the drafts when it is done.'; } catch (e) {}
+      setTimeout(tick, 8000); }; setTimeout(tick, 4000); })();</script>` : ''}
   ${guest ? `<p class="ic-more">No account needed: you can draw ${guest.perDay} icon${guest.perDay === 1 ? '' : 's'} a day as a guest. <a href="/auth/login?next=${encodeURIComponent('/icons#draw')}">Sign in</a> to draw more and see your drafts on any device.</p>` : ''}
   ${mine.length ? `<h3>${guest ? 'Your drafts, on this browser' : 'Your drafts'}</h3><ul class="ic-drafts">${mine.map((d) => draftCard(d)).join('')}</ul>` : ''}
   ${reviewer ? `<h3>Waiting for review</h3>${drafts.length ? `<ul class="ic-drafts">${drafts.map((d) => draftCard(d, reviewForm(d))).join('')}</ul>` : '<p class="ic-more">Nothing waiting.</p>'}` : ''}
@@ -167,4 +173,31 @@ function glyphsJson() {
     return { count: glyphs.NAMES.length, glyphs: glyphs.NAMES.map((n) => ({ name: n, svg: glyphs.path(n), solid: glyphs.solid(n) || '', fa: fa.get(n) || [], by: glyphs.META[n].by })), fa: glyphs.FA };
 }
 
-module.exports = { iconsPage, glyphsJson, stillFontAwesome };
+/**
+ * How to draw it (2026-11-16): the ways (methods.js) as a row of choices, and under them what each runs on, from
+ * Exchange's models by kind and Codes' coding agents. A choice left on Auto lets AI pick the model for the task.
+ */
+function waysHtml(ways, signedIn) {
+    if (!ways || !Array.isArray(ways.methods)) return '';
+    // Shared's ov-forms turns each select into OpenVibe's own list (a menu, a sheet on a phone): the note is its second line.
+    const opt = (list, label) => `<option value="">${label}</option>${(list || []).map((m) => `<option value="${esc(m.id)}"${m.note ? ` data-desc="${esc(m.note)}"` : ''}>${esc(m.name)}</option>`).join('')}`;
+    const pick = (cls, label, name, list, first, title) => `<label data-ic-for="${cls}"><span>${label}</span><select name="${name}" data-ov-title="${esc(title)}"${(list || []).length > 8 ? ' data-ov-search="on"' : ''}>${opt(list, first)}</select></label>`;
+    const methods = ways.methods.filter((m) => (signedIn || !m.signedIn) && m.available !== false);
+    return `<fieldset class="ic-ways"><legend>How to draw it</legend>
+    <div class="ic-way-list" role="radiogroup">${methods.map((m, i) => `<label class="ic-way"><input type="radio" name="method" value="${esc(m.id)}" data-what="${esc(m.what)}"${i === 0 ? ' checked' : ''}><span>${esc(m.name)}</span></label>`).join('')}</div>
+    <p class="ic-way-what" data-ic-what aria-live="polite">${esc(methods[0] ? methods[0].what : '')}</p>
+    ${signedIn ? `<div class="ic-way-picks">
+      ${pick('write refine auto', 'Model', 'model', ways.models && ways.models.draw, 'Auto: AI picks for icons', 'The model that draws it')}
+      ${pick('trace', 'Image model', 'image', ways.models && ways.models.image, 'Auto: AI picks for pictures', 'The model that paints it')}
+      ${pick('harness', 'Coding agent', 'harness', ways.harnesses, 'Pick an agent', 'The coding agent that draws it')}
+      ${pick('write refine trace auto harness', 'Judge', 'judge', ways.models && ways.models.vision, 'Geometry only', 'A vision model that orders the drawings')}
+    </div>` : ''}
+    <p class="ic-more">Models and prices are Exchange&rsquo;s (<a href="https://openvibe.exchange/models">openvibe.exchange</a>). Whatever draws it, every drawing is measured: a gear, a star or a heart has to come out exact.</p>
+  </fieldset>
+  <script>(() => { const f = document.currentScript.closest('form'); if (!f) return; const what = f.querySelector('[data-ic-what]');
+    const show = () => { const c = f.querySelector('input[name=method]:checked'); const m = (c && c.value) || 'auto'; if (what && c) what.textContent = c.getAttribute('data-what');
+      f.querySelectorAll('[data-ic-for]').forEach((el) => { el.hidden = !el.getAttribute('data-ic-for').split(' ').includes(m); }); };
+    f.addEventListener('change', (e) => { if (e.target && e.target.name === 'method') show(); }); show(); })();</script>`;
+}
+
+module.exports = { iconsPage, glyphsJson, stillFontAwesome, waysHtml };

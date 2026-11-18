@@ -46,6 +46,7 @@ async function start() {
         // Generate queued Arena rounds. DESIGN_DRILL=1 keeps the loop off (a test or a drill drives tick()).
         ctx.jobs.start();
         if (!config.drill) ctx.fonts.start();
+        if (!config.drill && ctx.watch) ctx.watch.start();
         // The icon and theme pages in OpenVibe.Search: a sweep a minute after boot and every six hours.
         if (!config.drill) ctx.searchIndex.start();
         ctx.designs.resume().catch((err) => console.warn('[OpenVibe.Design] resume designs:', err.message));

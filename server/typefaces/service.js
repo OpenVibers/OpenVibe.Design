@@ -14,7 +14,8 @@
  */
 const glyph = require('./glyph');
 const { compile, CHARSET, FAMILY } = require('./compile');
-const { sanitize } = require('../vectors/svg');
+const { sanitize } = require('openvibe-sdk/svg');   // the SDK's SVG cleaner (0.176.0; was server/vectors/svg.js)
+const itemStyle = require('../vectors/item-style');
 
 /** How many letters are asked for at a time. */
 const BATCH = 26;
@@ -122,7 +123,9 @@ function createService({ db, ai, store, config = {}, log = console, s, sharing =
                     prompt: notesFor({ prompt, baseFamily, baseNote }) + (extra ? '\n\n' + extra : ''),
                     maxTokens: 8000,
                     target: { service: 'design', type: 'typeface', id: String(baseFamily || 'new') },
-                    prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },
+                    // The model comes from AI's routing for the task (the owner's default, the person's own choice):
+                    // never an id in code (2026-11-16).
+                    task: 'design.icon',
                     person: String(owner),
                 });
                 provider = provider || (answer.provider || null);
@@ -187,19 +190,27 @@ function createService({ db, ai, store, config = {}, log = console, s, sharing =
      * Draw one vector. The answer is cleaned before it is kept: an SVG is read out of the allowlist and
      * written again from scratch, so nothing the model wrote survives unless it was allowed.
      */
-    async function drawVector({ owner, prompt, kind = 'icon', note = null, onBehalf = true } = {}) {
+    /**
+     * kind 'item' (2026-11-16): an item icon in the house item style (vectors/item-style.js); its rarity, type and hint
+     * ride on the prompt's first line. prefer: the model the person chose ({ provider, model }); without it, the
+     * maker's own default.
+     */
+    async function drawVector({ owner, prompt, kind = 'icon', note = null, onBehalf = true, prefer = null } = {}) {
         if (!ai || !ai.enabled) throw fail(503, 'ai.not_configured', 'OpenVibe.AI is not configured for OpenVibe.Design.');
         if (!owner) throw fail(401, 'auth.required', 'Sign in to make a vector on openvibe.design.');
         const remaining = await left(owner);
         if (remaining < 1) throw fail(429, 'ai.capped', 'You have made ' + perDay + ' runs today. More tomorrow.');
 
         await store.countRun(owner, 'vector');
+        const item = kind === 'item' ? itemStyle.parseItem(prompt) : null;
+        const chosen = prefer && prefer.model ? { ...(prefer.provider ? { provider: String(prefer.provider).slice(0, 80) } : {}), model: String(prefer.model).slice(0, 160) } : null;
         const answer = await ai.text({
-            system: VECTOR_STYLE,
-            prompt: 'Draw: ' + String(prompt || '').slice(0, 800) + (note ? '\n\nThe note on the last drawing: ' + String(note).slice(0, 400) : ''),
-            maxTokens: 3000,
+            system: item ? itemStyle.itemSystem(item) : VECTOR_STYLE,
+            prompt: item ? itemStyle.itemAsk(item, note) : 'Draw: ' + String(prompt || '').slice(0, 800) + (note ? '\n\nThe note on the last drawing: ' + String(note).slice(0, 400) : ''),
+            maxTokens: item ? 4000 : 3000,
             target: { service: 'design', type: 'vector', id: String(kind || 'icon') },
-            prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },
+            // The person's pick from Exchange's models, else AI's routing for the task (never an id in code, 2026-11-16).
+            task: 'design.icon', ...(chosen ? { prefer: chosen } : {}),
             ...(onBehalf ? { person: String(owner) } : {}),
         });
 
@@ -246,7 +257,7 @@ function createService({ db, ai, store, config = {}, log = console, s, sharing =
             ].join('\n'),
             maxTokens: 1200,
             target: { service: 'design', type: 'typeface_glyph', id: String(face.id || 'new') },
-            prefer: { provider: 'anthropic', model: 'claude-opus-5-5' },
+            task: 'design.icon',
             person: String(owner),
         });
         const json = readJson(answer.text);

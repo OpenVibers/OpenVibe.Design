@@ -132,6 +132,8 @@ async function createApp(opts = {}) {
     const accountData = accountDataLib.create({ db: s.db, log });
     const picks = opts.picks || require('./brand-picks').createBrandPicks({ db: s.db, now });
     const fonts = opts.fonts || createFontCatalog({ db: s.db, fetchImpl, now, log });
+    // Watch mode (plan §AD.25 item 12): every site's home page audited daily (server/review/watch.js).
+    const watch = opts.watch || require('./review/watch').createWatch({ db: s.db, networkUrl: config.networkPublicUrl, fetchImpl, now, log });
     await fonts.seedMissing();
     // The typefaces and vectors a person makes with the model (plan R1 item 8): the store, the drawing
     // service and the routes that serve them.
@@ -142,7 +144,7 @@ async function createApp(opts = {}) {
         : async () => { throw new Error('OV_OAUTH_CLIENT_SECRET is not set: Design cannot answer account events'); });
 
     const ctx = {
-        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, elementHandoff, gallery, log, picks, fonts, aiStore, maker, registry, createOptions, balance, deepDive, deepDiveStore, deepDiveAi, proposals, rulePr,
+        config, s, store: s, keys, sso, settings, catalog, searchIndex, arena, bench, ai, jobs, designs, sharing, publisher, accountData, accountSend, elementHandoff, gallery, log, picks, fonts, watch, aiStore, maker, registry, createOptions, balance, deepDive, deepDiveStore, deepDiveAi, proposals, rulePr,
         random: opts.random || Math.random,
     };
 
@@ -222,6 +224,8 @@ async function createApp(opts = {}) {
     app.use('/auth', sso.routes());
     // The MCP endpoint, after the session middleware: the tools that make a typeface or a vector are charged to
     // the person who calls them, so they need to know who that is. The read-only tools answer as before.
+    // A delegated person token (SDK 0.187) is a person here and only here (server/auth/sso.js mcpViewer).
+    if (sso.mcpViewer) app.use('/mcp', sso.mcpViewer());
     app.use(createMcpRoutes(ctx));
 
     // ── Account export/deletion from OpenVibe.Events (loopback only) ──
@@ -331,8 +335,14 @@ async function createApp(opts = {}) {
     app.use('/api/v1/brand', require('./http/brand-api').createBrandApi(ctx));
     app.get('/api/v1/prompts', (req, res) => { res.set('Cache-Control', 'public, max-age=300'); res.json({ prompts: require('./views/prompts').list() }); });
     // The decision register (openvibe.design/rules) as data: open to any origin, for code and AI assistants.
+    app.get('/api/v1/watch', async (req, res) => {
+        res.set({ 'Cache-Control': 'public, max-age=300', 'Access-Control-Allow-Origin': '*' });
+        try { res.json({ sites: await watch.list() }); } catch (err) { log.warn('[OpenVibe.Design] watch list:', err.message); res.status(503).json({ error: 'The watch could not be read just now' }); }
+    });
     app.get('/api/v1/rules', (req, res) => { res.set({ 'Cache-Control': 'public, max-age=300', 'Access-Control-Allow-Origin': '*' }); res.json(require('./views/rules').rulesJson()); });
     app.use(createIconRoutes(ctx));
+    // The name effects page and its maker (plan §AD.15), before the generic component pages.
+    app.use(require('./http/name-effects').createNameEffectRoutes(ctx));
     // The public page routers are built before they are mounted: the Markdown twins render through the same routers
     // (server/agent-twins.js), so a twin cannot drift from the page a browser gets.
     const { createTypefaceRoutes, createVectorRoutes } = require('./http/typefaces');

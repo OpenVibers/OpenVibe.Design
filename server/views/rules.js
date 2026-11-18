@@ -39,7 +39,7 @@ function rulesPage({ proposals = [], owner = false, notice = null, error = null 
   <form class="rl-find" role="search" action="#" data-rl-find hidden><label for="rl-q" class="ovk-sr">Find a rule</label>${kit.icon('search')}<input id="rl-q" type="search" placeholder="Find a rule: tabs, spinner, price, phone…" autocomplete="off"><output data-rl-count></output></form>
 </header>`;
     // The Rules door's two pages: this register, then the System map (the owner, 2026-11-10).
-    const door = `<p class="rl-links rl-door"><span class="rl-label">Rules</span><span class="rl-chip rl-chip--check" aria-current="page">The register</span><a class="rl-chip" href="/system">The system map</a></p>`;
+    const door = `<p class="rl-links rl-door"><span class="rl-label">Rules</span><span class="rl-chip rl-chip--check" aria-current="page">The register</span><a class="rl-chip" href="/system">The system map</a><a class="rl-chip" href="/watch">The watch</a></p>`;
     const index = `<nav class="rl-areas" aria-label="Areas"><ul>${areas.map((a) => `<li><a href="#area-${esc(a.id)}">${esc(a.title)}<span>${a.rules.length}</span></a></li>`).join('')}</ul></nav>`;
     const latestBlock = `<section class="rl-sec rl-recent" aria-labelledby="rl-recent-h"><div class="rl-sec-head"><h2 id="rl-recent-h">Decided lately</h2><p>The newest rules first; each links to its place below.</p></div>
   <ol class="rl-recent-list">${recent.map((r) => `<li><a href="#${esc(r.id)}"><time datetime="${esc(r.decided)}">${esc(day(r.decided))}</time><b>${esc(r.rule)}</b></a></li>`).join('')}</ol></section>`;

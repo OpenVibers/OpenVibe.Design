@@ -240,6 +240,34 @@
       draw(); widget.append(bar, work);
       control('Next state', () => { k = (k + 1) % states.length; draw(); }, true);
       control('The bug', () => { work.classList.add('covered'); say('A blurred cover over the work: nobody can watch it being made.'); });
+    } else if (id === 'conversation-layout') {
+      const box = node('div', 'cv-demo'); box.dataset.view = 'computer';
+      const bar = node('header', 'cv-bar'); const who = node('span', 'cv-who'); who.append(node('i', 'cv-face'), node('b', '', 'Muse'), node('small', '', 'deepseek-flash'));
+      const level = node('span', 'cv-chip', 'Asks first'); const hist = node('button', 'cv-histbtn', 'History'); hist.type = 'button';
+      bar.append(who, level, hist);
+      const side = node('aside', 'cv-side'); const filters = node('div', 'cv-filters');
+      const FILTERS = ['All', 'Chats', 'Tasks']; let f = 0;
+      const items = [['Chats', 'Plan the stream overlay'], ['Tasks', 'Fix the leaderboard sort'], ['Chats', 'Ideas for Friday'], ['Tasks', 'Write the release notes']];
+      const list = node('ul', 'cv-list');
+      const drawSide = () => {
+        filters.replaceChildren(...FILTERS.map((name, i) => { const c = node('span', `cv-filter${i === f ? ' on' : ''}`, name); return c; }));
+        list.replaceChildren(...items.filter(([k]) => f === 0 || k === FILTERS[f]).map(([k, text], i) => node('li', i === 0 ? 'on' : '', text)));
+      };
+      side.append(filters, list);
+      const thread = node('section', 'cv-thread');
+      thread.append(node('p', 'cv-msg me', 'Can you fix the sort on the leaderboard?'), node('p', 'cv-msg', 'On it: a missing speed sorted as zero.'));
+      const run = node('div', 'cv-run'); run.append(node('i'), node('b', '', 'Run · 3 steps'), node('span', '', 'Done in 42 s'));
+      thread.append(run, node('p', 'cv-msg', 'Fixed: unmeasured models now sort last.'));
+      const composer = node('footer', 'cv-composer'); composer.append(node('span', 'cv-box', 'Message Muse'), node('span', 'cv-send', 'Send'));
+      const main = node('div', 'cv-main'); main.append(side, thread);
+      box.append(bar, main, composer); widget.append(box); drawSide();
+      const view = (v) => { box.dataset.view = v; box.classList.remove('cv-bug', 'cv-open'); say(v === 'phone' ? 'On a phone the history is one tap away in the bar; the conversation and the composer keep the screen.' : 'On a computer the history sits beside the conversation; the bar on top, the composer at the bottom.'); };
+      hist.addEventListener('click', () => { box.classList.toggle('cv-open'); say(box.classList.contains('cv-open') ? 'History opens over the conversation; choosing one closes it.' : 'Back to the conversation.'); });
+      control('Computer', () => view('computer'), true);
+      control('Phone', () => view('phone'));
+      control('Filter', () => { f = (f + 1) % FILTERS.length; drawSide(); say(`Filters sit over the history: ${FILTERS[f]}.`); });
+      control('The bug', () => { box.dataset.view = 'computer'; box.classList.remove('cv-open'); box.classList.add('cv-bug'); say('Each site drew its own: the history moved sides, the composer changed shape, the run looked like another app.'); });
+      view('computer');
     } else if (id === 'column-earns-place') {
       const rows = [['atlas-1', '$0.40', '1.4 s'], ['nimbus-2', '$2.00', '2.6 s'], ['orbit', '$1.20', null]];
       const table = node('table', 'num-demo hn-table'); widget.append(table);

@@ -87,7 +87,7 @@
 @media (max-width:760px){
   .mo-hero,.mo-sec-head{grid-template-columns:1fr}
   /* On a phone the effects and the rules run sideways, every one of them there to swipe to. */
-  .mo-grid,.mo-rules,.mo-curves{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(250px,80%);overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
+  .mo-grid,.mo-rules,.mo-curves{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(250px,80%);overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
   .mo-grid>*,.mo-rules>*,.mo-curves>*{scroll-snap-align:start}
   .mo-hero-stage{max-height:none}
   .mo-durs li{grid-template-columns:96px minmax(0,1fr) 56px}

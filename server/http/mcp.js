@@ -72,7 +72,12 @@ const TOOLS = [
         kind: { type: 'string', enum: ['icon', 'illustration', 'pattern'], default: 'icon' },
         note: { type: 'string', maxLength: 400, description: 'A note on the drawing, when you are changing one.' },
     }) },
-].map(tool => ({ ...tool, annotations: { readOnlyHint: tool.name.indexOf('_make_') < 0, openWorldHint: false, destructiveHint: false } }));
+    // The Design bot's first eyes (plan §AD.25): a public page's markup held to the checklist and the rules. It reads
+    // the open web (through the guarded path), so it is the one open-world tool.
+    { name: 'openvibe_design_audit_page', description: 'Audit a public web page\'s markup against OpenVibe\'s design checklist and rules: the viewport, native controls, Load more buttons, pictures without alt, unnamed buttons, icon fonts, spinners, typed arrows, filler content, text under 12 px, literal colours, the language and the title. Each finding names its rule on openvibe.design/rules, a severity, examples and the fix in one line. Markup only: overflow, real sizes, contrast and motion need the page drawn at 390 and 1280 px.', inputSchema: schema(['url'], {
+        url: { type: 'string', minLength: 8, maxLength: 2000, description: 'The https page to audit.' },
+    }) },
+].map(tool => ({ ...tool, annotations: { readOnlyHint: tool.name.indexOf('_make_') < 0, openWorldHint: tool.name === 'openvibe_design_audit_page', destructiveHint: false } }));
 
 const rpc = (id, result) => ({ jsonrpc: '2.0', id, result });
 const error = (id, code, message) => ({ jsonrpc: '2.0', id, error: { code, message } });
@@ -205,6 +210,16 @@ async function callTool(name, args, ctx, req) {
             } catch (err) {
                 return toolError((err && err.detail) || 'The drawing could not be made.');
             }
+        }
+        case 'openvibe_design_audit_page': {
+            if (typeof args.url !== 'string' || args.url.trim().length < 8 || args.url.length > 2000) return toolError('url is an https address of at most 2000 characters.');
+            // ctx.readPage: a test's own reader; else the guarded path (https, public addresses, checked redirects, capped).
+            const read = ctx.readPage || require('../create/egress').fetchPageHtml;
+            let page;
+            try { page = await read(args.url.trim()); } catch (err) {
+                return toolError(`That page could not be read: ${(err && err.detail) || 'it did not answer'}`);
+            }
+            return toolResult(require('../review/page-audit').auditHtml(page.html, { url: page.url }));
         }
         default:
             return null;

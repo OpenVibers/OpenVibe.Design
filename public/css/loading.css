@@ -57,7 +57,7 @@
 .ld-rules b { color: var(--text-primary); }
 .ld-use { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .ld-use > div { min-width: 0; }
-.ld-use pre { font-size: 12.5px; white-space: pre; overflow-x: auto; padding-right: 52px; }
+.ld-use pre { font-size: 12.5px; white-space: pre; overflow-x: auto; overflow-y: auto; padding-right: 52px; }
 
 @media (max-width: 860px) {
     .ld-sec-head, .ld-mark, .ld-use { grid-template-columns: minmax(0, 1fr); }

@@ -24,7 +24,17 @@ function createDeepDiveStore({ s, log = console }) {
             createdAt: row.created_at, updatedAt: row.updated_at,
             pointsCount: Array.isArray(row.points) ? row.points.length : 0,
         };
-        if (points) out.points = Array.isArray(row.points) ? row.points : [];
+        if (points) {
+            out.points = Array.isArray(row.points) ? row.points : [];
+            // The screenshots the dive took (ai.deep-dive@1 captures): ids only, read back through /research/:id/crop.
+            const rep = row.report && typeof row.report === 'object' ? row.report : {};
+            const names = new Map((Array.isArray(rep.sources) ? rep.sources : []).map((x) => [x.id, x.title || null]));
+            out.shots = (Array.isArray(rep.captures) ? rep.captures : []).filter((c) => c && c.id && !c.skip && c.media_id).slice(0, 400).map((c) => ({
+                id: c.id, sourceId: c.source_id || null, site: names.get(c.source_id) || null, url: c.url, viewport: c.viewport, theme: c.theme,
+                capturedAt: c.captured_at || null, cached: Boolean(c.cached), cropId: Array.isArray(c.crops) && c.crops[0] ? c.crops[0].id : null,
+            }));
+            out.imageSheets = (Array.isArray(rep.image_sheets) ? rep.image_sheets : []).slice(0, 40);
+        }
         return out;
     }
 

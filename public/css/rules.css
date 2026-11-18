@@ -20,7 +20,7 @@
 .rl-find svg{flex:none;width:18px;height:18px;color:var(--text-muted)}
 
 .rl-areas{position:sticky;top:calc(var(--ov-nav-h,56px) + 6px);z-index:2;margin:4px 0 8px;padding:8px 0;background:linear-gradient(var(--bg-primary,#0b1220) 70%,transparent)}
-.rl-areas ul{list-style:none;margin:0;padding:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
+.rl-areas ul{list-style:none;margin:0;padding:0;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;scroll-snap-type:x proximity}
 .rl-areas ul::-webkit-scrollbar{display:none}
 .rl-areas a{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid var(--border);border-radius:999px;background:var(--bg-card);text-decoration:none;white-space:nowrap;font-size:.9rem;scroll-snap-align:start}
 .rl-areas a:hover{border-color:var(--accent);color:var(--accent)}
@@ -38,11 +38,11 @@
 .rl-rule h3{margin:0;font-size:1.06rem;line-height:1.35;font-weight:750}
 .rl-rule h3 a{text-decoration:none}
 .rl-rule h3 a:hover{text-decoration:underline;text-underline-offset:3px}
-.rl-num{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;margin-right:.5em;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-size:.72rem;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:.08em}
+.rl-num{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;margin-right:.5em;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:color-mix(in srgb,var(--accent) 70%,var(--text-primary));font-size:.72rem;font-weight:800;font-variant-numeric:tabular-nums;vertical-align:.08em}
 .rl-rule time{flex:none;color:var(--text-muted);font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 .rl-detail{margin:0;color:var(--text-secondary);line-height:1.55}
 .rl-why{margin:0;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--text-primary) 4%,transparent);color:var(--text-secondary);font-size:.9rem;line-height:1.45}
-.rl-why span{margin-right:6px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.rl-why span{margin-right:6px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--accent) 70%,var(--text-primary))}
 .rl-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0}
 .rl-label{margin-right:2px;color:var(--text-muted);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .rl-label:not(:first-child){margin-left:8px}

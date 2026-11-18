@@ -210,6 +210,43 @@ function createTypefaceRoutes(ctx) {
     return r;
 }
 
+/** The kinds of drawing the maker makes; 'item' (2026-11-16) is an item icon in the house item style. */
+const VECTOR_KINDS = ['icon', 'illustration', 'pattern', 'item'];
+const itemStyle = require('../vectors/item-style');
+
+/**
+ * The model the person chose: { provider, model }, or a model id with its provider in its own field (model ids carry
+ * slashes of their own: openai/gpt-5); null for the maker's default.
+ */
+function chosenModel(model, provider = null) {
+    if (!model) return null;
+    if (typeof model === 'object') return model.model ? { provider: model.provider ? String(model.provider).slice(0, 80) : null, model: String(model.model).slice(0, 160) } : null;
+    const m = String(model).trim().slice(0, 240);
+    if (!m || m === 'default') return null;
+    // The maker's picker sends both in one value: provider::model.
+    const at = m.indexOf('::');
+    if (at > 0) return { provider: m.slice(0, at).slice(0, 80), model: m.slice(at + 2).slice(0, 160) || null };
+    return { provider: provider ? String(provider).trim().slice(0, 80) || null : null, model: m.slice(0, 160) };
+}
+
+/**
+ * What a form or an API call asks to draw → { prompt, kind, prefer } or { error }. An item's details come as fields
+ * (name or prompt, description, rarity, type, hint), or as `item` in the API, and ride on its prompt's first line.
+ */
+function drawingAsked(body = {}) {
+    const kind = VECTOR_KINDS.includes(body.kind) ? body.kind : 'icon';
+    const prefer = chosenModel(body.model, body.provider);
+    if (kind === 'item') {
+        const it = body.item && typeof body.item === 'object' ? body.item : body;
+        const name = String(it.name || it.prompt || body.prompt || '').trim();
+        if (!name) return { error: 'Name the item you want drawn.' };
+        return { kind, prefer, prompt: itemStyle.itemPrompt({ name, description: it.description, rarity: it.rarity, type: it.type, hint: it.hint }) };
+    }
+    const prompt = String(body.prompt || '').trim();
+    if (!prompt) return { error: 'Describe the drawing you want.' };
+    return { kind, prefer, prompt };
+}
+
 function createVectorRoutes(ctx) {
     const { config, ai, aiStore, maker, s, sharing } = ctx;
     const store = aiStore;
@@ -225,11 +262,22 @@ function createVectorRoutes(ctx) {
         return row;
     }
 
+    // The models AI offers for drawing, for the maker's picker: read once every five minutes, never in the way of the page.
+    let offered = { at: 0, list: [] };
+    async function models() {
+        if (Date.now() - offered.at < 300000) return offered.list;
+        const list = ai && typeof ai.offeredModels === 'function' ? await ai.offeredModels().catch(() => []) : [];
+        offered = { at: Date.now(), list: (list || []).filter((m) => m && m.model).slice(0, 24) };
+        return offered.list;
+    }
+
     r.get('/vectors/make', async (req, res) => {
         res.set('Cache-Control', 'private, no-store');
         const owner = subjectOf(req);
         const mine = owner ? await store.vectorsOf(owner).catch(() => []) : [];
-        return page(res, 200, views.vectorMake({ mine, signedIn: Boolean(owner), left: owner ? await maker.left(owner) : 0, perDay: maker.perDay }), req.viewer,
+        const kind = VECTOR_KINDS.includes(req.query.kind) ? req.query.kind : 'icon';
+        return page(res, 200, views.vectorMake({ mine, signedIn: Boolean(owner), left: owner ? await maker.left(owner) : 0, perDay: maker.perDay,
+            kind, models: owner ? await models() : [], rarities: itemStyle.RARITIES, types: itemStyle.TYPES }), req.viewer,
             { cacheControl: 'private, no-store' });
     });
 
@@ -238,10 +286,10 @@ function createVectorRoutes(ctx) {
         const owner = subjectOf(req);
         if (!owner) return res.status(401).type('text/plain').send('Sign in to make a vector on openvibe.design.');
         try {
-            const prompt = String(req.body.prompt || '').trim();
-            const kind = ['icon', 'illustration', 'pattern'].includes(req.body.kind) ? req.body.kind : 'icon';
-            if (!prompt) return res.status(422).type('text/plain').send('Describe the drawing you want.');
-            const drawn = await maker.drawVector({ owner, prompt, kind });
+            const asked = drawingAsked(req.body || {});
+            if (asked.error) return res.status(422).type('text/plain').send(asked.error);
+            const { prompt, kind, prefer } = asked;
+            const drawn = await maker.drawVector({ owner, prompt, kind, prefer });
             const id = s.newId('vec');
             await store.saveVector({ id, owner, prompt, kind, svg: drawn.svg, provider: drawn.provider, model: drawn.model, license: drawn.license, state: 'drawn' });
             return res.redirect(303, '/vectors/made/' + encodeURIComponent(id));
@@ -282,7 +330,7 @@ function createVectorRoutes(ctx) {
         if (!row) return res.status(404).type('text/plain').send('Not found.');
         try {
             const note = String(req.body.note || '').trim().slice(0, 400);
-            const drawn = await maker.drawVector({ owner, prompt: row.prompt, kind: row.kind, note: note || null });
+            const drawn = await maker.drawVector({ owner, prompt: row.prompt, kind: row.kind, note: note || null, prefer: chosenModel(req.body && req.body.model, req.body && req.body.provider) });
             await store.saveVector({ id: row.id, owner: row.owner, prompt: row.prompt, kind: row.kind, svg: drawn.svg,
                 provider: drawn.provider, model: drawn.model, license: row.license, state: 'drawn', note: note || null });
             return res.redirect(303, '/vectors/made/' + encodeURIComponent(row.id));
@@ -296,10 +344,10 @@ function createVectorRoutes(ctx) {
         const owner = subjectOf(req);
         if (!owner) return res.status(401).json({ error: 'Sign in to make a vector on openvibe.design.' });
         try {
-            const prompt = String((req.body && req.body.prompt) || '').trim();
-            const kind = ['icon', 'illustration', 'pattern'].includes(req.body && req.body.kind) ? req.body.kind : 'icon';
-            if (!prompt) return res.status(422).json({ error: 'Describe the drawing you want.' });
-            const drawn = await maker.drawVector({ owner, prompt, kind });
+            const asked = drawingAsked(req.body || {});
+            if (asked.error) return res.status(422).json({ error: asked.error });
+            const { prompt, kind, prefer } = asked;
+            const drawn = await maker.drawVector({ owner, prompt, kind, prefer });
             const id = s.newId('vec');
             const saved = await store.saveVector({ id, owner, prompt, kind, svg: drawn.svg, provider: drawn.provider, model: drawn.model, license: drawn.license, state: 'drawn' });
             return res.status(201).json(saved);
@@ -323,7 +371,7 @@ function createVectorRoutes(ctx) {
         if (!row) return res.status(404).json({ error: 'Not found.' });
         try {
             const note = String((req.body && req.body.note) || '').trim().slice(0, 400);
-            const drawn = await maker.drawVector({ owner, prompt: row.prompt, kind: row.kind, note: note || null });
+            const drawn = await maker.drawVector({ owner, prompt: row.prompt, kind: row.kind, note: note || null, prefer: chosenModel(req.body && req.body.model, req.body && req.body.provider) });
             const saved = await store.saveVector({ id: row.id, owner: row.owner, prompt: row.prompt, kind: row.kind, svg: drawn.svg,
                 provider: drawn.provider, model: drawn.model, license: row.license, state: 'drawn', note: note || null });
             return res.json(saved);
@@ -335,4 +383,4 @@ function createVectorRoutes(ctx) {
     return r;
 }
 
-module.exports = { createTypefaceRoutes, createVectorRoutes, plainError };
+module.exports = { drawingAsked, chosenModel, VECTOR_KINDS, createTypefaceRoutes, createVectorRoutes, plainError };

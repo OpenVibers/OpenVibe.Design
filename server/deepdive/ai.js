@@ -166,12 +166,14 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
     }
 
     /** The run body both doors accept; the report is the run's output. */
-    function runBody({ question, sites = [], depth = 'thorough', person = null, target = null }) {
+    function runBody({ question, sites = [], depth = 'thorough', person = null, target = null, diveOptions = null }) {
         // ai.deep-dive@1's input: the question, the depth, the depth's site budget and the sites the person named.
         const wanted = ['quick', 'thorough', 'expert'].includes(String(depth)) ? String(depth) : 'thorough';
         const maxSites = wanted === 'quick' ? 6 : wanted === 'thorough' ? 15 : 30;
         const input = { question: String(question || '').slice(0, 500), depth: wanted, max_sites: maxSites,
-            sites: sites.map((s) => String(s).slice(0, 2000)).filter((s) => /^https?:\/\//i.test(s)).slice(0, 30) };
+            sites: sites.map((s) => String(s).slice(0, 2000)).filter((s) => /^https?:\/\//i.test(s)).slice(0, 30),
+            // What the person chose on /deep-dive (ai.deep-dive@1 1.2.0 input.options); absent, the depth's defaults.
+            ...(diveOptions && Object.keys(diveOptions).length ? { options: diveOptions } : {}) };
         return {
             workflow: dd.workflow || 'design.deep_dive',
             input,
@@ -182,8 +184,8 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
     }
 
     /** Start a dive on the person's behalf. The id is kept before any report exists, so a failed run is still a record. */
-    async function start({ question, sites = [], depth = 'thorough', person = null, target = null, idempotencyKey = null } = {}) {
-        const body = runBody({ question, sites, depth, person, target });
+    async function start({ question, sites = [], depth = 'thorough', person = null, target = null, idempotencyKey = null, diveOptions = null } = {}) {
+        const body = runBody({ question, sites, depth, person, target, diveOptions });
         if (idempotencyKey) body.idempotency_key = String(idempotencyKey).slice(0, 200);
         const paths = [];
         if (dd.startPath) paths.push({ path: dd.startPath, body });
@@ -248,6 +250,18 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         return { run, citations: out && out.citations || [] };
     }
 
+    /** The live state (AI's /api/v1/deep-dives/:id/state): the steps, the sites chosen, the captures as they land. */
+    async function state(runId) {
+        const out = await call('GET', `/api/v1/deep-dives/${encodeURIComponent(String(runId || ''))}/state`, null);
+        return (out && (out.deep_dive || out.deepDive)) || null;
+    }
+
+    /** While a Thorough or Expert dive is choosing: add or drop sites, or start the capture now. */
+    async function sites(runId, { add = [], drop = [], start = false } = {}) {
+        const out = await call('POST', `/api/v1/deep-dives/${encodeURIComponent(String(runId || ''))}/sites`, { ...(add.length ? { add } : {}), ...(drop.length ? { drop } : {}), ...(start ? { start: true } : {}) });
+        return (out && (out.deep_dive || out.deepDive)) || null;
+    }
+
     async function cancel(runId) {
         const out = await call('POST', `/api/v1/runs/${encodeURIComponent(runId)}/cancel`, {});
         return out && (out.run || out);
@@ -308,7 +322,7 @@ function createDeepDiveAi({ config, fetchImpl = globalThis.fetch, log = console 
         return 'running';
     }
 
-    return { enabled, start, getRun, cancel, crop, options, reportOf, statusOf, progressOf, publicReportUrl: (id) => `${publicBase}${reportPath.replace(':id', String(id || ''))}`, STEP_NAMES, pollMs, waitMs, DEPTH_NAMES };
+    return { enabled, start, getRun, state, sites, cancel, crop, options, reportOf, statusOf, progressOf, publicReportUrl: (id) => `${publicBase}${reportPath.replace(':id', String(id || ''))}`, STEP_NAMES, pollMs, waitMs, DEPTH_NAMES };
 }
 
 module.exports = { createDeepDiveAi, DeepDiveError, parsePrices, DEPTH_NAMES };

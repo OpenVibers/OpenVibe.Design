@@ -63,6 +63,11 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
         st.users.set(u.id, u);
         return u;
     }
+    /** A delegated person token (SDK 0.187, openvibe-sdk/auth/delegated): what Connect's /mcp/all sends as the person. */
+    function delegatedToken(u, { services = ['design'], by = 'ck_01JD8C4QJ7Z3K9W2X5V6N1M0PC', scope = 'write', ttlSec = 600 } = {}) {
+        const { delegatedClaims } = require('openvibe-sdk/auth/delegated');
+        return signJwt(delegatedClaims({ user: { id: u.id, subject_id: u.subject, username: u.username, display_name: u.display_name }, by, services, scope, ttlSec, issuer, audience: ['openvibe.network'] }), privateKey);
+    }
     function userToken(u, { ttl = 3600 } = {}) {
         const now = Math.floor(Date.now() / 1000);
         return signJwt({ iss: issuer, sub: u.id, subject_id: u.subject, username: u.username, display_name: u.display_name, role: u.role, aud: ['openvibe.network'], iat: now, exp: now + ttl }, privatePem);
@@ -83,6 +88,8 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
 
         if (url.pathname === '/api/.well-known/jwks') return json(200, { public_key: publicPem, algorithm: 'RS256' });
         if (url.pathname === '/oauth/revoke') return json(200, {});
+        // OpenVibe.Codes' coding agents (the icon generator's Coding agent way; boot points OV_CODES_URL here).
+        if (url.pathname === '/api/v1/harnesses') return json(200, { harnesses: [{ id: 'claude-code', name: 'Claude Code' }, { id: 'codex', name: 'Codex' }] });
         if (url.pathname === '/oauth/token' && req.method === 'POST') {
             // The SDK sends the token request as JSON (the old module sent a form); both are read here.
             const ct = String(req.headers['content-type'] || '');
@@ -197,7 +204,7 @@ async function startNetwork({ themes = DEFAULT_THEMES } = {}) {
     return {
         url: srv.url, publicPem, privatePem, state: st,
         themes: st.themes, requests: st.requests, tokenRequests: st.tokenRequests,
-        addUser, userToken,
+        addUser, userToken, delegatedToken,
         issueCode(user, challenge) { const code = `code_${crypto.randomBytes(8).toString('hex')}`; st.codes.set(code, { user, challenge }); return code; },
         setDown(v) { st.down = Boolean(v); },
         setCatalogStatus(v) { st.catalogStatus = v; },

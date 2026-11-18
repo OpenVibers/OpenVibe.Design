@@ -98,10 +98,11 @@ function requestOnce(url, { timeoutMs = 6000 } = {}) {
 }
 
 /**
- * Read a starting page through the guarded path. → { url, title, text }
- * Throws StartUrlError(422) for a non-public or unreachable address.
+ * A page's body through the guarded path (https, public addresses, two checked redirects, capped). → { url, body }
+ * Throws StartUrlError(422) for a non-public or unreachable address. fetchStartingPage reads it as text; the page
+ * audit (server/review/page-audit.js) reads its markup.
  */
-async function fetchStartingPage(raw, { timeoutMs = 6000 } = {}) {
+async function fetchGuarded(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS } = {}) {
     let url;
     try { url = new URL(String(raw == null ? '' : raw).trim()); } catch { throw new StartUrlError('start_url_invalid', 'That starting address is not a URL.'); }
     if (url.protocol !== 'https:') throw new StartUrlError('start_url_scheme', 'A starting address must be an https page.');
@@ -110,7 +111,7 @@ async function fetchStartingPage(raw, { timeoutMs = 6000 } = {}) {
         throw new StartUrlError('start_url_denied', 'That address is not a public web page.');
     }
     let current = url;
-    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    for (let hop = 0; hop <= maxRedirects; hop++) {
         let out;
         try { out = await requestOnce(current, { timeoutMs }); } catch (err) {
             if (err instanceof StartUrlError) throw err;
@@ -124,11 +125,26 @@ async function fetchStartingPage(raw, { timeoutMs = 6000 } = {}) {
             current = next;
             continue;
         }
-        const read = readableText(out.body.toString('utf8'));
-        if (!read.text) throw new StartUrlError('start_url_empty', 'That page had no readable text.');
-        return { url: current.toString(), title: read.title, text: read.text };
+        return { url: current.toString(), body: out.body };
     }
     throw new StartUrlError('start_url_redirects', 'That page redirected too many times.');
 }
 
-module.exports = { fetchStartingPage, readableText, StartUrlError, MAX_BYTES, MAX_TEXT };
+/**
+ * Read a starting page through the guarded path. → { url, title, text }
+ * Throws StartUrlError(422) for a non-public or unreachable address.
+ */
+async function fetchStartingPage(raw, { timeoutMs = 6000 } = {}) {
+    const out = await fetchGuarded(raw, { timeoutMs });
+    const read = readableText(out.body.toString('utf8'));
+    if (!read.text) throw new StartUrlError('start_url_empty', 'That page had no readable text.');
+    return { url: out.url, title: read.title, text: read.text };
+}
+
+/** A page's markup through the guarded path, for the page audit. → { url, html } */
+async function fetchPageHtml(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS } = {}) {
+    const out = await fetchGuarded(raw, { timeoutMs, maxRedirects: Math.min(6, Math.max(0, Number(maxRedirects) || 0)) });
+    return { url: out.url, html: out.body.toString('utf8') };
+}
+
+module.exports = { fetchStartingPage, fetchPageHtml, readableText, StartUrlError, MAX_BYTES, MAX_TEXT };

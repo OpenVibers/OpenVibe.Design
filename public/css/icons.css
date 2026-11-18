@@ -67,6 +67,27 @@
 .ic-form .ic-grow{flex:1 1 280px}
 .ic-form input{min-height:42px;box-sizing:border-box;padding:0 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);font:inherit;font-size:15px}
 .ic-form input:focus{outline:none;border-color:var(--accent)}
+/* How to draw it (2026-11-16): the ways as one row of chips, what the chosen one does under it, and what it runs on
+   (Exchange's models, Codes' agents; Shared's ov-forms draws the lists). */
+.ic-ways{flex:1 1 100%;min-width:0;margin:0;padding:0;border:0;display:grid;gap:8px}
+.ic-ways legend{padding:0;margin-bottom:6px;font-size:12.5px;font-weight:700;color:var(--text-secondary)}
+.ic-way-list{display:flex;flex-wrap:wrap;gap:8px}
+.ic-form .ic-way{position:relative;display:block;cursor:pointer}
+.ic-form .ic-way input{position:absolute;inset:0;opacity:0;margin:0;min-height:0;cursor:pointer}
+.ic-way span{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;padding:0 16px;border-radius:999px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);font-size:14px;font-weight:650;white-space:nowrap;transition:border-color .15s ease,background-color .15s ease,box-shadow .15s ease,transform .12s ease}
+.ic-way:hover span{border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+.ic-way input:checked+span{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--bg-primary));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent)}
+.ic-way input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.ic-way:active span{transform:scale(.97)}
+.ic-way-what{margin:0;min-height:1.4em;font-size:13.5px;line-height:1.45;color:var(--text-muted)}
+.ic-way-picks{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.ic-way-picks label{flex:1 1 220px;min-width:0;align-content:start}
+.ic-way-picks label[hidden]{display:none}
+.ic-way-picks select{min-height:44px;width:100%;box-sizing:border-box;padding:0 10px;border-radius:10px;border:1px solid var(--border);background:var(--bg-primary);color:var(--text-primary);font:inherit;font-size:14px}
+@media (max-width:640px){.ic-way span{padding:0 14px;font-size:13.5px}}
+html[data-ov-motion=off] .ic-way span{transition:none}
+.ic-drawing{display:flex;align-items:center;gap:8px}
+html[data-ov-motion=off] .ic-way span{transition:none}
 .ic-drafts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
 .ic-draft{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:var(--bg-secondary)}
 .ic-draft-art{display:flex;align-items:flex-end;gap:10px;padding:8px;border-radius:10px;background:var(--bg-primary)}
@@ -86,7 +107,7 @@
 
 .ic-use,.gp-use{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ic-use>div,.gp-use>div{min-width:0}
-.ic-use pre,.gp-use pre,.legacy-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;padding-right:52px}
+.ic-use pre,.gp-use pre,.legacy-steps pre{font-size:12.5px;white-space:pre;overflow-x:auto;overflow-y:auto;padding-right:52px}
 .ic-use h3,.gp-use h3{margin-top:0}
 /* L50 step 3: the ways to use a glyph. The rest fold under a count of what is inside, never behind tabs. */
 .gp-note{margin:-4px 0 8px;color:var(--text-secondary);font-size:13px;line-height:1.5}
@@ -221,7 +242,7 @@ html[data-ov-motion=off] .ic-tile:hover{transform:none}
 .mg-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .mg-go{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .mg-go>span{color:var(--text-muted);font-size:13px}
-.mg-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+.mg-wrap{overflow-x:auto;overflow-y:auto;border-radius:14px;border:1px solid var(--border)}
 .mg-table{width:100%;border-collapse:collapse;font-size:14px}
 .mg-table th{position:sticky;top:0;padding:10px 14px;text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);background:var(--bg-secondary);border-bottom:1px solid var(--border)}
 .mg-table td{padding:10px 14px;border-bottom:1px solid color-mix(in srgb,var(--border) 70%,transparent);vertical-align:middle}
@@ -265,7 +286,7 @@ html[data-ov-motion=off] .ic-tile:hover{transform:none}
 .ic-left-fold>.ic-left{padding:4px 14px 14px}
 /* A phone: the downloads are a sideways rail, not seven stacked cards. */
 @media (max-width:520px){
-  .ic-packs{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:6px;margin-right:-16px;padding-right:16px}
+  .ic-packs{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:6px;margin-right:-16px;padding-right:16px}
   .ic-packs li{flex:0 0 min(72%,240px);scroll-snap-align:start}
 }
 

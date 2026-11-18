@@ -39,7 +39,7 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
         return list.find((d) => d.id === wanted) || list.find((d) => d.id === 'thorough') || list[0] || null;
     }
 
-    async function create({ owner, question, depth = 'thorough', sites = [], targetId = null, token = null }) {
+    async function create({ owner, question, depth = 'thorough', sites = [], targetId = null, token = null, diveOptions = null }) {
         if (!owner) throw Object.assign(new Error('Sign in to start a deep dive.'), { status: 401, code: 'deep_dive.sign_in', detail: 'Sign in to start a deep dive.' });
         const opts = await options();
         const chosen = depthOf(opts, depth);
@@ -49,7 +49,7 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
         let run;
         try {
             run = await client.start({
-                question, sites, depth: chosen.id, person: owner, idempotencyKey: research.id,
+                question, sites, depth: chosen.id, person: owner, idempotencyKey: research.id, diveOptions,
                 target: { service: 'design', type: 'design_research', id: research.id },
             });
         } catch (err) {

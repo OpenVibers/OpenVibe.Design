@@ -133,6 +133,61 @@ function createPageRoutes(ctx) {
         return page(res, 200, designView.create({ recent, themes, options,
             research: { options: diveOptions, recent: dives.filter((x) => x.status === 'done' || x.status === 'running'), signedIn } }), req.viewer, { cacheControl: 'private, no-store' });
     });
+    // The design deep dive's own page (11-15, the owner: it "was supposed to be for openvibe.design", built on
+    // Exchange's general deep dive): start one here, then follow it live at /research/:id.
+    const diveHome = async (req, res, status = 200, { question = '', error = null } = {}) => {
+        const signedIn = Boolean(subjectOf(req));
+        const options = ctx.deepDive ? await ctx.deepDive.options().catch(() => null) : null;
+        const recent = signedIn && ctx.deepDive ? await ctx.deepDive.list(subjectOf(req), { limit: 12 }).catch(() => []) : [];
+        return page(res, status, require('../views/deepdive').deepDivePage({ options, recent, signedIn, question, error }), req.viewer, { cacheControl: 'private, no-store' });
+    };
+    r.get('/deep-dive', (req, res) => diveHome(req, res, 200, { question: String(req.query.q || '').slice(0, 500) }));
+    r.post('/deep-dive', express.urlencoded({ extended: false, limit: '16kb' }), async (req, res) => {
+        const question = String(req.body.question || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(`/deep-dive${question ? `?q=${encodeURIComponent(question)}` : ''}`)}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        if (!question) return diveHome(req, res, 422, { error: 'Say what you are designing first.' });
+        const depth = ['quick', 'thorough', 'expert'].includes(req.body.depth) ? req.body.depth : 'quick';
+        const sites = String(req.body.sites || '').split(/\r?\n/).map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x)).slice(0, 30);
+        const diveOptions = require('../deepdive/options').fromForm(req.body);
+        try {
+            const out = await ctx.deepDive.create({ owner: subjectOf(req), question, depth, sites, token: tokenOf(req), diveOptions });
+            return res.redirect(303, `/research/${encodeURIComponent(out.research.id)}`);
+        } catch (err) {
+            return diveHome(req, res, [401, 402, 422, 503].includes(err.status) ? err.status : 502, { question, error: err.detail || err.message || 'The deep dive could not start.' });
+        }
+    });
+    // The live state of one of the person's dives, for the live view (AI's state, as the service that started it).
+    const ownDive = async (req) => {
+        const research = await ctx.deepDive.get(req.params.id, subjectOf(req)).catch(() => null);
+        return research && research.runId ? research : null;
+    };
+    r.get('/research/:id/state', async (req, res) => {
+        if (!subjectOf(req)) return res.status(401).json({ error: 'Sign in to see this deep dive.' });
+        const research = await ownDive(req);
+        if (!research) return res.status(404).json({ error: 'Not found.' });
+        try {
+            res.set('Cache-Control', 'no-store');
+            return res.json({ deep_dive: await ctx.deepDiveAi.state(research.runId) });
+        } catch (err) { return res.status(err.status === 404 ? 404 : 502).json({ error: err.detail || err.message || 'OpenVibe.AI did not answer.' }); }
+    });
+    r.post('/research/:id/sites', express.urlencoded({ extended: false, limit: '16kb' }), async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(`/research/${req.params.id}`)}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const research = await ownDive(req);
+        if (!research) return page(res, 404, views.notFound(), req.viewer);
+        const add = String(req.body.sites || '').split(/\r?\n/).map((x) => x.trim()).filter((x) => /^https?:\/\//i.test(x)).slice(0, 30);
+        const drop = req.body.drop ? [String(req.body.drop).slice(0, 2048)] : [];
+        await ctx.deepDiveAi.sites(research.runId, { add, drop, start: Boolean(req.body.start) }).catch(() => null);
+        return res.redirect(303, `/research/${encodeURIComponent(req.params.id)}`);
+    });
+    r.post('/research/:id/cancel', express.urlencoded({ extended: false, limit: '1kb' }), async (req, res) => {
+        if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(`/research/${req.params.id}`)}`);
+        if (!writeAllowed(req, config)) return res.status(403).send('Open this form on openvibe.design.');
+        const research = await ownDive(req);
+        if (research && !['done', 'failed', 'cancelled'].includes(research.status)) await ctx.deepDiveAi.cancel(research.runId).catch(() => null);
+        return res.redirect(303, `/research/${encodeURIComponent(req.params.id)}`);
+    });
     // One deep dive's report, read on Design: the numbered points with their evidence and the rules it proposes.
     // It is the person's own dive, so only the person who started or attached it can open it.
     r.get('/research/:id/crop/:cropId', async (req, res) => {
@@ -148,8 +203,17 @@ function createPageRoutes(ctx) {
     });
     r.get('/research/:id', async (req, res) => {
         if (!subjectOf(req)) return res.redirect(303, `/auth/login?next=${encodeURIComponent(req.originalUrl)}`);
-        const research = await ctx.deepDive.get(req.params.id, subjectOf(req)).catch(() => null);
+        let research = await ctx.deepDive.get(req.params.id, subjectOf(req)).catch(() => null);
         if (!research) return page(res, 404, views.notFound(), req.viewer);
+        // While it runs: the live view, from AI's own state. One that has just ended is waited for (a few seconds) so
+        // the report is what shows, never a live view of a finished run.
+        if (research.runId && (research.status === 'starting' || research.status === 'running')) {
+            const live = await ctx.deepDiveAi.state(research.runId).catch(() => null);
+            if (live && !['succeeded', 'failed', 'cancelled'].includes(live.status)) {
+                return page(res, 200, require('../views/deepdive').researchLivePage({ research, state: live }), req.viewer, { cacheControl: 'private, no-store' });
+            }
+            if (live) research = (await ctx.deepDive.wait(research.id, { timeoutMs: 8000 }).then(() => ctx.deepDive.get(req.params.id, subjectOf(req))).catch(() => null)) || research;
+        }
         return page(res, 200, require('../views/deepdive').researchPage({ research, viewer: req.viewer }), req.viewer, { cacheControl: 'private, no-store' });
     });
     r.post('/create', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
@@ -344,6 +408,11 @@ function createPageRoutes(ctx) {
     // An approval opens a pull request on the register; the register itself is never written by this page.
     const ruleNotice = (req) => ({ notice: req.query.notice ? String(req.query.notice).slice(0, 300) : null,
         error: req.query.error ? String(req.query.error).slice(0, 300) : null });
+    // Watch mode: every site's home page held to the rules daily (server/review/watch.js, server/views/watch.js).
+    r.get('/watch', async (req, res) => {
+        const rows = ctx.watch ? await ctx.watch.list().catch((err) => { log.warn('[OpenVibe.Design] watch:', err.message); return []; }) : [];
+        return page(res, 200, require('../views/watch').watchPage(rows), req.viewer);
+    });
     r.get('/rules', async (req, res) => {
         const owner = Boolean(ctx.proposals && ctx.proposals.isOwner(req.viewer));
         const proposals = owner ? await ctx.proposals.list({ state: null }).catch((err) => { log.warn('[OpenVibe.Design] rule proposals:', err.message); return []; }) : [];

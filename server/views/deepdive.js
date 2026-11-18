@@ -26,18 +26,41 @@ function cropSrc(e, research) {
     if (e && e.cropId && research && research.id) return `/research/${encodeURIComponent(research.id)}/crop/${encodeURIComponent(e.cropId)}`;
     return null;
 }
-function evidenceList(evidence, { crops = false, research = null } = {}) {
+/** A point's words without the model's citation tails: "(Source 1)", "(Sources 1, 3)", "[2]". */
+function cleanText(t) {
+    return String(t || '').replace(/\s*\((?:sources?|src)\s*[\d,\s&and]+\)\s*\.?\s*$/i, '').replace(/\s*\[\d+(?:\s*,\s*\d+)*\]\s*$/, '').trim();
+}
+/**
+ * A point's evidence: the site and the day it was read, its note only when it says more than the point, and its screenshot
+ * once per page. `seen` (a Map, crop → the point that showed it) is shared by a whole report: a screenshot that backs
+ * twenty points is drawn once and named after that (it was drawn under every point, 11-16). Each opens in the viewer.
+ */
+function evidenceList(evidence, { crops = false, research = null, point = null, seen = null } = {}) {
     const list = Array.isArray(evidence) ? evidence : [];
     if (!list.length) return '';
+    const said = cleanText(point && point.text).toLowerCase();
     return `<ul class="dd-evidence">${list.map((e) => {
         const site = e.site || host(e.url);
         const label = site || (e.url ? 'Source' : 'Evidence');
         const href = safeHref(e.url);
         const link = href ? `<a href="${esc(href)}" rel="noopener">${esc(label)}</a>` : `<span>${esc(label)}</span>`;
         const when = e.capturedAt ? ` · read ${esc(day(e.capturedAt) || String(e.capturedAt).slice(0, 10))}` : '';
+        const note = cleanText(e.note);
+        const lower = note.toLowerCase();
+        const says = note && !(said && (lower === said || said.includes(lower) || lower.includes(said)));
         const src = crops ? safeImage(cropSrc(e, research)) : null;
-        const crop = src ? `<img class="dd-crop" src="${esc(src)}" alt="A crop from ${esc(label)}" loading="lazy" decoding="async">` : '';
-        return `<li>${crop}<span class="dd-ev">${link}${when}${e.note ? ` · ${esc(e.note)}` : ''}</span></li>`;
+        let crop = '';
+        if (src) {
+            const key = e.cropId || e.crop || src;
+            const shown = seen ? seen.get(key) : undefined;
+            if (shown !== undefined) {
+                crop = `<a class="dd-ev-again" href="${esc(src)}" data-dd-shot="${esc(label)}"><img class="dd-crop is-small" src="${esc(src)}" alt="" loading="lazy" decoding="async"><span>The screenshot under point ${esc(String(shown))}</span></a>`;
+            } else {
+                if (seen) seen.set(key, point && point.n != null ? point.n : '');
+                crop = `<a class="dd-ev-shot" href="${esc(src)}" data-dd-shot="${esc(label)}"><img class="dd-crop" src="${esc(src)}" alt="A crop from ${esc(label)}" loading="lazy" decoding="async"></a>`;
+            }
+        }
+        return `<li>${crop}<span class="dd-ev">${link}${when}${says ? ` · ${esc(note)}` : ''}</span></li>`;
     }).join('')}</ul>`;
 }
 
@@ -52,10 +75,10 @@ function researchModule({ options = null, recent = [], signedIn = false } = {}) 
         return `<details class="dv-mod" data-mod="research"><summary><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg><span class="dv-mod-k">Research first</span><b>Off</b></summary>
 <div class="dv-mod-sheet" role="group" aria-label="Research first"><header><b>Research first</b><small>An expert design research run: we search everywhere, capture the best sites at phone and computer sizes, and tell you what works and why. It goes into the brief for every take.</small></header>
 <p>${kit.button({ href: '/auth/login?next=%2Fcreate', label: 'Sign in to start a deep dive', kind: 'quiet', icon: 'spark' })}</p>
-<p class="dv-fine">A deep dive is priced on OpenVibe Exchange and held on your Balance before it runs. <a href="https://openvibe.exchange/deep-dive">Read about deep dives</a>.</p></div></details>`;
+<p class="dv-fine">A deep dive is priced and held on your Balance before it runs. <a href="/deep-dive">Read about design deep dives</a>.</p></div></details>`;
     }
     const depthRows = depths.length ? depths.map((d, i) => `<label class="dv-opt"><input type="radio" name="research_depth" value="${esc(d.id)}" data-label="${esc(d.name || d.id)}"${d.id === 'thorough' || (!i && !depths.some((x) => x.id === 'thorough')) ? ' checked' : ''}><span><b>${esc(d.name || d.id)}</b><small>${esc(d.line || DEPTH_LINE[d.id] || '')}${d.price_usd != null ? ` · ${usd(d.price_usd)}` : ''}${d.sites ? ` · ${Number(d.sites)} sites` : ''}</small></span></label>`).join('')
-        : `<p class="dv-fine">The depths are not readable right now. <a href="https://openvibe.exchange/deep-dive">Start a deep dive on OpenVibe Exchange</a>, then attach it here.</p>`;
+        : `<p class="dv-fine">The depths are not readable right now. <a href="/deep-dive">Start a design deep dive</a>, then attach it here.</p>`;
     const done = (recent || []).filter((r) => r && r.id);
     const recentRows = done.length ? `<label class="dv-start"><span>Or attach a dive you already ran</span><select name="research_id"><option value="">None</option>${done.map((r) => `<option value="${esc(r.id)}">${esc(String(r.question || 'Deep dive').slice(0, 80))}${r.status === 'running' ? ' (still running)' : ''} · ${esc(day(r.createdAt))}</option>`).join('')}</select></label>` : '';
     return `<details class="dv-mod" data-mod="research"><summary><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z"/></svg><span class="dv-mod-k">Research first</span><b data-mod-v>Off</b></summary>
@@ -63,7 +86,7 @@ function researchModule({ options = null, recent = [], signedIn = false } = {}) 
 <label class="dv-opt dv-opt--check"><input type="checkbox" name="research" value="new" data-research="on"><span><b>Start a deep dive for this design</b><small>The takes wait for its report, then are drawn from it.</small></span></label>
 <div class="dv-deep" data-research-new hidden>
 ${depthRows}
-${priced ? '' : '<p class="dv-fine">The price is shown before the dive starts on <a href="https://openvibe.exchange/deep-dive">OpenVibe Exchange</a>.</p>'}
+${priced ? '' : '<p class="dv-fine">The price is shown before the dive starts on <a href="/deep-dive">the design deep dive page</a>.</p>'}
 </div>
 <div class="dv-deep" data-research-attach>
 ${recentRows}
@@ -98,6 +121,70 @@ function takePoints(points, research) {
     return `<p class="dv-take-research">Follows ${points.map((p) => `<a href="${esc(base)}#p${esc(String(p.n))}" title="${esc(String(p.text || '').slice(0, 240))}">research point ${esc(String(p.n))}</a>`).join(', ')}</p>`;
 }
 
+/** The screenshots, by site: phone and computer, light and dark; each opens full page in the viewer (deep-dive-shots.js). */
+function shotsGallery(r) {
+    const shots = Array.isArray(r.shots) ? r.shots : [];
+    if (!shots.length) return '';
+    const base = `/research/${encodeURIComponent(r.id || '')}/crop/`;
+    const bySite = new Map();
+    for (const s of shots) { const k = s.sourceId || s.url; if (!bySite.has(k)) bySite.set(k, []); bySite.get(k).push(s); }
+    const order = (s) => (s.viewport < 700 ? 0 : 2) + (s.theme === 'dark' ? 1 : 0);
+    const label = (s) => `${s.viewport < 700 ? 'Phone' : 'Computer'} · ${s.theme === 'dark' ? 'dark' : 'light'}`;
+    const cards = [...bySite.values()].map((list) => {
+        const first = list[0];
+        const frames = list.slice().sort((a, b) => order(a) - order(b)).map((s) => `<a class="dds-frame${s.viewport < 700 ? ' is-phone' : ''}" href="${base}${encodeURIComponent(s.id)}" data-dd-shot="${esc(`${host(s.url)} · ${label(s)}`)}"><img src="${base}${encodeURIComponent(s.cropId || s.id)}" alt="${esc(`${host(s.url)}, ${label(s)}`)}" loading="lazy" decoding="async"><span>${esc(label(s))}</span></a>`).join('');
+        return `<article class="dds-site"><header><a href="${esc(/^https?:\/\//i.test(first.url) ? first.url : '#')}" rel="noopener noreferrer" target="_blank">${esc(first.site || host(first.url))}</a><small>${esc(host(first.url))}${first.capturedAt ? ` · read ${esc(day(first.capturedAt))}` : ''}${list.some((s) => s.cached) ? ' · from the week\'s cache' : ''}</small></header><div class="dds-row">${frames}</div></article>`;
+    }).join('');
+    return `<section class="dd-sec dds" aria-labelledby="dds-h" data-dd-shots><h2 id="dds-h">The screenshots <small>${shots.length} from ${bySite.size} site${bySite.size === 1 ? '' : 's'}</small></h2>
+<p class="dv-fine">Private to you. Each is shown as commentary with its site and the day it was read; open one to see the whole page.</p>${cards}</section>`;
+}
+
+/**
+ * The image search pages the dive read (ai.deep-dive@1 image_sheets): each a whole page of an engine's image results laid
+ * out as one sheet and read at once (the owner, 11-15: "screenshot search queries on Google, Bing, etc to analyze a whole
+ * page of images at once"). The sheet at the full width of the page, then what the vision model saw: its reading, the
+ * patterns most of them share, the styles, the palette as swatches, the odd ones out, and where every picture came from.
+ */
+function imageSheetsSection(r) {
+    const sheets = Array.isArray(r.imageSheets) ? r.imageSheets : [];
+    if (!sheets.length) return '';
+    const base = `/research/${encodeURIComponent(r.id || '')}/crop/`;
+    const strs = (v, n) => (Array.isArray(v) ? v.map((x) => String(x || '').trim()).filter(Boolean).slice(0, n) : []);
+    const chips = (v) => `<ul class="ddi-chips">${v.map((x) => `<li>${esc(x.slice(0, 120))}</li>`).join('')}</ul>`;
+    const total = sheets.reduce((n, x) => n + (Number(x.count) || 0), 0);
+    const one = (x) => {
+        const patterns = strs(x.patterns, 10), styles = strs(x.styles, 10), outliers = strs(x.outliers, 8);
+        const palette = strs(x.palette, 12).filter((c) => /^#[0-9a-f]{3,8}$/i.test(c));
+        // Numbered as the sheet's tiles are (AI #615): source n is tile n, so a gap keeps its number.
+        const sources = (Array.isArray(x.sources) ? x.sources : []).slice(0, 80).map((s, i) => ({ ...(s || {}), n: i + 1, href: s ? safeHref(s.page || s.url) : null })).filter((s) => s.href);
+        const byN = new Map(sources.map((s) => [s.n, s]));
+        // "#14: a real photo among flat mockups": the number links to where that picture came from.
+        const outlier = (o) => {
+            const m = /^#(\d{1,3})\s*[:.\-–—]?\s*/.exec(o);
+            const src = m ? byN.get(Number(m[1])) : null;
+            return src ? `<a class="ddi-n" href="${esc(src.href)}" rel="noopener noreferrer" target="_blank" title="${esc(String(src.title || host(src.href)).slice(0, 120))}">#${src.n}</a> ${esc(o.slice(m[0].length, 240))}` : esc(o.slice(0, 240));
+        };
+        const label = `${x.engine || 'Image search'} · ${x.query || ''}`;
+        const w = Number(x.width) > 0 ? Number(x.width) : null, hgt = Number(x.height) > 0 ? Number(x.height) : null;
+        return `<figure class="ddi-sheet">
+<a class="ddi-pic" href="${base}${encodeURIComponent(x.id)}" data-dd-shot="${esc(label)}"><img src="${base}${encodeURIComponent(x.id)}" alt="${esc(`A page of image results for ${x.query || 'the question'}`)}"${w && hgt ? ` width="${w}" height="${hgt}"` : ''} loading="lazy" decoding="async"></a>
+<figcaption>
+<header><b>${esc(x.query || '')}</b><small>${esc([x.engine, x.recency && x.recency !== 'any' ? `the past ${x.recency}` : 'any time', x.count ? `${x.count} images` : null].filter(Boolean).join(' · '))}</small></header>
+${x.reading ? `<p class="ddi-read">${esc(String(x.reading).slice(0, 900))}</p>` : ''}
+<div class="ddi-cols">
+${patterns.length ? `<div><h3>What most of them do</h3>${chips(patterns)}</div>` : ''}
+${styles.length ? `<div><h3>Styles</h3>${chips(styles)}</div>` : ''}
+${palette.length ? `<div><h3>Palette</h3><ul class="ddi-swatches">${palette.map((c) => `<li><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><rect width="20" height="20" rx="5" fill="${esc(c)}"/></svg><code>${esc(c.toLowerCase())}</code></li>`).join('')}</ul></div>` : ''}
+${outliers.length ? `<div><h3>The odd ones out</h3><ul class="ddi-list">${outliers.map((o) => `<li>${outlier(o)}</li>`).join('')}</ul></div>` : ''}
+</div>
+${sources.length ? `<details class="ddi-src"><summary>${sources.length === 1 ? 'Where the picture came from' : `Where the ${sources.length} pictures came from`}</summary><ol>${sources.map((src) => `<li value="${src.n}"><a href="${esc(src.href)}" rel="noopener noreferrer" target="_blank">${esc(String(src.title || host(src.href)).slice(0, 120))}</a><small>${esc(host(src.href))}</small></li>`).join('')}</ol></details>` : ''}
+</figcaption></figure>`;
+    };
+    return `<section class="dd-sec ddi" aria-labelledby="ddi-h" data-dd-shots><h2 id="ddi-h">Image search, a page at a time <small>${sheets.length === 1 ? 'one sheet' : `${sheets.length} sheets`}${total ? ` · ${total} images` : ''}</small></h2>
+<p class="dv-fine">What the search engines show for this right now: each sheet is a whole page of their image results, read at once by a vision model. Open one to see it full size.</p>
+${sheets.map(one).join('')}</section>`;
+}
+
 /** One report, read on Design: the numbered points with their evidence, and the rules it proposes. */
 function researchPage({ research, viewer = null, notice = null, error = null } = {}) {
     const r = research || {};
@@ -106,6 +193,7 @@ function researchPage({ research, viewer = null, notice = null, error = null } =
     const steps = (r.progress && Array.isArray(r.progress.steps)) ? r.progress.steps : [];
     const proposals = Array.isArray(r.proposals) ? r.proposals : [];
     const running = r.status === 'starting' || r.status === 'running';
+    const seen = new Map();   // each screenshot drawn once on the page (evidenceList)
     const body = `<div class="ds-wrap tk dd-page">
 <header class="ds-page-h"><p class="ds-kicker">Research first</p><h1>${esc(r.question || 'A deep dive')}</h1>
 <p class="ds-lede">A ${esc(r.depth || 'thorough')} deep dive${r.priceUsd != null ? ` (${esc(usd(r.priceUsd))})` : ''}${r.createdAt ? `, started ${esc(day(r.createdAt))}` : ''}; the takes on its design follow the numbered points below. ${safeHref(r.reportUrl) ? `<a href="${esc(safeHref(r.reportUrl))}" rel="noopener">The run on OpenVibe Exchange</a>.` : ''}</p>
@@ -114,12 +202,13 @@ ${notice ? `<p class="dd-notice">${esc(notice)}</p>` : ''}${error ? `<p class="d
 ${steps.length ? `<ol class="dd-steps">${steps.map((s) => `<li class="dd-step is-${esc(s.state || 'waiting')}"><span>${esc(s.name)}</span></li>`).join('')}</ol>` : ''}
 </header>
 ${points.length ? `<section class="dd-sec" aria-labelledby="dd-points-h"><h2 id="dd-points-h">The research points</h2>
-${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(p.text)}</p>${evidenceList(p.evidence, { crops: true, research: r })}</div></li>`).join('')}</ol>`).join('')}
+${groups.map((g) => `<h3>${esc(g === "don't" ? 'Do not' : g === 'do' ? 'Do' : g === 'research' ? 'What the best write-ups say' : g === 'reference token' ? 'Reference tokens, as inspiration' : g)}</h3><ol class="dd-points dd-points--page">${points.filter((p) => p.group === g).map((p) => `<li id="p${esc(String(p.n))}"><span class="dd-n">${esc(String(p.n))}</span><div><p>${esc(cleanText(p.text))}</p>${evidenceList(p.evidence, { crops: true, research: r, point: p, seen })}</div></li>`).join('')}</ol>`).join('')}
 </section>` : running ? kit.empty({ icon: 'spark', title: 'Still researching', text: 'The points appear here as the dive writes them up.' }) : kit.empty({ icon: 'search', title: 'No report yet', text: 'This deep dive has not produced a report.' })}
+${shotsGallery(r)}${imageSheetsSection(r)}
 ${proposals.length ? `<section class="dd-sec" aria-labelledby="dd-props-h"><h2 id="dd-props-h">Proposed from research</h2>${proposalsList(proposals, { compact: true })}</section>` : ''}
 <p class="dd-back"><a href="${r.designId ? `/d/${encodeURIComponent(r.designId)}` : '/create'}">${r.designId ? 'Back to the design' : 'Create a design'}</a></p>
 </div>`;
-    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Research`, description: 'A deep dive report on OpenVibe.Design: patterns, do and don\'t, reference tokens and the rules it cites, with the evidence behind each point.', path: `/research/${r.id || ''}`, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], body });
+    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Research`, description: 'A deep dive report on OpenVibe.Design: patterns, do and don\'t, reference tokens and the rules it cites, with the evidence behind each point.', path: `/research/${r.id || ''}`, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-shots.js'], body });
 }
 
 /** "How others do it" on a component page. Empty and absent until a finished dive has a point for it. */
@@ -158,4 +247,113 @@ function proposalsSection(proposals) {
 ${proposalsList(proposals, { owner: true })}</section>`;
 }
 
-module.exports = { researchModule, researchPanel, takePoints, researchPage, componentFinds, proposalsSection, proposalsList, evidenceList, day, usd, DEPTH_LINE };
+// ── The design deep dive's own pages (11-15, the owner: the deep dive "was supposed to be for openvibe.design", built
+// on Exchange's general deep dive, which researches any question). /deep-dive starts one; /research/:id follows it
+// live (public/js/deep-dive-live.js, the live view Exchange had) until its report is written. ──
+
+const STEP_LABELS = { plan: 'Planning', search: 'Searching', read: 'Reading write-ups', choose: 'Choosing sites', capture: 'Capturing', analyse: 'Analysing', synthesise: 'Writing it up', report: 'The report' };
+const STEP_NOTES = {
+    plan: 'The questions an expert designer would ask, and the searches that answer them.',
+    search: 'Exchange\'s research sources and engines, open-source projects on GitHub, design write-ups, and our own rules register and component registry.',
+    read: 'The general deep dive at its core: the best design write-ups read in full, noted against the questions, and answered with their sources.',
+    choose: 'The sites worth capturing, with a reason each. On Thorough and Expert you can add or drop any before Capture.',
+    capture: 'Each site at 390 and 1280 px, light and dark where it supports dark, full page after a slow scroll, with its measured type, colour, spacing and components.',
+    analyse: 'A vision model reads each screenshot; a text model reads the measured facts and the words.',
+    synthesise: 'Patterns across sites, the gap nobody fills, reference tokens, and recommendations checked against our rules.',
+    report: 'The report, its evidence and the receipt.',
+};
+const jsLit = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
+const when = (iso) => { if (!iso) return ''; try { return new Date(iso).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'; } catch { return String(iso); } };
+
+/** Every option of a design deep dive (deepdive/options.js reads them back): what to capture, how much, image search. */
+function optionsFold() {
+    const chip = (type, name, value, label, on, hint = '') => `<label class="ddh-chip"><input type="${type}" name="${name}" value="${esc(value)}"${on ? ' checked' : ''}><span>${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ''}</span></label>`;
+    const row = (title, body, note = '') => `<div class="ddh-opt"><span class="ddh-opt-k">${esc(title)}</span><div class="ddh-chips">${body}</div>${note ? `<small class="ddh-opt-note">${esc(note)}</small>` : ''}</div>`;
+    const num = (name, min, max, placeholder, label) => `<label class="ddh-num"><span>${esc(label)}</span><input type="number" name="${name}" min="${min}" max="${max}" inputmode="numeric" placeholder="${esc(placeholder)}"></label>`;
+    return `<details class="ddh-more" data-ddh-options><summary><span>Options</span><small>Phone and computer · light and dark · image search, past year</small></summary>
+<input type="hidden" name="custom" value="1" data-ddh-custom disabled>
+<div class="ddh-more-body">
+<fieldset class="ddh-group"><legend>What to capture</legend>
+${row('Sizes', chip('checkbox', 'vp', '390', 'Phone', true, '390 px') + chip('checkbox', 'vp', '1280', 'Computer', true, '1280 px'))}
+${row('Themes', chip('checkbox', 'th', 'light', 'Light', true) + chip('checkbox', 'th', 'dark', 'Dark', true, 'where the site has it'))}
+${row('Expert extras', chip('checkbox', 'extras', '1', 'At any depth', false, 'menus, hover and focus, axe-core, speed'))}
+</fieldset>
+<fieldset class="ddh-group"><legend>How much</legend><div class="ddh-nums">${num('sites', 1, 30, 'the depth\'s', 'Sites to capture')}${num('writeups', 0, 12, 'the depth\'s', 'Write-ups to read')}</div></fieldset>
+<fieldset class="ddh-group"><legend>Image search, a page at a time</legend>
+${row('Image search', chip('radio', 'images', '1', 'On', true) + chip('radio', 'images', '0', 'Off', false), 'Each engine\'s page of results laid out as one sheet and read whole.')}
+${row('From', ['any', 'day', 'week', 'month', 'year'].map((v) => chip('radio', 'recency', v, v === 'any' ? 'Any time' : `Past ${v}`, v === 'year')).join(''), 'Engines that cannot filter by date sit out a dated search.')}
+${row('Images per page', [24, 40, 60].map((v) => chip('radio', 'per_sheet', String(v), String(v), v === 40)).join(''))}
+${row('Engines', [['searxng', 'Google, Bing and more', 'OpenVibe SearXNG'], ['openverse', 'Openverse', ''], ['commons', 'Wikimedia Commons', ''], ['serpapi-images', 'Google Images', 'your SerpAPI key'], ['searchapi-images', 'Google or Bing', 'your SearchAPI key']].map(([v, l, h]) => chip('checkbox', 'eng', v, l, false, h)).join(''), 'None chosen: every engine OpenVibe runs.')}
+<label class="ddh-field"><span>Image searches <small>(optional, one a line; the question by default)</small></span><textarea name="img_q" rows="2" maxlength="900" placeholder="robot control panel ui"></textarea></label>
+</fieldset>
+</div></details>`;
+}
+
+/** /deep-dive: what a design deep dive does, the form (question, depth with its price, sites already known), your dives. */
+function deepDivePage({ options = null, recent = [], signedIn = false, question = '', error = null } = {}) {
+    const depths = (options && Array.isArray(options.depths) ? options.depths : []);
+    const depthCards = depths.length
+        ? `<fieldset class="ddh-depths"><legend>Depth</legend>${depths.map((d, i) => `<label class="ddh-depth"><input type="radio" name="depth" value="${esc(d.id)}"${d.id === 'quick' || (!i && !depths.some((x) => x.id === 'quick')) ? ' checked' : ''}><span><b>${esc(d.name || d.id)}</b><strong>${esc(usd(d.price_usd))}</strong><small>${esc(d.line || DEPTH_LINE[d.id] || (d.sites ? `${Number(d.sites)} sites` : ''))}</small></span></label>`).join('')}</fieldset>`
+        : '<p class="dv-fine">The depths and their prices are not readable right now; try again in a moment.</p>';
+    const form = signedIn
+        ? `<form method="post" action="/deep-dive" class="ddh-form">
+<label class="ddh-field"><span>What are you designing?</span><textarea name="question" rows="3" maxlength="500" required placeholder="A phone-first robot control panel">${esc(question)}</textarea></label>
+${depthCards}
+<label class="ddh-field"><span>Sites you already know <small>(optional, one per line)</small></span><textarea name="sites" rows="2" maxlength="4000" placeholder="https://example.com/panel"></textarea></label>
+${optionsFold()}
+<div class="ddh-go">${kit.button({ label: 'Start the deep dive', type: 'submit', icon: 'spark' })}<p class="dv-fine">The price is held before it starts; you can stop it at any step.</p></div>
+${error ? `<p class="dd-notice is-error" role="alert">${esc(error)}</p>` : ''}
+</form>`
+        : kit.empty({ icon: 'person', title: 'Sign in to run a design deep dive', text: 'It spends your allowance and keeps private screenshots, so it needs your account. What it does is below.', action: { href: '/auth/login?next=%2Fdeep-dive', label: 'Sign in with OpenVibe' } });
+    const mine = (recent || []).filter((r) => r && r.id);
+    const list = signedIn && mine.length ? `<section class="dd-sec" aria-labelledby="ddh-mine-h"><h2 id="ddh-mine-h">Your deep dives</h2><ul class="ddh-mine">${mine.slice(0, 12).map((r) => `<li><a href="/research/${encodeURIComponent(r.id)}">${esc(String(r.question || 'A deep dive').slice(0, 120))}</a><small>${esc(r.depth || '')} · ${esc(r.status === 'done' ? 'done' : r.status || '')} · ${esc(day(r.createdAt))}</small></li>`).join('')}</ul></section>` : '';
+    const step = (n, title, text) => `<li><span class="ddh-n">${n}</span><div><b>${title}</b><p>${text}</p></div></li>`;
+    const what = `<section class="dd-sec" aria-labelledby="ddh-what-h"><h2 id="ddh-what-h">What a design deep dive does</h2><ol class="ddh-what">
+${step(1, 'Researches the question first.', 'The core is <a href="https://openvibe.exchange/deep-dive">Exchange\'s deep dive</a>: the questions an expert would ask, every search we have, and the write-ups worth reading.')}
+${step(2, 'Chooses the sites worth a look.', 'A model ranks real products with a reason each; on Thorough and Expert you can add or drop any before Capture.')}
+${step(3, 'Captures them properly.', '390 and 1280 px, dark and light where the site supports it, the whole page after a slow scroll, with its type scale, palette, spacing, grid and components measured. Expert adds open menus, hover and focus, axe-core and LCP/CLS/INP.')}
+${step(4, 'Reads a whole page of images at once.', 'Google, Bing and DuckDuckGo image results for your question, recent ones only if you like (the past day, week, month or year), laid out as one sheet per engine that a vision model reads in one pass: what most of them look like, the palette, the styles, the odd ones out. The sheets are in the report, every picture linked to where it came from.')}
+${step(5, 'Reads them as a designer.', 'A vision model reads each screenshot and a text model the measured facts and the words: hierarchy, density, what draws the eye, what works and what fails.')}
+${step(6, 'Writes it up against our rules.', 'The patterns and how many sites use each, the best version, what everyone gets wrong, the gap nobody fills, reference tokens as direction, do and don\'t, and recommendations that say which of our rules they follow or would change.')}
+${step(7, 'Feeds your designs.', 'Its numbered points become the brief for a design on <a href="/create">Create</a> (Research first), and every take says which points it follows. Nothing from a captured site is ever copied.')}
+</ol></section>`;
+    const body = `<div class="ds-wrap tk dd-page ddh">
+<header class="ds-page-h"><p class="ds-kicker">Research first</p><h1>Design deep dive</h1>
+<p class="ds-lede">Expert design research: we research your question in full, capture the best sites at phone and computer sizes, read whole pages of image search results, and tell you what works and why, checked against OpenVibe's own rules. Every option is yours to set.</p></header>
+${form}${list}${what}</div>`;
+    return layout({ title: 'Design deep dive', description: 'Expert design research on OpenVibe.Design: the question researched in full, the best sites captured at phone and computer sizes and read as a designer, written up against our rules.', path: '/deep-dive', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-options.js'], body });
+}
+
+/** /research/:id while it runs: the live view, drawn from AI's state and redrawn every two seconds; choosing sites. */
+function researchLivePage({ research, state }) {
+    const r = research || {};
+    const st = state || {};
+    const id = r.id || '';
+    const base = `/research/${encodeURIComponent(id)}`;
+    const since = st.created_at || r.createdAt;
+    const seed = { id, since, stateUrl: `${base}/state`, shotUrl: `${base}/crop/`, labels: STEP_LABELS, notes: STEP_NOTES, order: Object.keys(STEP_LABELS),
+        minutes: { quick: 3, thorough: 8, expert: 18 }[r.depth] || null,
+        state: { status: st.status || 'queued', step: st.step || 'plan', progress: st.progress || 0, steps: st.steps || [], site_limit: st.site_limit || null,
+            candidates: (st.candidates || []).map((c) => ({ url: c.url, title: c.title, reason: c.reason, source_id: c.source_id, kind: c.kind, chosen: c.chosen })),
+            captures: (st.captures || []).map((c) => ({ id: c.id, source_id: c.source_id, url: c.url, viewport: c.viewport, theme: c.theme, skip: c.skip, cached: c.cached, crops: (c.crops || []).slice(0, 1).map((x) => ({ id: x.id })) })),
+            image_sheets: (st.image_sheets || []).map((x) => ({ id: x.id, query: x.query, engine: x.engine, recency: x.recency, count: x.count })),
+            gaps: st.gaps || [], error: st.error || null } };
+    const choosing = st.status === 'choosing';
+    const steps = new Map((st.steps || []).map((x) => [x.key, x]));
+    const fallback = `<ol class="dd-steps">${Object.keys(STEP_LABELS).map((k) => { const x = steps.get(k) || { status: 'pending' }; return `<li class="dd-step is-${esc(x.status)}"><span>${esc(STEP_LABELS[k])}${x.detail ? ` · ${esc(x.detail)}` : ''}</span></li>`; }).join('')}</ol>`;
+    const chooseForm = choosing ? `<section class="dd-sec ddh-choose" aria-labelledby="ddh-choose-h"><h2 id="ddh-choose-h">Choose the sites to capture</h2>
+<p class="dv-fine">Drop any you do not want, add your own, then start the capture (or it starts by itself when the wait ends).</p>
+<ul class="ddh-cands">${(st.candidates || []).map((c) => `<li><div><a href="${esc(/^https?:\/\//i.test(c.url) ? c.url : '#')}" rel="noopener noreferrer" target="_blank">${esc(c.title || host(c.url))}</a><small>${esc(host(c.url))}${c.reason ? ` · ${esc(c.reason)}` : ''}</small></div><form method="post" action="${base}/sites"><input type="hidden" name="drop" value="${esc(c.url)}">${kit.button({ label: 'Drop', type: 'submit', kind: 'quiet', small: true })}</form></li>`).join('')}</ul>
+<form method="post" action="${base}/sites" class="ddh-form"><label class="ddh-field"><span>Add sites <small>(one per line)</small></span><textarea name="sites" rows="2" maxlength="4000"></textarea></label><input type="hidden" name="start" value="1"><div class="ddh-go">${kit.button({ label: 'Start the capture', type: 'submit', icon: 'spark' })}</div></form></section>` : '';
+    const body = `<div class="ds-wrap tk dd-page">
+<header class="ds-page-h"><p class="ds-kicker">Design deep dive</p><h1>${esc(r.question || 'A deep dive')}</h1>
+<p class="ds-lede">A ${esc(r.depth || 'thorough')} deep dive${r.priceUsd != null ? ` · ${esc(usd(r.priceUsd))} held` : ''}${since ? ` · started ${esc(when(since))}` : ''}. Its report appears here when it is written.</p></header>
+<section class="dd-live ddl-scope"${choosing ? '' : ' data-dd-run'}>${fallback}</section>
+${chooseForm}
+<form method="post" action="${base}/cancel" class="ddh-cancel">${kit.button({ label: 'Stop the deep dive', type: 'submit', kind: 'danger' })}<span class="dv-fine">Stopping ends the next model call and the next capture.</span></form>
+<p class="dd-back"><a href="/deep-dive">All your deep dives</a></p>
+</div><script type="application/json" id="dd-state">${jsLit(seed)}</script>`;
+    return layout({ title: `${String(r.question || 'A deep dive').slice(0, 70)} · Deep dive`, description: 'A design deep dive at work.', path: base, robots: 'noindex, nofollow', styles: ['css/deepdive.css'], scripts: ['js/deep-dive-live.js', 'js/deep-dive-shots.js'], body });
+}
+
+module.exports = { researchModule, researchPanel, takePoints, researchPage, componentFinds, proposalsSection, proposalsList, evidenceList, day, usd, DEPTH_LINE, deepDivePage, researchLivePage, STEP_LABELS };

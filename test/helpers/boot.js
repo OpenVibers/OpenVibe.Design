@@ -23,6 +23,7 @@ async function boot(opts = {}) {
         OV_NETWORK_URL: network.url, OV_NETWORK_INTERNAL_URL: network.url, OV_NETWORK_ISSUER: network.url,
         OV_OAUTH_CLIENT_ID: 'design', OV_OAUTH_CLIENT_SECRET: 'design-secret', COOKIE_SECURE: 'false',
         OV_BENCH_INTERNAL_URL: bench.url,
+        OV_CODES_URL: network.url,
         OV_BENCH_URL: bench.url,
         DESIGN_RATE_LIMIT_PER_MIN: '100000',
         DESIGN_DRILL: '1',

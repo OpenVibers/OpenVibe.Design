@@ -37,6 +37,51 @@ kit.segmented({
 })`;
 
 // The demo is the kit's own output: kit.switchRow and kit.segmented (openvibe-shared, pinned here).
+// The controls every page gets with no class (ov-forms.css): the same markup the demo draws.
+const CONTROLS_SNIPPET = `<label><input type="checkbox" role="switch" checked> Switch back when the week frees</label>
+<label><input type="checkbox" checked> Tell me when it switches</label>
+<label><input type="radio" name="access" value="ask" checked> Ask first</label>
+<label><input type="radio" name="access" value="full"> Full access</label>
+<label>Volume <input type="range" min="0" max="100" value="64"></label>
+<label>A file <input type="file"></label>
+
+<!-- The browser's own look for one control, or a part of the page: -->
+<input type="range" data-ov-native>`;
+
+// One ring per field (design rule one-ring-per-field; the owner, 11-15: "make sure that input double border shit is fixed
+// for all element types"): every type people type into, shown plain and inside a box.
+const RING_TYPES = [
+    ['text', 'Text'], ['search', 'Search'], ['email', 'Email', ' autocomplete="off"'], ['url', 'Address'], ['tel', 'Phone'],
+    ['password', 'Password', ' autocomplete="new-password"'], ['number', 'Number'], ['date', 'Date'], ['time', 'Time'],
+    ['datetime-local', 'Date and time'], ['month', 'Month'], ['week', 'Week'],
+];
+// Trending in the search box (openvibe-shared 4.277.0 ov-trending.js; design rule search-boxes-show-trending).
+const TRENDING_SNIPPET = `<!-- Any search box: the navbar brings ov-trending.js once a page has one. -->
+<input type="search" name="q" placeholder="Search">
+
+<!-- A box that is a search but not type=search, and the site whose trending lead: -->
+<input data-ov-trending data-ov-trending-site="openvibe.exchange" placeholder="Search models">
+
+<!-- Not a search (a code, a filter of your own list): leave it alone. -->
+<input type="search" data-ov-trending="off" placeholder="Filter your files">`;
+
+const RINGS_SNIPPET = `<!-- A field in a box: the box draws the border and the focus ring; the field is bare. -->
+<label class="pill">
+  <input type="search" placeholder="Search or ask">
+</label>
+.pill { border: 1px solid var(--border); border-radius: 999px; }
+.pill:focus-within { border-color: var(--accent); }
+.pill input { border: 0; outline: none; background: none; }
+
+<!-- On every OpenVibe site the navbar keeps it so even when a page forgets:
+     a field in a box is marked data-ov-field="inner" or "bare" and the box
+     [data-ov-fieldbox] takes the accent; a field on its own keeps its ring
+     on its border (outline-offset 0), never apart from it. -->
+
+// Check a page: openvibe-shared/field-rings (the browser check's "rings")
+const { RINGS } = require('openvibe-shared/field-rings');
+const { fields, doubles } = await page.evaluate(\`(\${RINGS})()\`);`;
+
 const VISIBILITY = [{ value: 'public', label: 'Public', icon: 'globe' }, { value: 'unlisted', label: 'Unlisted', icon: 'link' }, { value: 'private', label: 'Private', icon: 'lock' }];
 
 const MODELS = [
@@ -84,7 +129,7 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
   <p class="fm-eye">Forms</p>
   <h1 class="fm-h1">Controls that look like OpenVibe, on every site</h1>
   <p class="fm-lede">Every select is OpenVibe’s own: a menu on a computer, a sheet from the bottom on a phone. A choice can say whether it is ready, how much is used, and how to set it up. The form underneath is the browser’s, so everything that worked still works, and a page without JavaScript keeps its plain controls.</p>
-  <nav class="fm-jump" aria-label="On this page"><a href="#fm-select">The select</a><a href="#fm-more">Several, search, groups</a><a href="#fm-controls">Switches and boxes</a><a href="#fm-rows">Switch rows and segments</a><a href="#fm-fields">Fields and choices</a><a href="#fm-attrs">What it reads</a><a href="#fm-use">Use it</a></nav>
+  <nav class="fm-jump" aria-label="On this page"><a href="#fm-select">The select</a><a href="#fm-more">Several, search, groups</a><a href="#fm-controls">Switches, boxes and sliders</a><a href="#fm-rows">Switch rows and segments</a><a href="#fm-fields">Fields and choices</a><a href="#fm-attrs">What it reads</a><a href="#fm-use">Use it</a></nav>
 </header>
 
 <section class="fm-sec" id="fm-select" aria-labelledby="fm-select-h">
@@ -108,14 +153,19 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
 </section>
 
 <section class="fm-sec" id="fm-controls" aria-labelledby="fm-controls-h">
-  <div class="fm-sec-head"><h2 id="fm-controls-h">Switches and boxes</h2><p>A checkbox with <code>role="switch"</code> is a switch. Checkboxes, radios and sliders take the site’s accent. Nothing here changes a size, so a site’s own layout never moves.</p></div>
-  <div class="fm-row">
-    <label class="fm-check"><input type="checkbox" role="switch" checked> Switch back when the week frees</label>
-    <label class="fm-check"><input type="checkbox" checked> Tell me when it switches</label>
-    <label class="fm-check"><input type="radio" name="fm-r" checked> Ask first</label>
-    <label class="fm-check"><input type="radio" name="fm-r"> Full access</label>
-    <label class="fm-check fm-range">Volume <input type="range" min="0" max="100" value="64"></label>
-    <label class="fm-check">A file <input type="file"></label>
+  <div class="fm-sec-head"><h2 id="fm-controls-h">Switches, boxes and sliders</h2><p>One material for every control: off is set into the page, on is lit from above in the site’s accent. A checkbox with <code>role="switch"</code> is a switch, a slider fills up to its thumb, and a file input’s button is a button. Every page gets them with no class; a site’s own rule always wins, and <code>data-ov-native</code> keeps the browser’s.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live fm-ctls">
+      <label class="fm-ctl"><input type="checkbox" role="switch" checked><span class="fm-ctl-t"><b>Switch back when the week frees</b><small>A switch: <code>role="switch"</code> on a checkbox</small></span></label>
+      <label class="fm-ctl"><input type="checkbox" checked><span class="fm-ctl-t"><b>Tell me when it switches</b><small>A checkbox</small></span></label>
+      <fieldset class="fm-ctl-set"><legend>Access</legend>
+        <label class="fm-ctl"><input type="radio" name="fm-r" value="ask" checked><span class="fm-ctl-t"><b>Ask first</b><small>It asks before it acts</small></span></label>
+        <label class="fm-ctl"><input type="radio" name="fm-r" value="full"><span class="fm-ctl-t"><b>Full access</b><small>It acts, then tells you</small></span></label>
+      </fieldset>
+      <div class="fm-ctl fm-ctl-range"><label for="fm-vol">Volume</label><input id="fm-vol" type="range" min="0" max="100" value="64"><output for="fm-vol" data-fm-range="fm-vol">64</output></div>
+      <div class="fm-ctl fm-ctl-file"><label for="fm-file">A file</label><input id="fm-file" type="file"></div>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: CONTROLS_SNIPPET, id: 'fm-controls-code', label: 'Copy' })}</div>
   </div>
 </section>
 
@@ -147,6 +197,34 @@ function formsPage({ base = 'https://openvibe.design' } = {}) {
       </div>
     </div>
     <div class="fm-code">${kit.snippet({ code: fieldSnippet, id: 'fm-field-code', label: 'Copy' })}${kit.snippet({ code: choiceSnippet, id: 'fm-choice-code', label: 'Copy' })}</div>
+  </div>
+</section>
+
+<section class="fm-sec" id="fm-rings" aria-labelledby="fm-rings-h">
+  <div class="fm-sec-head"><h2 id="fm-rings-h">One ring per field</h2><p>Every kind of field has one border and one focus ring. Inside a pill, a search bar, a composer or a chip, the box draws them: the field inside is bare, and the box takes the accent while it holds the focus. A field on its own rings on its border, never a second ring apart from it. The navbar measures each field once it is drawn and keeps it that way on every site; the browser check fails a page that draws two. Try each one: focus it, or tab through.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live fm-stack">
+      <div class="fm-rings-grid">
+        ${RING_TYPES.map(([t, label, extra]) => `<div class="ov-field"><label for="fm-r-${t}">${esc(label)}</label><input id="fm-r-${t}" type="${t}"${extra || ''}></div>`).join('')}
+        <div class="ov-field"><label for="fm-r-textarea">Long text</label><textarea id="fm-r-textarea" rows="2"></textarea></div>
+        <div class="ov-field"><label for="fm-r-select">Pick one</label><select id="fm-r-select"><option>Hourly</option><option>Daily</option><option>Weekly</option></select></div>
+      </div>
+      <p class="fm-rings-cap">In a box: the box's ring is the only one.</p>
+      <label class="fm-pill"><span class="fm-pill-ic" aria-hidden="true">${kit.icon('search')}</span><input type="search" placeholder="Search or ask" aria-label="Search or ask"><button type="button" class="fm-pill-go" aria-label="Go">${kit.icon('chevron')}</button></label>
+      <div class="fm-pill fm-pill-compose"><div contenteditable="true" role="textbox" aria-label="Message" data-placeholder="Write a message"></div><button type="button" class="fm-pill-go" aria-label="Send">${kit.icon('send')}</button></div>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: RINGS_SNIPPET, id: 'fm-rings-code', label: 'Copy' })}</div>
+  </div>
+</section>
+
+<section class="fm-sec" id="fm-trending" aria-labelledby="fm-trending-h">
+  <div class="fm-sec-head"><h2 id="fm-trending-h">Trending in the search box</h2><p>An empty search box shows what people are searching for, in the box itself: “Try” and a trending search, one at a time. The line slides up and out, the next slides in, and a shine crosses the term once; Calm is slower, Off holds the first one still. Tab takes the term shown. Typing hides it at once and clearing brings it back. A search sent from the box is counted (never with Do Not Track or Global Privacy Control on, never anything personal), and a search shows as trending only once five or more people looked for it. The numbers are on <a href="https://openvibe.report/searches">openvibe.report/searches</a>.</p></div>
+  <div class="fm-demo">
+    <div class="fm-live fm-stack">
+      <label class="fm-pill"><span class="fm-pill-ic" aria-hidden="true">${kit.icon('search')}</span><input type="search" placeholder="Search OpenVibe" aria-label="Search OpenVibe" data-ov-trending-site="openvibe.design"><button type="button" class="fm-pill-go" aria-label="Go">${kit.icon('chevron')}</button></label>
+      <p class="fm-rings-cap">Every <code>input type="search"</code> on every OpenVibe site does this; <code>data-ov-trending="off"</code> leaves one alone.</p>
+    </div>
+    <div class="fm-code">${kit.snippet({ code: TRENDING_SNIPPET, id: 'fm-trending-code', label: 'Copy' })}</div>
   </div>
 </section>
 

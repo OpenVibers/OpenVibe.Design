@@ -13,6 +13,14 @@ const kit = require('openvibe-shared/kit');
 
 /** The stylesheet both pages share. */
 const STYLES = ['css/typefaces.css'];
+const itemStyle = require('../vectors/item-style');
+/** A drawing's words as a person reads them: an item's without its details line, with its rarity and type beside. */
+const wordsOf = (v) => (v.kind === 'item' ? itemStyle.parseItem(v.prompt).text : String(v.prompt || ''));
+const kindOf = (v) => {
+    if (v.kind !== 'item') return String(v.kind || '');
+    const it = itemStyle.parseItem(v.prompt);
+    return (itemStyle.RARITIES[it.rarity] || {}).name + ' ' + String((itemStyle.TYPES[it.type] || {}).name || 'item').toLowerCase();
+};
 
 /** The font as a data URL the page can use: the specimen is drawn in the face it just made. */
 function fontFace(woff2) {
@@ -94,18 +102,32 @@ function specimen({ face, compiled, chars = '' } = {}) {
 }
 
 /** The vector maker: one drawing from a prompt. */
-function vectorMake({ mine = [], signedIn = false, left = 0, perDay = 0 } = {}) {
+function vectorMake({ mine = [], signedIn = false, left = 0, perDay = 0, kind = 'icon', models = [], rarities = {}, types = {} } = {}) {
+    const opt = (value, label, on) => '<option value="' + esc(value) + '"' + (on ? ' selected' : '') + '>' + esc(label) + '</option>';
+    // An item icon (2026-11-16): the house item style, in its rarity's colours, showing what its type shows. The
+    // fields appear when Item icon is chosen (CSS :has, no script), and ride on the drawing's prompt.
+    const itemFields = '<fieldset class="tv-item"><legend>The item</legend>'
+        + '<label for="tv-rarity">Rarity</label><select id="tv-rarity" name="rarity" data-ov-native>'
+        + Object.entries(rarities).map(([k, r]) => opt(k, r.name, k === 'common')).join('') + '</select>'
+        + '<label for="tv-type">What it is</label><select id="tv-type" name="type" data-ov-native>'
+        + Object.entries(types).map(([k, t]) => opt(k, t.name, k === 'item')).join('') + '</select>'
+        + '<label for="tv-hint">A clue <small>optional: an emoji or a word that says who or what it is</small></label>'
+        + '<input id="tv-hint" name="hint" maxlength="12" autocomplete="off" placeholder="🧙"></fieldset>';
+    const modelField = '<label for="tv-model">Model <small>any model AI offers; your own keys and machines are on your AI settings</small></label>'
+        + '<select id="tv-model" name="model" data-ov-native>' + opt('', 'Best available', true)
+        + models.map((m) => opt((m.provider ? m.provider + '::' : '') + m.model, m.model + (m.provider ? ' · ' + m.provider : ''), false)).join('') + '</select>';
     // Your drawings as drawings: each one's own SVG as a picture (an <img> runs nothing), with what it was asked to be.
     const owned = mine.length
         ? '<section class="tf-owned"><h2>Your drawings <span class="tf-n">' + mine.length + '</span></h2><ul class="tf-gallery">' + mine.map((v) => '<li><a href="/vectors/made/' + esc(v.id) + '">'
-            + '<img src="/vectors/made/' + esc(v.id) + '.svg" alt="" loading="lazy" width="160" height="160"><span>' + esc(v.prompt.slice(0, 80)) + '</span><small>' + esc(v.kind) + '</small></a></li>').join('') + '</ul></section>'
+            + '<img src="/vectors/made/' + esc(v.id) + '.svg" alt="" loading="lazy" width="160" height="160"><span>' + esc(wordsOf(v).slice(0, 80)) + '</span><small>' + esc(kindOf(v)) + '</small></a></li>').join('') + '</ul></section>'
         : '';
     const body = '<div class="tf"><header class="tf-hero"><p class="tf-eyebrow">AI vectors</p><h1>Describe a drawing.</h1>'
-        + '<p>One clean SVG: an icon, an illustration or a pattern. You can draw it again, change it with a note, and take it away.</p></header>'
+        + '<p>One clean SVG: an icon, an illustration, a pattern or an item icon in the house style. You can draw it again, change it with a note, and take it away.</p></header>'
         + (signedIn
             ? '<form class="tf-form" method="post" action="/vectors/make"><label for="tv-prompt">What should it be?</label>'
               + '<textarea id="tv-prompt" name="prompt" required maxlength="600" placeholder="a paper plane folded from a single sheet, mid-flight, flat two-colour"></textarea>'
-              + '<label for="tv-kind">What kind</label><select id="tv-kind" name="kind" data-ov-native><option value="icon">Icon</option><option value="illustration">Illustration</option><option value="pattern">Pattern</option></select>'
+              + '<label for="tv-kind">What kind</label><select id="tv-kind" name="kind" data-ov-native>' + opt('icon', 'Icon', kind === 'icon') + opt('illustration', 'Illustration', kind === 'illustration') + opt('pattern', 'Pattern', kind === 'pattern') + opt('item', 'Item icon', kind === 'item') + '</select>'
+              + itemFields + modelField
               + '<button type="submit">Draw it</button>'
               + '<p class="tf-cap">' + esc(perDay) + ' model runs a day. You have ' + esc(left) + ' left today.</p></form>'
             : '<p class="tf-signin"><a href="/auth/login">Sign in</a> to draw a vector. The runs are charged to your own allowance.</p>')
@@ -117,8 +139,8 @@ function vectorMake({ mine = [], signedIn = false, left = 0, perDay = 0 } = {}) 
 /** The drawing: the SVG, the downloads and the notes. */
 function vector({ vector: v } = {}) {
     const body = '<div class="tf tf-vector"><a class="tf-back" href="/vectors/make">' + kit.icon('back') + ' Make another</a>'
-        + '<header class="tf-hero"><p class="tf-eyebrow">' + esc(v.kind) + (v.model ? ' · drawn by ' + esc(v.model) : '') + '</p>'
-        + '<h1>' + esc(v.prompt) + '</h1></header>'
+        + '<header class="tf-hero"><p class="tf-eyebrow">' + esc(kindOf(v)) + (v.model ? ' · drawn by ' + esc(v.model) : '') + '</p>'
+        + '<h1>' + esc(wordsOf(v)) + '</h1></header>'
         + '<figure class="tf-figure">' + v.svg + '</figure>'
         + '<section class="tf-download"><h2>Take it with you</h2><p>'
         + '<a href="/vectors/made/' + esc(v.id) + '.svg" download>Download the SVG</a> · <a href="/vectors/made/' + esc(v.id) + '.png" download>Download the PNG</a>'
