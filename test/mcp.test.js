@@ -61,6 +61,12 @@ const components = require('openvibe-shared/components');
             assert.deepStrictEqual(ours.findings.map(f => [f.id, f.severity, f.count]), [['native-controls', 'high', 1], ['icon-fonts', 'medium', 1], ['icon-markup', 'low', 2]],
                 'the checkbox only; the select, the spinner box and the Font Awesome markup are the runtime\'s; another set\'s icon is still a font');
             assert.match(ours.findings[0].examples[0], /checkbox/);
+            // Shared's CSS-only tabs (ov-parts: the radio hidden, its label the control) and a page that names filler without
+            // pasting it are no findings (11-18, the first watch: twenty sites flagged for ov-parts, Tools for its Lorem
+            // Ipsum Generator).
+            t.ctx.readPage = async () => ({ url: 'https://tools.example/', html: '<html lang="en"><head><title>Tools</title><meta name="viewport" content="width=device-width"></head><body><main><h1>Lorem Ipsum Generator</h1><p>Generate lorem ipsum placeholder text by words, sentences or paragraphs for your mockups.</p><div class="ov-parts"><input type="radio" class="ov-parts-r" name="ovp-x" id="ovp-x-a" checked><input type="radio" class="ov-parts-r" name="ovp-x" id="ovp-x-b"><div class="ov-parts-bar"><label for="ovp-x-a">One</label><label for="ovp-x-b">Two</label></div></div></main></body></html>' });
+            const tools = (await call('openvibe_design_audit_page', { url: 'https://tools.example' })).structuredContent;
+            assert.deepStrictEqual(tools.findings.map(f => f.id), [], 'no native control, no filler');
             t.ctx.readPage = async () => { throw Object.assign(new Error('x'), { detail: 'That address is not a public web page.' }); };
             const bad = await call('openvibe_design_audit_page', { url: 'https://10.0.0.1/' });
             assert.deepStrictEqual([bad.isError, bad.content[0].text], [true, 'That page could not be read: That address is not a public web page.']);
