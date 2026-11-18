@@ -47,6 +47,15 @@ const components = require('openvibe-shared/components');
             assert.strictEqual(out.isError, false);
             const a = out.structuredContent;
             assert.deepStrictEqual(asked, ['https://shop.example']);
+            // A preview's token (plan §AD.25) reaches the reader as its own option, never in the url.
+            let given = null;
+            const before = t.ctx.readPage;
+            t.ctx.readPage = async (url, o) => { given = o || null; return before(url); };
+            const viaToken = await call('openvibe_design_audit_page', { url: 'https://pa1b2c3--01jabc.openvibe.link/', auth: 'preview-token-example-not-a-secret' });
+            assert.strictEqual(viaToken.isError, false);
+            assert.deepStrictEqual(given, { auth: 'preview-token-example-not-a-secret' });
+            assert.ok(!JSON.stringify(viaToken).includes('example-not-a-secret'), 'the token is not echoed back');
+            t.ctx.readPage = before;
             assert.deepStrictEqual(a.findings.map(f => [f.id, f.rule, f.severity, f.count]), [
                 ['viewport', 'works-at-320', 'high', 1], ['native-controls', 'every-control-is-ours', 'high', 1], ['fake-content', 'no-fake-content', 'high', 1],
                 ['load-more', 'checklist', 'medium', 1], ['spinners', 'no-spinners', 'medium', 1], ['lang-title', 'checklist', 'low', 1],
