@@ -53,7 +53,7 @@ function readableText(html) {
     return { title, text };
 }
 
-function requestOnce(url, { timeoutMs = 6000 } = {}) {
+function requestOnce(url, { timeoutMs = 6000, authorization = null } = {}) {
     return new Promise((resolve, reject) => {
         const req = https.request(url, {
             method: 'GET',
@@ -61,6 +61,7 @@ function requestOnce(url, { timeoutMs = 6000 } = {}) {
             headers: {
                 Accept: 'text/html,application/xhtml+xml;q=0.9,text/plain;q=0.8',
                 'User-Agent': 'OpenVibe.Design starting-point reader (https://openvibe.design)',
+                ...(authorization ? { Authorization: authorization } : {}),
             },
             signal: AbortSignal.timeout(timeoutMs),
         }, (res) => {
@@ -102,18 +103,28 @@ function requestOnce(url, { timeoutMs = 6000 } = {}) {
  * Throws StartUrlError(422) for a non-public or unreachable address. fetchStartingPage reads it as text; the page
  * audit (server/review/page-audit.js) reads its markup.
  */
-async function fetchGuarded(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS } = {}) {
+// A token goes only to an OpenVibe Connect preview (plan §AD.25: Network's delegated token for the preview's owner, for a
+// room's check), and only while the request stays on the origin it started at: a redirect elsewhere goes without it.
+// Anything else would make this public reader a way to send someone's token to any host.
+const PREVIEW_HOST = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.openvibe\.link$/;
+
+async function fetchGuarded(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS, auth = null } = {}) {
     let url;
     try { url = new URL(String(raw == null ? '' : raw).trim()); } catch { throw new StartUrlError('start_url_invalid', 'That starting address is not a URL.'); }
     if (url.protocol !== 'https:') throw new StartUrlError('start_url_scheme', 'A starting address must be an https page.');
     if (url.username || url.password) throw new StartUrlError('start_url_credentials', 'A starting address cannot carry a username or password.');
+    const token = auth == null ? '' : String(auth).trim();
+    if (token && (!PREVIEW_HOST.test(url.hostname) || url.port || !/^[A-Za-z0-9._~+/=-]{16,4096}$/.test(token))) {
+        throw new StartUrlError('start_url_auth', 'A token goes only to an OpenVibe Connect preview (https://….openvibe.link).');
+    }
     try { await assertPublicUrl(url); } catch {
         throw new StartUrlError('start_url_denied', 'That address is not a public web page.');
     }
     let current = url;
     for (let hop = 0; hop <= maxRedirects; hop++) {
         let out;
-        try { out = await requestOnce(current, { timeoutMs }); } catch (err) {
+        const authorization = token && current.origin === url.origin ? `Bearer ${token}` : null;
+        try { out = await requestOnce(current, { timeoutMs, authorization }); } catch (err) {
             if (err instanceof StartUrlError) throw err;
             throw new StartUrlError('start_url_unreachable', 'That page could not be reached.');
         }
@@ -142,9 +153,9 @@ async function fetchStartingPage(raw, { timeoutMs = 6000 } = {}) {
 }
 
 /** A page's markup through the guarded path, for the page audit. → { url, html } */
-async function fetchPageHtml(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS } = {}) {
-    const out = await fetchGuarded(raw, { timeoutMs, maxRedirects: Math.min(6, Math.max(0, Number(maxRedirects) || 0)) });
+async function fetchPageHtml(raw, { timeoutMs = 6000, maxRedirects = MAX_REDIRECTS, auth = null } = {}) {
+    const out = await fetchGuarded(raw, { timeoutMs, maxRedirects: Math.min(6, Math.max(0, Number(maxRedirects) || 0)), auth });
     return { url: out.url, html: out.body.toString('utf8') };
 }
 
-module.exports = { fetchStartingPage, fetchPageHtml, readableText, StartUrlError, MAX_BYTES, MAX_TEXT };
+module.exports = { fetchStartingPage, fetchPageHtml, readableText, StartUrlError, MAX_BYTES, MAX_TEXT, PREVIEW_HOST };
