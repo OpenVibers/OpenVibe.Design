@@ -303,6 +303,22 @@ function fakeAi(overrides = {}) {
             assert.equal(out.model, 'claude-opus-5-5');
             assert.ok(out.download.woff2.includes('/font.woff2'));
 
+            // 2026-11-18 (SDK 0.187): an Apps-page key with a grant in Design, through Connect's /mcp/all, calls /mcp with a
+            // delegated person token: the person, here and only here.
+            const call = (token, id) => t.get('/mcp', { method: 'POST', headers: { authorization: `Bearer ${token}` }, json: { jsonrpc: '2.0', id, method: 'tools/call',
+                params: { name: 'openvibe_design_make_typeface', arguments: { prompt: 'a plain geometric sans', name: 'Key Sans' } } } });
+            const asKey = await call(t.network.delegatedToken(user, { services: ['design', 'ai'] }), 21);
+            assert.equal(asKey.json().result.isError, false, asKey.text);
+            assert.equal(asKey.json().result.structuredContent.name, 'Key Sans');
+            const owned = await t.store.db.many("SELECT owner FROM ai_typefaces WHERE name = 'Key Sans'");
+            assert.equal(owned.length, 1);
+            assert.equal(owned[0].owner, user.subject, 'charged to and owned by the person');
+            const forVision = await call(t.network.delegatedToken(user, { services: ['vision'] }), 22);
+            assert.equal(forVision.json().result.isError, true, 'a token for another service is nobody here');
+            assert.match(forVision.json().result.content[0].text, /Sign in/);
+            const me = await t.get('/auth/me', { headers: { authorization: `Bearer ${t.network.delegatedToken(user, { services: ['design'] })}` } });
+            assert.ok(!(me.json() && me.json().user), 'only /mcp takes it: everywhere else it is nobody');
+
             const list = await t.get('/mcp', { method: 'POST', json: { jsonrpc: '2.0', id: 3, method: 'tools/list' } });
             const names = list.json().result.tools.map(x => x.name);
             assert.ok(names.includes('openvibe_design_make_typeface'));

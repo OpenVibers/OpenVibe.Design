@@ -60,7 +60,7 @@ function authorizeUrl(config, { state, challenge, silent = false }) {
 
 function createSso({ config, keys, fetchImpl = globalThis.fetch, now = () => Date.now(), log = console }) {
     // The one module. The site's own values, its own old cookies, and the audience it always verified with.
-    const sso = createSsoClient({
+    const ssoOptions = {
         site: 'design',
         siteName: 'OpenVibe.Design',
         baseUrl: config.baseUrl,
@@ -77,7 +77,12 @@ function createSso({ config, keys, fetchImpl = globalThis.fetch, now = () => Dat
         legacyCookies: { access: [ACCESS_COOKIE], refresh: [REFRESH_COOKIE] },
         fetch: fetchImpl,
         log,
-    });
+    };
+    const sso = createSsoClient(ssoOptions);
+    // 2026-11-18 (SDK 0.187, openvibe-sdk/auth/delegated): something the person allowed (an Apps-page key with a grant in
+    // OpenVibe Design, through Connect's /mcp/all) calls this site's /mcp as them, for minutes, never as staff. Only /mcp
+    // takes such a token (mcpViewer below); every other route and page keeps the site's own sign-in, which refuses it.
+    const delegatedSso = createSsoClient({ ...ssoOptions, delegated: true });
 
     const cookieBase = () => ({ sameSite: 'lax', secure: config.cookies.secure !== false, httpOnly: true, path: '/' });
     const nextOf = (value) => sanitizeNext(value, { baseUrl: config.baseUrl, networkUrl: config.networkUrl });
@@ -236,7 +241,25 @@ function createSso({ config, keys, fetchImpl = globalThis.fetch, now = () => Dat
         return r;
     }
 
-    return { middleware, routes, asViewer, tokenGrant: (fields) => sso.tokenGrant(fields), pkcePair, client: sso, checkClient: (o) => sso.checkClient(o) };
+    /**
+     * /mcp's viewer for a delegated person token (SDK 0.187): the person, marked `delegated: { by, scope, services }`,
+     * role 'user'. Only when no session is there already, only from a Bearer header, and only a token that names this
+     * site's service; anything else leaves the viewer as it was.
+     */
+    function mcpViewer() {
+        return (req, _res, next) => {
+            if (req.viewer && req.viewer.kind === 'user') return next();
+            const header = String((req.headers && req.headers.authorization) || '');
+            if (!header.startsWith('Bearer ')) return next();
+            const token = header.slice(7).trim();
+            delegatedSso.verify(token).then((claims) => {
+                if (claims && claims.delegated) req.viewer = { ...viewerFrom(claims, token), role: 'user', delegated: claims.delegated };
+                next();
+            }, () => next());
+        };
+    }
+
+    return { middleware, mcpViewer, routes, asViewer, tokenGrant: (fields) => sso.tokenGrant(fields), pkcePair, client: sso, checkClient: (o) => sso.checkClient(o) };
 }
 
 module.exports = { createSso, pkcePair, sanitizeNext, ownOrigins, authorizeUrl, ACCESS_COOKIE, REFRESH_COOKIE };

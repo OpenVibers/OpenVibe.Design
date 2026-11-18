@@ -224,6 +224,8 @@ async function createApp(opts = {}) {
     app.use('/auth', sso.routes());
     // The MCP endpoint, after the session middleware: the tools that make a typeface or a vector are charged to
     // the person who calls them, so they need to know who that is. The read-only tools answer as before.
+    // A delegated person token (SDK 0.187) is a person here and only here (server/auth/sso.js mcpViewer).
+    if (sso.mcpViewer) app.use('/mcp', sso.mcpViewer());
     app.use(createMcpRoutes(ctx));
 
     // ── Account export/deletion from OpenVibe.Events (loopback only) ──
