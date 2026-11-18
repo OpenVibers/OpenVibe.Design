@@ -408,6 +408,11 @@ function createPageRoutes(ctx) {
     // An approval opens a pull request on the register; the register itself is never written by this page.
     const ruleNotice = (req) => ({ notice: req.query.notice ? String(req.query.notice).slice(0, 300) : null,
         error: req.query.error ? String(req.query.error).slice(0, 300) : null });
+    // Watch mode: every site's home page held to the rules daily (server/review/watch.js, server/views/watch.js).
+    r.get('/watch', async (req, res) => {
+        const rows = ctx.watch ? await ctx.watch.list().catch((err) => { log.warn('[OpenVibe.Design] watch:', err.message); return []; }) : [];
+        return page(res, 200, require('../views/watch').watchPage(rows), req.viewer);
+    });
     r.get('/rules', async (req, res) => {
         const owner = Boolean(ctx.proposals && ctx.proposals.isOwner(req.viewer));
         const proposals = owner ? await ctx.proposals.list({ state: null }).catch((err) => { log.warn('[OpenVibe.Design] rule proposals:', err.message); return []; }) : [];
