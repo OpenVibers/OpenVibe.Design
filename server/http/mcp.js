@@ -13,8 +13,12 @@ const BASE = 'https://openvibe.design';
 const FORMATS = { svg: null, inline_svg: 'inlineSvg', jsx: 'jsx', data_uri: 'dataUri', css_mask: 'cssMask', android: 'vectorDrawable', esm: 'esModule' };
 const { version } = require('../../package.json');
 
-const PROTOCOL = '2025-06-18';
-const VERSIONS = new Set([PROTOCOL, '2025-03-26']);
+// Both MCP eras on one endpoint (openvibe-sdk/mcp, as Network, Tools, Compare, Services and Finance serve them): a
+// request that names 2026-07-28 in params._meta is served statelessly (server/discover, resultType, ttlMs and
+// cacheScope, the version and method headers checked); an initialize keeps the handshake era.
+const mcp = require('openvibe-sdk/mcp');
+const PROTOCOL = mcp.DEFAULT_LEGACY;
+const VERSIONS = new Set([...mcp.MODERN_VERSIONS, ...mcp.LEGACY_VERSIONS]);
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const schema = (required, properties) => ({ type: 'object', required, properties, additionalProperties: false });
 const TOOLS = [
@@ -233,13 +237,14 @@ function createMcpRoutes(ctx) {
     const json = express.json({ limit: '1mb', type: ['application/json', 'application/*+json'], strict: false });
     r.use('/mcp', (_req, res, next) => { res.set('Access-Control-Allow-Origin', '*'); res.set('Cache-Control', 'no-store'); next(); });
     r.options('/mcp', (_req, res) => res.set('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        .set('Access-Control-Allow-Headers', 'Content-Type, Mcp-Protocol-Version')
+        .set('Access-Control-Allow-Headers', 'Content-Type, Mcp-Protocol-Version, Mcp-Method, Mcp-Name')
         .set('Access-Control-Max-Age', '600').status(204).end());
     r.post('/mcp', json, async (req, res, next) => {
         try {
             if (req.get('mcp-protocol-version') && !VERSIONS.has(req.get('mcp-protocol-version')))
                 return res.status(400).json(error(null, -32600, 'Unsupported protocol version'));
             const input = req.body;
+            if (object(input) && mcp.requestVersion(input.params)) return modern(input, req, res);
             if (!object(input) && (!Array.isArray(input) || !input.length)) return res.json(error(null, -32600, 'Invalid Request'));
             const batch = Array.isArray(input);
             const replies = [];
@@ -251,7 +256,7 @@ function createMcpRoutes(ctx) {
                 if (!Object.prototype.hasOwnProperty.call(msg, 'id') || msg.method.startsWith('notifications/')) continue;
                 const id = msg.id;
                 const params = object(msg.params) ? msg.params : {};
-                if (msg.method === 'initialize') replies.push(rpc(id, { protocolVersion: VERSIONS.has(params.protocolVersion) ? params.protocolVersion : PROTOCOL,
+                if (msg.method === 'initialize') replies.push(rpc(id, { protocolVersion: mcp.legacyVersion(params.protocolVersion),
                     capabilities: { tools: { listChanged: false } }, serverInfo: { name: 'openvibe-design', title: 'OpenVibe Design', version } }));
                 else if (msg.method === 'ping') replies.push(rpc(id, {}));
                 else if (msg.method === 'tools/list') replies.push(rpc(id, { tools: TOOLS }));
@@ -264,6 +269,32 @@ function createMcpRoutes(ctx) {
         } catch (err) { return next(err); }
     });
     r.all('/mcp', (_req, res) => res.set('Allow', 'POST').status(405).json(error(null, -32600, 'Method Not Allowed')));
+
+    /** One 2026-07-28 request: no handshake and no session; every result says resultType. */
+    async function modern(msg, req, res) {
+        const id = Object.prototype.hasOwnProperty.call(msg, 'id') ? msg.id : null;
+        const params = object(msg.params) ? msg.params : {};
+        if (msg.jsonrpc !== '2.0' || typeof msg.method !== 'string') return res.status(400).json(error(id, -32600, 'Invalid Request'));
+        const bad = mcp.checkRequest({ header: (n) => req.get(n), method: msg.method, params });
+        if (bad) return res.status(bad.status).json({ jsonrpc: '2.0', id, error: bad.error });
+        if (!Object.prototype.hasOwnProperty.call(msg, 'id') || msg.method.startsWith('notifications/')) return res.status(202).end();
+        switch (msg.method) {
+            case 'server/discover':
+                return res.json(rpc(id, mcp.discoverResult({ serverInfo: { name: 'openvibe-design', title: 'OpenVibe Design', version }, capabilities: { tools: { listChanged: false } } })));
+            case 'ping':
+                return res.json(rpc(id, mcp.complete({})));
+            case 'tools/list':
+                return res.json(rpc(id, mcp.listResult('tools', TOOLS, { cacheScope: 'public' })));
+            case 'tools/call': {
+                const result = await callTool(params.name, params.arguments || {}, ctx, req);
+                return res.json(result ? rpc(id, mcp.complete(result)) : error(id, -32602, 'Unknown tool'));
+            }
+            default: {
+                const nf = mcp.methodNotFound(msg.method);
+                return res.status(nf.status).json({ jsonrpc: '2.0', id, error: nf.error });
+            }
+        }
+    }
     r.use((err, _req, res, next) => {
         if (err && err.type === 'entity.parse.failed') return res.status(400).json(error(null, -32700, 'Parse error'));
         if (err && err.type === 'entity.too.large') return res.status(413).json(error(null, -32600, 'Request body too large'));
