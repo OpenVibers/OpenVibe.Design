@@ -27,6 +27,10 @@ const harness = require('openvibe-shared/browser-harness');
                     // are the Frame's, not a specimen's, and every local file a page loads is still checked.
                     { label: 'the shared Frame reads the live Network API', text: /openvibe\.network\/api\/(themes|frame)(?:\/|\?)/ },
                     { label: 'the shared Frame reads the live Network API', url: /openvibe\.network\/api\/(themes|frame)(?:\/|\?)/ },
+                    // A version's page lists the latest changes from the live Network changelog. A runner with no internet
+                    // (our own CI's sandbox, 2026-11-19) cannot reach it; the page's own content is local and still checked.
+                    { label: 'a version page reads the live Network changelog', text: /openvibe\.network\/api\/v1\/changelog\?/ },
+                    { label: 'a version page reads the live Network changelog', url: /openvibe\.network\/api\/v1\/changelog\?/ },
                 ],
             });
             assert.ok(report.ok, `\n${harness.format(report)}`);
