@@ -181,6 +181,8 @@ async function createApp(opts = {}) {
                 fontSrc: ["'self'", 'data:', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
                 // Theme previews may carry inline data: images and any https image the catalogue references.
                 imgSrc: ["'self'", 'data:', 'https:'],
+                // The feed's preview videos (ov-home.js watchPreview, the menu's Feed): without media-src, default-src 'self' refused them (2026-11-20).
+                mediaSrc: ["'self'", 'blob:', 'https:'],
                 // The footer's release line hears OpenVibe.Events; Cloudflare's beacon reports page timings.
                 connectSrc: ["'self'", 'https://openvibe.network', 'https://openvibe.chat', 'https://cloudflareinsights.com', 'https://openvibe.events'],
                 // 'self' covers the Arena's about:srcdoc iframes; generated pages cannot navigate the top window.
