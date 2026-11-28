@@ -72,7 +72,7 @@
 .ds-actions .ds-status:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 /* Five sites, five even tiles. */
 .ds-editor .ds-try-sites { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.ds-editor .ds-try .ds-try-sites a { max-width: none; padding: 6px 1px; font-size: .6rem; }
+.ds-editor .ds-try .ds-try-sites a { max-width: none; padding: 6px 1px; font-size: .75rem; }
 .ds-editor .ds-try-sites a span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 760px) {
     /* One button to use it, then three even ones: no ragged rows. */
