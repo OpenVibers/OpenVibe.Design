@@ -18,6 +18,9 @@
 const { KINDS, FRAMES } = require('./kinds');
 
 const MODEL_TTL_MS = 5 * 60_000;
+// How long a page waits for the catalogue when there is no copy yet (the first ask after a start); after that an expired
+// copy answers at once and the next one is read behind it (11-28: /create waited 26 s each time the copy expired).
+const FIRST_WAIT_MS = 4000;
 const EXCHANGE_ORIGIN = 'https://openvibe.exchange';
 
 const COLOUR = /^(#[0-9a-f]{3,8}|rgba?\([0-9., %]+\)|hsla?\([0-9., %]+\))$/i;
@@ -61,7 +64,7 @@ function bestOfferOf(doc) {
     return priced[0] || offers[0] || null;
 }
 
-function createCreateOptions({ config = {}, ai = null, catalog, fetchImpl = globalThis.fetch, log = console, now = () => Date.now(), ttlMs = MODEL_TTL_MS } = {}) {
+function createCreateOptions({ config = {}, ai = null, catalog, fetchImpl = globalThis.fetch, log = console, now = () => Date.now(), ttlMs = MODEL_TTL_MS, firstWaitMs = FIRST_WAIT_MS } = {}) {
     let cached = { at: 0, value: null };
 
     const exchangeCatalog = async () => {
@@ -151,12 +154,22 @@ function createCreateOptions({ config = {}, ai = null, catalog, fetchImpl = glob
         return out;
     }
 
+    let refreshing = null;
+    function refreshCatalogue() {
+        if (!refreshing) {
+            refreshing = Promise.all([routeOffers(), exchangeCatalog()])
+                .then(([routes, docs]) => { const value = join(routes, docs); cached = { at: now(), value }; return value; })
+                .finally(() => { refreshing = null; });
+        }
+        return refreshing;
+    }
     async function modelCatalogue() {
         if (cached.value && now() - cached.at < ttlMs) return cached.value;
-        const [routes, docs] = await Promise.all([routeOffers(), exchangeCatalog()]);
-        const value = join(routes, docs);
-        cached = { at: now(), value };
-        return value;
+        const next = refreshCatalogue();
+        if (cached.value) { next.catch(() => {}); return cached.value; }
+        let timer;
+        const late = new Promise((resolve) => { timer = setTimeout(() => resolve([]), firstWaitMs); if (timer.unref) timer.unref(); });
+        try { return await Promise.race([next, late]); } finally { clearTimeout(timer); }
     }
 
     /** The person's own keys and machines, and whether AI says this person may use the 18+ tier. */
@@ -267,9 +280,9 @@ function createCreateOptions({ config = {}, ai = null, catalog, fetchImpl = glob
         };
     }
 
-    function clear() { cached = { at: 0, value: null }; }
+    function clear() { cached = { at: 0, value: null }; refreshing = null; }
 
     return { options, publicOptions, fullLooks, modelCatalogue, personal, clear, get cached() { return cached; } };
 }
 
-module.exports = { createCreateOptions, MODEL_TTL_MS, EXCHANGE_ORIGIN };
+module.exports = { createCreateOptions, MODEL_TTL_MS, FIRST_WAIT_MS, EXCHANGE_ORIGIN };

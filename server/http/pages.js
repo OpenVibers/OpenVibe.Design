@@ -119,17 +119,20 @@ function createPageRoutes(ctx) {
         res.set('Cache-Control', 'private, no-store');
         let links = [];
         try { links = JSON.parse(req.cookies.design_drafts || '[]'); if (!Array.isArray(links)) links = []; } catch { /* empty */ }
-        const recent = await ctx.designs.recent(subjectOf(req), links);
-        // The Look choice shows the catalogue's themes; without the catalogue the composer still works on the default.
-        const themes = await catalog.list().then((x) => x.themes, () => []);
-        // What can be made, in which sizes and looks, by which models at what price (the same answer /api/create/options
-        // gives). Without it the composer shows the themes and the four ways, and posts the old form.
-        const options = ctx.createOptions ? await ctx.createOptions.options({ token: tokenOf(req) }).then((all) => ctx.createOptions.publicOptions(all), () => null) : null;
-        // "Research first": the depths and their price, and the person's finished dives to attach. A failure
-        // leaves the module showing the link to OpenVibe Exchange rather than failing the page.
         const signedIn = Boolean(subjectOf(req));
-        const diveOptions = ctx.deepDive ? await ctx.deepDive.options().catch(() => null) : null;
-        const dives = signedIn && ctx.deepDive ? await ctx.deepDive.list(subjectOf(req), { limit: 8 }).catch(() => []) : [];
+        // The page's reads, all at once (11-28: one after another, a slow one held the whole page):
+        //   your recent designs; the catalogue's themes for the Look choice (without it the default still works);
+        //   what can be made, in which sizes and looks, by which models at what price (the same answer
+        //   /api/create/options gives; without it the composer shows the themes and the four ways); and "Research
+        //   first": the depths and their price, and your finished dives to attach (a failure leaves the link to
+        //   OpenVibe Exchange rather than failing the page).
+        const [recent, themes, options, diveOptions, dives] = await Promise.all([
+            ctx.designs.recent(subjectOf(req), links),
+            catalog.list().then((x) => x.themes, () => []),
+            ctx.createOptions ? ctx.createOptions.options({ token: tokenOf(req) }).then((all) => ctx.createOptions.publicOptions(all), () => null) : null,
+            ctx.deepDive ? ctx.deepDive.options().catch(() => null) : null,
+            signedIn && ctx.deepDive ? ctx.deepDive.list(subjectOf(req), { limit: 8 }).catch(() => []) : [],
+        ]);
         return page(res, 200, designView.create({ recent, themes, options,
             research: { options: diveOptions, recent: dives.filter((x) => x.status === 'done' || x.status === 'running'), signedIn } }), req.viewer, { cacheControl: 'private, no-store' });
     });
