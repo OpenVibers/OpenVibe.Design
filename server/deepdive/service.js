@@ -23,15 +23,21 @@ function createDeepDiveService({ s, config, fetchImpl = globalThis.fetch, log = 
     const pollMs = Math.max(200, Number(config.deepDive && config.deepDive.pollMs) || 4000);
 
     let optionsCache = { at: 0, value: null };
+    let optionsAsk = null;
+    const NO_DEPTHS = { depths: [], priced: false, source: 'none', note: 'The depths could not be read; try again in a moment.' };
     async function options() {
-        // The depths and their prices change rarely; a page and its estimate ask once, not once per keystroke.
+        // The depths and their prices change rarely; a page and its estimate ask once, not once per keystroke. An expired
+        // copy answers at once and the next is read behind it; with none yet a page waits four seconds at most (11-28).
         if (optionsCache.value && Date.now() - optionsCache.at < 60_000) return optionsCache.value;
-        const out = await client.options().catch((err) => {
-            log.warn('[OpenVibe.Design] deep dive options:', err.message);
-            return { depths: [], priced: false, source: 'none', note: 'The depths could not be read; try again in a moment.' };
-        });
-        optionsCache = { at: Date.now(), value: out };
-        return out;
+        if (!optionsAsk) {
+            optionsAsk = client.options().catch((err) => { log.warn('[OpenVibe.Design] deep dive options:', err.message); return NO_DEPTHS; })
+                .then((out) => { optionsCache = { at: Date.now(), value: out }; return out; })
+                .finally(() => { optionsAsk = null; });
+        }
+        if (optionsCache.value) return optionsCache.value;
+        let timer;
+        const late = new Promise((resolve) => { timer = setTimeout(() => resolve(NO_DEPTHS), 4000); if (timer.unref) timer.unref(); });
+        try { return await Promise.race([optionsAsk, late]); } finally { clearTimeout(timer); }
     }
 
     function depthOf(optionsOut, wanted) {
