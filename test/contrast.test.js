@@ -8,7 +8,7 @@ const path = require('path');
 
 const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'design.css'), 'utf8');
 assert.ok(
-    css.includes('background: color-mix(in srgb, var(--live-red, #e11d48) 80%, #000); color: #fff; font-size: .68rem; font-weight: 800; }'),
+    css.includes('background: color-mix(in srgb, var(--live-red, #e11d48) 80%, #000); color: #fff; font-size: .75rem; font-weight: 800; }'),
     'the LIVE badge darkens its red under white text'
 );
 assert.ok(!css.includes('.pv-badge { position: absolute; left: 8px; top: 8px; padding: 1px 7px; border-radius: 5px; background: var(--live-red, #e11d48);'), 'the plain live red is gone from the badge');
@@ -24,11 +24,11 @@ assert.ok(
 );
 // The arena's small lines were muted text on a tint (4.1-4.4:1); the secondary text is the readable pair.
 assert.ok(
-    css.includes('.ar-kind-t small { font-size: .72rem; line-height: 1.3; color: var(--text-secondary, #96a7c2); }'),
+    css.includes('.ar-kind-t small { font-size: .75rem; line-height: 1.3; color: var(--text-secondary, #96a7c2); }'),
     'the arena kind line uses the secondary text'
 );
 assert.ok(
-    css.includes('.ar-provisional { padding: 0 6px; border-radius: 999px; font-size: .66rem; font-weight: 800; letter-spacing: .04em; vertical-align: 1px; background: color-mix(in srgb, var(--text-muted, #7386a3) 18%, transparent); color: var(--text-secondary, #96a7c2); }'),
+    css.includes('.ar-provisional { padding: 0 6px; border-radius: 999px; font-size: .75rem; font-weight: 800; letter-spacing: .04em; vertical-align: 1px; background: color-mix(in srgb, var(--text-muted, #7386a3) 18%, transparent); color: var(--text-secondary, #96a7c2); }'),
     'the arena new badge uses the secondary text'
 );
 assert.ok(
