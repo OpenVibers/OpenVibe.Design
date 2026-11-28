@@ -39,8 +39,8 @@
 .cr-card-link:hover b, .cr-card-link:focus-visible b { text-decoration: underline; }
 .cr-card-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
 .cr-card-platforms { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-.cr-card-platforms span { padding: 2px 7px; border-radius: 999px; background: var(--ovk-panel-2); color: var(--ovk-muted); font-size: .72rem; }
-.cr-card-meta a { display: inline-flex; align-items: center; min-height: 32px; padding: 0 8px; border-radius: 8px; color: var(--text-muted, var(--ovk-muted)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; font-weight: 650; text-decoration: none; }
+.cr-card-platforms span { padding: 2px 7px; border-radius: 999px; background: var(--ovk-panel-2); color: var(--ovk-muted); font-size: .75rem; }
+.cr-card-meta a { display: inline-flex; align-items: center; min-height: 32px; padding: 0 8px; border-radius: 8px; color: var(--text-muted, var(--ovk-muted)); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .75rem; font-weight: 650; text-decoration: none; }
 .cr-card-meta a:hover { color: var(--ovk-accent); background: color-mix(in srgb, var(--ovk-accent) 10%, transparent); }
 .cr-native { padding: 15px; border: 1px solid var(--ovk-line); border-radius: 14px; background: var(--ovk-panel); }
 .cr-native p { margin: 0 0 8px; }
@@ -75,7 +75,7 @@
 .crl-group-h h2 { margin: 0; }
 .crl-group-h p { margin: 0; color: var(--ovk-muted); font-size: .9rem; }
 .crl-counts { color: var(--ovk-muted); font-size: .78rem; }
-.crl-module { padding: 2px 7px; border-radius: 6px; background: var(--ovk-panel-2); color: var(--ovk-muted); font-size: .72rem; }
+.crl-module { padding: 2px 7px; border-radius: 6px; background: var(--ovk-panel-2); color: var(--ovk-muted); font-size: .75rem; }
 .crl-where { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
 .crl-where code { padding: 3px 8px; border-radius: 6px; background: var(--ovk-panel-2); font-size: .8rem; }
 .crl .ds-kicker a { color: inherit; text-decoration: none; }
@@ -103,7 +103,7 @@
   box-shadow: 0 10px 28px -8px rgba(0, 0, 0, .7); }
 .crf-box:focus-visible { outline: 2px solid var(--ovk-accent, var(--accent)); outline-offset: 2px; }
 .crf-box b { font-size: .82rem; line-height: 1.2; }
-.crf-box small { color: rgba(255, 255, 255, .66); font-size: .68rem; }
+.crf-box small { color: rgba(255, 255, 255, .66); font-size: .75rem; }
 .crf-tag { align-self: flex-start; margin-bottom: 3px; padding: 2px 6px; border-radius: 999px; background: #e5484d; color: #fff; font: 800 .58rem/1.6 system-ui, sans-serif; letter-spacing: .06em; }
 .crf-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 /* The demo's actions as one compact row of small buttons (Opus, 2026-11-11): they were page-sized buttons in two rows. */

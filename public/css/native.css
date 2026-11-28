@@ -13,12 +13,12 @@
 .nv-compact .nv-screen { flex-direction: column; aspect-ratio: 9 / 19; border-radius: 26px; padding: 18px 8px 0; }
 .nv-medium .nv-screen { aspect-ratio: 4 / 3; border-radius: 20px; padding: 10px; gap: 8px; }
 .nv-expanded .nv-screen { aspect-ratio: 16 / 10; border-radius: 12px; padding: 10px; gap: 10px; }
-.nv-top { display: flex; align-items: center; height: 18px; font-size: 10px; color: var(--text-primary, #e6edf7); }
+.nv-top { display: flex; align-items: center; height: 18px; font-size: 12px; color: var(--text-primary, #e6edf7); }
 .nv-list { display: grid; gap: 5px; margin-top: 6px; }
 .nv-row { display: flex; align-items: center; gap: 6px; height: 18px; }
 .nv-row i, .nv-tile i { flex: none; width: 16px; height: 16px; border-radius: 5px; background: color-mix(in srgb, var(--accent, #3b82f6) 30%, transparent); }
 .nv-row b { height: 6px; width: var(--w, 70%); border-radius: 4px; background: color-mix(in srgb, var(--text-primary, #fff) 18%, transparent); }
-.nv-fab { position: absolute; right: 8px; bottom: 34px; padding: 5px 8px; border-radius: 9px; font-size: 9px; font-weight: 800; color: var(--on-accent, #fff); background: var(--accent, #3b82f6); box-shadow: 0 6px 14px color-mix(in srgb, var(--accent, #3b82f6) 45%, transparent); }
+.nv-fab { position: absolute; right: 8px; bottom: 34px; padding: 5px 8px; border-radius: 9px; font-size: 12px; font-weight: 800; color: var(--on-accent, #fff); background: var(--accent, #3b82f6); box-shadow: 0 6px 14px color-mix(in srgb, var(--accent, #3b82f6) 45%, transparent); }
 .nv-tabs { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; align-items: center; height: 26px; border-top: 1px solid var(--border, #1f2d47); background: var(--bg-secondary, #0f1729); }
 .nv-tabs i, .nv-rail i { width: 12px; height: 12px; border-radius: 4px; background: color-mix(in srgb, var(--text-primary, #fff) 22%, transparent); }
 .nv-tabs i.on, .nv-rail i.on { background: var(--accent, #3b82f6); }
@@ -29,7 +29,7 @@
 .nv-tile { display: grid; gap: 4px; padding: 4px; border-radius: 6px; background: var(--bg-secondary, #0f1729); }
 .nv-tile i { width: 100%; height: auto; aspect-ratio: 4 / 3; }
 .nv-tile b { height: 5px; width: 70%; border-radius: 3px; background: color-mix(in srgb, var(--text-primary, #fff) 18%, transparent); }
-.nv-side { display: grid; align-content: start; gap: 6px; width: 92px; font-size: 9.5px; color: var(--text-secondary, #96a7c2); }
+.nv-side { display: grid; align-content: start; gap: 6px; width: 92px; font-size: 12px; color: var(--text-secondary, #96a7c2); }
 .nv-side span { padding: 3px 6px; border-radius: 99px; }
 .nv-side .on { background: color-mix(in srgb, var(--accent, #3b82f6) 18%, transparent); color: var(--text-primary, #e6edf7); }
 .nv-new-w { justify-self: start; padding: 5px 9px !important; border-radius: 9px !important; border: 1px solid var(--border, #1f2d47); color: var(--text-primary, #e6edf7); font-weight: 800; }
