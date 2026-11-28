@@ -28,7 +28,7 @@
 .chg-entry code { font-size: 12.5px; padding: 1px 4px; border-radius: 4px; background: var(--bg-tertiary, #1b2230); color: var(--text-primary, #e6edf7); }
 .chg-entry h3, .chg-entry h4 { margin: 16px 0 6px; font-size: 15px; color: var(--text-primary, #e6edf7); }
 .chg-entry a { color: var(--accent, #5b9dff); }
-.chg-label { display: block; margin: 0 0 6px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted, #9aa6b8); }
+.chg-label { display: block; margin: 0 0 6px; font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted, #9aa6b8); }
 .chg-refs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0 0; }
 .chg-refs .chg-label { margin: 0 4px 0 0; }
 .chg-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 4px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent, #3b82f6) 30%, transparent); color: var(--text-primary, #e6edf7); background: color-mix(in srgb, var(--accent, #3b82f6) 8%, transparent); font-size: 12.5px; text-decoration: none; }
