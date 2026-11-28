@@ -74,7 +74,9 @@ function load(env = process.env) {
         // OpenVibe.AI): Design mints its own client-credentials token (audience openvibe.ai, scope
         // exchange.search.icons) and needs no Exchange key. EXCHANGE_SEARCH_KEY is the owner's override.
         exchange: {
-            url: trim(env.EXCHANGE_API_URL || 'https://api.openvibe.exchange'),
+            // A test never reaches production (11-28: CI runs asked the real AI for icons with a test network's token, refused
+            // 401 every time): under NODE_ENV=test the default is a closed loopback port, so the search fails at once.
+            url: trim(env.EXCHANGE_API_URL || (nodeEnv === 'test' ? 'http://127.0.0.1:9' : 'https://api.openvibe.exchange')),
             audience: env.DESIGN_EXCHANGE_AUDIENCE || 'openvibe.ai',
             scope: env.DESIGN_EXCHANGE_SCOPE || 'exchange.search.icons',
             key: String(env.EXCHANGE_SEARCH_KEY || ''),
