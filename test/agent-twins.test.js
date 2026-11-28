@@ -39,6 +39,15 @@ const PAGES = ['/', '/brand', '/components', '/tokens', '/motion', '/kit', '/dev
         });
         // The font library, the typeface and vector makers, and the form controls are mounted by their own routers;
         // a twin still renders through the same page code, signed out, and cannot drift from the page.
+        // llms.txt lists these three (11-28: their twins were 404s to agents).
+        await check('the changes, progress and uploader pages have twins', async () => {
+            for (const p of ['/changes', '/progress', '/uploader']) {
+                assert.ok(TWIN_PATH_RE.test(p), `${p} is a twin path`);
+                const twin = await t.get(`${p}.md`);
+                assert.strictEqual(twin.status, 200, `${p}.md`);
+                assert.match(String(twin.headers.get('content-type') || ''), /^text\/markdown/);
+            }
+        });
         const MORE_PAGES = [
             ['/fonts', 'Find a face for your idea.'],
             ['/fonts/make', 'Describe a typeface.'],
