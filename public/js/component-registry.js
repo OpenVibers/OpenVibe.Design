@@ -78,7 +78,9 @@
         });
     };
     buttons.forEach((button) => button.addEventListener('click', () => {
-        if (!playHere && (calm() || media.matches)) return;
+        // Motion Off or the device's reduced motion: no demo, unless this page was told to play (11-28: it called calm(),
+        // which nothing declares, so every Play threw before it moved).
+        if (!playHere && (off() || media.matches)) return;
         play(button);
     }));
     refresh();
