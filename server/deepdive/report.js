@@ -189,7 +189,7 @@ function findsFor(report, component, limit = 6) {
         const src = sources.get(cap.source_id) || {};
         const crop = list(cap.crops)[0] || null;
         const label = typeof hit === 'string' ? hit : (hit.name || hit.component || hit.kind);
-        push(`A ${label} appears on ${src.title || host(cap.url)}.`, [{ site: host(src.url || cap.url), url: src.url || cap.url || null,
+        push(`A ${label} appears on ${src.title || hostOf(cap.url)}.`, [{ site: hostOf(src.url || cap.url), url: src.url || cap.url || null,
             cropId: crop && crop.id || null, captureId: cap.id || null, capturedAt: cap.captured_at || null,
             note: hit && typeof hit === 'object' ? str(hit.note || hit.usage || '', 300) : '' }]);
     }
